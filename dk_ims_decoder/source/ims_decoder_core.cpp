@@ -257,7 +257,7 @@ dk_ims_decoder::ERR_CODE ims_decoder_core::release(void)
 
 	if (_use_ext_buffers)
 	{
-		DeallocateExtMVCBuffers();
+		deallocate_ext_mvc_buffers();
 		delete_ext_buffers();
 	}
 
@@ -315,7 +315,7 @@ mfxStatus ims_decoder_core::init_mfx_params(CONFIG_T * config)
 					break;
 
 				// allocate and attach external parameters for MVC decoder
-				sts = AllocateExtBuffer<mfxExtMVCSeqDesc>();
+				sts = allocate_ext_buffer<mfxExtMVCSeqDesc>();
 				MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
 				AttachExtParam();
@@ -323,8 +323,8 @@ mfxStatus ims_decoder_core::init_mfx_params(CONFIG_T * config)
 
 				if (MFX_ERR_NOT_ENOUGH_BUFFER == sts)
 				{
-					sts = AllocateExtMVCBuffers();
-					SetExtBuffersFlag();
+					sts = allocate_ext_mvc_buffers();
+					_use_ext_buffers = true;
 
 					MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 					MSDK_CHECK_POINTER(_mfx_video_params.ExtParam, MFX_ERR_MEMORY_ALLOC);
@@ -402,7 +402,7 @@ mfxStatus ims_decoder_core::init_mfx_params(CONFIG_T * config)
 	return MFX_ERR_NONE;
 }
 
-template <typename Buffer> mfxStatus ims_decoder_core::allocate_ext_buffer(void)
+template<typename Buffer> mfxStatus ims_decoder_core::allocate_ext_buffer(void)
 {
 	std::auto_ptr<Buffer> ext_buffer(new Buffer());
 	if (!ext_buffer.get())
@@ -419,4 +419,70 @@ void ims_decoder_core::delete_ext_buffers(void)
 	for (std::vector<mfxExtBuffer *>::iterator it = _ext_buffers.begin(); it != _ext_buffers.end(); ++it)
 		delete *it;
 	_ext_buffers.clear();
+}
+
+mfxStatus ims_decoder_core::allocate_ext_mvc_buffers(void)
+{
+	mfxU32 i;
+	mfxExtMVCSeqDesc * ext_mvc_buffer = (mfxExtMVCSeqDesc*)_mfx_video_params.ExtParam[0];
+	MSDK_CHECK_POINTER(ext_mvc_buffer, MFX_ERR_MEMORY_ALLOC);
+
+	ext_mvc_buffer->View = new mfxMVCViewDependency[ext_mvc_buffer->NumView];
+	MSDK_CHECK_POINTER(ext_mvc_buffer->View, MFX_ERR_MEMORY_ALLOC);
+	for (i = 0; i <ext_mvc_buffer->NumView; ++i)
+	{
+		MSDK_ZERO_MEMORY(ext_mvc_buffer->View[i]);
+	}
+	ext_mvc_buffer->NumViewAlloc = ext_mvc_buffer->NumView;
+
+	ext_mvc_buffer->ViewId = new mfxU16[ext_mvc_buffer->NumViewId];
+	MSDK_CHECK_POINTER(ext_mvc_buffer->ViewId, MFX_ERR_MEMORY_ALLOC);
+	for (i = 0; i <ext_mvc_buffer->NumViewId; ++i)
+	{
+		MSDK_ZERO_MEMORY(ext_mvc_buffer->ViewId[i]);
+	}
+	ext_mvc_buffer->NumViewIdAlloc = ext_mvc_buffer->NumViewId;
+
+	ext_mvc_buffer->OP = new mfxMVCOperationPoint[ext_mvc_buffer->NumOP];
+	MSDK_CHECK_POINTER(ext_mvc_buffer->OP, MFX_ERR_MEMORY_ALLOC);
+	for (i = 0; i <ext_mvc_buffer->NumOP; ++i)
+	{
+		MSDK_ZERO_MEMORY(ext_mvc_buffer->OP[i]);
+	}
+	ext_mvc_buffer->NumOPAlloc = ext_mvc_buffer->NumOP;
+	return MFX_ERR_NONE;
+}
+
+void ims_decoder_core::deallocate_ext_mvc_buffers(void)
+{
+	mfxExtMVCSeqDesc * ext_mvc_buffer = (mfxExtMVCSeqDesc*)_mfx_video_params.ExtParam[0];
+	if (ext_mvc_buffer != NULL)
+	{
+		MSDK_SAFE_DELETE_ARRAY(ext_mvc_buffer->View);
+		MSDK_SAFE_DELETE_ARRAY(ext_mvc_buffer->ViewId);
+		MSDK_SAFE_DELETE_ARRAY(ext_mvc_buffer->OP);
+	}
+
+	MSDK_SAFE_DELETE(_mfx_video_params.ExtParam[0]);
+	_use_ext_buffers = false;
+}
+
+mfxStatus ims_decoder_core::create_allocator()
+{
+
+}
+
+void ims_decoder_core::delete_allocator()
+{
+
+}
+
+mfxStatus ims_decoder_core::alloc_frames()
+{
+
+}
+
+void ims_decoder_core::delete_frames()
+{
+
 }

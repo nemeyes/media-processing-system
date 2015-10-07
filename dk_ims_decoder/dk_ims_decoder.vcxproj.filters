@@ -153,6 +153,9 @@
     <ClInclude Include="include\intel_media_sdk\vm\time_defs.h">
       <Filter>Header Files\intel_media_sdk\vm</Filter>
     </ClInclude>
+    <ClInclude Include="include\ims_decoder_core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_ims_decoder.cpp">
@@ -232,6 +235,9 @@
     </ClCompile>
     <ClCompile Include="source\intel_media_sdk\vm\time.cpp">
       <Filter>Source Files\intel_media_sdk\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ims_decoder_core.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

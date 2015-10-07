@@ -87,22 +87,22 @@ private:
 	template <typename Buffer> mfxStatus allocate_ext_buffer(void);
 	virtual void delete_ext_buffers(void);
 
+	virtual mfxStatus allocate_ext_mvc_buffers(void);
+	virtual void deallocate_ext_mvc_buffers(void);
 
-	// function for allocating a specific external buffer
-	template <typename Buffer>
-	mfxStatus AllocateExtBuffer();
-	virtual void DeleteExtBuffers();
+	virtual mfxStatus create_allocator();
+	virtual void delete_allocator();
 
-	virtual mfxStatus AllocateExtMVCBuffers();
-	virtual void    DeallocateExtMVCBuffers();
+	virtual mfxStatus alloc_frames();
+	virtual void delete_frames();
 
 	virtual void AttachExtParam();
 
-	virtual mfxStatus CreateAllocator();
+
+
 	virtual mfxStatus CreateHWDevice();
-	virtual mfxStatus AllocFrames();
-	virtual void DeleteFrames();
-	virtual void DeleteAllocator();
+
+
 
 
 
