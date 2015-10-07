@@ -1,0 +1,237 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\intel_media_sdk">
+      <UniqueIdentifier>{98f331cd-088f-4c58-b5e5-e53da6d07f6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\intel_media_sdk\vm">
+      <UniqueIdentifier>{43ecfeaa-6c93-427c-a671-567f59958ecf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\intel_media_sdk">
+      <UniqueIdentifier>{b664864e-e4f8-4009-a92b-3e57f3bbae51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\intel_media_sdk\vm">
+      <UniqueIdentifier>{271f91ab-4dc2-4e68-91dd-8c17c302720d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dk_ims_decoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\abstract_splitter.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\avc_bitstream.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\avc_headers.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\avc_nal_spl.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\avc_spl.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\avc_structures.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\base_allocator.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\current_date.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\d3d_allocator.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\d3d_device.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\d3d11_allocator.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\d3d11_device.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\general_allocator.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\hw_device.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\intrusive_ptr.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\mfx_buffering.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\mfx_config.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\mfx_plugin_base.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\mfx_plugin_module.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\ms_defs.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\ms_params.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\ms_types.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\ms_utils.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\plugin_loader.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\plugin_utils.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\shared_ptr.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\surface_auto_lock.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\sysmem_allocator.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vaapi_allocator.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vaapi_device.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils_android.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils_drm.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils_x11.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vpp_ex.h">
+      <Filter>Header Files\intel_media_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vm\atomic_defs.h">
+      <Filter>Header Files\intel_media_sdk\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vm\file_defs.h">
+      <Filter>Header Files\intel_media_sdk\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vm\so_defs.h">
+      <Filter>Header Files\intel_media_sdk\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vm\strings_defs.h">
+      <Filter>Header Files\intel_media_sdk\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vm\thread_defs.h">
+      <Filter>Header Files\intel_media_sdk\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\intel_media_sdk\vm\time_defs.h">
+      <Filter>Header Files\intel_media_sdk\vm</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\dk_ims_decoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\avc_bitstream.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\avc_nal_spl.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\avc_spl.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\base_allocator.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\d3d_allocator.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\d3d_device.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\d3d11_allocator.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\d3d11_device.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\general_allocator.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\mfx_buffering.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\ms_utils.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\plugin_utils.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\sysmem_allocator.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vaapi_allocator.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vaapi_device.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils_android.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils_drm.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils_x11.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vpp_ex.cpp">
+      <Filter>Source Files\intel_media_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vm\atomic.cpp">
+      <Filter>Source Files\intel_media_sdk\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vm\shared_object.cpp">
+      <Filter>Source Files\intel_media_sdk\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vm\thread.cpp">
+      <Filter>Source Files\intel_media_sdk\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vm\thread_windows.cpp">
+      <Filter>Source Files\intel_media_sdk\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="source\intel_media_sdk\vm\time.cpp">
+      <Filter>Source Files\intel_media_sdk\vm</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

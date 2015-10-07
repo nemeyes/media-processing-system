@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EFAF20A8-96CB-49A5-9382-5746E3A53638}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>dk_ims_decoder</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\debug\bin\</OutDir>
+    <IntDir>$(SolutionDir)x86\debug\intermediate\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\release\bin\</OutDir>
+    <IntDir>$(SolutionDir)x86\release\intermediate\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>include;..\media_sdk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
+      <AdditionalDependencies>libmfx.lib;dxva2.lib;d3d9.lib;dwmapi.lib;igfx_s3dcontrol.lib;comsuppw.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\media_sdk\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>include;..\media_sdk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
+      <AdditionalLibraryDirectories>..\media_sdk\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libmfx.lib;igfx_s3dcontrol.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dk_ims_decoder.h" />
+    <ClInclude Include="include\ims_decoder_core.h" />
+    <ClInclude Include="include\intel_media_sdk\abstract_splitter.h" />
+    <ClInclude Include="include\intel_media_sdk\avc_bitstream.h" />
+    <ClInclude Include="include\intel_media_sdk\avc_headers.h" />
+    <ClInclude Include="include\intel_media_sdk\avc_nal_spl.h" />
+    <ClInclude Include="include\intel_media_sdk\avc_spl.h" />
+    <ClInclude Include="include\intel_media_sdk\avc_structures.h" />
+    <ClInclude Include="include\intel_media_sdk\base_allocator.h" />
+    <ClInclude Include="include\intel_media_sdk\current_date.h" />
+    <ClInclude Include="include\intel_media_sdk\d3d11_allocator.h" />
+    <ClInclude Include="include\intel_media_sdk\d3d11_device.h" />
+    <ClInclude Include="include\intel_media_sdk\d3d_allocator.h" />
+    <ClInclude Include="include\intel_media_sdk\d3d_device.h" />
+    <ClInclude Include="include\intel_media_sdk\general_allocator.h" />
+    <ClInclude Include="include\intel_media_sdk\hw_device.h" />
+    <ClInclude Include="include\intel_media_sdk\intrusive_ptr.h" />
+    <ClInclude Include="include\intel_media_sdk\mfx_buffering.h" />
+    <ClInclude Include="include\intel_media_sdk\mfx_config.h" />
+    <ClInclude Include="include\intel_media_sdk\mfx_plugin_base.h" />
+    <ClInclude Include="include\intel_media_sdk\mfx_plugin_module.h" />
+    <ClInclude Include="include\intel_media_sdk\ms_defs.h" />
+    <ClInclude Include="include\intel_media_sdk\ms_params.h" />
+    <ClInclude Include="include\intel_media_sdk\ms_types.h" />
+    <ClInclude Include="include\intel_media_sdk\ms_utils.h" />
+    <ClInclude Include="include\intel_media_sdk\plugin_loader.h" />
+    <ClInclude Include="include\intel_media_sdk\plugin_utils.h" />
+    <ClInclude Include="include\intel_media_sdk\shared_ptr.h" />
+    <ClInclude Include="include\intel_media_sdk\surface_auto_lock.h" />
+    <ClInclude Include="include\intel_media_sdk\sysmem_allocator.h" />
+    <ClInclude Include="include\intel_media_sdk\vaapi_allocator.h" />
+    <ClInclude Include="include\intel_media_sdk\vaapi_device.h" />
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils.h" />
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils_android.h" />
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils_drm.h" />
+    <ClInclude Include="include\intel_media_sdk\vaapi_utils_x11.h" />
+    <ClInclude Include="include\intel_media_sdk\vm\atomic_defs.h" />
+    <ClInclude Include="include\intel_media_sdk\vm\file_defs.h" />
+    <ClInclude Include="include\intel_media_sdk\vm\so_defs.h" />
+    <ClInclude Include="include\intel_media_sdk\vm\strings_defs.h" />
+    <ClInclude Include="include\intel_media_sdk\vm\thread_defs.h" />
+    <ClInclude Include="include\intel_media_sdk\vm\time_defs.h" />
+    <ClInclude Include="include\intel_media_sdk\vpp_ex.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\dk_ims_decoder.cpp" />
+    <ClCompile Include="source\ims_decoder_core.cpp" />
+    <ClCompile Include="source\intel_media_sdk\avc_bitstream.cpp" />
+    <ClCompile Include="source\intel_media_sdk\avc_nal_spl.cpp" />
+    <ClCompile Include="source\intel_media_sdk\avc_spl.cpp" />
+    <ClCompile Include="source\intel_media_sdk\base_allocator.cpp" />
+    <ClCompile Include="source\intel_media_sdk\d3d11_allocator.cpp" />
+    <ClCompile Include="source\intel_media_sdk\d3d11_device.cpp" />
+    <ClCompile Include="source\intel_media_sdk\d3d_allocator.cpp" />
+    <ClCompile Include="source\intel_media_sdk\d3d_device.cpp" />
+    <ClCompile Include="source\intel_media_sdk\general_allocator.cpp" />
+    <ClCompile Include="source\intel_media_sdk\mfx_buffering.cpp" />
+    <ClCompile Include="source\intel_media_sdk\ms_utils.cpp" />
+    <ClCompile Include="source\intel_media_sdk\plugin_utils.cpp" />
+    <ClCompile Include="source\intel_media_sdk\sysmem_allocator.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vaapi_allocator.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vaapi_device.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils_android.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils_drm.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vaapi_utils_x11.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vm\atomic.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vm\shared_object.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vm\thread.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vm\thread_windows.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vm\time.cpp" />
+    <ClCompile Include="source\intel_media_sdk\vpp_ex.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
