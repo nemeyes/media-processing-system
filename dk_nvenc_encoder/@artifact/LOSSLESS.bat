@@ -1,0 +1,2 @@
+NvEncoderLowLatency.exe -i original.yuv -o TPS_HQ.264 -size 1920 1080 -maxSize 1920 1080 -codec 0 -preset lossless -fps 30 -bitrate 4000000 -vbvSize 4000000 -rcmode 16 -deviceID 0
+ffmpeg.exe -i TPS_HQ.264 TPS_HQ.yuv
