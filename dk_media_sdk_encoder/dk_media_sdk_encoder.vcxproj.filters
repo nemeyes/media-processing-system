@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dk_ims_encoder.h">
+    <ClInclude Include="include\dk_media_sdk_encoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\dk_ims_encoder.cpp">
+    <ClCompile Include="source\dk_media_sdk_encoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

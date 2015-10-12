@@ -27,9 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dk_ims_decoder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\intel_media_sdk\abstract_splitter.h">
       <Filter>Header Files\intel_media_sdk</Filter>
     </ClInclude>
@@ -153,14 +150,14 @@
     <ClInclude Include="include\intel_media_sdk\vm\time_defs.h">
       <Filter>Header Files\intel_media_sdk\vm</Filter>
     </ClInclude>
-    <ClInclude Include="include\ims_decoder_core.h">
+    <ClInclude Include="include\dk_media_sdk_decoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\media_sdk_decoder_core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\dk_ims_decoder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\intel_media_sdk\avc_bitstream.cpp">
       <Filter>Source Files\intel_media_sdk</Filter>
     </ClCompile>
@@ -236,7 +233,10 @@
     <ClCompile Include="source\intel_media_sdk\vm\time.cpp">
       <Filter>Source Files\intel_media_sdk\vm</Filter>
     </ClCompile>
-    <ClCompile Include="source\ims_decoder_core.cpp">
+    <ClCompile Include="source\dk_media_sdk_decoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\media_sdk_decoder_core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

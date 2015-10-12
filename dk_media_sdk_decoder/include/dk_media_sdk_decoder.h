@@ -1,5 +1,5 @@
-#ifndef _DK_INTEL_MEDIA_SDK_ENCODER_H_
-#define _DK_INTEL_MEDIA_SDK_ENCODER_H_
+#ifndef _DK_MEDIA_SDK_DECODER_H_
+#define _DK_MEDIA_SDK_DECODER_H_
 
 #if defined(_WIN32)
 # include <windows.h>
@@ -12,8 +12,8 @@
 # define EXP_DLL
 #endif
 
-class ims_enc_core;
-class EXP_DLL dk_ims_encoder
+class media_sdk_dec_core;
+class EXP_DLL dk_media_sdk_decoder
 {
 public:
 	typedef enum _ERR_CODE
@@ -31,14 +31,14 @@ public:
 		CODEC_TYPE_MJPEG
 	} CODEC_TYPE;
 
-	dk_ims_encoder(void);
-	~dk_ims_encoder(void);
+	dk_media_sdk_decoder(void);
+	~dk_media_sdk_decoder(void);
 
 public:
 
 
 private:
-	ims_enc_core * _core;
+	media_sdk_dec_core * _core;
 
 };
 

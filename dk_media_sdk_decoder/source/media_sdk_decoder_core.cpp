@@ -8,7 +8,7 @@
 
 #include <ctime>
 #include <algorithm>
-#include "ims_decoder_core.h"
+#include "media_sdk_decoder_core.h"
 #include "intel_media_sdk\sysmem_allocator.h"
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -27,7 +27,7 @@
 
 #define __SYNC_WA // avoid sync issue on Media SDK side
 
-ims_decoder_core::ims_decoder_core(void)
+media_sdk_decoder_core::media_sdk_decoder_core(void)
 {
 
 	MSDK_ZERO_MEMORY(_mfx_bitstream);
@@ -53,23 +53,23 @@ ims_decoder_core::ims_decoder_core(void)
 	_enable_mvc = false;
 	_use_ext_buffers = false;
 	_use_video_wall = false;
-	_complete_frame = false;
+	//_complete_frame = false;
 	_print_latency = false;
 
 	_timeout = 0;
 	_max_fps = 0;
 
-	_vec_latency.reserve(1000); // reserve some space to reduce dynamic reallocation impact on pipeline execution
+	//_vec_latency.reserve(1000); // reserve some space to reduce dynamic reallocation impact on pipeline execution
 
 	_device = NULL;
 }
 
-ims_decoder_core::~ims_decoder_core(void)
+media_sdk_decoder_core::~media_sdk_decoder_core(void)
 {
 
 }
 
-dk_ims_decoder::ERR_CODE ims_decoder_core::initialize(unsigned int width, unsigned int height)
+dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int width, unsigned int height)
 {
 	CONFIG_T config;
 	config.bUseHWLib = true;
@@ -156,20 +156,20 @@ dk_ims_decoder::ERR_CODE ims_decoder_core::initialize(unsigned int width, unsign
 	}
 
 	if (sts != MFX_ERR_NONE)
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 	sts = MFXQueryVersion(_mfx_session, &mfx_version); // get real API version of the loaded library
 	if (sts != MFX_ERR_NONE)
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 	if (config.bIsMVC && !CheckVersion(&mfx_version, MSDK_FEATURE_MVC)) {
 		//msdk_printf(MSDK_STRING("error: MVC is not supported in the %d.%d API version\n"), version.Major, version.Minor);
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 	}
 	if (config.bLowLat && !CheckVersion(&mfx_version, MSDK_FEATURE_LOW_LATENCY)) {
 		//msdk_printf(MSDK_STRING("error: Low Latency mode is not supported in the %d.%d API version\n"), version.Major, version.Minor);
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 	}
 
 	// create decoder
@@ -181,7 +181,7 @@ dk_ims_decoder::ERR_CODE ims_decoder_core::initialize(unsigned int width, unsign
 	{
 		sts = InitMfxBitstream(&_mfx_bitstream, 1024 * 1024);
 		if (sts != MFX_ERR_NONE)
-			return dk_ims_decoder::ERR_CODE_FAILED;
+			return dk_media_sdk_decoder::ERR_CODE_FAILED;
 	}
 
 	if (CheckVersion(&mfx_version, MSDK_FEATURE_PLUGIN_API))
@@ -218,23 +218,23 @@ dk_ims_decoder::ERR_CODE ims_decoder_core::initialize(unsigned int width, unsign
 			}
 		}
 		if (sts != MFX_ERR_NONE)
-			return dk_ims_decoder::ERR_CODE_FAILED;
+			return dk_media_sdk_decoder::ERR_CODE_FAILED;
 	}
 
 	// Populate parameters. Involves DecodeHeader call
 	sts = init_mfx_params(&config);
 	if (sts != MFX_ERR_NONE)
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 	// create device and allocator
-	sts = CreateAllocator();
+	sts = create_allocator();
 	if (sts != MFX_ERR_NONE)
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 	// in case of HW accelerated decode frames must be allocated prior to decoder initialization
-	sts = AllocFrames();
+	sts = alloc_frames();
 	if (sts != MFX_ERR_NONE)
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 	sts = _mfx_decoder->Init(&_mfx_video_params);
 	if (MFX_WRN_PARTIAL_ACCELERATION == sts)
@@ -243,17 +243,17 @@ dk_ims_decoder::ERR_CODE ims_decoder_core::initialize(unsigned int width, unsign
 		MSDK_IGNORE_MFX_STS(sts, MFX_WRN_PARTIAL_ACCELERATION);
 	}
 	if (sts != MFX_ERR_NONE)
-		return dk_ims_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
-	return dk_ims_decoder::ERR_CODE_SUCCESS;
+	return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 }
 
-dk_ims_decoder::ERR_CODE ims_decoder_core::release(void)
+dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::release(void)
 {
 	WipeMfxBitstream(&_mfx_bitstream);
 	MSDK_SAFE_DELETE(_mfx_decoder);
 
-	DeleteFrames();
+	delete_frames();
 
 	if (_use_ext_buffers)
 	{
@@ -265,17 +265,54 @@ dk_ims_decoder::ERR_CODE ims_decoder_core::release(void)
 	_mfx_session.Close();
 
 	// allocator if used as external for MediaSDK must be deleted after decoder
-	DeleteAllocator();
+	delete_allocator();
 
-	return dk_ims_decoder::ERR_CODE_SUCCESS;
+	return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 }
 
-dk_ims_decoder::ERR_CODE ims_decoder_core::decode(unsigned char * input, unsigned int isize, unsigned int stride, unsigned char * output, unsigned int & osize)
+dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * input, unsigned int isize, unsigned int stride, unsigned char * output, unsigned int & osize)
 {
-	return dk_ims_decoder::ERR_CODE_SUCCESS;
+	_mfx_bitstream.DataOffset = 0;
+	_mfx_bitstream.DataLength = isize;
+	_mfx_bitstream.MaxLength = isize;
+	memcpy(_mfx_bitstream.Data, input, _mfx_bitstream.DataLength);
+
+	mfxStatus status = MFX_ERR_NONE;
+#ifndef __SYNC_WA
+	status = sync_output_surface(0);
+	if (status == MFX_ERR_UNKNOWN)
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
+#endif
+	if ((status == MFX_ERR_NONE) || (status == MFX_ERR_MORE_DATA) || (status == MFX_ERR_MORE_SURFACE))
+	{
+		SyncFrameSurfaces();
+		if (_current_free_surface)
+			_current_free_surface = m_FreeSurfacesPool.GetSurface();
+#ifndef __SYNC_WA
+		if(!_current_free_surface)
+#else
+		if (!_current_free_surface || (m_OutputSurfacesPool.GetSurfaceCount() == _mfx_video_params.AsyncDepth))
+#endif
+		{
+			status = sync_output_surface(MSDK_DEC_WAIT_INTERVAL);
+			if (status == MFX_ERR_MORE_DATA)
+				status = MFX_ERR_NOT_FOUND;
+
+			if (status==MFX_ERR_NOT_FOUND)
+				return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
+		}
+		if (_current_free_output_surface)
+			_current_free_output_surface = GetFreeOutputSurface();
+		if (_current_free_output_surface)
+			return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
+	}
+
+
+
+	return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 }
 
-mfxStatus ims_decoder_core::init_mfx_params(CONFIG_T * config)
+mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
 {
 	mfxStatus sts = MFX_ERR_NONE;
 	mfxU32 & num_views = config->numViews;
@@ -318,7 +355,7 @@ mfxStatus ims_decoder_core::init_mfx_params(CONFIG_T * config)
 				sts = allocate_ext_buffer<mfxExtMVCSeqDesc>();
 				MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
-				AttachExtParam();
+				attach_ext_parameter();
 				sts = _mfx_decoder->DecodeHeader(&_mfx_bitstream, &_mfx_video_params);
 
 				if (MFX_ERR_NOT_ENOUGH_BUFFER == sts)
@@ -402,7 +439,7 @@ mfxStatus ims_decoder_core::init_mfx_params(CONFIG_T * config)
 	return MFX_ERR_NONE;
 }
 
-template<typename Buffer> mfxStatus ims_decoder_core::allocate_ext_buffer(void)
+template<typename Buffer> mfxStatus media_sdk_decoder_core::allocate_ext_buffer(void)
 {
 	std::auto_ptr<Buffer> ext_buffer(new Buffer());
 	if (!ext_buffer.get())
@@ -414,14 +451,14 @@ template<typename Buffer> mfxStatus ims_decoder_core::allocate_ext_buffer(void)
 	return MFX_ERR_NONE;
 }
 
-void ims_decoder_core::delete_ext_buffers(void)
+void media_sdk_decoder_core::delete_ext_buffers(void)
 {
 	for (std::vector<mfxExtBuffer *>::iterator it = _ext_buffers.begin(); it != _ext_buffers.end(); ++it)
 		delete *it;
 	_ext_buffers.clear();
 }
 
-mfxStatus ims_decoder_core::allocate_ext_mvc_buffers(void)
+mfxStatus media_sdk_decoder_core::allocate_ext_mvc_buffers(void)
 {
 	mfxU32 i;
 	mfxExtMVCSeqDesc * ext_mvc_buffer = (mfxExtMVCSeqDesc*)_mfx_video_params.ExtParam[0];
@@ -453,7 +490,7 @@ mfxStatus ims_decoder_core::allocate_ext_mvc_buffers(void)
 	return MFX_ERR_NONE;
 }
 
-void ims_decoder_core::deallocate_ext_mvc_buffers(void)
+void media_sdk_decoder_core::deallocate_ext_mvc_buffers(void)
 {
 	mfxExtMVCSeqDesc * ext_mvc_buffer = (mfxExtMVCSeqDesc*)_mfx_video_params.ExtParam[0];
 	if (ext_mvc_buffer != NULL)
@@ -467,22 +504,291 @@ void ims_decoder_core::deallocate_ext_mvc_buffers(void)
 	_use_ext_buffers = false;
 }
 
-mfxStatus ims_decoder_core::create_allocator()
+mfxStatus media_sdk_decoder_core::create_allocator(void)
 {
+	mfxStatus sts = MFX_ERR_NONE;
 
+	if (_mem_type != MEMORY_TYPE_SYSTEM)
+	{
+#if D3D_SURFACES_SUPPORT
+		sts = create_hw_device();
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+		// provide device manager to MediaSDK
+		mfxHDL hdl = NULL;
+		mfxHandleType hdl_t =
+#if MFX_D3D11_SUPPORT
+			MEMORY_TYPE_D3D11 == _mem_type ? MFX_HANDLE_D3D11_DEVICE :
+#endif // #if MFX_D3D11_SUPPORT
+			MFX_HANDLE_D3D9_DEVICE_MANAGER;
+
+		sts = _device->GetHandle(hdl_t, &hdl);
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		sts = _mfx_session.SetHandle(hdl_t, hdl);
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+		// create D3D allocator
+#if MFX_D3D11_SUPPORT
+		if (_mem_type==MEMORY_TYPE_D3D11)
+		{
+			_mfx_allocator = new D3D11FrameAllocator;
+			MSDK_CHECK_POINTER(_mfx_allocator, MFX_ERR_MEMORY_ALLOC);
+			D3D11AllocatorParams * d3d11_alloc_params = new D3D11AllocatorParams;
+			MSDK_CHECK_POINTER(d3d11_alloc_params, MFX_ERR_MEMORY_ALLOC);
+			d3d11_alloc_params->pDevice = reinterpret_cast<ID3D11Device *>(hdl);
+			_mfx_allocator_params = d3d11_alloc_params;
+		}
+		else
+#endif // #if MFX_D3D11_SUPPORT
+		{
+			_mfx_allocator = new D3DFrameAllocator;
+			MSDK_CHECK_POINTER(_mfx_allocator, MFX_ERR_MEMORY_ALLOC);
+			D3DAllocatorParams * d3d_alloc_params = new D3DAllocatorParams;
+			MSDK_CHECK_POINTER(d3d_alloc_params, MFX_ERR_MEMORY_ALLOC);
+			d3d_alloc_params->pManager = reinterpret_cast<IDirect3DDeviceManager9 *>(hdl);
+			_mfx_allocator_params = d3d_alloc_params;
+		}
+		/* In case of video memory we must provide MediaSDK with external allocator
+		thus we demonstrate "external allocator" usage model.
+		Call SetAllocator to pass allocator to mediasdk */
+		sts = _mfx_session.SetFrameAllocator(_mfx_allocator);
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		_use_external_alloc = true;
+#elif LIBVA_SUPPORT
+		sts = create_hw_device();
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		/* It's possible to skip failed result here and switch to SW implementation,
+		but we don't process this way */
+		// provide device manager to MediaSDK
+		VADisplay va_dpy = NULL;
+		sts = _device->GetHandle(MFX_HANDLE_VA_DISPLAY, (mfxHDL *)&va_dpy);
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		sts = _mfx_session.SetHandle(MFX_HANDLE_VA_DISPLAY, va_dpy);
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		// create VAAPI allocator
+		_mfx_allocator = new vaapiFrameAllocator;
+		MSDK_CHECK_POINTER(_mfx_allocator, MFX_ERR_MEMORY_ALLOC);
+		vaapiAllocatorParams * vaapi_alloc_params = new vaapiAllocatorParams;
+		MSDK_CHECK_POINTER(vaapi_alloc_params, MFX_ERR_MEMORY_ALLOC);
+		vaapi_alloc_params->m_dpy = va_dpy;
+		_mfx_allocator_params = vaapi_alloc_params;
+		/* In case of video memory we must provide MediaSDK with external allocator
+		thus we demonstrate "external allocator" usage model.
+		Call SetAllocator to pass allocator to mediasdk */
+		sts = _mfx_session.SetFrameAllocator(_mfx_allocator);
+		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		_use_external_alloc = true;
+#endif
+	}
+	else
+	{
+#ifdef LIBVA_SUPPORT
+		//in case of system memory allocator we also have to pass MFX_HANDLE_VA_DISPLAY to HW library
+		mfxIMPL impl;
+		_mfx_session.QueryIMPL(&impl);
+		if (MFX_IMPL_HARDWARE == MFX_IMPL_BASETYPE(impl))
+		{
+			sts = create_hw_device();
+			MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+			// provide device manager to MediaSDK
+			VADisplay va_dpy = NULL;
+			sts = _device->GetHandle(MFX_HANDLE_VA_DISPLAY, (mfxHDL *)&va_dpy);
+			MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+			sts = _mfx_session.SetHandle(MFX_HANDLE_VA_DISPLAY, va_dpy);
+			MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		}
+#endif
+		// create system memory allocator
+		_mfx_allocator = new SysMemFrameAllocator;
+		MSDK_CHECK_POINTER(_mfx_allocator, MFX_ERR_MEMORY_ALLOC);
+		/* In case of system memory we demonstrate "no external allocator" usage model.
+		We don't call SetAllocator, MediaSDK uses internal allocator.
+		We use system memory allocator simply as a memory manager for application*/
+	}
+
+	// initialize memory allocator
+	sts = _mfx_allocator->Init(_mfx_allocator_params);
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+	return MFX_ERR_NONE;
 }
 
-void ims_decoder_core::delete_allocator()
+void media_sdk_decoder_core::delete_allocator(void)
 {
-
+	// delete allocator
+	MSDK_SAFE_DELETE(_mfx_allocator);
+	MSDK_SAFE_DELETE(_mfx_allocator_params);
+	MSDK_SAFE_DELETE(_device);
 }
 
-mfxStatus ims_decoder_core::alloc_frames()
+mfxStatus media_sdk_decoder_core::alloc_frames(void)
 {
+	MSDK_CHECK_POINTER(_mfx_decoder, MFX_ERR_NULL_PTR);
+	mfxStatus sts = MFX_ERR_NONE;
+	mfxFrameAllocRequest Request;
+	mfxU16 nSurfNum = 0; // number of surfaces for decoder
+	MSDK_ZERO_MEMORY(Request);
+	sts = _mfx_decoder->Query(&_mfx_video_params, &_mfx_video_params);
+	MSDK_IGNORE_MFX_STS(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+	// calculate number of surfaces required for decoder
+	sts = _mfx_decoder->QueryIOSurf(&_mfx_video_params, &Request);
+	if (MFX_WRN_PARTIAL_ACCELERATION == sts)
+	{
+		msdk_printf(MSDK_STRING("WARNING: partial acceleration\n"));
+		MSDK_IGNORE_MFX_STS(sts, MFX_WRN_PARTIAL_ACCELERATION);
+	}
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+	
+	mfxIMPL impl = 0;
+	sts = _mfx_session.QueryIMPL(&impl);
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+	if ((Request.NumFrameSuggested < _mfx_video_params.AsyncDepth) &&
+		(impl & MFX_IMPL_HARDWARE_ANY))
+		return MFX_ERR_MEMORY_ALLOC;
 
+	nSurfNum = MSDK_MAX(Request.NumFrameSuggested, 1);
+	// prepare allocation request
+	Request.NumFrameSuggested = Request.NumFrameMin = nSurfNum;
+	// alloc frames for decoder
+	sts = _mfx_allocator->Alloc(_mfx_allocator->pthis, &Request, &_mfx_frame_alloc_response);
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+	// prepare mfxFrameSurface1 array for decoder
+	nSurfNum = _mfx_frame_alloc_response.NumFrameActual;
+
+	sts = AllocBuffers(nSurfNum);
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+	for (int i = 0; i < nSurfNum; i++)
+	{
+		// initating each frame:
+		MSDK_MEMCPY_VAR(m_pSurfaces[i].frame.Info, &(Request.Info), sizeof(mfxFrameInfo));
+		if (_use_external_alloc)
+		{
+			m_pSurfaces[i].frame.Data.MemId = _mfx_frame_alloc_response.mids[i];
+		}
+		else
+		{
+			sts = _mfx_allocator->Lock(_mfx_allocator->pthis, _mfx_frame_alloc_response.mids[i], &(m_pSurfaces[i].frame.Data));
+			MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+		}
+	}
+
+	return MFX_ERR_NONE;
 }
 
-void ims_decoder_core::delete_frames()
+void media_sdk_decoder_core::delete_frames(void)
 {
+	FreeBuffers();
 
+	_current_free_surface = NULL;
+	MSDK_SAFE_FREE(_current_free_surface);
+
+	// delete frames
+	if (_mfx_allocator)
+	{
+		_mfx_allocator->Free(_mfx_allocator->pthis, &_mfx_frame_alloc_response);
+	}
+
+	return;
+}
+
+void media_sdk_decoder_core::attach_ext_parameter(void)
+{
+	_mfx_video_params.ExtParam = reinterpret_cast<mfxExtBuffer**>(&_ext_buffers[0]);
+	_mfx_video_params.NumExtParam = static_cast<mfxU16>(_ext_buffers.size());
+}
+
+mfxStatus media_sdk_decoder_core::create_hw_device(void)
+{
+#if D3D_SURFACES_SUPPORT
+	mfxStatus sts = MFX_ERR_NONE;
+
+	HWND window = NULL;
+
+#if MFX_D3D11_SUPPORT
+	if (_mem_type==MEMORY_TYPE_D3D11)
+		_device = new CD3D11Device();
+	else
+#endif // #if MFX_D3D11_SUPPORT
+		_device = new CD3D9Device();
+
+	if (_device==NULL)
+		return MFX_ERR_MEMORY_ALLOC;
+
+	sts = _device->Init( window, 0, MSDKAdapter::GetNumber(_mfx_session)); 
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+#elif LIBVA_SUPPORT
+	mfxStatus sts = MFX_ERR_NONE;
+	_device = CreateVAAPIDevice();
+	if (NULL == m_hwdev) 
+		return MFX_ERR_MEMORY_ALLOC;
+	sts = _device->Init(NULL, 0, MSDKAdapter::GetNumber(_mfx_session));
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+#endif
+	return MFX_ERR_NONE;
+}
+
+mfxStatus media_sdk_decoder_core::reset_decoder(CONFIG_T * config)
+{
+	mfxStatus sts = MFX_ERR_NONE;
+
+	// close decoder
+	sts = _mfx_decoder->Close();
+	MSDK_IGNORE_MFX_STS(sts, MFX_ERR_NOT_INITIALIZED);
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+	// free allocated frames
+	delete_frames();
+
+	// initialize parameters with values from parsed header
+	sts = init_mfx_params(config);
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+	// in case of HW accelerated decode frames must be allocated prior to decoder initialization
+	sts = alloc_frames();
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+
+	// init decoder
+	sts = _mfx_decoder->Init(&_mfx_video_params);
+	if (MFX_WRN_PARTIAL_ACCELERATION == sts)
+	{
+		msdk_printf(MSDK_STRING("WARNING: partial acceleration\n"));
+		MSDK_IGNORE_MFX_STS(sts, MFX_WRN_PARTIAL_ACCELERATION);
+	}
+	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
+	return MFX_ERR_NONE;
+}
+
+mfxStatus media_sdk_decoder_core::reset_device(void)
+{
+	return _device->Reset();
+}
+
+mfxStatus media_sdk_decoder_core::sync_output_surface(mfxU32 wait)
+{
+	if (!_current_output_surface)
+		_current_output_surface = m_OutputSurfacesPool.GetSurface();
+	if (!_current_output_surface)
+		return MFX_ERR_MORE_DATA;
+	
+	mfxStatus sts = _mfx_session.SyncOperation(_current_output_surface->syncp, wait);
+	
+	if (sts==MFX_WRN_IN_EXECUTION)
+		return sts;
+	
+	if (sts==MFX_ERR_NONE)
+	{
+		// we got completely decoded frame - pushing it to the delivering thread...
+		sts = deliver_output(&(_current_output_surface->surface->frame));
+		if (MFX_ERR_NONE != sts)
+			sts = MFX_ERR_UNKNOWN;
+		ReturnSurfaceToBuffers(_current_output_surface);
+		_current_output_surface = NULL;
+	}
+
+	if (sts != MFX_ERR_NONE)
+		sts = MFX_ERR_UNKNOWN;
+	return sts;
 }

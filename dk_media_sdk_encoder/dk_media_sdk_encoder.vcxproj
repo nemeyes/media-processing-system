@@ -86,10 +86,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\dk_ims_encoder.h" />
+    <ClInclude Include="include\dk_media_sdk_encoder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\dk_ims_encoder.cpp" />
+    <ClCompile Include="source\dk_media_sdk_encoder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

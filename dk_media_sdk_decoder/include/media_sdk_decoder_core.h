@@ -1,7 +1,7 @@
-#ifndef _INTEL_MEDIA_SDK_DECODER_CORE_H_
-#define _INTEL_MEDIA_SDK_DECODER_CORE_H_
+#ifndef _MEDIA_SDK_DECODER_CORE_H_
+#define _MEDIA_SDK_DECODER_CORE_H_
 
-#include "dk_ims_decoder.h"
+#include "dk_media_sdk_decoder.h"
 
 #include <vector>
 #include "intel_media_sdk\hw_device.h"
@@ -21,7 +21,7 @@
 
 #include "intel_media_sdk\plugin_loader.h"
 
-class ims_decoder_core
+class media_sdk_decoder_core : public CBuffering
 {
 public:
 	typedef enum _MEMORY_TYPE
@@ -70,15 +70,12 @@ public:
 	} CONFIG_T;
 
 
-	ims_decoder_core(void);
-	~ims_decoder_core(void);
+	media_sdk_decoder_core(void);
+	~media_sdk_decoder_core(void);
 
-	dk_ims_decoder::ERR_CODE initialize(unsigned int width, unsigned int height);
-	dk_ims_decoder::ERR_CODE release(void);
-	dk_ims_decoder::ERR_CODE decode(unsigned char * input, unsigned int isize, unsigned int stride, unsigned char * output, unsigned int & osize);
-
-
-
+	dk_media_sdk_decoder::ERR_CODE initialize(unsigned int width, unsigned int height);
+	dk_media_sdk_decoder::ERR_CODE release(void);
+	dk_media_sdk_decoder::ERR_CODE decode(unsigned char * input, unsigned int isize, unsigned int stride, unsigned char * output, unsigned int & osize);
 
 private:
 	virtual mfxStatus init_mfx_params(CONFIG_T * config);
@@ -90,18 +87,28 @@ private:
 	virtual mfxStatus allocate_ext_mvc_buffers(void);
 	virtual void deallocate_ext_mvc_buffers(void);
 
-	virtual mfxStatus create_allocator();
-	virtual void delete_allocator();
+	virtual mfxStatus create_allocator(void);
+	virtual void delete_allocator(void);
 
-	virtual mfxStatus alloc_frames();
-	virtual void delete_frames();
+	virtual mfxStatus alloc_frames(void);
+	virtual void delete_frames(void);
 
-	virtual void AttachExtParam();
+	virtual void attach_ext_parameter(void);
 
+	virtual mfxStatus create_hw_device(void);
 
+	virtual mfxStatus reset_decoder(CONFIG_T * config);
+	virtual mfxStatus reset_device(void);
 
-	virtual mfxStatus CreateHWDevice();
-
+	/** \brief Performs SyncOperation on the current output surface with the specified timeout.
+	*
+	* @return MFX_ERR_NONE Output surface was successfully synced and delivered.
+	* @return MFX_ERR_MORE_DATA Array of output surfaces is empty, need to feed decoder.
+	* @return MFX_WRN_IN_EXECUTION Specified timeout have elapsed.
+	* @return MFX_ERR_UNKNOWN An error has occurred.
+	*/
+	virtual mfxStatus sync_output_surface(mfxU32 wait);
+	//virtual mfxStatus DeliverOutput(mfxFrameSurface1* frame);
 
 
 
@@ -132,8 +139,8 @@ private:
 	MFXFrameAllocator * _mfx_allocator;
 	mfxAllocatorParams * _mfx_allocator_params;
 	MEMORY_TYPE _mem_type;      // memory type of surfaces to use
-	bool                    _use_external_alloc; // use memory allocator as external for Media SDK
-	mfxFrameAllocResponse   _mfx_frame_alloc_response; // memory allocation response for decoder
+	bool _use_external_alloc; // use memory allocator as external for Media SDK
+	mfxFrameAllocResponse _mfx_frame_alloc_response; // memory allocation response for decoder
 
 	msdkFrameSurface * _current_free_surface; // surface detached from free surfaces array
 	msdkOutputSurface * _current_free_output_surface; // surface detached from free output surfaces array
@@ -147,14 +154,14 @@ private:
 	bool _enable_mvc; // enables MVC mode (need to support several files as an output)
 	bool _use_ext_buffers; // indicates if external buffers were allocated
 	bool _use_video_wall; // indicates special mode: decoding will be done in a loop
-	bool _complete_frame;
+	//bool _complete_frame;
 	bool _print_latency;
 
 	mfxU32 _timeout; // enables timeout for video playback, measured in seconds
 	mfxU32 _max_fps; // limit of fps, if isn't specified equal 0.
 	mfxU32 _nframes; //limit number of output frames
 
-	std::vector<msdk_tick> _vec_latency;
+	//std::vector<msdk_tick> _vec_latency;
 
 	CHWDevice * _device;
 };

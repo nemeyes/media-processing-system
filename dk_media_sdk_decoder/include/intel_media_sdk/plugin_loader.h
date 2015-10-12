@@ -13,8 +13,8 @@ Copyright(c) 2013-2014 Intel Corporation. All Rights Reserved.
 #ifndef __PLUGIN_LOADER_H__
 #define __PLUGIN_LOADER_H__
 
-#include "vm/so_defs.h"
-#include "sample_utils.h"
+#include "intel_media_sdk/vm/so_defs.h"
+#include "intel_media_sdk/ms_utils.h"
 //#include "mfx_plugin_module.h"
 #include <iostream>
 #include <iomanip> // for std::setfill, std::setw
