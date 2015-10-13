@@ -21,7 +21,38 @@
 
 #include "intel_media_sdk\plugin_loader.h"
 
-class media_sdk_decoder_core : public CBuffering
+struct CPipelineStatistics
+{
+	CPipelineStatistics() :
+		m_input_count(0),
+		m_output_count(0),
+		m_synced_count(0),
+		m_tick_overall(0),
+		m_tick_fread(0),
+		m_tick_fwrite(0),
+		m_timer_overall(m_tick_overall)
+	{
+	}
+	virtual ~CPipelineStatistics(){}
+
+	mfxU32 m_input_count;     // number of received incoming packets (frames or bitstreams)
+	mfxU32 m_output_count;    // number of delivered outgoing packets (frames or bitstreams)
+	mfxU32 m_synced_count;
+
+	msdk_tick m_tick_overall; // overall time passed during processing
+	msdk_tick m_tick_fread;   // part of tick_overall: time spent to receive incoming data
+	msdk_tick m_tick_fwrite;  // part of tick_overall: time spent to deliver outgoing data
+
+	CAutoTimer m_timer_overall; // timer which corresponds to m_tick_overall
+
+private:
+	CPipelineStatistics(const CPipelineStatistics&);
+	void operator=(const CPipelineStatistics&);
+};
+
+
+class media_sdk_decoder_core : public CBuffering, 
+							   public CPipelineStatistics
 {
 public:
 	typedef enum _MEMORY_TYPE
@@ -146,8 +177,8 @@ private:
 	msdkOutputSurface * _current_free_output_surface; // surface detached from free output surfaces array
 	msdkOutputSurface * _current_output_surface; // surface detached from output surfaces array
 
-	MSDKSemaphore * _deliver_output_semaphore; // to access to DeliverOutput method
-	MSDKEvent * _delivered_event; // to signal when output surfaces will be processed
+	//MSDKSemaphore * _deliver_output_semaphore; // to access to DeliverOutput method
+	//MSDKEvent * _delivered_event; // to signal when output surfaces will be processed
 	mfxStatus _error; // error returned by DeliverOutput method
 	bool _stop_deliver_loop;
 

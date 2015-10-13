@@ -45,8 +45,8 @@ media_sdk_decoder_core::media_sdk_decoder_core(void)
 	_current_free_output_surface = NULL;
 	_current_output_surface = NULL;
 
-	_deliver_output_semaphore = NULL;
-	_delivered_event = NULL;
+//	_deliver_output_semaphore = NULL;
+//	_delivered_event = NULL;
 	_error = MFX_ERR_NONE;
 	_stop_deliver_loop = false;
 
@@ -177,12 +177,9 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 	// set video type in parameters
 	_mfx_video_params.mfx.CodecId = config.videoType;
 	// prepare bit stream
-	if (MFX_CODEC_CAPTURE != config.videoType)
-	{
-		sts = InitMfxBitstream(&_mfx_bitstream, 1024 * 1024);
-		if (sts != MFX_ERR_NONE)
-			return dk_media_sdk_decoder::ERR_CODE_FAILED;
-	}
+	sts = InitMfxBitstream(&_mfx_bitstream, 1024 * 1024);
+	if (sts != MFX_ERR_NONE)
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 	if (CheckVersion(&mfx_version, MSDK_FEATURE_PLUGIN_API))
 	{
@@ -272,10 +269,11 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::release(void)
 
 dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * input, unsigned int isize, unsigned int stride, unsigned char * output, unsigned int & osize)
 {
-	_mfx_bitstream.DataOffset = 0;
-	_mfx_bitstream.DataLength = isize;
-	_mfx_bitstream.MaxLength = isize;
-	memcpy(_mfx_bitstream.Data, input, _mfx_bitstream.DataLength);
+	mfxBitstream * bitstream = &_mfx_bitstream;
+	bitstream->DataOffset = 0;
+	bitstream->DataLength = isize;
+	bitstream->MaxLength = isize;
+	memcpy(bitstream->Data, input, bitstream->DataLength);
 
 	mfxStatus status = MFX_ERR_NONE;
 #ifndef __SYNC_WA
@@ -306,10 +304,97 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 		if (_current_free_output_surface)
 			return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 	}
+	_current_free_surface->submit = m_timer_overall.Sync();
 
+	mfxFrameSurface1 * out_surface = NULL;
+	do
+	{
+		status = _mfx_decoder->DecodeFrameAsync(bitstream, &(_current_free_surface->frame), &out_surface, &(_current_free_output_surface->syncp));
+		if (status == MFX_WRN_DEVICE_BUSY)
+		{
+			//in low latency mode device busy leads to increasing of latency
+			//msdk_printf(MSDK_STRING("Warning : latency increased due to MFX_WRN_DEVICE_BUSY\n"));
 
+			mfxStatus sts = sync_output_surface(MSDK_DEC_WAIT_INTERVAL);
+			// note: everything except MFX_ERR_NONE are errors at this point
+			if (sts == MFX_ERR_NONE)
+				status = MFX_WRN_DEVICE_BUSY;
+			else
+			{
+				status = sts;
+				if (status == MFX_ERR_MORE_DATA)
+				{
+					// we can't receive MFX_ERR_MORE_DATA and have no output - that's a bug
+					status = MFX_WRN_DEVICE_BUSY;
+				}
+			}
+		}
+	} while (status == MFX_WRN_DEVICE_BUSY);
 
-	return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
+	if (status > MFX_ERR_NONE)
+	{
+		if (_current_free_output_surface->syncp)
+		{
+			MSDK_SELF_CHECK(out_surface);
+			status = MFX_ERR_NONE;
+		}
+		else
+		{
+			status = MFX_ERR_MORE_SURFACE;
+		}
+	}
+	else if ((status == MFX_ERR_MORE_DATA) && bitstream)
+	{
+		if (bitstream->DataLength)
+		{
+			// In low_latency mode decoder have to process bitstream completely
+			msdk_printf(MSDK_STRING("error: Incorrect decoder behavior in low latency mode (bitstream length is not equal to 0 after decoding)\n"));
+			status = MFX_ERR_UNDEFINED_BEHAVIOR;
+			return dk_media_sdk_decoder::ERR_CODE_FAILED;
+		}
+	}
+	else if ((status == MFX_ERR_MORE_DATA) && !bitstream)
+	{
+		do 
+		{
+			status = sync_output_surface(MSDK_DEC_WAIT_INTERVAL);
+		} 
+		while (status == MFX_ERR_NONE);
+
+		if (status==MFX_ERR_MORE_DATA) 
+			status = MFX_ERR_NONE;
+	}
+	else if (status == MFX_ERR_INCOMPATIBLE_VIDEO_PARAM)
+	{
+		bitstream = 0;
+		status = MFX_ERR_NONE;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
+	}
+
+	if ((status == MFX_ERR_NONE) || (status == MFX_ERR_MORE_DATA) || (status == MFX_ERR_MORE_SURFACE))
+	{
+		// if current free surface is locked we are moving it to the used surfaces array
+		/*if (m_pCurrentFreeSurface->frame.Data.Locked)*/ 
+		{
+			m_UsedSurfacesPool.AddSurface(_current_free_surface);
+			_current_free_surface = 0;
+		}
+	}
+
+	if (status == MFX_ERR_NONE)
+	{
+		msdkFrameSurface * surface = FindUsedSurface(out_surface);
+		msdk_atomic_inc16(&(surface->render_lock));
+
+		_current_free_output_surface->surface = surface;
+		m_OutputSurfacesPool.AddSurface(_current_free_output_surface);
+		_current_free_output_surface = 0;
+	}
+
+	if (status == MFX_ERR_NONE)
+		return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
+	else
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 }
 
 mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
