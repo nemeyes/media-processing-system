@@ -50,7 +50,7 @@ media_sdk_decoder_core::media_sdk_decoder_core(void)
 	_error = MFX_ERR_NONE;
 	_stop_deliver_loop = false;
 
-	_enable_mvc = false;
+	//_enable_mvc = false;
 	_use_ext_buffers = false;
 	_use_video_wall = false;
 	//_complete_frame = false;
@@ -71,24 +71,23 @@ media_sdk_decoder_core::~media_sdk_decoder_core(void)
 
 dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int width, unsigned int height)
 {
-	CONFIG_T config;
-	config.bUseHWLib = true;
-	config.videoType = MFX_CODEC_AVC;
-	config.memType = MEMORY_TYPE_D3D9;
-	config.bLowLat = true;
-	config.bCalLat = true;
-	//config.gpuCopy = MFX_GPUCOPY_OFF;
-	config.nMaxFPS = 60;
-	config.width = width;
-	config.height = height;
-	config.fourcc = MFX_FOURCC_YV12;
-	config.nAsyncDepth = 4; //default
+	_config.bUseHWLib = true;
+	_config.videoType = MFX_CODEC_AVC;
+	_config.memType = MEMORY_TYPE_D3D9;
+	_config.bLowLat = true;
+	_config.nMaxFPS = 60;
+	_config.width = width;
+	_config.height = height;
+	_config.fourcc = MFX_FOURCC_YV12;
+	_config.nAsyncDepth = 4; //default
+
+	_binit = false;
 
 
 	mfxStatus sts = MFX_ERR_NONE;
-	_mem_type = config.memType;
-	_max_fps = config.nMaxFPS;
-	_nframes = config.nFrames ? config.nFrames : MFX_INFINITE;
+	_mem_type = _config.memType;
+	_max_fps = _config.nMaxFPS;
+	_nframes = _config.nFrames ? _config.nFrames : MFX_INFINITE;
 
 
 	mfxInitParam mfx_init_param;
@@ -109,19 +108,19 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 
 	bool need_init_mfx_ext_param = false;
 
-	if (config.nThreadsNum) 
+	if (_config.nThreadsNum)
 	{
-		mfx_threads_param.NumThread = config.nThreadsNum;
+		mfx_threads_param.NumThread = _config.nThreadsNum;
 		need_init_mfx_ext_param = true;
 	}
-	if (config.SchedulingType) 
+	if (_config.SchedulingType)
 	{
-		mfx_threads_param.SchedulingType = config.SchedulingType;
+		mfx_threads_param.SchedulingType = _config.SchedulingType;
 		need_init_mfx_ext_param = true;
 	}
-	if (config.Priority) 
+	if (_config.Priority)
 	{
-		mfx_threads_param.Priority = config.Priority;
+		mfx_threads_param.Priority = _config.Priority;
 		need_init_mfx_ext_param = true;
 	}
 	if (need_init_mfx_ext_param) 
@@ -132,13 +131,13 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 	}
 
 	// Init session
-	if (config.bUseHWLib)
+	if (_config.bUseHWLib)
 	{
 		// try searching on all display adapters
 		mfx_init_param.Implementation = MFX_IMPL_HARDWARE_ANY;
 		// if d3d11 surfaces are used ask the library to run acceleration through D3D11
 		// feature may be unsupported due to OS or MSDK API version
-		if (MEMORY_TYPE_D3D11 == config.memType)
+		if (MEMORY_TYPE_D3D11 == _config.memType)
 			mfx_init_param.Implementation |= MFX_IMPL_VIA_D3D11;
 
 		sts = _mfx_session.InitEx(mfx_init_param);
@@ -162,12 +161,14 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 	if (sts != MFX_ERR_NONE)
 		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
-	if (config.bIsMVC && !CheckVersion(&mfx_version, MSDK_FEATURE_MVC)) {
+	/*if (config.bIsMVC && !CheckVersion(&mfx_version, MSDK_FEATURE_MVC)) 
+	{
 		//msdk_printf(MSDK_STRING("error: MVC is not supported in the %d.%d API version\n"), version.Major, version.Minor);
 		return dk_media_sdk_decoder::ERR_CODE_FAILED;
-
-	}
-	if (config.bLowLat && !CheckVersion(&mfx_version, MSDK_FEATURE_LOW_LATENCY)) {
+	}*/
+	
+	if (_config.bLowLat && !CheckVersion(&mfx_version, MSDK_FEATURE_LOW_LATENCY))
+	{
 		//msdk_printf(MSDK_STRING("error: Low Latency mode is not supported in the %d.%d API version\n"), version.Major, version.Minor);
 		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 	}
@@ -175,7 +176,7 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 	// create decoder
 	_mfx_decoder = new MFXVideoDECODE(_mfx_session);
 	// set video type in parameters
-	_mfx_video_params.mfx.CodecId = config.videoType;
+	_mfx_video_params.mfx.CodecId = _config.videoType;
 	// prepare bit stream
 	sts = InitMfxBitstream(&_mfx_bitstream, 1024 * 1024);
 	if (sts != MFX_ERR_NONE)
@@ -190,26 +191,26 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 		*    2.b) if codec is not in the list of mediasdk plugins, we assume, that it is supported inside mediasdk library
 		*/
 		// Load user plug-in, should go after CreateAllocator function (when all callbacks were initialized)
-		if (config.pluginParams.type == MFX_PLUGINLOAD_TYPE_FILE && strlen(config.pluginParams.strPluginPath))
+		if (_config.pluginParams.type == MFX_PLUGINLOAD_TYPE_FILE && strlen(_config.pluginParams.strPluginPath))
 		{
 			_user_module.reset(new MFXVideoUSER(_mfx_session));
-			if (config.videoType == CODEC_VP8 || config.videoType == MFX_CODEC_HEVC)
+			if (_config.videoType == CODEC_VP8 || _config.videoType == MFX_CODEC_HEVC)
 			{
-				_plugin.reset(LoadPlugin(MFX_PLUGINTYPE_VIDEO_DECODE, _mfx_session, config.pluginParams.pluginGuid, 1, config.pluginParams.strPluginPath, (mfxU32)strlen(config.pluginParams.strPluginPath)));
+				_plugin.reset(LoadPlugin(MFX_PLUGINTYPE_VIDEO_DECODE, _mfx_session, _config.pluginParams.pluginGuid, 1, _config.pluginParams.strPluginPath, (mfxU32)strlen(_config.pluginParams.strPluginPath)));
 			}
 			if (_plugin.get() == NULL) 
 				sts = MFX_ERR_UNSUPPORTED;
 		}
 		else
 		{
-			if (AreGuidsEqual(config.pluginParams.pluginGuid, MSDK_PLUGINGUID_NULL))
+			if (AreGuidsEqual(_config.pluginParams.pluginGuid, MSDK_PLUGINGUID_NULL))
 			{
-				mfxIMPL impl = config.bUseHWLib ? MFX_IMPL_HARDWARE : MFX_IMPL_SOFTWARE;
-				config.pluginParams.pluginGuid = msdkGetPluginUID(impl, MSDK_VDECODE, config.videoType);
+				mfxIMPL impl = _config.bUseHWLib ? MFX_IMPL_HARDWARE : MFX_IMPL_SOFTWARE;
+				_config.pluginParams.pluginGuid = msdkGetPluginUID(impl, MSDK_VDECODE, _config.videoType);
 			}
-			if (!AreGuidsEqual(config.pluginParams.pluginGuid, MSDK_PLUGINGUID_NULL))
+			if (!AreGuidsEqual(_config.pluginParams.pluginGuid, MSDK_PLUGINGUID_NULL))
 			{
-				_plugin.reset(LoadPlugin(MFX_PLUGINTYPE_VIDEO_DECODE, _mfx_session, config.pluginParams.pluginGuid, 1));
+				_plugin.reset(LoadPlugin(MFX_PLUGINTYPE_VIDEO_DECODE, _mfx_session, _config.pluginParams.pluginGuid, 1));
 				if (_plugin.get() == NULL) 
 					sts = MFX_ERR_UNSUPPORTED;
 			}
@@ -218,8 +219,10 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 			return dk_media_sdk_decoder::ERR_CODE_FAILED;
 	}
 
+
+	/*
 	// Populate parameters. Involves DecodeHeader call
-	sts = init_mfx_params(&config);
+	sts = init_mfx_params(&_config);
 	if (sts != MFX_ERR_NONE)
 		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
@@ -241,6 +244,7 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int w
 	}
 	if (sts != MFX_ERR_NONE)
 		return dk_media_sdk_decoder::ERR_CODE_FAILED;
+	*/
 
 	return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 }
@@ -267,17 +271,51 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::release(void)
 	return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 }
 
-dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * input, unsigned int isize, unsigned int stride, unsigned char * output, unsigned int & osize)
+dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * input, size_t isize, unsigned int stride, unsigned char * output, size_t & osize)
 {
+	mfxStatus status = MFX_ERR_NONE;
+
 	mfxBitstream * bitstream = &_mfx_bitstream;
 	bitstream->DataOffset = 0;
 	bitstream->DataLength = isize;
 	bitstream->MaxLength = isize;
 	memcpy(bitstream->Data, input, bitstream->DataLength);
 
-	mfxStatus status = MFX_ERR_NONE;
+
+	if (!_binit)
+	{
+		// Populate parameters. Involves DecodeHeader call
+		status = init_mfx_params(&_config, input, isize);
+		if ((status != MFX_ERR_NONE) && (status != MFX_ERR_MORE_DATA))
+			return dk_media_sdk_decoder::ERR_CODE_FAILED;
+
+		// create device and allocator
+		status = create_allocator();
+		if (status != MFX_ERR_NONE)
+			return dk_media_sdk_decoder::ERR_CODE_FAILED;
+
+		// in case of HW accelerated decode frames must be allocated prior to decoder initialization
+		status = alloc_frames();
+		if (status != MFX_ERR_NONE)
+			return dk_media_sdk_decoder::ERR_CODE_FAILED;
+
+		status = _mfx_decoder->Init(&_mfx_video_params);
+		if (status==MFX_WRN_PARTIAL_ACCELERATION)
+		{
+			msdk_printf(MSDK_STRING("WARNING: partial acceleration\n"));
+			MSDK_IGNORE_MFX_STS(status, MFX_WRN_PARTIAL_ACCELERATION);
+		}
+		if (status != MFX_ERR_NONE)
+			return dk_media_sdk_decoder::ERR_CODE_FAILED;
+
+		_binit = true;
+		return dk_media_sdk_decoder::ERR_CODE_FAILED;
+	}
+	
+
+
 #ifndef __SYNC_WA
-	status = sync_output_surface(0);
+	status = sync_output_surface(0, output, osize);
 	if (status == MFX_ERR_UNKNOWN)
 		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 #endif
@@ -292,7 +330,7 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 		if (!_current_free_surface || (m_OutputSurfacesPool.GetSurfaceCount() == _mfx_video_params.AsyncDepth))
 #endif
 		{
-			status = sync_output_surface(MSDK_DEC_WAIT_INTERVAL);
+			status = sync_output_surface(MSDK_DEC_WAIT_INTERVAL, output, osize);
 			if (status == MFX_ERR_MORE_DATA)
 				status = MFX_ERR_NOT_FOUND;
 
@@ -315,7 +353,7 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 			//in low latency mode device busy leads to increasing of latency
 			//msdk_printf(MSDK_STRING("Warning : latency increased due to MFX_WRN_DEVICE_BUSY\n"));
 
-			mfxStatus sts = sync_output_surface(MSDK_DEC_WAIT_INTERVAL);
+			mfxStatus sts = sync_output_surface(MSDK_DEC_WAIT_INTERVAL, output, osize);
 			// note: everything except MFX_ERR_NONE are errors at this point
 			if (sts == MFX_ERR_NONE)
 				status = MFX_WRN_DEVICE_BUSY;
@@ -357,7 +395,7 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 	{
 		do 
 		{
-			status = sync_output_surface(MSDK_DEC_WAIT_INTERVAL);
+			status = sync_output_surface(MSDK_DEC_WAIT_INTERVAL, output, osize);
 		} 
 		while (status == MFX_ERR_NONE);
 
@@ -397,17 +435,23 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 		return dk_media_sdk_decoder::ERR_CODE_FAILED;
 }
 
-mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
+mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config, unsigned char * bitstream, size_t nbytes)
 {
 	mfxStatus sts = MFX_ERR_NONE;
 	mfxU32 & num_views = config->numViews;
 
 	// try to find a sequence header in the stream
 	// if header is not found this function exits with error (e.g. if device was lost and there's no header in the remaining stream)
-	while (true)
+	//while (true)
 	{
 		// parse bit stream and fill mfx params
 		sts = _mfx_decoder->DecodeHeader(&_mfx_bitstream, &_mfx_video_params);
+		if (!sts && _plugin.get() && (config->videoType == CODEC_VP8)) 
+		{
+			// force set format to nv12 as the vp8 plugin uses yv12
+			_mfx_video_params.mfx.FrameInfo.FourCC = MFX_FOURCC_NV12;
+		}
+
 		if (sts == MFX_ERR_MORE_DATA)
 		{
 			if (_mfx_bitstream.MaxLength == _mfx_bitstream.DataLength)
@@ -416,7 +460,7 @@ mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
 				MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 			}
 			// read a portion of data
-			sts = m_FileReader->ReadNextFrame(&_mfx_bitstream);
+			/*sts = m_FileReader->ReadNextFrame(&_mfx_bitstream);
 			if ((sts == MFX_ERR_MORE_DATA) && !(_mfx_bitstream.DataFlag & MFX_BITSTREAM_EOS))
 			{
 				_mfx_bitstream.DataFlag |= MFX_BITSTREAM_EOS;
@@ -424,12 +468,12 @@ mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
 			}
 			MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
-			continue;
+			continue;*/
 		}
 		else
 		{
 			// Enter MVC mode
-			if (_enable_mvc)
+			/*if (_enable_mvc)
 			{
 				// Check for attached external parameters - if we have them already,
 				// we don't need to attach them again
@@ -452,7 +496,7 @@ mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
 					MSDK_CHECK_POINTER(_mfx_video_params.ExtParam, MFX_ERR_MEMORY_ALLOC);
 					continue;
 				}
-			}
+			}*/
 
 			// if input is interlaced JPEG stream
 			if (_mfx_bitstream.PicStruct == MFX_PICSTRUCT_FIELD_TFF || _mfx_bitstream.PicStruct == MFX_PICSTRUCT_FIELD_BFF)
@@ -480,7 +524,7 @@ mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
 				return MFX_ERR_UNSUPPORTED;
 			}
 
-			break;
+			//break;
 		}
 	}
 
@@ -493,7 +537,7 @@ mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
 	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
 	// If MVC mode we need to detect number of views in stream
-	if (_enable_mvc)
+	/*if (_enable_mvc)
 	{
 		mfxExtMVCSeqDesc* pSequenceBuffer;
 		pSequenceBuffer = (mfxExtMVCSeqDesc*)GetExtBuffer(_mfx_video_params.ExtParam, _mfx_video_params.NumExtParam, MFX_EXTBUFF_MVC_SEQ_DESC);
@@ -503,16 +547,16 @@ mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config)
 		num_views = 0;
 		for (i = 0; i < pSequenceBuffer->NumView; ++i)
 		{
-			/* Some MVC streams can contain different information about
-			number of views and view IDs, e.x. numVews = 2
-			and ViewId[0, 1] = 0, 2 instead of ViewId[0, 1] = 0, 1.
-			numViews should be equal (max(ViewId[i]) + 1)
-			to prevent crashes during output files writing */
+			//Some MVC streams can contain different information about
+			//number of views and view IDs, e.x. numVews = 2
+			//and ViewId[0, 1] = 0, 2 instead of ViewId[0, 1] = 0, 1.
+			//numViews should be equal (max(ViewId[i]) + 1)
+			//to prevent crashes during output files writing
 			if (pSequenceBuffer->View[i].ViewId >= num_views)
 				num_views = pSequenceBuffer->View[i].ViewId + 1;
 		}
 	}
-	else
+	else*/
 	{
 		num_views = 1;
 	}
@@ -815,7 +859,7 @@ mfxStatus media_sdk_decoder_core::create_hw_device(void)
 	return MFX_ERR_NONE;
 }
 
-mfxStatus media_sdk_decoder_core::reset_decoder(CONFIG_T * config)
+mfxStatus media_sdk_decoder_core::reset_decoder(CONFIG_T * config, unsigned char * bitstream, size_t nbytes)
 {
 	mfxStatus sts = MFX_ERR_NONE;
 
@@ -828,7 +872,7 @@ mfxStatus media_sdk_decoder_core::reset_decoder(CONFIG_T * config)
 	delete_frames();
 
 	// initialize parameters with values from parsed header
-	sts = init_mfx_params(config);
+	sts = init_mfx_params(config, bitstream, nbytes);
 	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
 	// in case of HW accelerated decode frames must be allocated prior to decoder initialization
@@ -851,7 +895,7 @@ mfxStatus media_sdk_decoder_core::reset_device(void)
 	return _device->Reset();
 }
 
-mfxStatus media_sdk_decoder_core::sync_output_surface(mfxU32 wait)
+mfxStatus media_sdk_decoder_core::sync_output_surface(mfxU32 wait, unsigned char * output, unsigned int & osize)
 {
 	if (!_current_output_surface)
 		_current_output_surface = m_OutputSurfacesPool.GetSurface();
@@ -866,7 +910,7 @@ mfxStatus media_sdk_decoder_core::sync_output_surface(mfxU32 wait)
 	if (sts==MFX_ERR_NONE)
 	{
 		// we got completely decoded frame - pushing it to the delivering thread...
-		sts = deliver_output(&(_current_output_surface->surface->frame));
+		sts = deliver_output(&(_current_output_surface->surface->frame), output, osize);
 		if (MFX_ERR_NONE != sts)
 			sts = MFX_ERR_UNKNOWN;
 		ReturnSurfaceToBuffers(_current_output_surface);
@@ -876,4 +920,94 @@ mfxStatus media_sdk_decoder_core::sync_output_surface(mfxU32 wait)
 	if (sts != MFX_ERR_NONE)
 		sts = MFX_ERR_UNKNOWN;
 	return sts;
+}
+
+mfxStatus media_sdk_decoder_core::deliver_output(mfxFrameSurface1 * frame, unsigned char * output, unsigned int & osize)
+{
+	mfxStatus status = MFX_ERR_NONE, sts = MFX_ERR_NONE;
+
+	if (!frame) 
+		return MFX_ERR_NULL_PTR;
+
+	if (_use_external_alloc)
+	{
+		status = _mfx_allocator->Lock(_mfx_allocator->pthis, frame->Data.MemId, &(frame->Data));
+		if (status==MFX_ERR_NONE)
+		{
+			status = fill_output_buffer(frame, output, osize);
+			sts = _mfx_allocator->Unlock(_mfx_allocator->pthis, frame->Data.MemId, &(frame->Data));
+		}
+		if ((status==MFX_ERR_NONE) && (sts!=MFX_ERR_NONE))
+		{
+			status = sts;
+		}
+	}
+	else 
+	{
+		status = fill_output_buffer(frame, output, osize);
+	}
+
+	return status;
+}
+
+mfxStatus media_sdk_decoder_core::fill_output_buffer(mfxFrameSurface1 * surface, unsigned char * output, unsigned int & osize)
+{
+	mfxStatus status = MFX_ERR_NONE;
+	MSDK_CHECK_POINTER(surface, MFX_ERR_NULL_PTR);
+	MSDK_CHECK_POINTER(output, MFX_ERR_NULL_PTR);
+
+	mfxFrameInfo & frame_info = surface->Info;
+	mfxFrameData & frame_data = surface->Data;
+
+	mfxU32 i, j, h, w;
+	mfxU32 vid = frame_info.FrameId.ViewId;
+
+	switch (frame_info.FourCC)
+	{
+	case MFX_FOURCC_YV12:
+	case MFX_FOURCC_NV12:
+		for (i = 0; i < frame_info.CropH; i++)
+		{
+			memcpy(output, frame_data.Y + (frame_info.CropY * frame_data.Pitch + frame_info.CropX) + i * frame_data.Pitch, frame_info.CropW);
+			output += frame_info.CropW;
+		}
+		break;
+	}
+	switch (frame_info.FourCC)
+	{
+	case MFX_FOURCC_YV12:
+		for (i = 0; i < (mfxU32)frame_info.CropH / 2; i++)
+		{
+			memcpy(output, frame_data.U + (frame_info.CropY * frame_data.Pitch / 2 + frame_info.CropX / 2) + i * frame_data.Pitch / 2, frame_info.CropW / 2);
+			output += frame_info.CropW / 2;
+		}
+		for (i = 0; i < (mfxU32)frame_info.CropH / 2; i++)
+		{
+			memcpy(output, frame_data.V + (frame_info.CropY * frame_data.Pitch / 2 + frame_info.CropX / 2) + i * frame_data.Pitch / 2, frame_info.CropW / 2);
+			output += frame_info.CropW / 2;
+		}
+		break;
+
+	case MFX_FOURCC_NV12:
+		h = frame_info.CropH / 2;
+		w = frame_info.CropW;
+		for (i = 0; i < h; i++)
+		{
+			for (j = 0; j < w; j += 2)
+			{
+				memcpy(output, frame_data.UV + (frame_info.CropY * frame_data.Pitch / 2 + frame_info.CropX) + i * frame_data.Pitch + j, 1);
+				output++;
+			}
+		}
+		for (i = 0; i < h; i++)
+		{
+			for (j = 1; j < w; j += 2)
+			{
+				memcpy(output, frame_data.UV + (frame_info.CropY * frame_data.Pitch / 2 + frame_info.CropX) + i * frame_data.Pitch + j, 1);
+				output++;
+			}
+		}
+		break;
+	}
+	return MFX_ERR_NONE;
 }

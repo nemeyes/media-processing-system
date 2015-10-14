@@ -106,7 +106,6 @@
     <ClInclude Include="chromium\port.h" />
     <ClInclude Include="chromium\yuv_to_rgb_table.h" />
     <ClInclude Include="include\dk_colorspace_converter.h" />
-    <ClInclude Include="xvidcore\colorspace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="chromium\convert_rgb_to_yuv_c.cpp">
@@ -120,7 +119,6 @@
     <ClCompile Include="chromium\cpu_features_x86.cpp" />
     <ClCompile Include="chromium\yuv_to_rgb_table.cpp" />
     <ClCompile Include="source\dk_colorspace_converter.cpp" />
-    <ClCompile Include="xvidcore\colorspace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="chromium\convert_rgb_to_yuv_ssse3.asm">
@@ -142,26 +140,6 @@
     <None Include="chromium\convert_rgb_to_yuv_ssse3.inc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </None>
-    <None Include="xvidcore\colorspace_mmx.inc" />
-    <CustomBuild Include="xvidcore\colorspace_rgb_mmx.asm">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasm -f win32 xvidcore\colorspace_rgb_mmx.asm -o ../platform\win32\x86\release\intermediate\dk_colorspace_converter\colorspace_rgb_mmx.obj</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../platform\win32\x86\release\intermediate\dk_colorspace_converter\colorspace_rgb_mmx.obj</Outputs>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasm -f win32 xvidcore\colorspace_rgb_mmx.asm -o ../platform\win32\x86\debug\intermediate\dk_colorspace_converter\colorspace_rgb_mmx.obj</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../platform\win32\x86\debug\intermediate\dk_colorspace_converter\colorspace_rgb_mmx.obj</Outputs>
-      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatOutputAsContent>
-    </CustomBuild>
-    <CustomBuild Include="xvidcore\colorspace_yuv_mmx.asm">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasm -f win32 xvidcore\colorspace_yuv_mmx.asm -o ../platform\win32\x86\release\intermediate\dk_colorspace_converter\colorspace_yuv_mmx.obj</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../platform\win32\x86\release\intermediate\dk_colorspace_converter\colorspace_yuv_mmx.obj</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasm -f win32 xvidcore\colorspace_yuv_mmx.asm -o ../platform\win32\x86\debug\intermediate\dk_colorspace_converter\colorspace_yuv_mmx.obj</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../platform\win32\x86\debug\intermediate\dk_colorspace_converter\colorspace_yuv_mmx.obj</Outputs>
-    </CustomBuild>
-    <None Include="xvidcore\nasm.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

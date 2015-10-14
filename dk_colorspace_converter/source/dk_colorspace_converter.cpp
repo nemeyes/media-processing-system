@@ -1,11 +1,14 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "dk_colorspace_converter.h"
-#include "colorspace.h"
+//#include "colorspace.h"
 #include "cpu_features.h"
-#include <Simd/SimdLib.h>
+//#include <Simd/SimdLib.h>
 
 unsigned char dk_colorspace_converter::_buffer[8294400]; //1920*1080*4
 
-dk_colorspace_converter::dk_colorspace_converter(void)
+/*dk_colorspace_converter::dk_colorspace_converter(void)
 	: _bflip(0)
 	, _cvt_fn(0)
 {
@@ -84,28 +87,24 @@ void dk_colorspace_converter::convert(int width, int height, unsigned char * src
 	}
 
 
-}
+}*/
 
-void dk_colorspace_converter::convert_rgb32_to_yv12(int width, int height, unsigned char * rgba, int stride,
+/*void dk_colorspace_converter::convert_rgb32_to_yv12(int width, int height, unsigned char * rgba, int stride,
 													unsigned char * y, unsigned char * u, unsigned char * v, int y_stride, int uv_stride, bool bflip)
 {
 	bgra_to_yv12_mmx(rgba, width * 4, y, u, v, y_stride, uv_stride, width, height, bflip);
-	/*
-	if (bflip)
-		flip(width, height, rgba);
-	media::ConvertRGB32ToYUV_SSE2(rgba, y, u, v, width, height, stride, y_stride, uv_stride);
-	*/
-	/*
-	if(media::hasSSE2())
-	{
-		media::ConvertRGB32ToYUV_SSE2(rgba, y, u, v, width, height, stride, y_stride, uv_stride);
-	}
-	else
-	{
-		media::ConvertRGB32ToYUV_C(rgba, y, u, v, width, height, stride, y_stride, uv_stride);
-	}
-	*/
-}
+	//if (bflip)
+	//	flip(width, height, rgba);
+	//media::ConvertRGB32ToYUV_SSE2(rgba, y, u, v, width, height, stride, y_stride, uv_stride);
+	//if(media::hasSSE2())
+	//{
+	//	media::ConvertRGB32ToYUV_SSE2(rgba, y, u, v, width, height, stride, y_stride, uv_stride);
+	//}
+	//else
+	//{
+	//	media::ConvertRGB32ToYUV_C(rgba, y, u, v, width, height, stride, y_stride, uv_stride);
+	//}
+}*/
 
 void dk_colorspace_converter::flip(unsigned int width, unsigned int height, int stride, unsigned char * pixels)
 {
@@ -170,5 +169,19 @@ void dk_colorspace_converter::convert_rgba_to_rgba(unsigned int width, unsigned 
 
 void dk_colorspace_converter::convert_rgba_to_yv12(unsigned int width, unsigned int height, unsigned char * bgra, int bgra_stride, unsigned char * y, int y_stride, unsigned char * u, int u_stride, unsigned char * v, int v_stride, bool flip)
 {
-	SimdBgraToYuv420p(bgra, width, height, bgra_stride, y, y_stride, u, u_stride, v, v_stride);
+	//bgra_to_yv12_mmx(bgra, width * 4, y, u, v, y_stride, u_stride, width, height, flip);
+
+	if (flip)
+		dk_colorspace_converter::flip(width, height, width*4, bgra);
+	media::ConvertRGB32ToYUV_SSE2(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
+	if(media::hasSSE2())
+	{
+		media::ConvertRGB32ToYUV_SSE2(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
+	}
+	else
+	{
+		media::ConvertRGB32ToYUV_C(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
+	}
+
+	//SimdBgraToYuv420p(bgra, width, height, bgra_stride, y, y_stride, u, u_stride, v, v_stride);
 }

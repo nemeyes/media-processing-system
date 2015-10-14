@@ -33,6 +33,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_media_sdk_encoder", "..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_media_sdk_decoder", "..\..\dk_media_sdk_decoder\dk_media_sdk_decoder.vcxproj", "{EFAF20A8-96CB-49A5-9382-5746E3A53638}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "video", "video", "{5A0D68FF-85B6-48D1-A613-998FF61715A3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "audio", "audio", "{6D4C1D99-AF19-4E30-B886-CE165AFC002F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_msdk_decode_filter", "..\..\directshow\dk_msdk_decode_filter\dk_msdk_decode_filter.vcxproj", "{B909A551-BC42-4FEB-BDF4-9EF05931E8D1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_colorspace_convert_filter", "..\..\directshow\dk_colorspace_convert_filter\dk_colorspace_convert_filter.vcxproj", "{67B34684-A295-46F1-8586-0B7BCD9ED255}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -85,6 +93,18 @@ Global
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638}.Release|Win32.ActiveCfg = Release|Win32
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638}.Release|Win32.Build.0 = Release|Win32
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638}.Release|x64.ActiveCfg = Release|Win32
+		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1}.Debug|Win32.Build.0 = Debug|Win32
+		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1}.Debug|x64.ActiveCfg = Debug|Win32
+		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1}.Release|Win32.ActiveCfg = Release|Win32
+		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1}.Release|Win32.Build.0 = Release|Win32
+		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1}.Release|x64.ActiveCfg = Release|Win32
+		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Debug|Win32.ActiveCfg = Debug|Win32
+		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Debug|Win32.Build.0 = Debug|Win32
+		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Debug|x64.ActiveCfg = Debug|Win32
+		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Release|Win32.ActiveCfg = Release|Win32
+		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Release|Win32.Build.0 = Release|Win32
+		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -103,5 +123,9 @@ Global
 		{00492082-83D3-479A-A118-488CC9E58A72} = {9E86A127-51C1-412F-8117-D40A44BBB37D}
 		{C6A18124-5596-4263-89CF-4F0D6C5C662D} = {A91CFB2C-F57A-49E5-96B3-08C793DE90B3}
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638} = {A91CFB2C-F57A-49E5-96B3-08C793DE90B3}
+		{5A0D68FF-85B6-48D1-A613-998FF61715A3} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
+		{6D4C1D99-AF19-4E30-B886-CE165AFC002F} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
+		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1} = {5A0D68FF-85B6-48D1-A613-998FF61715A3}
+		{67B34684-A295-46F1-8586-0B7BCD9ED255} = {5A0D68FF-85B6-48D1-A613-998FF61715A3}
 	EndGlobalSection
 EndGlobal

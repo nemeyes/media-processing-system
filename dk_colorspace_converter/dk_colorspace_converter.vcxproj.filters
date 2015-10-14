@@ -16,9 +16,6 @@
     <Filter Include="chromium">
       <UniqueIdentifier>{e6d54992-9e42-4a1e-93cf-281b42683c14}</UniqueIdentifier>
     </Filter>
-    <Filter Include="xvidcore">
-      <UniqueIdentifier>{36144365-aedd-439b-bd84-c4571b48749d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_colorspace_converter.h">
@@ -45,9 +42,6 @@
     <ClInclude Include="chromium\cpu_features.h">
       <Filter>chromium</Filter>
     </ClInclude>
-    <ClInclude Include="xvidcore\colorspace.h">
-      <Filter>xvidcore</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_colorspace_converter.cpp">
@@ -68,28 +62,13 @@
     <ClCompile Include="chromium\yuv_to_rgb_table.cpp">
       <Filter>chromium</Filter>
     </ClCompile>
-    <ClCompile Include="xvidcore\colorspace.cpp">
-      <Filter>xvidcore</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="chromium\convert_rgb_to_yuv_ssse3.inc">
       <Filter>chromium</Filter>
     </None>
-    <None Include="xvidcore\colorspace_mmx.inc">
-      <Filter>xvidcore</Filter>
-    </None>
-    <None Include="xvidcore\nasm.inc">
-      <Filter>xvidcore</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="xvidcore\colorspace_rgb_mmx.asm">
-      <Filter>xvidcore</Filter>
-    </CustomBuild>
-    <CustomBuild Include="xvidcore\colorspace_yuv_mmx.asm">
-      <Filter>xvidcore</Filter>
-    </CustomBuild>
     <CustomBuild Include="chromium\convert_rgb_to_yuv_ssse3.asm">
       <Filter>chromium</Filter>
     </CustomBuild>

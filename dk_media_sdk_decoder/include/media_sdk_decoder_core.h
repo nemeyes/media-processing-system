@@ -67,9 +67,9 @@ public:
 		mfxU32 videoType;
 		MEMORY_TYPE memType;
 		bool    bUseHWLib; // true if application wants to use HW mfx library
-		bool    bIsMVC; // true if Multi-View Codec is in use
+		//bool    bIsMVC; // true if Multi-View Codec is in use
 		bool    bLowLat; // low latency mode
-		bool    bCalLat; // latency calculation
+		//bool    bCalLat; // latency calculation
 		mfxU32  nMaxFPS; //rendering limited by certain fps
 		mfxU32  nWallCell;
 		mfxU32  nWallW; //number of windows located in each row
@@ -90,10 +90,7 @@ public:
 		mfxU32  fourcc;
 		mfxU32  nFrames;
 
-		msdk_char     strSrcFile[MSDK_MAX_FILENAME_LEN];
-		msdk_char     strDstFile[MSDK_MAX_FILENAME_LEN];
 		sPluginParams pluginParams;
-
 		_CONFIG_T()
 		{
 			MSDK_ZERO_MEMORY(*this);
@@ -106,10 +103,10 @@ public:
 
 	dk_media_sdk_decoder::ERR_CODE initialize(unsigned int width, unsigned int height);
 	dk_media_sdk_decoder::ERR_CODE release(void);
-	dk_media_sdk_decoder::ERR_CODE decode(unsigned char * input, unsigned int isize, unsigned int stride, unsigned char * output, unsigned int & osize);
+	dk_media_sdk_decoder::ERR_CODE decode(unsigned char * input, size_t isize, unsigned int stride, unsigned char * output, size_t & osize);
 
 private:
-	virtual mfxStatus init_mfx_params(CONFIG_T * config);
+	virtual mfxStatus init_mfx_params(CONFIG_T * config, unsigned char * bitstream, size_t nbytes);
 
 
 	template <typename Buffer> mfxStatus allocate_ext_buffer(void);
@@ -128,7 +125,7 @@ private:
 
 	virtual mfxStatus create_hw_device(void);
 
-	virtual mfxStatus reset_decoder(CONFIG_T * config);
+	virtual mfxStatus reset_decoder(CONFIG_T * config, unsigned char * bitstream, size_t nbytes);
 	virtual mfxStatus reset_device(void);
 
 	/** \brief Performs SyncOperation on the current output surface with the specified timeout.
@@ -138,12 +135,12 @@ private:
 	* @return MFX_WRN_IN_EXECUTION Specified timeout have elapsed.
 	* @return MFX_ERR_UNKNOWN An error has occurred.
 	*/
-	virtual mfxStatus sync_output_surface(mfxU32 wait);
-	//virtual mfxStatus DeliverOutput(mfxFrameSurface1* frame);
+	virtual mfxStatus sync_output_surface(mfxU32 wait, unsigned char * output, unsigned int & osize);
+	virtual mfxStatus deliver_output(mfxFrameSurface1 * frame, unsigned char * output, unsigned int & osize);
 
 
 
-
+	mfxStatus fill_output_buffer(mfxFrameSurface1 * surface, unsigned char * output, unsigned int & osize);
 
 
 
@@ -151,6 +148,9 @@ private:
 
 
 private:
+	CONFIG_T _config;
+
+
 	bool _binit;
 	unsigned int _width;
 	unsigned int _height;
@@ -182,7 +182,7 @@ private:
 	mfxStatus _error; // error returned by DeliverOutput method
 	bool _stop_deliver_loop;
 
-	bool _enable_mvc; // enables MVC mode (need to support several files as an output)
+	//bool _enable_mvc; // enables MVC mode (need to support several files as an output)
 	bool _use_ext_buffers; // indicates if external buffers were allocated
 	bool _use_video_wall; // indicates special mode: decoding will be done in a loop
 	//bool _complete_frame;

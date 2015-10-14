@@ -25,17 +25,17 @@ public:
 	dk_colorspace_converter(void);
 	~dk_colorspace_converter(void);
 
-	void initialize(dk_colorspace_converter::DK_COLOR_SPACE in, dk_colorspace_converter::DK_COLOR_SPACE out, bool flip);
-	void release(void);
+	//void initialize(dk_colorspace_converter::DK_COLOR_SPACE in, dk_colorspace_converter::DK_COLOR_SPACE out, bool flip);
+	//void release(void);
 
-	void convert(int width, int height, unsigned char * src, int src_stride, unsigned char * dst, int dst_stride);
-
-
-	void convert_rgb32_to_yv12(int width, int height, unsigned char * rgba, int stride,
-							   unsigned char * y, unsigned char * u, unsigned char * v, int y_stride, int uv_stride, bool flip=false);
+	//void convert(int width, int height, unsigned char * src, int src_stride, unsigned char * dst, int dst_stride);
 
 
-	void convert_bgra_to_yv12_ssse3(const uint8_t * bgra, uint8_t * y, uint8_t * u, uint8_t * v, int width, int height, int bgrastride, int ystride);
+	//void convert_rgb32_to_yv12(int width, int height, unsigned char * rgba, int stride,
+	//						   unsigned char * y, unsigned char * u, unsigned char * v, int y_stride, int uv_stride, bool flip=false);
+
+
+	//void convert_bgra_to_yv12_ssse3(const uint8_t * bgra, uint8_t * y, uint8_t * u, uint8_t * v, int width, int height, int bgrastride, int ystride);
 
 
 	static void flip(unsigned int width, unsigned int height, int stride, unsigned char * pixels);

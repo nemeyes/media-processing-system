@@ -12,7 +12,7 @@
 # define EXP_DLL
 #endif
 
-class media_sdk_dec_core;
+class media_sdk_decoder_core;
 class EXP_DLL dk_media_sdk_decoder
 {
 public:
@@ -34,11 +34,13 @@ public:
 	dk_media_sdk_decoder(void);
 	~dk_media_sdk_decoder(void);
 
-public:
+	dk_media_sdk_decoder::ERR_CODE initialize(unsigned int width, unsigned int height);
+	dk_media_sdk_decoder::ERR_CODE release(void);
+	dk_media_sdk_decoder::ERR_CODE decode(unsigned char * input, size_t isize, unsigned int stride, unsigned char * output, size_t & osize);
 
 
 private:
-	media_sdk_dec_core * _core;
+	media_sdk_decoder_core * _core;
 
 };
 
