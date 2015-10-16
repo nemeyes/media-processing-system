@@ -69,6 +69,9 @@
       <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;dk_media_sdk_decoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -92,6 +95,9 @@
       <AdditionalDependencies>strmbase.lib;strmiids.lib;winmm.lib;dk_media_sdk_decoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dk_msdk_decode_filter.h" />
