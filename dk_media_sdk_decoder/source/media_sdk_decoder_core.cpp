@@ -71,7 +71,7 @@ media_sdk_decoder_core::~media_sdk_decoder_core(void)
 
 dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::initialize(unsigned int width, unsigned int height)
 {
-	_config.bUseHWLib = true;
+	_config.bUseHWLib = false;
 	_config.videoType = MFX_CODEC_AVC;
 	_config.memType = MEMORY_TYPE_D3D9;
 	_config.bLowLat = true;
@@ -274,19 +274,12 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::release(void)
 dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * input, size_t isize, unsigned int stride, unsigned char * output, size_t & osize)
 {
 	mfxStatus status = MFX_ERR_NONE;
-
-	mfxBitstream * bitstream = &_mfx_bitstream;
-	bitstream->DataOffset = 0;
-	bitstream->DataLength = isize;
-	bitstream->MaxLength = isize;
-	memcpy(bitstream->Data, input, bitstream->DataLength);
-
-
+	osize = 0;
 	if (!_binit)
 	{
 		// Populate parameters. Involves DecodeHeader call
 		status = init_mfx_params(&_config, input, isize);
-		if ((status != MFX_ERR_NONE) && (status != MFX_ERR_MORE_DATA))
+		if (status != MFX_ERR_NONE)
 			return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 		// create device and allocator
@@ -309,10 +302,19 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 			return dk_media_sdk_decoder::ERR_CODE_FAILED;
 
 		_binit = true;
-		return dk_media_sdk_decoder::ERR_CODE_FAILED;
+		return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 	}
 	
+	mfxBitstream * bitstream = &_mfx_bitstream;
+	memmove(bitstream->Data, bitstream->Data + bitstream->DataOffset, bitstream->DataLength);
+	memcpy(bitstream->Data + bitstream->DataLength, input, isize);
+	bitstream->DataLength += isize;
 
+
+	/*bitstream->DataOffset = 0;
+	bitstream->DataLength = isize;
+	bitstream->MaxLength = isize;
+	memcpy(bitstream->Data, input, bitstream->DataLength);*/
 
 #ifndef __SYNC_WA
 	status = sync_output_surface(0, output, osize);
@@ -322,7 +324,7 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 	if ((status == MFX_ERR_NONE) || (status == MFX_ERR_MORE_DATA) || (status == MFX_ERR_MORE_SURFACE))
 	{
 		SyncFrameSurfaces();
-		if (_current_free_surface)
+		if (!_current_free_surface)
 			_current_free_surface = m_FreeSurfacesPool.GetSurface();
 #ifndef __SYNC_WA
 		if(!_current_free_surface)
@@ -337,9 +339,9 @@ dk_media_sdk_decoder::ERR_CODE media_sdk_decoder_core::decode(unsigned char * in
 			if (status==MFX_ERR_NOT_FOUND)
 				return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 		}
-		if (_current_free_output_surface)
+		if (!_current_free_output_surface)
 			_current_free_output_surface = GetFreeOutputSurface();
-		if (_current_free_output_surface)
+		if (!_current_free_output_surface)
 			return dk_media_sdk_decoder::ERR_CODE_SUCCESS;
 	}
 	_current_free_surface->submit = m_timer_overall.Sync();
@@ -445,6 +447,15 @@ mfxStatus media_sdk_decoder_core::init_mfx_params(CONFIG_T * config, unsigned ch
 	//while (true)
 	{
 		// parse bit stream and fill mfx params
+		memmove(_mfx_bitstream.Data, _mfx_bitstream.Data + _mfx_bitstream.DataOffset, _mfx_bitstream.DataLength);
+		memcpy(_mfx_bitstream.Data + _mfx_bitstream.DataLength, bitstream, nbytes);
+		_mfx_bitstream.DataLength += nbytes;
+
+		/*_mfx_bitstream.DataOffset = 0;
+		_mfx_bitstream.DataLength = nbytes;
+		_mfx_bitstream.MaxLength = nbytes;
+		memcpy(_mfx_bitstream.Data, bitstream, _mfx_bitstream.DataLength);*/
+
 		sts = _mfx_decoder->DecodeHeader(&_mfx_bitstream, &_mfx_video_params);
 		if (!sts && _plugin.get() && (config->videoType == CODEC_VP8)) 
 		{

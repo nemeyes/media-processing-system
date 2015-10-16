@@ -90,6 +90,10 @@
       <AdditionalDependencies>libmfx.lib;dxva2.lib;d3d9.lib;dwmapi.lib;igfx_s3dcontrol.lib;comsuppw.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_media_sdk_decoder.h" />

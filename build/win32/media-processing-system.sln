@@ -41,6 +41,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_msdk_decode_filter", "..
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_colorspace_convert_filter", "..\..\directshow\dk_colorspace_convert_filter\dk_colorspace_convert_filter.vcxproj", "{67B34684-A295-46F1-8586-0B7BCD9ED255}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2BC82D2B-7D06-4699-A462-3B6CFB77FCCC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_msdk_decode_filter_test", "..\..\directshow\test\dk_msdk_decode_filter_test\dk_msdk_decode_filter_test.vcxproj", "{ADA334BE-9B59-456A-9EB9-41E46E49B0EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -105,6 +109,12 @@ Global
 		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Release|Win32.ActiveCfg = Release|Win32
 		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Release|Win32.Build.0 = Release|Win32
 		{67B34684-A295-46F1-8586-0B7BCD9ED255}.Release|x64.ActiveCfg = Release|Win32
+		{ADA334BE-9B59-456A-9EB9-41E46E49B0EF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ADA334BE-9B59-456A-9EB9-41E46E49B0EF}.Debug|Win32.Build.0 = Debug|Win32
+		{ADA334BE-9B59-456A-9EB9-41E46E49B0EF}.Debug|x64.ActiveCfg = Debug|Win32
+		{ADA334BE-9B59-456A-9EB9-41E46E49B0EF}.Release|Win32.ActiveCfg = Release|Win32
+		{ADA334BE-9B59-456A-9EB9-41E46E49B0EF}.Release|Win32.Build.0 = Release|Win32
+		{ADA334BE-9B59-456A-9EB9-41E46E49B0EF}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,5 +137,7 @@ Global
 		{6D4C1D99-AF19-4E30-B886-CE165AFC002F} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
 		{B909A551-BC42-4FEB-BDF4-9EF05931E8D1} = {5A0D68FF-85B6-48D1-A613-998FF61715A3}
 		{67B34684-A295-46F1-8586-0B7BCD9ED255} = {5A0D68FF-85B6-48D1-A613-998FF61715A3}
+		{2BC82D2B-7D06-4699-A462-3B6CFB77FCCC} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
+		{ADA334BE-9B59-456A-9EB9-41E46E49B0EF} = {2BC82D2B-7D06-4699-A462-3B6CFB77FCCC}
 	EndGlobalSection
 EndGlobal
