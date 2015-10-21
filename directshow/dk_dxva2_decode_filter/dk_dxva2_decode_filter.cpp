@@ -89,6 +89,7 @@ HRESULT  dk_dxva2_decode_filter::CompleteConnect(PIN_DIRECTION direction, IPin *
 {
 	if (direction == PINDIR_INPUT)
 	{
+		configure_dxva2(pin);
 		//if (_decoder)
 		//	_decoder->initialize(_width, _height);
 	}
@@ -323,11 +324,12 @@ HRESULT  dk_dxva2_decode_filter::CheckTransform(const CMediaType *itype, const C
 	return S_OK;
 }
 
-HRESULT  dk_dxva2_decode_filter::DecideBufferSize(IMemAllocator *allocator, ALLOCATOR_PROPERTIES *properties)
+HRESULT  dk_dxva2_decode_filter::DecideBufferSize(IMemAllocator * allocator, ALLOCATOR_PROPERTIES * properties)
 {
 	if (!m_pInput->IsConnected())
 		return E_UNEXPECTED;
 
+	DXVA2_ModeMPEG2_VLD;
 	HRESULT hr;
 	IMemAllocator* alloc;
 	hr = m_pInput->GetAllocator(&alloc);
