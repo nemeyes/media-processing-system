@@ -13,10 +13,11 @@ ff_mpeg2ts_muxer_core::~ff_mpeg2ts_muxer_core(void)
 
 dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::initialize(dk_ff_mpeg2ts_muxer::configuration_t config)
 {
-	m_pFmt = av_guess_format("ts", NULL, NULL);
+	m_pFmt = av_guess_format("mpegts", NULL, NULL);
 	if (!m_pFmt)
 		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
-	m_pFmt->video_codec = AV_CODEC_ID_MPEG2VIDEO;
+
+	m_pFmt->video_codec = AV_CODEC_ID_H264;
 
 	m_pFormatCtx = avformat_alloc_context();
 	if (!m_pFormatCtx) 
@@ -41,8 +42,8 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::initialize(dk_ff_mpeg2ts_mu
 
 	// time base: this is the fundamental unit of time (in seconds) in terms of which frame timestamps are represented. for fixed-fps content,
 	//            timebase should be 1/framerate and timestamp increments should be identically 1.
-	c->time_base.den = 1;
-	c->time_base.num = config.fps;
+	c->time_base.den = config.fps;
+	c->time_base.num = 1;
 
 	// Some formats want stream headers to be separate
 	if (m_pFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
@@ -132,23 +133,25 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::put_video_stream(unsigned c
 
 	//m_pVideoStream->pts.val = m_nProcessedFramesNum;
 	pkt.pts = av_rescale_q(m_nProcessedFramesNum/*m_pVideoStream->pts.val*/, c->time_base, m_pVideoStream->time_base);
-	//pkt.dts = AV_NOPTS_VALUE;
+	pkt.dts = AV_NOPTS_VALUE;
 	pkt.stream_index = m_pVideoStream->index;
 	pkt.data = buffer;
 	pkt.size = nb;
 
 	//TODO
 	//if (pMfxBitstream->FrameType == (MFX_FRAMETYPE_I | MFX_FRAMETYPE_REF | MFX_FRAMETYPE_IDR))
+	if (keyframe)
 		pkt.flags |= AV_PKT_FLAG_KEY;
 
 	// Write the compressed frame in the media file
-	if (av_interleaved_write_frame(m_pFormatCtx, &pkt)) 
+	int ret = av_interleaved_write_frame(m_pFormatCtx, &pkt);
+	if (ret<0)
 		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
 
 #ifdef ENCODE_AUDIO
 	// Note that video + audio muxing timestamp handling in this sample is very rudimentary
 	//  - Audio stream length is adjusted to same as video steram length 
-	float real_video_pts = (float)pkt.pts * m_pVideoStream->time_base.num / m_pVideoStream->time_base.den;
+	float real_video_	 = (float)pkt.pts * m_pVideoStream->time_base.num / m_pVideoStream->time_base.den;
 	write_audio_frame(m_pFormatCtx, real_video_pts);
 #endif
 

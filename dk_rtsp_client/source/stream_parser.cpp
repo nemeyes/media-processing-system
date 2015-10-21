@@ -30,6 +30,57 @@ bool stream_parser::is_vlc(dk_rtsp_client::SUBMEDIA_TYPE_T smt, unsigned char na
 	return smt == dk_rtsp_client::SUBMEDIA_TYPE_H264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }
 
+const int stream_parser::find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
+{
+	int i;
+	// find start
+	*nal_start = 0;
+	*nal_end = 0;
+
+	i = 0;
+	//( next_bits( 24 ) != 0x000001 && next_bits( 32 ) != 0x00000001 )
+	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01) && 
+		   (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0 || bitstream[i + 3] != 0x01))
+	{
+		i++; // skip leading zero
+		if (i + 4 >= size) 
+		{ 
+			return 0; 
+		} // did not find nal start
+	}
+
+	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01) // ( next_bits( 24 ) != 0x000001 )
+	{
+		i++;
+	}
+
+	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01) 
+	{ 
+		/* error, should never happen */ 
+		return 0; 
+	}
+
+	i += 3;
+	*nal_start = i;
+
+	//( next_bits( 24 ) != 0x000000 && next_bits( 24 ) != 0x000001 )
+	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0) &&
+		   (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01))
+	{
+		i++;
+		// FIXME the next line fails when reading a nal that ends exactly at the end of the data
+		if (i + 3 >= size) 
+		{ 
+			*nal_end = size; 
+			return -1; 
+		} // did not find nal end, stream ended first
+	}
+
+	*nal_end = i;
+	return (*nal_end - *nal_start);
+}
+
+
 const uint8_t * stream_parser::find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state)
 {
 	int i;

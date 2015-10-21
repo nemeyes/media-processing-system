@@ -120,7 +120,8 @@ BOOL dk_record_server_controller_dlg::OnInitDialog()
 	_cmb_recv_option.SetCurSel(0);
 	_cmb_retry_connection.SetCurSel(0);
 
-	_url.SetWindowTextW(_T("rtsp://127.0.0.1:8554/01.264"));
+	//_url.SetWindowTextW(_T("rtsp://127.0.0.1:8554/01.264"));
+	_url.SetWindowTextW(_T("rtsp://10.202.140.138/01.264"));
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -201,7 +202,7 @@ void dk_record_server_controller_dlg::OnBnClickedButtonStartRecord()
 	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_username, &username);
 	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_password, &password);
 
-	_rtsp_receiver.play(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel(), false);
+	_rtsp_receiver.start_recording(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel());
 
 	if (url)
 		free(url);
@@ -214,7 +215,7 @@ void dk_record_server_controller_dlg::OnBnClickedButtonStartRecord()
 void dk_record_server_controller_dlg::OnBnClickedButtonStopRecord()
 {
 	// TODO: Add your control notification handler code here
-	_rtsp_receiver.stop();
+	_rtsp_receiver.stop_recording();
 }
 
 

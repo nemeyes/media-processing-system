@@ -22,6 +22,11 @@ public:
 		ERR_CODE_FAILED
 	} ERR_CODE;
 
+	typedef enum _CODEC_TYPE
+	{
+		CODEC_TYPE_H264
+	} CODEC_TYPE;
+
 	typedef struct EXP_DLL _configuration_t
 	{
 		int stream_index;
