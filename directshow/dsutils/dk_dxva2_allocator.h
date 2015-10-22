@@ -1,9 +1,9 @@
 
-class dxva2_decoder_allocator : public CBaseAllocator
+class dk_dxva2_allocator : public CBaseAllocator
 {
 public:
-	dxva2_decoder_allocator(IDirectXVideoDecoderService * dxva2_decoder_service, DWORD width, DWORD height, DWORD format, HRESULT * hr);
-	virtual ~dxva2_decoder_allocator(void);
+	dk_dxva2_allocator(IDirectXVideoDecoderService * dxva2_decoder_service, DWORD width, DWORD height, DWORD format, HRESULT * hr);
+	virtual ~dk_dxva2_allocator(void);
 
 	DECLARE_IUNKNOWN;
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv);

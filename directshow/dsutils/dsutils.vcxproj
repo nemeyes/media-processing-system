@@ -77,12 +77,26 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="css_auth.h" />
+    <ClInclude Include="css_scramble.h" />
+    <ClInclude Include="dk_dsutils.h" />
+    <ClInclude Include="dk_dxva2_allocator.h" />
+    <ClInclude Include="dk_dxva2_sample.h" />
     <ClInclude Include="dk_transform_input_pin.h" />
+    <ClInclude Include="dk_video_decode_filter.h" />
     <ClInclude Include="dk_video_decode_input_pin.h" />
     <ClInclude Include="dk_video_decode_output_pin.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="css_auth.cpp" />
+    <ClCompile Include="css_scramble.cpp" />
+    <ClCompile Include="dk_dsutils.cpp" />
+    <ClCompile Include="dk_dxva2_allocator.cpp" />
+    <ClCompile Include="dk_dxva2_sample.cpp" />
     <ClCompile Include="dk_transform_input_pin.cpp" />
+    <ClCompile Include="dk_video_decode_filter.cpp" />
+    <ClCompile Include="dk_video_decode_input_pin.cpp" />
+    <ClCompile Include="dk_video_decode_output_pin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

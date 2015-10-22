@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="dsutils">
+      <UniqueIdentifier>{66b75089-c2e7-4ce1-9b37-109a3fdfe099}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dsutils\css_auth">
+      <UniqueIdentifier>{25647aed-5142-430a-8684-a07b7eb36e35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dk_dxva2_decode_filter.h">
@@ -24,11 +30,29 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dxva2_decoder_sample.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\dsutils\dk_transform_input_pin.h">
+      <Filter>dsutils</Filter>
     </ClInclude>
-    <ClInclude Include="dxva2_decoder_allocator.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\dsutils\dk_video_decode_input_pin.h">
+      <Filter>dsutils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsutils\dk_video_decode_output_pin.h">
+      <Filter>dsutils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsutils\css_auth.h">
+      <Filter>dsutils\css_auth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsutils\css_scramble.h">
+      <Filter>dsutils\css_auth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsutils\dk_video_decode_filter.h">
+      <Filter>dsutils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsutils\dk_dxva2_allocator.h">
+      <Filter>dsutils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsutils\dk_dxva2_sample.h">
+      <Filter>dsutils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -41,11 +65,29 @@
     <ClCompile Include="dk_dxva2_decode_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dxva2_decoder_sample.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\dsutils\dk_transform_input_pin.cpp">
+      <Filter>dsutils</Filter>
     </ClCompile>
-    <ClCompile Include="dxva2_decoder_allocator.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\dsutils\css_auth.cpp">
+      <Filter>dsutils\css_auth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsutils\css_scramble.cpp">
+      <Filter>dsutils\css_auth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsutils\dk_video_decode_input_pin.cpp">
+      <Filter>dsutils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsutils\dk_video_decode_output_pin.cpp">
+      <Filter>dsutils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsutils\dk_video_decode_filter.cpp">
+      <Filter>dsutils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsutils\dk_dxva2_allocator.cpp">
+      <Filter>dsutils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsutils\dk_dxva2_sample.cpp">
+      <Filter>dsutils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,12 @@
+#include <dshow.h>
+#include <streams.h>
 #include <dvdmedia.h>
 #include <ks.h>
 #include <ksmedia.h>
-#include <streams.h>
+
+
+#include <css_auth.h>
+#include <css_scramble.h>
 
 #include "dk_transform_input_pin.h"
 
@@ -11,20 +16,169 @@ dk_transform_input_pin::dk_transform_input_pin(TCHAR * objname, CTransformFilter
 
 }
 
+void dk_transform_input_pin::decrypt(IMediaSample * sample)
+{
+	long len = sample->GetActualDataLength();
+
+	BYTE* p = nullptr;
+	if (SUCCEEDED(sample->GetPointer(&p)) && len > 0) 
+	{
+		if (m_mt.majortype == MEDIATYPE_DVD_ENCRYPTED_PACK && len == 2048 && (p[0x14] & 0x30)) 
+		{
+			css_descramble(p, m_TitleKey);
+			p[0x14] &= ~0x30;
+
+			IMediaSample2 * ms2 = nullptr;
+			if (SUCCEEDED(sample->QueryInterface(&ms2)) && ms2) 
+			{
+				AM_SAMPLE2_PROPERTIES props;
+				memset(&props, 0, sizeof(props));
+				if (SUCCEEDED(ms2->GetProperties(sizeof(props), (BYTE*)&props)) && (props.dwTypeSpecificFlags & AM_UseNewCSSKey)) 
+				{
+					props.dwTypeSpecificFlags &= ~AM_UseNewCSSKey;
+					ms2->SetProperties(sizeof(props), (BYTE*)&props);
+				}
+				ms2->Release();
+			}
+		}
+	}
+}
+
+void dk_transform_input_pin::strip_packet(BYTE *& p, long & len)
+{
+	GUID majortype = m_mt.majortype;
+	GUID subtype = m_mt.subtype;
+
+	if (majortype == MEDIATYPE_MPEG2_PACK || majortype == MEDIATYPE_DVD_ENCRYPTED_PACK) 
+	{
+		if (len > 0 && *(DWORD*)p == 0xba010000) // MEDIATYPE_*_PACK
+		{ 
+			len -= 14;
+			p += 14;
+			if (int stuffing = (p[-1] & 7)) 
+			{
+				len -= stuffing;
+				p += stuffing;
+			}
+			majortype = MEDIATYPE_MPEG2_PES;
+		}
+	}
+
+	if (majortype == MEDIATYPE_MPEG2_PES) 
+	{
+		if (len > 0 && *(DWORD*)p == 0xbb010000) 
+		{
+			len -= 4;
+			p += 4;
+			int hdrlen = ((p[0] << 8) | p[1]) + 2;
+			len -= hdrlen;
+			p += hdrlen;
+		}
+
+		if ((len>4) && ((*(DWORD*)p & 0xf0ffffff) == 0xe0010000 || (*(DWORD*)p & 0xe0ffffff) == 0xc0010000 || (*(DWORD*)p & 0xbdffffff) == 0xbd010000)) // PES
+		{ 
+			bool ps1 = (*(DWORD*)p & 0xbdffffff) == 0xbd010000;
+			len -= 4;
+			p += 4;
+			size_t expected = ((p[0] << 8) | p[1]);
+			len -= 2;
+			p += 2;
+			BYTE* p0 = p;
+
+			for (int i = 0; i < 16 && *p == 0xff; i++, len--, p++) {
+				;
+			}
+
+			if ((*p & 0xc0) == 0x80) 
+			{ // mpeg2
+				len -= 2;
+				p += 2;
+				len -= *p + 1;
+				p += *p + 1;
+			}
+			else { // mpeg1
+				if ((*p & 0xc0) == 0x40) 
+				{
+					len -= 2;
+					p += 2;
+				}
+
+				if ((*p & 0x30) == 0x30 || (*p & 0x30) == 0x20) 
+				{
+					bool pts = !!(*p & 0x20), dts = !!(*p & 0x10);
+					if (pts) 
+					{
+						len -= 5;
+					}
+					p += 5;
+					if (dts) 
+					{
+						ASSERT((*p & 0xf0) == 0x10);
+						len -= 5;
+						p += 5;
+					}
+				}
+				else 
+				{
+					len--;
+					p++;
+				}
+			}
+
+			if (ps1) 
+			{
+				len--;
+				p++;
+				if (subtype == MEDIASUBTYPE_DVD_LPCM_AUDIO) 
+				{
+					len -= 6;
+					p += 6;
+				}
+				else if (subtype == MEDIASUBTYPE_DOLBY_AC3 || subtype == FOURCCMap(0x2000) || subtype == MEDIASUBTYPE_DTS || subtype == FOURCCMap(0x2001)) 
+				{
+					len -= 3;
+					p += 3;
+				}
+			}
+
+			if (expected > 0) 
+			{
+				expected -= (p - p0);
+				len = min((long)expected, len);
+			}
+		}
+
+		if (len < 0) 
+		{
+			ASSERT(0);
+			len = 0;
+		}
+	}
+}
+
 STDMETHODIMP dk_transform_input_pin::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 {
-
+	if (riid == __uuidof(IKsPropertySet))
+	{
+		return GetInterface(static_cast<IKsPropertySet*>(this), ppv);
+	}
+	else
+	{
+		return CTransformInputPin::NonDelegatingQueryInterface(riid, ppv);
+	}
 }
 
 // IMemInputPin
-STDMETHODIMP dk_transform_input_pin::Receive(IMediaSample * sample)
+STDMETHODIMP dk_transform_input_pin::Receive(IMediaSample * ms)
 {
-
+	decrypt(ms);
+	return __super::Receive(ms);
 }
 
 HRESULT dk_transform_input_pin::SetMediaType(const CMediaType * mt)
 {
-
+	set_css_media_type(mt);
+	return __super::SetMediaType(mt);
 }
 
 // IKsPropertySet
@@ -46,9 +200,9 @@ STDMETHODIMP dk_transform_input_pin::Set(REFGUID prop_set, ULONG id, LPVOID inst
 			m_Challenge[i] = pChlgKey->ChlgKey[9 - i];
 		}
 
-		CSSkey2(m_varient, m_Challenge, &m_Key[5]);
+		css_key2(m_varient, m_Challenge, &m_Key[5]);
 
-		CSSbuskey(m_varient, m_Key, m_KeyCheck);
+		css_buskey(m_varient, m_Key, m_KeyCheck);
 	}
 	break;
 	case AM_PROPERTY_DVDCOPY_DISC_KEY:
@@ -65,7 +219,7 @@ STDMETHODIMP dk_transform_input_pin::Set(REFGUID prop_set, ULONG id, LPVOID inst
 				}
 				DiscKey[5] = 0;
 
-				CSSdisckey(DiscKey, g_PlayerKeys[j]);
+				css_disckey(DiscKey, g_PlayerKeys[j]);
 
 				BYTE Hash[6];
 				for (int i = 0; i < 5; i++) {
@@ -73,9 +227,10 @@ STDMETHODIMP dk_transform_input_pin::Set(REFGUID prop_set, ULONG id, LPVOID inst
 				}
 				Hash[5] = 0;
 
-				CSSdisckey(Hash, DiscKey);
+				css_disckey(Hash, DiscKey);
 
-				if (!memcmp(Hash, DiscKey, 6)) {
+				if (!memcmp(Hash, DiscKey, 6)) 
+				{
 					memcpy(m_DiscKey, DiscKey, 6);
 					j = g_nPlayerKeys;
 					fSuccess = true;
@@ -84,7 +239,8 @@ STDMETHODIMP dk_transform_input_pin::Set(REFGUID prop_set, ULONG id, LPVOID inst
 			}
 		}
 
-		if (!fSuccess) {
+		if (!fSuccess) 
+		{
 			return E_FAIL;
 		}
 	}
@@ -92,16 +248,19 @@ STDMETHODIMP dk_transform_input_pin::Set(REFGUID prop_set, ULONG id, LPVOID inst
 	case AM_PROPERTY_DVDCOPY_DVD_KEY1:
 	{ // 2. auth: receive our drive-encrypted nonce word and decrypt it for verification
 		AM_DVDCOPY_BUSKEY* pKey1 = (AM_DVDCOPY_BUSKEY*)property_data;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 5; i++) 
+		{
 			m_Key[i] = pKey1->BusKey[4 - i];
 		}
 
 		m_varient = -1;
 
-		for (int i = 31; i >= 0; i--) {
-			CSSkey1(i, m_Challenge, m_KeyCheck);
+		for (int i = 31; i >= 0; i--) 
+		{
+			css_key1(i, m_Challenge, m_KeyCheck);
 
-			if (memcmp(m_KeyCheck, &m_Key[0], 5) == 0) {
+			if (memcmp(m_KeyCheck, &m_Key[0], 5) == 0) 
+			{
 				m_varient = i;
 			}
 		}
@@ -118,7 +277,7 @@ STDMETHODIMP dk_transform_input_pin::Set(REFGUID prop_set, ULONG id, LPVOID inst
 			m_TitleKey[i] = pTitleKey->TitleKey[i] ^ m_KeyCheck[4 - i];
 		}
 		m_TitleKey[5] = 0;
-		CSStitlekey(m_TitleKey, m_DiscKey);
+		css_titlekey(m_TitleKey, m_DiscKey);
 	}
 	break;
 	default:

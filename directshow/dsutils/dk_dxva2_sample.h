@@ -1,11 +1,9 @@
-
-
-class dxva2_decoder_sample : public CMediaSample, public IMFGetService
+class dk_dxva2_sample : public CMediaSample, public IMFGetService
 {
-	friend class dxva2_decoder_allocator;
+	friend class dk_dxva2_allocator;
 public:
 
-	dxva2_decoder_sample(dxva2_decoder_allocator * alloc, HRESULT * hr);
+	dk_dxva2_sample(dk_dxva2_allocator * alloc, HRESULT * hr);
 
 	// Note: CMediaSample does not derive from CUnknown, so we cannot use the
 	//       DECLARE_IUNKNOWN macro that is used by most of the filter classes.

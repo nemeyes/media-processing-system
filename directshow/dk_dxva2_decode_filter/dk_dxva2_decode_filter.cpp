@@ -19,10 +19,14 @@
 #include "dk_dxva2_decode_filter_properties.h"
 #include "dk_dxva2_decode_filter.h"
 
+#include <dk_dsutils.h>
+#include <dk_video_decode_input_pin.h>
+#include <dk_video_decode_output_pin.h>
+
 dk_dxva2_decode_filter::dk_dxva2_decode_filter(LPUNKNOWN unk, HRESULT *hr)
-	: CTransformFilter(g_szFilterName, unk, CLSID_DK_DXVA2_DECODE_FILTER)
+	: dk_video_decode_filter(g_szFilterName, unk, CLSID_DK_DXVA2_DECODE_FILTER, hr)
 {
-	
+
 }
 
 dk_dxva2_decode_filter::~dk_dxva2_decode_filter(VOID)
@@ -671,14 +675,4 @@ BOOL dk_dxva2_decode_filter::is_supported_decoder_config(const DXVA2_ConfigPictu
 void dk_dxva2_decode_filter::fill_video_description(DXVA2_VideoDesc * description)
 {
 
-}
-
-template <class T> 
-void dk_dxva2_decode_filter::safe_release(T ** ppT)
-{
-	if (*ppT)
-	{
-		(*ppT)->Release();
-		*ppT = NULL;
-	}
 }

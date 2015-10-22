@@ -5,12 +5,12 @@
 #include <d3d9.h>
 #include <dxva2api.h>
 #include <evr.h>
-#include "dxva2_decoder_sample.h"
-#include "dxva2_decoder_allocator.h"
+#include "dk_dxva2_sample.h"
+#include "dk_dxva2_allocator.h"
 
 
-dxva2_decoder_allocator::dxva2_decoder_allocator(IDirectXVideoDecoderService * dxva2_decoder_service, DWORD width, DWORD height, DWORD format, HRESULT * hr)
-	: CBaseAllocator(NAME("dxva2_decoder_allocator"), nullptr, hr)
+dk_dxva2_allocator::dk_dxva2_allocator(IDirectXVideoDecoderService * dxva2_decoder_service, DWORD width, DWORD height, DWORD format, HRESULT * hr)
+	: CBaseAllocator(NAME("dk_dxva2_allocator"), nullptr, hr)
 	, _dxva2_decoder_service(dxva2_decoder_service)
 	, _width(width)
 	, _height(height)
@@ -18,19 +18,18 @@ dxva2_decoder_allocator::dxva2_decoder_allocator(IDirectXVideoDecoderService * d
 {
 }
 
-dxva2_decoder_allocator::~dxva2_decoder_allocator(void)
+dk_dxva2_allocator::~dk_dxva2_allocator(void)
 {
-	//if (m_pDec && m_pDec->m_pDXVA2Allocator == this)
-	//	m_pDec->m_pDXVA2Allocator = nullptr;
+
 }
 
 // IUnknown
-STDMETHODIMP dxva2_decoder_allocator::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
+STDMETHODIMP dk_dxva2_allocator::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 {
 	return CBaseAllocator::NonDelegatingQueryInterface(riid, ppv);
 }
 
-HRESULT dxva2_decoder_allocator::Alloc(void)
+HRESULT dk_dxva2_allocator::Alloc(void)
 {
 	CAutoLock lock(this);
 
@@ -86,7 +85,7 @@ HRESULT dxva2_decoder_allocator::Alloc(void)
 	{
 		for (m_lAllocated = 0; m_lAllocated < m_lCount; m_lAllocated++)
 		{
-			dxva2_decoder_sample *pSample = new dxva2_decoder_sample(this, &hr);
+			dk_dxva2_sample * pSample = new dk_dxva2_sample(this, &hr);
 
 			if (pSample == NULL)
 			{
@@ -111,7 +110,7 @@ HRESULT dxva2_decoder_allocator::Alloc(void)
 	return hr;
 }
 
-void dxva2_decoder_allocator::Free()
+void dk_dxva2_allocator::Free()
 {
 	CMediaSample *pSample = NULL;
 	do
@@ -137,7 +136,7 @@ void dxva2_decoder_allocator::Free()
 
 
 template <class T>
-void dxva2_decoder_allocator::safe_release(T ** ppT)
+void dk_dxva2_allocator::safe_release(T ** ppT)
 {
 	if (*ppT)
 	{

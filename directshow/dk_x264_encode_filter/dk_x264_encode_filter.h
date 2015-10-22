@@ -1,30 +1,29 @@
 #pragma once
 #include <process.h>
 #include <time.h>
-#include <initguid.h>
-#include <d3d9.h>
-#include <dxva2api.h>
-#include <mfidl.h>	
-#include <evr.h>
-#include <dk_video_decode_filter.h>
+#include <dk_x264_encoder.h>
 
-#define g_szFilterName L"DK DXVA2 Decode filter"
+#define g_szFilterName L"DK x264 Encode filter"
 
-// {A8C81396-763E-403A-B2D7-6D6F27482CA2}
-DEFINE_GUID(CLSID_DK_DXVA2_DECODE_FILTER,
-	0xa8c81396, 0x763e, 0x403a, 0xb2, 0xd7, 0x6d, 0x6f, 0x27, 0x48, 0x2c, 0xa2);
+// {8331675F-E5F4-4B37-A8E9-46365B6E619F}
+DEFINE_GUID(CLSID_DK_X264_ENCODE_FILTER,
+	0x8331675f, 0xe5f4, 0x4b37, 0xa8, 0xe9, 0x46, 0x36, 0x5b, 0x6e, 0x61, 0x9f);
 
-// {AD5C68B0-AAC8-4F03-94A1-8A5506B78409}
-DEFINE_GUID(CLSID_DK_DXVA2_DECODE_FILTER_PROPERTIES,
-	0xad5c68b0, 0xaac8, 0x4f03, 0x94, 0xa1, 0x8a, 0x55, 0x6, 0xb7, 0x84, 0x9);
+// {1E097165-13D4-45A8-9510-880EAB1F6C18}
+DEFINE_GUID(CLSID_DK_X264_ENCODE_FILTER_PROPERTIES,
+	0x1e097165, 0x13d4, 0x45a8, 0x95, 0x10, 0x88, 0xe, 0xab, 0x1f, 0x6c, 0x18);
 
-class dk_dxva2_decode_filter : public dk_video_decode_filter, public ISpecifyPropertyPages
+class dk_x264_encode_filter : public CTransformFilter, public ISpecifyPropertyPages
 {
 public:
+	dk_x264_encode_filter(LPUNKNOWN unk, HRESULT *hr);
+	virtual ~dk_x264_encode_filter(void);
+
 	static CUnknown * WINAPI CreateInstance(LPUNKNOWN unk, HRESULT *hr);
 
 	DECLARE_IUNKNOWN
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv);
+
 
 	//CTransformFilter
 	virtual HRESULT CheckInputType(const CMediaType *type);
@@ -55,30 +54,17 @@ public:
 	virtual HRESULT NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate);
 
 	//ISpecifyPropertyPages
-	STDMETHODIMP	GetPages(CAUUID * pages);
+	STDMETHODIMP	GetPages(CAUUID *pages);
 
-
-private:
-	dk_dxva2_decode_filter(LPUNKNOWN unk, HRESULT * hr);
-	~dk_dxva2_decode_filter(void);
-
-	CBasePin * get_pin(int n);
-	HRESULT configure_dxva2(IPin * pin);
-	HRESULT set_evr4dxva2(IPin * pin);
-	HRESULT find_decoder_configuration(IDirectXVideoDecoderService *  decoder_service, const GUID & guid_decoder, DXVA2_ConfigPictureDecode * selected_config, BOOL * found_dxva2_configuration);
-	
-	BOOL is_supported_decoder_mode(const GUID & mode);
-	BOOL is_supported_decoder_config(const DXVA2_ConfigPictureDecode & config);
-	void fill_video_description(DXVA2_VideoDesc * description);
+	int RowWidth(int w)
+	{
+		if (w % 4)
+			w += 4 - w % 4;
+		return w;
+	};
 
 private:
-	IDirectXVideoDecoderService * _dxva2_decoder_service;
-	DXVA2_ConfigPictureDecode  _dxva2_decoder_config;
-	GUID _dxva2_decoder_guid;
-	HANDLE _dxva2_device;
-	FOURCC _fcc_output_format;
-
-	//unsigned int _width;
-	//unsigned int _height;
-	//unsigned int _stride;
+	unsigned int _pitch;
+	dk_x264_encoder::configuration_t _config;
+	dk_x264_encoder	*_encoder;
 };

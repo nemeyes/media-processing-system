@@ -1,9 +1,14 @@
 #pragma once
 
-class dk_transform_input_pin : public CTransformInputPin, public IKsPropertySet
+class dk_transform_input_pin : public CTransformInputPin, 
+							   public IKsPropertySet
 {
 public:
 	dk_transform_input_pin(TCHAR * objname, CTransformFilter * filter, HRESULT * hr, LPWSTR name);
+
+	void decrypt(IMediaSample * sample);
+	void strip_packet(BYTE *& p, long & len);
+	void set_css_media_type(const CMediaType * mt) { m_mt = * mt; }
 
 	DECLARE_IUNKNOWN
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void ** ppv);

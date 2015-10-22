@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\css_auth">
+      <UniqueIdentifier>{3eab93bf-cf30-469c-ad12-6967c46780c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\css_auth">
+      <UniqueIdentifier>{759ea151-536d-463b-bcd8-cea7407af341}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -27,9 +33,51 @@
     <ClInclude Include="dk_transform_input_pin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="css_auth.h">
+      <Filter>Header Files\css_auth</Filter>
+    </ClInclude>
+    <ClInclude Include="css_scramble.h">
+      <Filter>Header Files\css_auth</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_video_decode_filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_dxva2_allocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_dxva2_sample.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_dsutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dk_transform_input_pin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="css_auth.cpp">
+      <Filter>Source Files\css_auth</Filter>
+    </ClCompile>
+    <ClCompile Include="css_scramble.cpp">
+      <Filter>Source Files\css_auth</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_video_decode_input_pin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_video_decode_output_pin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_video_decode_filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_dxva2_allocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_dxva2_sample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_dsutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
