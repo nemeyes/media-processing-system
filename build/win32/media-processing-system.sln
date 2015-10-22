@@ -81,6 +81,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "capture", "capture", "{73A8
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_screencapture_filter", "..\..\directshow\dk_screencapture_filter\dk_screencapture_filter.vcxproj", "{7EF61772-37FB-488F-9122-8368D28AE1D7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "colorspace", "colorspace", "{FB357C50-5BA3-449C-AD07-0048C37BA173}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -271,5 +273,6 @@ Global
 		{6FF18657-E5A6-4B20-B01D-CE36CF130F6A} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 		{73A8201D-9114-4E0B-87D3-E7FF8EBA25C1} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
 		{7EF61772-37FB-488F-9122-8368D28AE1D7} = {73A8201D-9114-4E0B-87D3-E7FF8EBA25C1}
+		{FB357C50-5BA3-449C-AD07-0048C37BA173} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 	EndGlobalSection
 EndGlobal
