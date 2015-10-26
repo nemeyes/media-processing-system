@@ -65,11 +65,15 @@ private:
 	CBasePin * get_pin(int n);
 	HRESULT configure_dxva2(IPin * pin);
 	HRESULT set_evr4dxva2(IPin * pin);
-	HRESULT find_decoder_configuration(IDirectXVideoDecoderService *  decoder_service, const GUID & guid_decoder, DXVA2_ConfigPictureDecode * selected_config, BOOL * found_dxva2_configuration);
+	HRESULT find_decoder_configuration(IDirectXVideoDecoderService *  decoder_service, const GUID & guid_decoder, DXVA2_VideoDesc * video_description, DXVA2_ConfigPictureDecode * selected_config, BOOL * found_dxva2_configuration);
 	
 	BOOL is_supported_decoder_mode(const GUID & mode);
 	BOOL is_supported_decoder_config(const DXVA2_ConfigPictureDecode & config);
 	void fill_video_description(DXVA2_VideoDesc * description);
+
+	DWORD get_aligned_dimension(DWORD dimension);
+
+	HRESULT decode(IMediaSample *src, IMediaSample *dst);
 
 private:
 	IDirectXVideoDecoderService * _dxva2_decoder_service;
@@ -77,6 +81,13 @@ private:
 	GUID _dxva2_decoder_guid;
 	HANDLE _dxva2_device;
 	FOURCC _fcc_output_format;
+
+	IDirectXVideoDecoder * _dxva2_decoder;
+	DXVA2_DecodeExecuteParams _dxva2_execute_params;
+
+
+	DWORD _surface_width;
+	DWORD _surface_height;
 
 	//unsigned int _width;
 	//unsigned int _height;

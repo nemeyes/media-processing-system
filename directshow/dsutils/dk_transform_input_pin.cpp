@@ -172,13 +172,13 @@ STDMETHODIMP dk_transform_input_pin::NonDelegatingQueryInterface(REFIID riid, vo
 STDMETHODIMP dk_transform_input_pin::Receive(IMediaSample * ms)
 {
 	decrypt(ms);
-	return __super::Receive(ms);
+	return CTransformInputPin::Receive(ms);
 }
 
 HRESULT dk_transform_input_pin::SetMediaType(const CMediaType * mt)
 {
 	set_css_media_type(mt);
-	return __super::SetMediaType(mt);
+	return CTransformInputPin::SetMediaType(mt);
 }
 
 // IKsPropertySet

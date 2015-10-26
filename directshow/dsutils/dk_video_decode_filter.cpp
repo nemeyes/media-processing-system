@@ -36,14 +36,14 @@ dk_video_decode_filter::~dk_video_decode_filter(void)
 HRESULT dk_video_decode_filter::initialize_d3d(void)
 {
 	HRESULT hr = S_OK;
-	_d3d = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!_d3d) 
-	{
-		DbgLog((LOG_ERROR, 10, L"-> Failed to acquire IDirect3D9"));
-		return E_FAIL;
-	}
+	//_d3d = Direct3DCreate9(D3D_SDK_VERSION);
+	//if (!_d3d) 
+	//{
+	//	DbgLog((LOG_ERROR, 10, L"-> Failed to acquire IDirect3D9"));
+	//	return E_FAIL;
+	//}
 
-	UINT lAdapter = D3DADAPTER_DEFAULT;
+	//UINT lAdapter = D3DADAPTER_DEFAULT;
 	/*D3DADAPTER_IDENTIFIER9 d3dai = { 0 };
 
 retry_default:
@@ -66,31 +66,33 @@ retry_default:
 		}
 	}*/
 
-	D3DPRESENT_PARAMETERS d3dpp;
-	D3DDISPLAYMODE d3ddm;
+	//D3DPRESENT_PARAMETERS d3dpp;
+	//D3DDISPLAYMODE d3ddm;
 
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
-	_d3d->GetAdapterDisplayMode(lAdapter, &d3ddm);
+	//ZeroMemory(&d3dpp, sizeof(d3dpp));
+	//_d3d->GetAdapterDisplayMode(lAdapter, &d3ddm);
 
-	d3dpp.Windowed = TRUE;
-	d3dpp.BackBufferWidth = 640;
-	d3dpp.BackBufferHeight = 480;
-	d3dpp.BackBufferCount = 0;
-	d3dpp.BackBufferFormat = d3ddm.Format;
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.Flags = D3DPRESENTFLAG_VIDEO;
+	//d3dpp.Windowed = TRUE;
+	//d3dpp.BackBufferWidth = 640;
+	//d3dpp.BackBufferHeight = 480;
+	//d3dpp.BackBufferCount = 0;
+	//d3dpp.BackBufferFormat = d3ddm.Format;
+	//d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	//d3dpp.Flags = D3DPRESENTFLAG_VIDEO;
 
-	hr = _d3d->CreateDevice(lAdapter, D3DDEVTYPE_HAL, GetShellWindow(), D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE, &d3dpp, &_d3d_device);
-	if (FAILED(hr)) {
-		DbgLog((LOG_TRACE, 10, L"-> Creation of device failed with hr: %X", hr));
-		return E_FAIL;
-	}
+	//hr = _d3d->CreateDevice(lAdapter, D3DDEVTYPE_HAL, GetShellWindow(), D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED | D3DCREATE_FPU_PRESERVE, &d3dpp, &_d3d_device);
+	//if (FAILED(hr)) {
+	//	DbgLog((LOG_TRACE, 10, L"-> Creation of device failed with hr: %X", hr));
+	//	return E_FAIL;
+	//}
 
-	hr = CreateD3DDeviceManager(_d3d_device, &_d3d_reset_token, &_d3d_device_manager);
-	if (FAILED(hr)) {
-		DbgLog((LOG_TRACE, 10, L"-> Creation of Device manager failed with hr: %X", hr));
-		return E_FAIL;
-	}
+	//hr = CreateD3DDeviceManager(_d3d_device, &_d3d_reset_token, &_d3d_device_manager);
+	//if (FAILED(hr)) {
+	//	DbgLog((LOG_TRACE, 10, L"-> Creation of Device manager failed with hr: %X", hr));
+	//	return E_FAIL;
+	//}
+
+	return hr;
 }
 
 STDMETHODIMP dk_video_decode_filter::init_allocator(IMemAllocator ** allocator)

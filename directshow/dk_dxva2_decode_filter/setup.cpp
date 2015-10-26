@@ -49,7 +49,7 @@ CFactoryTemplate g_Templates[] =
 	{
 		L"dk_msdk_decode_filter_properties",
 		&CLSID_DK_DXVA2_DECODE_FILTER_PROPERTIES,
-		dk_dxva2_decode_filter::CreateInstance,
+		dk_dxva2_decode_filter_properties::CreateInstance,
 		NULL,
 		NULL
 	},
