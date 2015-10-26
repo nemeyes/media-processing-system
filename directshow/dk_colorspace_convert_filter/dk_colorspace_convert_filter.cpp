@@ -404,15 +404,8 @@ HRESULT dk_colorspace_convert_filter::Transform(IMediaSample *src, IMediaSample 
 	}
 
 	int src_stride = _width * 4;
-	int uv_stride = _dst_stride >> 1;
 	output_data_size = _dst_stride*_height*1.5;
-
-	uint8_t * y = output_buffer;
-	
-	uint8_t * u = y + (_width >> 1) * uv_stride;
-	uint8_t * v = u + (_width >> 1) * uv_stride;
-
-	dk_simd_colorspace_converter::convert_rgba_to_yv12(_width, _height, input_buffer, src_stride, y, _dst_stride, u, uv_stride, v, uv_stride, _flip);
+	dk_simd_colorspace_converter::convert_rgba_to_yv12(_width, _height, input_buffer, src_stride, output_buffer, _dst_stride, _flip);
 	dst->SetActualDataLength(output_data_size);
 
 	{
