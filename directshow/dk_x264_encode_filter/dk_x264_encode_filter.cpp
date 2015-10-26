@@ -70,8 +70,11 @@ HRESULT  dk_x264_encode_filter::CheckConnect(PIN_DIRECTION direction, IPin *pin)
 // place holder to allow derived classes to release any extra interfaces
 HRESULT  dk_x264_encode_filter::BreakConnect(PIN_DIRECTION direction)
 {
-	if (_encoder)
-		_encoder->release();
+	if (direction == PINDIR_INPUT)
+	{
+		if (_encoder)
+			_encoder->release();
+	}
 	UNREFERENCED_PARAMETER(direction);
 	return NOERROR;
 }
@@ -203,16 +206,7 @@ HRESULT  dk_x264_encode_filter::CheckInputType(const CMediaType *type)
 					_config.height = -vih2->bmiHeader.biHeight;
 				else
 					_config.height = vih2->bmiHeader.biHeight;
-				/*
-				_imedia_type = cu_h264_encoder2::COLOR_SPACE_YV12;
-				_iwidth = vih2->bmiHeader.biWidth;
-				_iheight = vih2->bmiHeader.biHeight;
-				if (_owidth == 0 || _oheight == 0)
-				{
-					_owidth = _iwidth;
-					_oheight = _iheight;
-				}
-				*/
+				_config.cs = dk_x264_encoder::COLOR_SPACE_YV12;
 				return S_OK;
 			}
 			else if (IsEqualGUID(*(formaType), FORMAT_VideoInfo))
@@ -223,18 +217,6 @@ HRESULT  dk_x264_encode_filter::CheckInputType(const CMediaType *type)
 					_config.height = -vih->bmiHeader.biHeight;
 				else
 					_config.height = vih->bmiHeader.biHeight;
-
-
-				/*
-				_imedia_type = cu_h264_encoder2::COLOR_SPACE_YV12;
-				_iwidth = vih->bmiHeader.biWidth;
-				_iheight = vih->bmiHeader.biHeight;
-				if (_owidth == 0 || _oheight == 0)
-				{
-					_owidth = _iwidth;
-					_oheight = _iheight;
-				}
-				*/
 				return S_OK;
 			}
 		}
@@ -400,7 +382,12 @@ HRESULT dk_x264_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 
 	dst->SetActualDataLength(output_data_size);
 
-	BOOL bSyncPoint;
+
+	end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
+	dst->SetTime(&start_time, &end_time);
+
+	return S_OK;
+	/*BOOL bSyncPoint;
 	BOOL bPreroll;
 	BOOL bDiscon;
 
@@ -452,7 +439,7 @@ HRESULT dk_x264_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 
 	dst->SetPreroll(FALSE);
 
-	return hr;
+	return hr;*/
 }
 
 STDMETHODIMP dk_x264_encode_filter::GetPages(CAUUID *pPages)
