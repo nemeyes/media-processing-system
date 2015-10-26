@@ -10,7 +10,7 @@
 #include <streams.h>
 #include <dvdmedia.h>
 
-#include <dk_colorspace_converter.h>
+#include <dk_simd_colorspace_converter.h>
 
 #include "dk_colorspace_convert_filter_properties.h"
 #include "dk_colorspace_convert_filter.h"
@@ -18,17 +18,17 @@
 dk_colorspace_convert_filter::dk_colorspace_convert_filter(LPUNKNOWN unk, HRESULT *hr)
 	: CTransformFilter(g_szFilterName, unk, CLSID_DK_COLORSPACE_CONVERT_FILTER)
 {
-	_converter = new dk_colorspace_converter();
+	//_converter = new dk_simd_colorspace_converter();
 }
 
 dk_colorspace_convert_filter::~dk_colorspace_convert_filter(VOID)
 {
-	if (_converter)
-	{
-		//_converter->release();
-		delete _converter;
-		_converter = NULL;
-	}
+	//if (_converter)	
+	//{
+	//	//_converter->release();
+	//	delete _converter;
+	//	_converter = NULL;
+	//}
 }
 
 CUnknown * WINAPI dk_colorspace_convert_filter::CreateInstance(LPUNKNOWN unk, HRESULT *hr)
@@ -76,8 +76,8 @@ HRESULT  dk_colorspace_convert_filter::CheckConnect(PIN_DIRECTION direction, IPi
 // place holder to allow derived classes to release any extra interfaces
 HRESULT  dk_colorspace_convert_filter::BreakConnect(PIN_DIRECTION direction)
 {
-	if (_converter)
-		_converter->release();
+	//if (_converter)
+	//	_converter->release();
 	UNREFERENCED_PARAMETER(direction);
 	return NOERROR;
 }
@@ -85,8 +85,8 @@ HRESULT  dk_colorspace_convert_filter::BreakConnect(PIN_DIRECTION direction)
 // Let derived classes know about connection completion
 HRESULT  dk_colorspace_convert_filter::CompleteConnect(PIN_DIRECTION direction, IPin *pin)
 {
-	if (_converter && (direction == PINDIR_OUTPUT))
-		_converter->initialize((dk_colorspace_converter::DK_COLOR_SPACE)_ics, (dk_colorspace_converter::DK_COLOR_SPACE)_ocs, _flip);
+	//if (_converter && (direction == PINDIR_OUTPUT))
+	//	_converter->initialize((dk_colorspace_converter::DK_COLOR_SPACE)_ics, (dk_colorspace_converter::DK_COLOR_SPACE)_ocs, _flip);
 
 	UNREFERENCED_PARAMETER(direction);
 	UNREFERENCED_PARAMETER(pin);
@@ -182,7 +182,7 @@ HRESULT  dk_colorspace_convert_filter::CheckInputType(const CMediaType *type)
 					_flip = false;
 					_height = -vih2->bmiHeader.biHeight;
 				}
-				_ics = dk_colorspace_converter::COLOR_SPACE_RGB32;
+				//_ics = dk_colorspace_converter::COLOR_SPACE_RGB32;
 				return S_OK;
 			}
 			else if (IsEqualGUID(*(formaType), FORMAT_VideoInfo))
@@ -199,11 +199,11 @@ HRESULT  dk_colorspace_convert_filter::CheckInputType(const CMediaType *type)
 					_flip = false;
 					_height = -vih->bmiHeader.biHeight;
 				}
-				_ics = dk_colorspace_converter::COLOR_SPACE_RGB32;
+				//_ics = dk_colorspace_converter::COLOR_SPACE_RGB32;
 				return S_OK;
 			}
 		}
-		else if (IsEqualGUID(*(type->Subtype()), MEDIASUBTYPE_RGB24))
+		/*else if (IsEqualGUID(*(type->Subtype()), MEDIASUBTYPE_RGB24))
 		{
 			if (IsEqualGUID(*(formaType), FORMAT_VideoInfo2))
 			{
@@ -219,7 +219,7 @@ HRESULT  dk_colorspace_convert_filter::CheckInputType(const CMediaType *type)
 					_flip = false;
 					_height = -vih2->bmiHeader.biHeight;
 				}
-				_ics = dk_colorspace_converter::COLOR_SPACE_RGB24;
+				//_ics = dk_colorspace_converter::COLOR_SPACE_RGB24;
 				return S_OK;
 			}
 			else if (IsEqualGUID(*(formaType), FORMAT_VideoInfo))
@@ -236,7 +236,7 @@ HRESULT  dk_colorspace_convert_filter::CheckInputType(const CMediaType *type)
 					_flip = false;
 					_height = -vih->bmiHeader.biHeight;
 				}
-				_ics = dk_colorspace_converter::COLOR_SPACE_RGB24;
+				//_ics = dk_colorspace_converter::COLOR_SPACE_RGB24;
 				return S_OK;
 			}
 
@@ -257,7 +257,7 @@ HRESULT  dk_colorspace_convert_filter::CheckInputType(const CMediaType *type)
 					_flip = false;
 					_height = -vih2->bmiHeader.biHeight;
 				}
-				_ics = dk_colorspace_converter::COLOR_SPACE_YV12;
+				//_ics = dk_colorspace_converter::COLOR_SPACE_YV12;
 				return S_OK;
 			}
 			else if (IsEqualGUID(*(formaType), FORMAT_VideoInfo))
@@ -274,10 +274,10 @@ HRESULT  dk_colorspace_convert_filter::CheckInputType(const CMediaType *type)
 					_flip = false;
 					_height = -vih->bmiHeader.biHeight;
 				}
-				_ics = dk_colorspace_converter::COLOR_SPACE_YV12;
+				//_ics = dk_colorspace_converter::COLOR_SPACE_YV12;
 				return S_OK;
 			}
-		}
+		}*/
 	}
 	return E_FAIL;
 }
@@ -287,55 +287,22 @@ HRESULT  dk_colorspace_convert_filter::GetMediaType(int position, CMediaType *ty
 	if (!m_pInput->IsConnected())
 		return E_UNEXPECTED;
 
-	if (_ics == dk_colorspace_converter::COLOR_SPACE_YV12)
+	if (position<0)
+		return E_INVALIDARG;
+	if (position>0)
+		return VFW_S_NO_MORE_ITEMS;
+
+	type->SetType(&MEDIATYPE_Video);
+	if (position == 0)
 	{
-		if (position<0)
-			return E_INVALIDARG;
-		if (position>0)
-			return VFW_S_NO_MORE_ITEMS;
-
-		type->SetType(&MEDIATYPE_Video);
-		if (position == 0)
-		{
-			HRESULT hr = m_pInput->ConnectionMediaType(type);
-			if (FAILED(hr))
-				return hr;
-
-			type->SetSubtype(&MEDIASUBTYPE_RGB32);
-			type->SetFormatType(&FORMAT_VideoInfo2);
-			type->SetTemporalCompression(FALSE);
-			type->SetSampleSize(_width*_height * 4);
-			type->bFixedSizeSamples = TRUE;
-			VIDEOINFOHEADER2 * vih2 = (VIDEOINFOHEADER2*)type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER2));
-			ZeroMemory(vih2, sizeof(VIDEOINFOHEADER2));
-			vih2->rcSource.left = 0;
-			vih2->rcSource.top = 0;
-			vih2->rcSource.right = _width;
-			vih2->rcSource.bottom = _height;
-			vih2->rcTarget = vih2->rcSource;
-			vih2->dwPictAspectRatioX = _width;
-			vih2->dwPictAspectRatioY = _height;
-			//vih2->AvgTimePerFrame = (UNITS / MILLISECONDS)*(LONGLONG)(UNITS / FPS_30);
-			vih2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			vih2->bmiHeader.biWidth = _width;
-			vih2->bmiHeader.biHeight = -_height;
-			vih2->bmiHeader.biPlanes = 1;
-			vih2->bmiHeader.biBitCount = 32;
-			vih2->bmiHeader.biCompression = BI_RGB;
-			vih2->bmiHeader.biSizeImage = _width*_height * 4;
-			_ocs = dk_colorspace_converter::COLOR_SPACE_RGB32;
-		}
-		/*
-		else if (position == 1)
-		{
 		HRESULT hr = m_pInput->ConnectionMediaType(type);
 		if (FAILED(hr))
-		return hr;
+			return hr;
 
-		type->SetSubtype(&MEDIASUBTYPE_RGB24);
+		type->SetSubtype(&MEDIASUBTYPE_YV12);
 		type->SetFormatType(&FORMAT_VideoInfo2);
 		type->SetTemporalCompression(FALSE);
-		type->SetSampleSize(_width*_height * 3);
+		type->SetSampleSize(_width*_height*1.5);
 		type->bFixedSizeSamples = TRUE;
 		VIDEOINFOHEADER2 * vih2 = (VIDEOINFOHEADER2*)type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER2));
 		ZeroMemory(vih2, sizeof(VIDEOINFOHEADER2));
@@ -351,51 +318,9 @@ HRESULT  dk_colorspace_convert_filter::GetMediaType(int position, CMediaType *ty
 		vih2->bmiHeader.biWidth = _width;
 		vih2->bmiHeader.biHeight = -_height;
 		vih2->bmiHeader.biPlanes = 1;
-		vih2->bmiHeader.biBitCount = 24;
-		vih2->bmiHeader.biCompression = BI_RGB;
-		vih2->bmiHeader.biSizeImage = _width*_height * 3;
-		_ocs = dk_colorspace_converter::COLOR_SPACE_RGB24;
-		}
-		*/
-	}
-	else
-	{
-		if (position<0)
-			return E_INVALIDARG;
-		if (position>0)
-			return VFW_S_NO_MORE_ITEMS;
-
-		type->SetType(&MEDIATYPE_Video);
-		if (position == 0)
-		{
-			HRESULT hr = m_pInput->ConnectionMediaType(type);
-			if (FAILED(hr))
-				return hr;
-
-			type->SetSubtype(&MEDIASUBTYPE_YV12);
-			type->SetFormatType(&FORMAT_VideoInfo2);
-			type->SetTemporalCompression(FALSE);
-			type->SetSampleSize(_width*_height*1.5);
-			type->bFixedSizeSamples = TRUE;
-			VIDEOINFOHEADER2 * vih2 = (VIDEOINFOHEADER2*)type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER2));
-			ZeroMemory(vih2, sizeof(VIDEOINFOHEADER2));
-			vih2->rcSource.left = 0;
-			vih2->rcSource.top = 0;
-			vih2->rcSource.right = _width;
-			vih2->rcSource.bottom = _height;
-			vih2->rcTarget = vih2->rcSource;
-			vih2->dwPictAspectRatioX = _width;
-			vih2->dwPictAspectRatioY = _height;
-			//vih2->AvgTimePerFrame = (UNITS / MILLISECONDS)*(LONGLONG)(UNITS / FPS_30);
-			vih2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			vih2->bmiHeader.biWidth = _width;
-			vih2->bmiHeader.biHeight = -_height;
-			vih2->bmiHeader.biPlanes = 1;
-			vih2->bmiHeader.biBitCount = 12;
-			vih2->bmiHeader.biCompression = MAKEFOURCC('Y', 'V', '1', '2');
-			vih2->bmiHeader.biSizeImage = _width*_height*1.5;
-			_ocs = dk_colorspace_converter::COLOR_SPACE_YV12;
-		}
+		vih2->bmiHeader.biBitCount = 12;
+		vih2->bmiHeader.biCompression = MAKEFOURCC('Y', 'V', '1', '2');
+		vih2->bmiHeader.biSizeImage = _width*_height*1.5;
 	}
 	return S_OK;
 }
@@ -434,12 +359,7 @@ HRESULT  dk_colorspace_convert_filter::DecideBufferSize(IMemAllocator *allocator
 
 	properties->cBuffers = 1;
 	//properties->cbAlign		= 1;
-	if (_ocs == dk_colorspace_converter::COLOR_SPACE_YV12)
-		properties->cbBuffer = _dst_stride*_height*1.5;
-	else if (_ocs == dk_colorspace_converter::COLOR_SPACE_RGB32)
-		properties->cbBuffer = _width*_height * 4;
-	else if (_ocs == dk_colorspace_converter::COLOR_SPACE_RGB24)
-		properties->cbBuffer = _width*_height * 3;
+	properties->cbBuffer = _width*_height * 4;
 	properties->cbPrefix = 0;
 
 	ALLOCATOR_PROPERTIES actual;
@@ -483,28 +403,16 @@ HRESULT dk_colorspace_convert_filter::Transform(IMediaSample *src, IMediaSample 
 		}
 	}
 
-	int src_stride;
-	if (_ocs == dk_colorspace_converter::COLOR_SPACE_YV12)
-	{
-		output_data_size = _dst_stride*_height*1.5;
-		if (_ics == dk_colorspace_converter::COLOR_SPACE_RGB32)
-			src_stride = _width * 4;
-		else if (_ics == dk_colorspace_converter::COLOR_SPACE_RGB24)
-			src_stride = _width * 3;
-	}
-	else if (_ocs == dk_colorspace_converter::COLOR_SPACE_RGB32)
-	{
-		_dst_stride = _width * 4;
-		output_data_size = _dst_stride*_height;
-		src_stride = _width;
-	}
-	else if (_ocs == dk_colorspace_converter::COLOR_SPACE_RGB24)
-	{
-		_dst_stride = _width * 3;
-		output_data_size = _dst_stride*_height;
-		src_stride = _width;
-	}
-	_converter->convert(_width, _height, input_buffer, src_stride, output_buffer, _dst_stride);
+	int src_stride = _width * 4;
+	int uv_stride = _dst_stride >> 1;
+	output_data_size = _dst_stride*_height*1.5;
+
+	uint8_t * y = output_buffer;
+	
+	uint8_t * u = y + (_width >> 1) * uv_stride;
+	uint8_t * v = u + (_width >> 1) * uv_stride;
+
+	dk_simd_colorspace_converter::convert_rgba_to_yv12(_width, _height, input_buffer, src_stride, y, _dst_stride, u, uv_stride, v, uv_stride, _flip);
 	dst->SetActualDataLength(output_data_size);
 
 	{

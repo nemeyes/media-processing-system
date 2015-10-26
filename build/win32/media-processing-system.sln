@@ -81,7 +81,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{20A20008-2
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_mpeg2ts_muxer_test", "..\..\test\dk_mpeg2ts_muxer_test\dk_mpeg2ts_muxer_test.vcxproj", "{E9C737ED-72D1-43AA-B29A-BB2968BF2C37}"
 EndProject
+<<<<<<< HEAD
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_simd_colorspace_converter", "..\..\dk_simd_colorspace_converter\dk_simd_colorspace_converter.vcxproj", "{3D5927B4-5F21-450D-87D1-AFD549ABA2D6}"
+=======
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "audio", "audio", "{2D4D34F3-2439-41B0-83D2-77978268E880}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_aac_decoder", "..\..\dk_aac_decoder\dk_aac_decoder.vcxproj", "{8CB52826-1602-442B-AD56-FE042AB4D6B4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_aac_encoder", "..\..\dk_aac_encoder\dk_aac_encoder.vcxproj", "{451D6868-00A2-4AAA-977F-9C7AF8D1B374}"
+>>>>>>> cf5a4204330eeae2413d1372e3ba4eb5928db1a5
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -227,12 +235,27 @@ Global
 		{E9C737ED-72D1-43AA-B29A-BB2968BF2C37}.Release|Win32.ActiveCfg = Release|Win32
 		{E9C737ED-72D1-43AA-B29A-BB2968BF2C37}.Release|Win32.Build.0 = Release|Win32
 		{E9C737ED-72D1-43AA-B29A-BB2968BF2C37}.Release|x64.ActiveCfg = Release|Win32
+<<<<<<< HEAD
 		{3D5927B4-5F21-450D-87D1-AFD549ABA2D6}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3D5927B4-5F21-450D-87D1-AFD549ABA2D6}.Debug|Win32.Build.0 = Debug|Win32
 		{3D5927B4-5F21-450D-87D1-AFD549ABA2D6}.Debug|x64.ActiveCfg = Debug|Win32
 		{3D5927B4-5F21-450D-87D1-AFD549ABA2D6}.Release|Win32.ActiveCfg = Release|Win32
 		{3D5927B4-5F21-450D-87D1-AFD549ABA2D6}.Release|Win32.Build.0 = Release|Win32
 		{3D5927B4-5F21-450D-87D1-AFD549ABA2D6}.Release|x64.ActiveCfg = Release|Win32
+=======
+		{8CB52826-1602-442B-AD56-FE042AB4D6B4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8CB52826-1602-442B-AD56-FE042AB4D6B4}.Debug|Win32.Build.0 = Debug|Win32
+		{8CB52826-1602-442B-AD56-FE042AB4D6B4}.Debug|x64.ActiveCfg = Debug|Win32
+		{8CB52826-1602-442B-AD56-FE042AB4D6B4}.Release|Win32.ActiveCfg = Release|Win32
+		{8CB52826-1602-442B-AD56-FE042AB4D6B4}.Release|Win32.Build.0 = Release|Win32
+		{8CB52826-1602-442B-AD56-FE042AB4D6B4}.Release|x64.ActiveCfg = Release|Win32
+		{451D6868-00A2-4AAA-977F-9C7AF8D1B374}.Debug|Win32.ActiveCfg = Debug|Win32
+		{451D6868-00A2-4AAA-977F-9C7AF8D1B374}.Debug|Win32.Build.0 = Debug|Win32
+		{451D6868-00A2-4AAA-977F-9C7AF8D1B374}.Debug|x64.ActiveCfg = Debug|Win32
+		{451D6868-00A2-4AAA-977F-9C7AF8D1B374}.Release|Win32.ActiveCfg = Release|Win32
+		{451D6868-00A2-4AAA-977F-9C7AF8D1B374}.Release|Win32.Build.0 = Release|Win32
+		{451D6868-00A2-4AAA-977F-9C7AF8D1B374}.Release|x64.ActiveCfg = Release|Win32
+>>>>>>> cf5a4204330eeae2413d1372e3ba4eb5928db1a5
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -272,6 +295,12 @@ Global
 		{7EF61772-37FB-488F-9122-8368D28AE1D7} = {73A8201D-9114-4E0B-87D3-E7FF8EBA25C1}
 		{FB357C50-5BA3-449C-AD07-0048C37BA173} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 		{E9C737ED-72D1-43AA-B29A-BB2968BF2C37} = {20A20008-298C-4904-A58B-A23BA1F883E1}
+<<<<<<< HEAD
 		{3D5927B4-5F21-450D-87D1-AFD549ABA2D6} = {FB357C50-5BA3-449C-AD07-0048C37BA173}
+=======
+		{2D4D34F3-2439-41B0-83D2-77978268E880} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
+		{8CB52826-1602-442B-AD56-FE042AB4D6B4} = {2D4D34F3-2439-41B0-83D2-77978268E880}
+		{451D6868-00A2-4AAA-977F-9C7AF8D1B374} = {2D4D34F3-2439-41B0-83D2-77978268E880}
+>>>>>>> cf5a4204330eeae2413d1372e3ba4eb5928db1a5
 	EndGlobalSection
 EndGlobal

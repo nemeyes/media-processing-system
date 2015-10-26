@@ -12,7 +12,7 @@ DEFINE_GUID(CLSID_DK_COLORSPACE_CONVERT_FILTER,
 DEFINE_GUID(CLSID_DK_COLORSPACE_CONVERT_FILTER_PROPERTIES,
 	0x62569e6b, 0xb718, 0x4256, 0xbf, 0xb5, 0x85, 0xa2, 0x7d, 0x4d, 0x8e, 0x8c);
 
-class dk_colorspace_converter;
+//class dk_simd_colorspace_converter;
 class dk_colorspace_convert_filter : public CTransformFilter,
 	public ISpecifyPropertyPages
 {
@@ -69,7 +69,7 @@ private:
 	int _width;
 	int _height;
 	int _dst_stride;
-	int _ics;
-	int _ocs;
-	dk_colorspace_converter * _converter;
+	//int _ics;
+	//int _ocs;
+	//dk_simd_colorspace_converter * _converter;
 };
