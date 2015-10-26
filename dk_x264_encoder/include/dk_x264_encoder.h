@@ -120,7 +120,7 @@ public:
 			, max_width(1920)
 			, max_height(1080)
 			, bitrate(4000000)
-			, fps(60)
+			, fps(30)
 			, vbv_max_bitrate(4000000)
 			, vbv_size(4000000)
 			, tune(TUNE_TYPE_FILM)
