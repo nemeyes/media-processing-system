@@ -387,7 +387,9 @@ HRESULT dk_x264_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 	dst->SetTime(&start_time, &end_time);
 
 	return S_OK;
-	/*BOOL bSyncPoint;
+
+	/*
+	BOOL bSyncPoint;
 	BOOL bPreroll;
 	BOOL bDiscon;
 
@@ -439,7 +441,8 @@ HRESULT dk_x264_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 
 	dst->SetPreroll(FALSE);
 
-	return hr;*/
+	return hr;
+	*/
 }
 
 STDMETHODIMP dk_x264_encode_filter::GetPages(CAUUID *pPages)
