@@ -20,7 +20,7 @@ public:
 
 	static void flip(int width, int height, int stride, uint8_t * pixels);
 	static void convert_rgba_to_rgba(int width, int height, uint8_t * src, int src_stride, uint8_t * dst, int dst_stride, bool flip = false);
-	static void convert_rgba_to_yv12(int width, int height, uint8_t * bgra, int bgra_stride, uint8_t * y, int y_stride, uint8_t * u, int u_stride, uint8_t * v, int v_stride, bool flip = false);
+	static void convert_rgba_to_yv12(int width, int height, uint8_t * src, int src_stride, uint8_t * dst, int dst_stride, bool flip = false);
 
 private:
 	dk_simd_colorspace_converter(void);

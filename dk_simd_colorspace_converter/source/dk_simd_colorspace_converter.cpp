@@ -49,9 +49,23 @@ void dk_simd_colorspace_converter::convert_rgba_to_rgba(int width, int height, u
 	}
 }
 
+void dk_simd_colorspace_converter::convert_rgba_to_yv12(int width, int height, uint8_t * src, int src_stride, uint8_t * dst, int dst_stride, bool flip)
+{
+	int uv_stride = dst_stride >> 1;
+	uint8_t * y = dst;
+	uint8_t * v = y + (height)* dst_stride;
+	uint8_t * u = v + (height >> 1) * uv_stride;
+
+	if (flip)
+		dk_simd_colorspace_converter::flip(width, height, src_stride, src);
+	SimdBgraToYuv420p(src, width, height, src_stride, y, dst_stride, u, uv_stride, v, uv_stride);
+}
+
+/*
 void dk_simd_colorspace_converter::convert_rgba_to_yv12(int width, int height, uint8_t * bgra, int bgra_stride, uint8_t * y, int y_stride, uint8_t * u, int u_stride, uint8_t * v, int v_stride, bool flip)
 {
 	if (flip)
 		dk_simd_colorspace_converter::flip(width, height, width * 4, bgra);
 	SimdBgraToYuv420p(bgra, width, height, bgra_stride, y, y_stride, u, u_stride, v, v_stride);
 }
+*/
