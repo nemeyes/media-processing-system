@@ -3,7 +3,7 @@
 #include <dvdmedia.h>
 #include <ks.h>
 #include <ksmedia.h>
-
+#include <mmintrin.h>
 #include "dk_video_decode_filter.h"
 
 #include <dk_dsutils.h>
@@ -32,6 +32,35 @@ dk_video_decode_filter::~dk_video_decode_filter(void)
 		safe_release(&_dxva2_allocator);
 	}
 }
+
+/*HRESULT dk_video_decode_filter::Receive(IMediaSample* pIn)
+{
+#ifndef _WIN64
+	// TODOX64 : fixme!
+	_mm_empty(); // just for safety
+#endif
+
+	CAutoLock cAutoLock(&m_csReceive);
+
+	HRESULT hr;
+
+	AM_SAMPLE2_PROPERTIES* const pProps = m_pInput->SampleProps();
+	if (pProps->dwStreamId != AM_STREAM_MEDIA)
+		return m_pOutput->Deliver(pIn);
+
+	AM_MEDIA_TYPE* pmt;
+	if (SUCCEEDED(pIn->GetMediaType(&pmt)) && pmt)
+	{
+		CMediaType mt(*pmt);
+		m_pInput->SetMediaType(&mt);
+		DeleteMediaType(pmt);
+	}
+
+	if (FAILED(hr = Transform(pIn)))
+		return hr;
+
+	return S_OK;
+}*/
 
 HRESULT dk_video_decode_filter::initialize_d3d(void)
 {
@@ -99,7 +128,7 @@ STDMETHODIMP dk_video_decode_filter::init_allocator(IMemAllocator ** allocator)
 {
 	HRESULT hr = S_OK;
 
-	_dxva2_allocator = new dk_dxva2_allocator(_dxva2_decoder_service, _width, _height, _format, &hr);
+	_dxva2_allocator = new dk_dxva2_allocator(this, &hr);
 	if (!_dxva2_allocator)
 		return E_OUTOFMEMORY;
 	

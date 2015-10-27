@@ -7,9 +7,15 @@
 
 class dk_video_decode_filter : public CTransformFilter
 {
+	friend class dk_dxva2_allocator;
 public:
 	dk_video_decode_filter(TCHAR * name, LPUNKNOWN unk, REFCLSID clsid, HRESULT * hr);
 	virtual ~dk_video_decode_filter(void);
+
+
+
+	//HRESULT Receive(IMediaSample* pIn);
+	virtual HRESULT Transform(IMediaSample* pIn) = 0;
 
 	STDMETHODIMP init_allocator(IMemAllocator ** allocator);
 

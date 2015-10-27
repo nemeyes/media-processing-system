@@ -33,7 +33,7 @@
 dk_dxva2_decode_filter::dk_dxva2_decode_filter(LPUNKNOWN unk, HRESULT *hr)
 	: dk_video_decode_filter(g_szFilterName, unk, CLSID_DK_DXVA2_DECODE_FILTER, hr)
 {
-
+	alloc_execute_params(3);
 }
 
 dk_dxva2_decode_filter::~dk_dxva2_decode_filter(VOID)
@@ -363,7 +363,7 @@ HRESULT  dk_dxva2_decode_filter::DecideBufferSize(IMemAllocator * allocator, ALL
 	if (FAILED(hr))
 		return hr;
 
-	properties->cBuffers = 1;
+	properties->cBuffers = 3;
 	//properties->cbAlign		= 1;
 	properties->cbBuffer = /*_width*_height * 4;*/_stride*_height * 1.5;//_owidth*_oheight*2;//_owidth*_oheight+_owidth*_oheight/2; m_pInput->CurrentMediaType().GetSampleSize();//
 	properties->cbPrefix = 0;
@@ -382,7 +382,73 @@ HRESULT  dk_dxva2_decode_filter::DecideBufferSize(IMemAllocator * allocator, ALL
 
 HRESULT dk_dxva2_decode_filter::Transform(IMediaSample * src, IMediaSample * dst)
 {
-	return decode(src, dst);
+	HRESULT hr = S_OK;
+	BYTE * src_buffer = NULL;
+	UINT src_data_size = 0;
+
+	hr = src->GetPointer(&src_buffer);
+	if (FAILED(hr))
+		return S_OK;
+	if (!src_buffer)
+		return S_OK;
+	src_data_size = src->GetActualDataLength();
+	if (src_data_size <= 0)
+		return S_OK;
+
+	REFERENCE_TIME start_time, end_time;
+	if (SUCCEEDED(src->GetTime(&start_time, &end_time)))
+	{
+		if (-1e7 != start_time)
+		{
+			start_time = (start_time<0) ? 0 : start_time;
+		}
+	}
+
+
+	/*hr = _d3d_device_manager->TestDevice(_dxva2_device);
+	if (hr == DXVA2_E_NEW_VIDEO_DEVICE)
+	return hr;*/
+
+	CComQIPtr<IMFGetService>	sample_service;
+	CComPtr<IDirect3DSurface9>	decoder_render_target;
+	sample_service = dst;
+	if (sample_service)
+	{
+		hr = sample_service->GetService(MR_BUFFER_SERVICE, __uuidof(IDirect3DSurface9), (void**)&decoder_render_target);
+		if (SUCCEEDED(hr))
+		{
+			hr = _dxva2_decoder->BeginFrame(decoder_render_target, NULL);
+		}
+
+		UINT dxva2_buffer_size;
+		uint8_t * dxva2_buffer = nullptr;
+		hr = _dxva2_decoder->GetBuffer(DXVA2_BitStreamDateBufferType, (void**)&dxva2_buffer, &dxva2_buffer_size);
+
+		if (SUCCEEDED(hr) && (dxva2_buffer_size >= src_data_size))
+		{
+			memcpy(dxva2_buffer, (BYTE*)src_buffer, src_data_size);
+
+			_dxva2_execute_params.pCompressedBuffers[_dxva2_execute_params.NumCompBuffers].CompressedBufferType = DXVA2_BitStreamDateBufferType;
+			_dxva2_execute_params.pCompressedBuffers[_dxva2_execute_params.NumCompBuffers].DataSize = src_data_size;
+			//_dxva2_execute_params.pCompressedBuffers[_dxva2_execute_params.NumCompBuffers].NumMBsInBuffer = dwNumMBs;
+			_dxva2_execute_params.NumCompBuffers++;
+		}
+
+		for (DWORD i = 0; i<_dxva2_execute_params.NumCompBuffers; i++)
+		{
+			hr = _dxva2_decoder->ReleaseBuffer(_dxva2_execute_params.pCompressedBuffers[i].CompressedBufferType);
+			ASSERT(SUCCEEDED(hr));
+		}
+
+		hr = _dxva2_decoder->Execute(&_dxva2_execute_params);
+		//ASSERT(SUCCEEDED(hr));
+		_dxva2_execute_params.NumCompBuffers = 0;
+
+		hr = _dxva2_decoder->EndFrame(NULL);
+		ASSERT(SUCCEEDED(hr));
+	}
+
+	return S_OK;
 }
 
 STDMETHODIMP dk_dxva2_decode_filter::GetPages(CAUUID *pPages)
@@ -563,6 +629,8 @@ HRESULT dk_dxva2_decode_filter::find_decoder_configuration(IDirectXVideoDecoderS
 			if (d3d_formats[index] != (D3DFORMAT)_fcc_output_format)
 				continue;
 
+			_format = (D3DFORMAT)_fcc_output_format;
+
 			// Fill in the video description. Set the width, height, format, 
 			// and frame rate.
 			//DXVA2_VideoDesc dxva2_video_description = { 0 };
@@ -634,39 +702,21 @@ DWORD dk_dxva2_decode_filter::get_aligned_dimension(DWORD dimension)
 	return FFALIGN(dimension, align);
 }
 
-HRESULT dk_dxva2_decode_filter::decode(IMediaSample * src, IMediaSample * dst)
+HRESULT dk_dxva2_decode_filter::Transform(IMediaSample * src)
 {
-	HRESULT hr = S_OK;
-	BYTE *input_buffer = NULL;
-	UINT input_data_size = 0;
-	BYTE *output_buffer = NULL;
-	UINT output_data_size = 0;
+/*	CAutoLock cAutoLock(&m_csReceive);
+	HRESULT			hr;
+	BYTE*			pDataIn;
+	int				nSize;
+	REFERENCE_TIME	rtStart = _I64_MIN;
+	REFERENCE_TIME	rtStop = _I64_MIN;
 
-	hr = src->GetPointer(&input_buffer);
-	if (FAILED(hr))
-		return S_OK;
-	if (!input_buffer)
-		return S_OK;
-	input_data_size = src->GetActualDataLength();
-	if (input_data_size <= 0)
-		return S_OK;
-	hr = dst->GetPointer(&output_buffer);
-	if (FAILED(hr))
-		return S_OK;
+	if (FAILED(hr = src->GetPointer(&pDataIn)))
+		return hr;
 
-	REFERENCE_TIME start_time, end_time;
-	if (SUCCEEDED(src->GetTime(&start_time, &end_time)))
-	{
-		if (-1e7 != start_time)
-		{
-			start_time = (start_time<0) ? 0 : start_time;
-		}
-	}
+	nSize = src->GetActualDataLength();
+	hr = src->GetTime(&rtStart, &rtStop);
 
-
-	/*hr = _d3d_device_manager->TestDevice(_dxva2_device);
-	if (hr == DXVA2_E_NEW_VIDEO_DEVICE)
-		return hr;*/
 
 	CComQIPtr<IMFGetService>	sample_service;
 	CComPtr<IDirect3DSurface9>	decoder_render_target;
@@ -678,7 +728,7 @@ HRESULT dk_dxva2_decode_filter::decode(IMediaSample * src, IMediaSample * dst)
 		{
 			_dxva2_decoder->BeginFrame(decoder_render_target, NULL);
 		}
-			
+
 
 
 		UINT dxva2_buffer_size;
@@ -704,7 +754,77 @@ HRESULT dk_dxva2_decode_filter::decode(IMediaSample * src, IMediaSample * dst)
 		hr = _dxva2_decoder->Execute(&_dxva2_execute_params);
 
 
-		//_dxva2_decoder->EndFrame()
+		_dxva2_decoder->EndFrame(NULL);
+	}*/
+	return S_OK;
+}
+
+HRESULT dk_dxva2_decode_filter::decode(IMediaSample * src, IMediaSample * dst)
+{
+	HRESULT hr = S_OK;
+	BYTE * src_buffer = NULL;
+	UINT src_data_size = 0;
+
+	hr = src->GetPointer(&src_buffer);
+	if (FAILED(hr))
+		return S_OK;
+	if (!src_buffer)
+		return S_OK;
+	src_data_size = src->GetActualDataLength();
+	if (src_data_size <= 0)
+		return S_OK;
+
+	REFERENCE_TIME start_time, end_time;
+	if (SUCCEEDED(src->GetTime(&start_time, &end_time)))
+	{
+		if (-1e7 != start_time)
+		{
+			start_time = (start_time<0) ? 0 : start_time;
+		}
+	}
+
+
+	/*hr = _d3d_device_manager->TestDevice(_dxva2_device);
+	if (hr == DXVA2_E_NEW_VIDEO_DEVICE)
+		return hr;*/
+
+	CComQIPtr<IMFGetService>	sample_service;
+	CComPtr<IDirect3DSurface9>	decoder_render_target;
+	sample_service = dst;
+	if (sample_service)
+	{
+		hr = sample_service->GetService(MR_BUFFER_SERVICE, __uuidof(IDirect3DSurface9), (void**)&decoder_render_target);
+		if (SUCCEEDED(hr))
+		{
+			hr = _dxva2_decoder->BeginFrame(decoder_render_target, NULL);
+		}
+			
+		UINT dxva2_buffer_size;
+		uint8_t * dxva2_buffer = nullptr;
+		hr = _dxva2_decoder->GetBuffer(DXVA2_BitStreamDateBufferType, (void**)&dxva2_buffer, &dxva2_buffer_size);
+
+		if (SUCCEEDED(hr) && (dxva2_buffer_size >= src_data_size))
+		{
+			memcpy(dxva2_buffer, (BYTE*)src_buffer, src_data_size);
+
+			_dxva2_execute_params.pCompressedBuffers[_dxva2_execute_params.NumCompBuffers].CompressedBufferType = DXVA2_BitStreamDateBufferType;
+			_dxva2_execute_params.pCompressedBuffers[_dxva2_execute_params.NumCompBuffers].DataSize = src_data_size;
+			//_dxva2_execute_params.pCompressedBuffers[_dxva2_execute_params.NumCompBuffers].NumMBsInBuffer = dwNumMBs;
+			_dxva2_execute_params.NumCompBuffers++;
+		}
+
+		for (DWORD i = 0; i<_dxva2_execute_params.NumCompBuffers; i++)
+		{
+			hr = _dxva2_decoder->ReleaseBuffer(_dxva2_execute_params.pCompressedBuffers[i].CompressedBufferType);
+			ASSERT(SUCCEEDED(hr));
+		}
+
+		hr = _dxva2_decoder->Execute(&_dxva2_execute_params);
+		//ASSERT(SUCCEEDED(hr));
+		_dxva2_execute_params.NumCompBuffers = 0;
+
+		hr = _dxva2_decoder->EndFrame(NULL);
+		ASSERT(SUCCEEDED(hr));
 	}
 
 	return S_OK;
@@ -768,4 +888,14 @@ HRESULT dk_dxva2_decode_filter::decode(IMediaSample * src, IMediaSample * dst)
 	}
 	return hr;
 	*/
+}
+
+void dk_dxva2_decode_filter::alloc_execute_params(int size)
+{
+	_dxva2_execute_params.pCompressedBuffers = new DXVA2_DecodeBufferDesc[size];
+
+	for (int i = 0; i<size; i++)
+		memset(&_dxva2_execute_params.pCompressedBuffers[i], 0, sizeof(DXVA2_DecodeBufferDesc));
+
+	_dxva2_execute_params.NumCompBuffers = 0;
 }

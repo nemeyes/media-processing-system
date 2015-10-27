@@ -27,11 +27,14 @@ public:
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv);
 
 	//CTransformFilter
-	virtual HRESULT CheckInputType(const CMediaType *type);
-	virtual HRESULT GetMediaType(int position, CMediaType *type);
-	virtual HRESULT CheckTransform(const CMediaType *itype, const CMediaType *otype);
-	virtual HRESULT DecideBufferSize(IMemAllocator *allocator, ALLOCATOR_PROPERTIES *pprop);
-	virtual HRESULT Transform(IMediaSample *src, IMediaSample *dst);
+	virtual HRESULT CheckInputType(const CMediaType * type);
+	virtual HRESULT GetMediaType(int position, CMediaType * type);
+	virtual HRESULT CheckTransform(const CMediaType * itype, const CMediaType * otype);
+	virtual HRESULT DecideBufferSize(IMemAllocator * allocator, ALLOCATOR_PROPERTIES * pprop);
+	virtual HRESULT Transform(IMediaSample * src, IMediaSample * dst);
+
+	//dk_dxva2_decode_filter
+	virtual HRESULT Transform(IMediaSample * src);
 
 	// you can also override these if you want to know about streaming
 	virtual HRESULT StartStreaming();
@@ -75,8 +78,11 @@ private:
 
 	HRESULT decode(IMediaSample *src, IMediaSample *dst);
 
+
+	void alloc_execute_params(int size);
+
 private:
-	IDirectXVideoDecoderService * _dxva2_decoder_service;
+	//IDirectXVideoDecoderService * _dxva2_decoder_service;
 	DXVA2_ConfigPictureDecode  _dxva2_decoder_config;
 	GUID _dxva2_decoder_guid;
 	HANDLE _dxva2_device;

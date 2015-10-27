@@ -9,13 +9,11 @@
 #include "dk_dxva2_allocator.h"
 
 
-dk_dxva2_allocator::dk_dxva2_allocator(IDirectXVideoDecoderService * dxva2_decoder_service, DWORD width, DWORD height, DWORD format, HRESULT * hr)
+dk_dxva2_allocator::dk_dxva2_allocator(dk_video_decode_filter * filter, HRESULT * hr)
 	: CBaseAllocator(NAME("dk_dxva2_allocator"), nullptr, hr)
-	, _dxva2_decoder_service(dxva2_decoder_service)
-	, _width(width)
-	, _height(height)
-	, _format(format)
+	, _filter(filter)
 {
+
 }
 
 dk_dxva2_allocator::~dk_dxva2_allocator(void)
@@ -35,7 +33,7 @@ HRESULT dk_dxva2_allocator::Alloc(void)
 
 	HRESULT hr = S_OK;
 
-	if (_dxva2_decoder_service == NULL)
+	if (_filter->_dxva2_decoder_service == NULL)
 	{
 		return E_UNEXPECTED;
 	}
@@ -68,17 +66,15 @@ HRESULT dk_dxva2_allocator::Alloc(void)
 	// Allocate the surfaces.
 	if (SUCCEEDED(hr))
 	{
-		hr = _dxva2_decoder_service->CreateSurface(
-			_width,
-			_height,
-			m_lCount - 1,
-			(D3DFORMAT)_format,
-			D3DPOOL_DEFAULT,
-			0,
-			DXVA2_VideoDecoderRenderTarget,
-			_rt_surface_array,
-			NULL
-			);
+		hr = _filter->_dxva2_decoder_service->CreateSurface(_filter->_width,
+															_filter->_height,
+															m_lCount - 1,
+															(D3DFORMAT)_filter->_format,
+															D3DPOOL_DEFAULT,
+															0,
+															DXVA2_VideoDecoderRenderTarget,
+															_rt_surface_array,
+															NULL);
 	}
 
 	if (SUCCEEDED(hr))
