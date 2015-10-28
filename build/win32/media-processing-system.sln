@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -96,6 +96,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_video_base", "..\..\dk_video_base\dk_video_base.vcxproj", "{75E5D88B-3BDD-407B-A368-9369D535F273}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_directx_rendering_test", "..\..\test\dk_directx_rendering_test\dk_directx_rendering_test.vcxproj", "{E05CF91A-ED35-4754-B02C-45E1E41359A4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "render", "render", "{1F95D1D5-DF2C-42B3-8D17-980BFC586540}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_ddraw_video_renderer", "..\..\dk_ddraw_video_renderer\dk_ddraw_video_renderer.vcxproj", "{56DEEF91-F8CE-4480-8E7B-BBE692379718}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -283,6 +287,12 @@ Global
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Release|Win32.ActiveCfg = Release|Win32
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Release|Win32.Build.0 = Release|Win32
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Release|x64.ActiveCfg = Release|Win32
+		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Debug|Win32.ActiveCfg = Debug|Win32
+		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Debug|Win32.Build.0 = Debug|Win32
+		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Debug|x64.ActiveCfg = Debug|Win32
+		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Release|Win32.ActiveCfg = Release|Win32
+		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Release|Win32.Build.0 = Release|Win32
+		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -330,5 +340,7 @@ Global
 		{476A8B4A-42C6-4C02-AF64-0BFCC9001EAF} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 		{75E5D88B-3BDD-407B-A368-9369D535F273} = {9866AB42-AAF7-427A-9F15-738174299D54}
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4} = {20A20008-298C-4904-A58B-A23BA1F883E1}
+		{1F95D1D5-DF2C-42B3-8D17-980BFC586540} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
+		{56DEEF91-F8CE-4480-8E7B-BBE692379718} = {1F95D1D5-DF2C-42B3-8D17-980BFC586540}
 	EndGlobalSection
 EndGlobal
