@@ -36,9 +36,6 @@
     <ClInclude Include="dk_rtsp_receiver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dk_ff_decoder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,9 +48,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dk_rtsp_receiver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dk_ff_decoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

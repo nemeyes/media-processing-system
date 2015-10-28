@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{97AA8466-9AEB-44CA-A7EF-1F461A4E1802}</ProjectGuid>
+    <ProjectGuid>{75E5D88B-3BDD-407B-A368-9369D535F273}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>dk_base_video</RootNamespace>
+    <RootNamespace>dk_video_base</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -48,7 +48,6 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -77,10 +76,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dk_base_video.h" />
+    <ClInclude Include="include\dk_video_base.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\dk_base_video.cpp" />
+    <ClCompile Include="source\dk_video_base.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

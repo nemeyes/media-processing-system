@@ -18,9 +18,20 @@ public:
 		COLOR_SPACE_RGB32
 	} COLOR_SPACE;
 
-	static void flip(int width, int height, int stride, uint8_t * pixels);
-	static void convert_rgba_to_rgba(int width, int height, uint8_t * src, int src_stride, uint8_t * dst, int dst_stride, bool flip = false);
-	static void convert_rgba_to_yv12(int width, int height, uint8_t * src, int src_stride, uint8_t * dst, int dst_stride, bool flip = false);
+	static void flip(int32_t width, int32_t height, int32_t stride, uint8_t * pixels);
+	static void convert_rgba_to_rgba(int32_t width, int32_t height, uint8_t * src, int32_t src_stride, uint8_t * dst, int32_t dst_stride, bool flip = false);
+	static void convert_rgba_to_yv12(int32_t width, int32_t height, uint8_t * src, int32_t src_stride, uint8_t * dst, int32_t dst_stride, bool flip = false);
+
+
+	static void convert_i420_to_rgba(int32_t width, int32_t height, uint8_t * y, int32_t y_stride, uint8_t * u, int32_t u_stride, uint8_t * v, int32_t v_stride, 
+									 uint8_t * dst, int32_t dst_stride, uint8_t alpha, bool flip = false);
+	static void convert_i420_to_rgb(int32_t width, int32_t height, uint8_t * y, int32_t y_stride, uint8_t * u, int32_t u_stride, uint8_t * v, int32_t v_stride,
+									uint8_t * dst, int32_t dst_stride, bool flip = false);
+	static void convert_i420_to_rgba(int32_t width, int32_t height, uint8_t * src, int32_t src_stride, uint8_t * dst, int32_t dst_stride, uint8_t alpha, bool flip = false);
+	static void convert_i420_to_rgb(int32_t width, int32_t height, uint8_t * src, int32_t src_stride, uint8_t * dst, int32_t dst_stride, bool flip = false);
+
+	static void convert_yv12_to_rgba(int32_t width, int32_t height, uint8_t * src, int32_t src_stride, uint8_t * dst, int32_t dst_stride, uint8_t alpha, bool flip = false);
+	static void convert_yv12_to_rgb(int32_t width, int32_t height, uint8_t * src, int32_t src_stride, uint8_t * dst, int32_t dst_stride, bool flip = false);
 
 private:
 	dk_simd_colorspace_converter(void);

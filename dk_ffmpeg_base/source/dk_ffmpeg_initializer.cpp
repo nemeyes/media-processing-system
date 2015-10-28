@@ -1,6 +1,6 @@
-#include "ffmpeg_initializer.h"
-#if defined(_WINDOWS)
- #include <windows.h>
+#include "dk_ffmpeg_initializer.h"
+#if defined(_WIN32)
+#include <windows.h>
 #endif
 
 extern "C"
@@ -12,7 +12,7 @@ extern "C"
 	#include <libavutil/mathematics.h>
 }
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 int ffmpeg_lock_manager(void **mutex, enum AVLockOp op)
 {
 	CRITICAL_SECTION ** lock = (CRITICAL_SECTION**)mutex;
@@ -37,19 +37,19 @@ int ffmpeg_lock_manager(void **mutex, enum AVLockOp op)
 }
 #endif
 
-ffmpeg_initializer::ffmpeg_initializer(void)
+dk_ffmpeg_initializer::dk_ffmpeg_initializer(void)
 {
 	av_register_all();
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	av_lockmgr_register(ffmpeg_lock_manager);
 #endif
 }
 
-ffmpeg_initializer::~ffmpeg_initializer(void)
+dk_ffmpeg_initializer::~dk_ffmpeg_initializer(void)
 {
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	av_lockmgr_register(0);
 #endif
 }
 
-static ffmpeg_initializer ffmpeg;
+static dk_ffmpeg_initializer ffmpeg;

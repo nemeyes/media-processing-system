@@ -12,14 +12,15 @@ struct SwsContext;
 class ffmpeg_decoder_core
 {
 public:
-	ffmpeg_decoder_core(void);
+	ffmpeg_decoder_core(dk_ff_video_decoder * front);
 	~ffmpeg_decoder_core(void);
 
-	dk_ff_video_decoder::ERR_CODE initialize_decoder(dk_ff_video_decoder::CONFIGURATION_T * config);
+	dk_ff_video_decoder::ERR_CODE initialize_decoder(dk_ff_video_decoder::configuration_t * config);
 	dk_ff_video_decoder::ERR_CODE release_decoder(void);
-	dk_ff_video_decoder::ERR_CODE decode(DK_VIDEO_ENTITY_T * bitstream);
+	dk_ff_video_decoder::ERR_CODE decode(dk_video_entity_t * encoded, dk_video_entity_t * decoded);
 
 private:
+	dk_ff_video_decoder * _front;
 	AVPacket * _av_packet;
 	AVFormatContext * _av_format_ctx;
 	AVCodecContext * _av_codec_ctx;

@@ -11,7 +11,10 @@ extern "C"
 	#include <libavutil/mathematics.h>
 }
 
-ffmpeg_decoder_core::ffmpeg_decoder_core(void)
+#include <dk_simd_colorspace_converter.h>
+
+ffmpeg_decoder_core::ffmpeg_decoder_core(dk_ff_video_decoder * front)
+	: _front(front)
 {
 
 }
@@ -21,9 +24,9 @@ ffmpeg_decoder_core::~ffmpeg_decoder_core(void)
 
 }
 
-dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::initialize_decoder(dk_ff_video_decoder::CONFIGURATION_T * config)
+dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::initialize_decoder(dk_ff_video_decoder::configuration_t * config)
 {
-	switch (config->ist)
+	switch (config->ismt)
 	{
 		case dk_ff_video_decoder::SUBMEDIA_TYPE_H264:
 		case dk_ff_video_decoder::SUBMEDIA_TYPE_H264_BP:
@@ -50,20 +53,27 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::initialize_decoder(dk_ff_vide
 
 	if (!_av_codec)
 	{
-		//release();
+		release_decoder();
 		return dk_ff_video_decoder::ERR_CODE_FAILED;
 	}
 
 	_av_codec_ctx = avcodec_alloc_context3(_av_codec);
 	if (!_av_codec_ctx)
 	{
-		//release();
+		release_decoder();
 		return dk_ff_video_decoder::ERR_CODE_FAILED;
 	}
-
+	_av_codec_ctx->delay = 0;
+	if (config->extradata && (config->extradata_size>0))
+	{
+		_av_codec_ctx->extradata = static_cast<uint8_t*>(av_malloc(config->extradata_size));
+		_av_codec_ctx->extradata_size = config->extradata_size;
+		memcpy(_av_codec_ctx->extradata, config->extradata, _av_codec_ctx->extradata_size);
+		//memset(_av_codec_ctx->extradata, 0x00, config->extra_data_size);
+	}
 	if (avcodec_open2(_av_codec_ctx, _av_codec, NULL)<0)
 	{
-		//release();
+		release_decoder();
 		return dk_ff_video_decoder::ERR_CODE_FAILED;
 	}
 
@@ -71,14 +81,14 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::initialize_decoder(dk_ff_vide
 	_av_video_frame = av_frame_alloc();
 	if (!_av_frame || !_av_video_frame)
 	{
-		//release();
+		release_decoder();
 		return dk_ff_video_decoder::ERR_CODE_FAILED;
 	}
 
 	_av_packet = (AVPacket *)av_malloc(sizeof(AVPacket));
 	if (!_av_packet)
 	{
-		//release();
+		release_decoder();
 		return dk_ff_video_decoder::ERR_CODE_FAILED;
 	}
 	av_init_packet(_av_packet);
@@ -132,13 +142,13 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::release_decoder(void)
 	return dk_ff_video_decoder::ERR_CODE_SUCCESS;
 }
 
-dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::decode(DK_VIDEO_ENTITY_T * data)
+dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::decode(dk_video_entity_t * encoded, dk_video_entity_t * decoded)
 {
 	int32_t value = dk_ff_video_decoder::ERR_CODE_FAILED;
 	int32_t result = -1;
 	int32_t	got_frame = 0;
-	_av_packet->data = data->bitstream;
-	_av_packet->size = data->bitstream_size;
+	_av_packet->data = encoded->data;
+	_av_packet->size = encoded->data_size;
 	while (_av_packet->size>0)
 	{
 		__try
@@ -157,70 +167,71 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::decode(DK_VIDEO_ENTITY_T * da
 		}
 	}
 
-	if (got_frame && (got_frame!=-1))
+	if (got_frame && (got_frame != -1))
 	{
-		AVFrame	*frame = 0;
-		if (_osubmedia_type != VMXNET_SUB_MEDIA_TYPE_RGB32)
+		AVFrame	* frame = 0;
+		if ((_front->_config->iwidth != _front->_config->owidth) || (_front->_config->iheight != _front->_config->oheight))
 		{
-			if (iwidth != owidth || iheight != oheight)
+			if (_buffer == 0)
 			{
-				if (_buffer == 0)
-				{
-					int number_of_bytes = avpicture_get_size(_codec_ctx->pix_fmt, owidth, oheight);
-					_buffer = static_cast<unsigned char*>(av_malloc(number_of_bytes));
-					avpicture_fill((AVPicture *)_video_frame, _buffer, _codec_ctx->pix_fmt, owidth, oheight);
-				}
-
-				if (_codec_ctx)
-				{
-					if (!_sws_ctx)
-					{
-						_sws_ctx = sws_getCachedContext(0, _codec_ctx->width, _codec_ctx->height, _codec_ctx->pix_fmt, owidth, oheight, _codec_ctx->pix_fmt,
-							/*SWS_SPLINE*/SWS_FAST_BILINEAR, 0, 0, 0);
-					}
-				}
-
-				if (_frame && _video_frame && _sws_ctx)
-				{
-					__try
-					{
-						sws_scale(_sws_ctx, _video_frame->data, _video_frame->linesize, 0, _codec_ctx->height, _video_frame->data, _video_frame->linesize);
-					}
-					__except (EXCEPTION_EXECUTE_HANDLER)
-					{
-						if (_sws_ctx)
-						{
-							sws_freeContext(_sws_ctx);
-							_sws_ctx = 0;
-						}
-						return VMXNET_STATUS_FAIL;
-					}
-				}
-
-				frame = _video_frame;
-			}
-			else //decode as it's resolution is
-			{
-				frame = _frame;
+				int number_of_bytes = avpicture_get_size(_av_codec_ctx->pix_fmt, _front->_config->owidth, _front->_config->oheight);
+				_buffer = static_cast<unsigned char*>(av_malloc(number_of_bytes));
+				avpicture_fill((AVPicture *)_av_video_frame, _buffer, _av_codec_ctx->pix_fmt, _front->_config->owidth, _front->_config->oheight);
 			}
 
+			if (_av_codec_ctx)
+			{
+				if (!_sws_ctx)
+				{
+					_sws_ctx = sws_getCachedContext(0, _av_codec_ctx->width, _av_codec_ctx->height,
+						_av_codec_ctx->pix_fmt, _front->_config->owidth, _front->_config->oheight,
+						_av_codec_ctx->pix_fmt, /*SWS_SPLINE*/SWS_FAST_BILINEAR, 0, 0, 0);
+				}
+			}
 
-			int y_width = owidth;
-			int y_height = oheight;
-			int u_width = owidth >> 1;
-			int u_height = oheight >> 1;
-			int v_width = u_width;
-			int v_height = u_height;
+			if (_av_frame && _av_video_frame && _sws_ctx)
+			{
+				__try
+				{
+					sws_scale(_sws_ctx, _av_video_frame->data, _av_video_frame->linesize, 0, _av_codec_ctx->height, _av_video_frame->data, _av_video_frame->linesize);
+				}
+				__except (EXCEPTION_EXECUTE_HANDLER)
+				{
+					if (_sws_ctx)
+					{
+						sws_freeContext(_sws_ctx);
+						_sws_ctx = 0;
+					}
+					return dk_ff_video_decoder::ERR_CODE_FAILED;
+				}
+			}
 
-			unsigned char *ptr_y = output;
-			unsigned char *ptr_u = 0;
-			unsigned char *ptr_v = 0;
-			int y_stride = frame->linesize[0];
-			int u_stride = frame->linesize[1];
-			int v_stride = frame->linesize[2];
-			unsigned char *y_buffer = frame->data[0];
-			unsigned char *u_buffer = frame->data[1];
-			unsigned char *v_buffer = frame->data[2];
+			frame = _av_video_frame;
+		}
+		else //decode as it's resolution is
+		{
+			frame = _av_frame;
+		}
+
+		int32_t y_width = _front->_config->owidth;
+		int32_t y_height = _front->_config->oheight;
+		int32_t uv_width = _front->_config->owidth >> 1;
+		int32_t uv_height = _front->_config->oheight >> 1;
+
+		int src_y_stride = frame->linesize[0];
+		int src_u_stride = frame->linesize[1];
+		int src_v_stride = frame->linesize[2];
+		unsigned char * src_y_plane = frame->data[0];
+		unsigned char * src_u_plane = frame->data[1];
+		unsigned char * src_v_plane = frame->data[2];
+
+		if ((_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_I420) || (_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_YV12))
+		{
+			unsigned char * dst_y_plane = decoded->data;
+			unsigned char * dst_u_plane = 0;
+			unsigned char * dst_v_plane = 0;
+			int32_t dst_y_stride = _front->_config->ostride;
+			int32_t dst_uv_stride = dst_y_stride >> 1;
 
 #if 0
 			int decoded_buffer_size = y_width*y_height*1.5;
@@ -251,39 +262,42 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::decode(DK_VIDEO_ENTITY_T * da
 			}
 			osize = _decoded_buffer_size;
 #else
-			int decoded_buffer_size = stride*y_height*1.5;
-			if (_osubmedia_type == VMXNET_SUB_MEDIA_TYPE_IYUV) //4:2:0 Y U V
+			decoded->data_size = _front->_config->ostride*y_height*1.5;
+			if (_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_I420) //4:2:0 Y U V
 			{
-				ptr_u = ptr_y;
-				ptr_u += stride*y_height;
-				ptr_v = ptr_u;
-				ptr_v += (stride >> 1)*u_height;
+				dst_u_plane = dst_y_plane + dst_y_stride*y_height;
+				dst_v_plane = dst_u_plane + dst_uv_stride*uv_height;
 			}
-			else if (_osubmedia_type == VMXNET_SUB_MEDIA_TYPE_YV12) // 4:2:0 Y V U
+			else if (_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_YV12) // 4:2:0 Y V U
 			{
-				ptr_v = ptr_y;
-				ptr_v += stride*y_height;
-				ptr_u = ptr_v;
-				ptr_u += (stride >> 1)*u_height;
+				dst_v_plane = dst_y_plane + dst_y_stride*y_height;
+				dst_u_plane = dst_v_plane + dst_uv_stride*uv_height;
 			}
 
-			for (int h = 0; h<y_height; h++)
+			for (int h = 0; h < y_height; h++)
 			{
-				memcpy(ptr_y + h*stride, y_buffer + h*y_stride, y_width);
-				if (h<u_height)
+				memcpy(dst_y_plane + h*dst_y_stride, src_y_plane + h*src_y_stride, y_width);
+				if (h < uv_height)
 				{
-					memcpy(ptr_v + h*(stride >> 1), v_buffer + h*v_stride, v_width);
-					memcpy(ptr_u + h*(stride >> 1), u_buffer + h*u_stride, u_width);
+					memcpy(dst_v_plane + h*dst_uv_stride, src_v_plane + h*src_v_stride, uv_width);
+					memcpy(dst_u_plane + h*dst_uv_stride, src_u_plane + h*src_v_stride, uv_width);
 				}
 			}
-			osize = _decoded_buffer_size;
 #endif
-
 		}
-		else
+		else if (_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32)
 		{
-			//YUV2ARGB32( subpe, _codec_ctx, _frame );
+			uint8_t * dst = decoded->data;
+			int32_t dst_stride = _front->_config->ostride;
+			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
 		}
-
+		else if (_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB24)
+		{
+			uint8_t * dst = decoded->data;
+			int32_t dst_stride = _front->_config->ostride;
+			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
+		}
+		return dk_ff_video_decoder::ERR_CODE_SUCCESS;
+	}
 	return dk_ff_video_decoder::ERR_CODE_FAILED;
 }

@@ -60,15 +60,15 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\dk_common\include;..\dk_rtsp_client\include;..\dk_ff_mpeg2ts_muxer\include;..\ffmpeg\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\dk_common\include;..\dk_rtsp_client\include;..\dk_ff_mpeg2ts_muxer\include;..\dk_video_base\include;..\dk_ff_video_decoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dk_rtsp_client.lib;dk_ff_mpeg2ts_muxer.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;postproc.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dk_rtsp_client.lib;dk_ff_video_decoder.lib;dk_ff_mpeg2ts_muxer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;..\ffmpeg\x86\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -114,7 +114,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="dk_ff_decoder.h" />
     <ClInclude Include="dk_record_server_controller.h" />
     <ClInclude Include="dk_record_server_controller_dlg.h" />
     <ClInclude Include="Resource.h" />
@@ -123,7 +122,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dk_ff_decoder.cpp" />
     <ClCompile Include="dk_record_server_controller.cpp" />
     <ClCompile Include="dk_record_server_controller_dlg.cpp" />
     <ClCompile Include="dk_rtsp_receiver.cpp" />

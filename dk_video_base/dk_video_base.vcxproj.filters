@@ -13,30 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ffmpeg_base">
-      <UniqueIdentifier>{0833cf75-e275-44d3-875d-02404e3458cb}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dk_ff_mpeg2ts_muxer.h">
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dk_video_base.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ff_mpeg2ts_muxer_core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
-      <Filter>ffmpeg_base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\dk_ff_mpeg2ts_muxer.cpp">
+    <ClCompile Include="source\dk_video_base.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\ff_mpeg2ts_muxer_core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
-      <Filter>ffmpeg_base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
