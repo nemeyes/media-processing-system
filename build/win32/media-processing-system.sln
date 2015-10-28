@@ -95,6 +95,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_ffmpeg_base", "..\..\dk_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_video_base", "..\..\dk_video_base\dk_video_base.vcxproj", "{75E5D88B-3BDD-407B-A368-9369D535F273}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_directx_rendering_test", "..\..\test\dk_directx_rendering_test\dk_directx_rendering_test.vcxproj", "{E05CF91A-ED35-4754-B02C-45E1E41359A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -275,6 +277,12 @@ Global
 		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|Win32.ActiveCfg = Release|Win32
 		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|Win32.Build.0 = Release|Win32
 		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|x64.ActiveCfg = Release|Win32
+		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Debug|Win32.Build.0 = Debug|Win32
+		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Debug|x64.ActiveCfg = Debug|Win32
+		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Release|Win32.ActiveCfg = Release|Win32
+		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Release|Win32.Build.0 = Release|Win32
+		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -321,5 +329,6 @@ Global
 		{F11F5E5A-3DF4-4A00-93E6-CD381278197D} = {5A0D68FF-85B6-48D1-A613-998FF61715A3}
 		{476A8B4A-42C6-4C02-AF64-0BFCC9001EAF} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 		{75E5D88B-3BDD-407B-A368-9369D535F273} = {9866AB42-AAF7-427A-9F15-738174299D54}
+		{E05CF91A-ED35-4754-B02C-45E1E41359A4} = {20A20008-298C-4904-A58B-A23BA1F883E1}
 	EndGlobalSection
 EndGlobal
