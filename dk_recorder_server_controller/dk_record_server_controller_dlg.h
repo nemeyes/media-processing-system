@@ -42,9 +42,9 @@ private:
 	CComboBox _cmb_streaming_protocol;
 	CComboBox _cmb_transport_type;
 	CComboBox _cmb_recv_option;
+	CComboBox _cmb_retry_connection;
+
 public:
 	afx_msg void OnBnClickedButtonStartPreview();
 	afx_msg void OnBnClickedButtonStopPreview();
-private:
-	CComboBox _cmb_retry_connection;
 };

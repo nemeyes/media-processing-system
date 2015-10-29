@@ -1,4 +1,5 @@
 #include <tchar.h>
+#include <cmath>
 #include "dk_ddraw_video_renderer.h"
 
 #define DDSAFE_RELEASE(x) if(x) { x->Release(); x=0; }
@@ -17,7 +18,7 @@ dk_ddraw_video_renderer::dk_ddraw_video_renderer(void)
 	, _pdd_video(0)
 	, _pdd_cliper(0)
 	, _pdd_rgb(0)
-	, _is_video_stretch(false)
+	, _is_video_stretch(true)
 	, _is_video_fullscreen(false)
 	, _library(0)
 	, _enable_time_text(true)
@@ -42,7 +43,7 @@ dk_ddraw_video_renderer::dk_ddraw_video_renderer(void)
 {
 	_time_text_shadow_color = RGB(0, 0, 0);
 	_osd_text_shadow_color = RGB(0, 0, 0);
-	_tcscpy(_osd, _T(""));
+	wcscpy_s(_osd, _T(""));
 }
 
 dk_ddraw_video_renderer::~dk_ddraw_video_renderer(void)
@@ -83,12 +84,9 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::enable_osd_text(bool 
 	return dk_ddraw_video_renderer::ERR_CODE_SUCCESS;
 }
 
-dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::set_osd_text(char *osd)
+dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::set_osd_text(wchar_t * osd)
 {
-	TCHAR *tmp_osd = 0;
-	VMSStringUtil::convert_multibyte2wide(osd, &tmp_osd);
-	_tcscpy(_osd, tmp_osd);
-	::SysFreeString(tmp_osd);
+	wcscpy_s(_osd, osd);
 	return dk_ddraw_video_renderer::ERR_CODE_SUCCESS;
 }
 
@@ -161,19 +159,23 @@ bool dk_ddraw_video_renderer::is_initialized(void)
 	return _is_initialized;
 }
 
-dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::initialize_renderer(LPVMS_SUBMEDIA_ELEMENT_T subpe)
+dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::initialize_renderer(configuration_t * config)
 {
+	_config = config;
+	_full_screen_hwnd = _config->full_hwnd;
+	_noraml_screen_hwnd = _config->normal_hwnd;
+
 	dk_ddraw_video_renderer::ERR_CODE value = dk_ddraw_video_renderer::ERR_CODE_FAILED;
 	HWND hwnd = 0;
 
-	if (subpe->media_info.video_fmt.height>0 || subpe->media_info.video_fmt.width>0)
+	if (_config->height>0 && _config->width>0)
 	{
 		if (_is_video_fullscreen)
 			hwnd = _full_screen_hwnd;
 		else
 			hwnd = _noraml_screen_hwnd;
 		if (hwnd)
-			value = open(subpe);
+			value = open();
 	}
 	_is_initialized = true;
 	return value;
@@ -181,10 +183,10 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::initialize_renderer(L
 
 dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::release_renderer(void)
 {
-	return close(subpe);
+	return close();
 }
 
-dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::open(LPVMS_SUBMEDIA_ELEMENT_T subpe)
+dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::open(void)
 {
 	HRESULT hr = NO_ERROR;
 	dk_ddraw_video_renderer::ERR_CODE value = dk_ddraw_video_renderer::ERR_CODE_FAILED;
@@ -192,8 +194,8 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::open(LPVMS_SUBMEDIA_E
 
 
 	DDSURFACEDESC2 ddsd;
-	DDPIXELFORMAT ddpfBltFormat = { sizeof(DDPIXELFORMAT), DDPF_FOURCC, MAKEFOURCC('Y', 'U', 'Y', '2'), 0, 0, 0, 0, 0 }; // YUY2
-
+	//DDPIXELFORMAT ddpfBltFormat = { sizeof(DDPIXELFORMAT), DDPF_FOURCC, MAKEFOURCC('Y', 'U', 'Y', '2'), 0, 0, 0, 0, 0 }; // YUY2
+	DDPIXELFORMAT ddpfFormats = { sizeof(DDPIXELFORMAT), DDPF_RGB, 0, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0 };
 	//close( subpe );
 	if (_library == 0)
 	{
@@ -248,10 +250,11 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::open(LPVMS_SUBMEDIA_E
 					// create offscreen
 					ZeroMemory(&ddsd, sizeof(ddsd));
 					ddsd.dwSize = sizeof(ddsd);
-					ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
-					ddsd.dwWidth = subpe->media_info.video_fmt.width;
-					ddsd.dwHeight = subpe->media_info.video_fmt.height;
+					ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+					ddsd.dwWidth = _config->width;
+					ddsd.dwHeight = _config->height;
 					ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY;
+					memcpy(&ddsd.ddpfPixelFormat, &ddpfFormats, sizeof(DDPIXELFORMAT));
 
 
 					// 비디오 메모리에 offscreen만들기 시도, 실패하면 시스템 메모리에 만든다...
@@ -296,12 +299,12 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::close(void)
 	return dk_ddraw_video_renderer::ERR_CODE_SUCCESS;
 }
 
-dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA_ELEMENT_T subpe)
+dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(dk_render_entity_t * p)
 {
-	unsigned short value = VMS_MEDIA_FAIL;
-	unsigned short display_width = 0, display_height = 0, display_x = 0, display_y = 0;
+	dk_ddraw_video_renderer::ERR_CODE value = dk_ddraw_video_renderer::ERR_CODE_FAILED;
+	int32_t display_width = 0, display_height = 0, display_x = 0, display_y = 0;
 
-	if ((_pdd) && (subpe->media_info.video_fmt.height>0) && (subpe->media_info.video_fmt.width>0))
+	if ((_pdd) && (_config->height>0) && (_config->width>0))
 	{
 		/*
 		if( _is_video_fullscreen!=subpe->is_video_fullscreen )
@@ -320,11 +323,11 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 		}
 		*/
 		if (_is_video_fullscreen)
-			value = make_full_screen_display_size(subpe, display_width, display_height, display_x, display_y);
+			value = make_full_screen_display_size(display_width, display_height, display_x, display_y);
 		else
-			value = make_normal_screen_display_size(subpe, display_width, display_height, display_x, display_y);
+			value = make_normal_screen_display_size(display_width, display_height, display_x, display_y);
 
-		if (value == VMS_MEDIA_SUCCESS)
+		if (value == dk_ddraw_video_renderer::ERR_CODE_SUCCESS)
 		{
 			if ((!_pdd_rgb) && ((_display_width != display_width) || (_display_height != display_height)))
 			{
@@ -347,7 +350,8 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 					hr = _pdd->CreateSurface(&ddsd, &_pdd_rgb, 0);
 				}
 
-				if (hr != DD_OK) return VMS_MEDIA_FAIL;
+				if (hr != DD_OK) 
+					return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 
 				_display_width = display_width;
 				_display_height = display_height;
@@ -363,8 +367,8 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 			::ClientToScreen(_draw, &pt);
 			OffsetRect(&rtDisplay, pt.x, pt.y); //현재 창의 스크린좌표로 이동
 
-			unsigned char *src, *dst;
-			src = subpe->buffer_of_filter;
+			uint8_t *src, *dst;
+			src = p->data;
 
 			if (_pdd_video->Lock(0, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, 0) != DD_OK)
 			{
@@ -373,20 +377,23 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 				_pdd_primary->Restore();
 
 				_pdd_video->Unlock(0);
-				value = VMS_MEDIA_FAIL;
+				value = dk_ddraw_video_renderer::ERR_CODE_FAILED;
 			}
 			else
 			{
 				dst = (unsigned char*)ddsd.lpSurface;
 
 				size_t nStep;
-				if (_rgb_bitcount == 16)		nStep = subpe->media_info.video_fmt.width << 1;
-				else if (_rgb_bitcount == 24)	nStep = subpe->media_info.video_fmt.width * 3;
-				else if (_rgb_bitcount == 32)	nStep = subpe->media_info.video_fmt.width << 2;
+				if (_rgb_bitcount == 16)		
+					nStep = _config->width << 1;
+				else if (_rgb_bitcount == 24)	
+					nStep = _config->width * 3;
+				else if (_rgb_bitcount == 32)	
+					nStep = _config->width << 2;
 
 				__try
 				{
-					for (unsigned int i = 0; i<subpe->media_info.video_fmt.height; i++)
+					for (unsigned int i = 0; i<_config->height; i++)
 					{
 						CopyMemory(dst, src, nStep);
 						src += nStep;
@@ -396,17 +403,17 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 				__except (EXCEPTION_EXECUTE_HANDLER)
 				{
 					_pdd_video->Unlock(0);
-					return VMS_MEDIA_FAIL;
+					return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 				}
 
 				_pdd_video->Unlock(0);
 				HRESULT hr;
 				if (!_pdd_primary)
-					return VMS_MEDIA_FAIL;
+					return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 				if (!_pdd_rgb)
-					return VMS_MEDIA_FAIL;
+					return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 				if (!_pdd_video)
-					return VMS_MEDIA_FAIL;
+					return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 
 				while (_pdd_rgb->Blt(0, _pdd_video, 0, DDBLT_WAIT, 0) == DDERR_SURFACEBUSY)
 					Sleep(0);
@@ -422,12 +429,12 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 
 						::SetTextColor(hdc, _time_text_shadow_color);
 						_sntprintf_s(_time, sizeof(_time), _T("%.4d/%.2d/%.2d %.2d:%.2d:%.2d"),
-							subpe->year,
-							subpe->month,
-							subpe->day,
-							subpe->hour,
-							subpe->minute,
-							subpe->second);
+							p->year,
+							p->month,
+							p->day,
+							p->hour,
+							p->minute,
+							p->second);
 						HFONT oFont;
 						HFONT time_text_font = CreateFont(_time_text_font_size, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("Times New Roman"));
 						oFont = (HFONT)SelectObject(hdc, time_text_font);
@@ -490,7 +497,7 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 						hr = _pdd_video->Restore();
 						hr = _pdd_rgb->Restore();
 						hr = _pdd_primary->Restore();
-						return VMS_MEDIA_FAIL;
+						return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 					}
 				} while (hr == DDERR_SURFACEBUSY);
 
@@ -503,12 +510,12 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 						hr = _pdd_rgb->Restore();
 						hr = _pdd_primary->Restore();
 
-						return VMS_MEDIA_FAIL;
+						return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 					}
 
 				} while (hr == DDERR_SURFACEBUSY);
 
-				value = VMS_MEDIA_SUCCESS;
+				value = dk_ddraw_video_renderer::ERR_CODE_SUCCESS;
 			}
 		}
 	}
@@ -516,17 +523,17 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::render(LPVMS_SUBMEDIA
 }
 
 
-dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::make_normal_screen_display_size(LPVMS_SUBMEDIA_ELEMENT_T subpe, unsigned short &display_width, unsigned short &display_height, unsigned short &display_x, unsigned short &display_y)
+dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::make_normal_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
 {
 	RECT dst_rect = { 0 };
 	if (_noraml_screen_hwnd)
 		::GetClientRect(_noraml_screen_hwnd, &dst_rect);
 	else
-		return VMS_MEDIA_FAIL;
+		return dk_ddraw_video_renderer::ERR_CODE_FAILED;
 
 
-	unsigned int iwidth = subpe->media_info.video_fmt.width;
-	unsigned int iheight = subpe->media_info.video_fmt.height;
+	unsigned int iwidth = _config->width;
+	unsigned int iheight = _config->height;
 	unsigned int dwidth = dst_rect.right - dst_rect.left;
 	unsigned int dheight = dst_rect.bottom - dst_rect.top;
 
@@ -563,16 +570,16 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::make_normal_screen_di
 			display_y = 0;
 		}
 	}
-	return VMS_MEDIA_SUCCESS;
+	return dk_ddraw_video_renderer::ERR_CODE_SUCCESS;
 }
 
-dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::make_full_screen_display_size(LPVMS_SUBMEDIA_ELEMENT_T subpe, unsigned short &display_width, unsigned short &display_height, unsigned short &display_x, unsigned short &display_y)
+dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::make_full_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
 {
 	RECT dst_rect;
 	::GetClientRect(_full_screen_hwnd, &dst_rect);
 
-	unsigned int iwidth = subpe->media_info.video_fmt.width;
-	unsigned int iheight = subpe->media_info.video_fmt.height;
+	unsigned int iwidth = _config->width;
+	unsigned int iheight = _config->height;
 	unsigned int dwidth = dst_rect.right - dst_rect.left;
 	unsigned int dheight = dst_rect.bottom - dst_rect.top;
 
@@ -609,5 +616,5 @@ dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::make_full_screen_disp
 			display_y = 0;
 		}
 	}
-	return VMS_MEDIA_SUCCESS;
+	return dk_ddraw_video_renderer::ERR_CODE_SUCCESS;
 }

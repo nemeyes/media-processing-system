@@ -1,6 +1,7 @@
 #ifndef _dk_rtsp_client_H_
 #define _dk_rtsp_client_H_
 
+#include <cstdint>
 #if !defined(WIN32)
 #include <pthread.h>
 #endif
@@ -63,8 +64,10 @@ public:
 	unsigned char * get_sps(size_t & sps_size);
 	unsigned char * get_pps(size_t & pps_size);
 
-	virtual void on_begin_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, const unsigned char * data, unsigned data_size, struct timeval presentation_time) = 0;
-	virtual void on_recv_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, const unsigned char * data, unsigned data_size, struct timeval presentation_time) = 0;
+	virtual void on_begin_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, 
+								uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, 
+								const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	virtual void on_recv_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
 
 	bool ignore_sdp(void);
 private:

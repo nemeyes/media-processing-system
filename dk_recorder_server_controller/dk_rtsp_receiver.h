@@ -4,6 +4,7 @@
 #include <dk_rtsp_client.h>
 #include <dk_ff_video_decoder.h>
 #include <dk_ff_mpeg2ts_muxer.h>
+#include <dk_ddraw_video_renderer.h>
 
 #define DEBUG_PRINT(x) do {x = x;} while (0)
 
@@ -59,14 +60,14 @@ public:
 	dk_rtsp_receiver(void);
 	~dk_rtsp_receiver(void);
 
-	void start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HANDLE handle);
+	void start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle);
 	void stop_preview(void);
 
 	void start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option);
 	void stop_recording(void);
 
-	void on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, const unsigned char * data, unsigned data_size, struct timeval presentation_time);
-	void on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, const unsigned char * data, unsigned data_size, struct timeval presentation_time);
+	void on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
 
 private:
 	// A general bit copy operation:
@@ -86,9 +87,16 @@ private:
 	bool _is_recording_enabled;
 
 	dk_ff_video_decoder * _decoder;
-	dk_ff_video_decoder::configuration_t _config;	
+	dk_ff_video_decoder::configuration_t _decoder_config;	
 
 	dk_ff_mpeg2ts_muxer * _mpeg2ts_muxer;
+
+	HWND _normal_hwnd;
+	dk_ddraw_video_renderer * _renderer;
+	dk_ddraw_video_renderer::configuration_t _renderer_config;
+
+
+	uint8_t * _buffer;
 
 };
 

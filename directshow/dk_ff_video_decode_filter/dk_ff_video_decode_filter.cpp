@@ -203,10 +203,11 @@ HRESULT  dk_ff_video_decode_filter::GetMediaType(int position, CMediaType *type)
 
 	if (position<0)
 		return E_INVALIDARG;
-	if (position>1)
+	if (position>2)
 		return VFW_S_NO_MORE_ITEMS;
 
 	type->SetType(&MEDIATYPE_Video);
+
 	if (position == 0)
 	{
 		HRESULT hr = m_pInput->ConnectionMediaType(type);
@@ -239,7 +240,73 @@ HRESULT  dk_ff_video_decode_filter::GetMediaType(int position, CMediaType *type)
 		vih2->bmiHeader.biBitCount = 12;
 		vih2->bmiHeader.biCompression = MAKEFOURCC('Y', 'V', '1', '2');//0x32315659;
 		vih2->bmiHeader.biSizeImage = _config.owidth*_config.oheight*1.5;
-		_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_YV12;
+	}
+	else if (position == 1)
+	{
+		HRESULT hr = m_pInput->ConnectionMediaType(type);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		type->SetSubtype(&MEDIASUBTYPE_RGB32);
+		type->SetFormatType(&FORMAT_VideoInfo2);
+		type->SetTemporalCompression(FALSE);
+		type->SetSampleSize(_config.owidth * _config.oheight * 4);
+
+		VIDEOINFOHEADER2	*vih2 = reinterpret_cast<VIDEOINFOHEADER2*>(type->pbFormat);//(VIDEOINFOHEADER2*)type->AllocFormatBuffer( sizeof(VIDEOINFOHEADER2) );
+		ZeroMemory(vih2, sizeof(VIDEOINFOHEADER2));
+		vih2->rcSource.left = 0;
+		vih2->rcSource.top = 0;
+		vih2->rcSource.right = _config.owidth;
+		vih2->rcSource.bottom = _config.oheight;
+		vih2->rcTarget.left = 0;
+		vih2->rcTarget.top = 0;
+		vih2->rcTarget.right = _config.owidth;
+		vih2->rcTarget.bottom = _config.oheight;
+		vih2->dwPictAspectRatioX = _config.owidth;
+		vih2->dwPictAspectRatioY = _config.oheight;
+		vih2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		vih2->bmiHeader.biWidth = _config.owidth;
+		vih2->bmiHeader.biHeight = _config.oheight;
+		vih2->bmiHeader.biPlanes = 1;
+		vih2->bmiHeader.biBitCount = 32;
+		vih2->bmiHeader.biCompression = BI_RGB;//MAKEFOURCC('N', 'V', '1', '2');//0x32315659;
+		vih2->bmiHeader.biSizeImage = _config.owidth * _config.oheight * 4;
+		vih2->bmiHeader.biClrImportant = 0;
+	}
+	else if (position == 2)
+	{
+		HRESULT hr = m_pInput->ConnectionMediaType(type);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		type->SetSubtype(&MEDIASUBTYPE_RGB24);
+		type->SetFormatType(&FORMAT_VideoInfo2);
+		type->SetTemporalCompression(FALSE);
+		type->SetSampleSize(_config.owidth*_config.oheight * 3);
+
+		VIDEOINFOHEADER2	*vih2 = reinterpret_cast<VIDEOINFOHEADER2*>(type->pbFormat);//(VIDEOINFOHEADER2*)type->AllocFormatBuffer( sizeof(VIDEOINFOHEADER2) );
+		ZeroMemory(vih2, sizeof(VIDEOINFOHEADER2));
+		vih2->rcSource.left = 0;
+		vih2->rcSource.top = 0;
+		vih2->rcSource.right = _config.owidth;
+		vih2->rcSource.bottom = _config.oheight;
+		vih2->rcTarget.left = 0;
+		vih2->rcTarget.top = 0;
+		vih2->rcTarget.right = _config.owidth;
+		vih2->rcTarget.bottom = _config.oheight;
+		vih2->dwPictAspectRatioX = _config.owidth;
+		vih2->dwPictAspectRatioY = _config.oheight;
+		vih2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		vih2->bmiHeader.biWidth = _config.owidth;
+		vih2->bmiHeader.biHeight = _config.oheight;
+		vih2->bmiHeader.biPlanes = 1;
+		vih2->bmiHeader.biBitCount = 24;
+		vih2->bmiHeader.biCompression = BI_RGB;
+		vih2->bmiHeader.biSizeImage = _config.owidth*_config.oheight * 3;
 	}
 	return S_OK;
 }
@@ -252,7 +319,22 @@ HRESULT  dk_ff_video_decode_filter::CheckTransform(const CMediaType *itype, cons
 	VIDEOINFOHEADER2 *ovi = (VIDEOINFOHEADER2 *)(otype->Format());
 	if (!ovi)
 		return E_FAIL;
-	_config.ostride = (UINT)ovi->bmiHeader.biWidth;
+
+	if (IsEqualGUID(*(otype->Subtype()), MEDIASUBTYPE_RGB32))
+	{
+		_config.ostride = _config.owidth * 4;
+		_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
+	}
+	else if (IsEqualGUID(*(otype->Subtype()), MEDIASUBTYPE_RGB24))
+	{
+		_config.ostride = _config.owidth * 3;
+		_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB24;
+	}
+	else if (IsEqualGUID(*(otype->Subtype()), MEDIASUBTYPE_YV12))
+	{
+		_config.ostride = (UINT)ovi->bmiHeader.biWidth;
+		_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_YV12;
+	}
 
 	return S_OK;
 }
@@ -278,7 +360,13 @@ HRESULT  dk_ff_video_decode_filter::DecideBufferSize(IMemAllocator *allocator, A
 
 	properties->cBuffers = 1;
 	//properties->cbAlign		= 1;
-	properties->cbBuffer = _config.ostride*_config.oheight* 2;
+	if (_config.osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32)
+		properties->cbBuffer = _config.owidth*_config.oheight * 4;
+	else if (_config.osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB24)
+		properties->cbBuffer = _config.owidth*_config.oheight * 3;
+	else
+		properties->cbBuffer = _config.ostride*_config.oheight * 1.5;
+
 	properties->cbPrefix = 0;
 
 	ALLOCATOR_PROPERTIES actual;
@@ -333,6 +421,7 @@ HRESULT dk_ff_video_decode_filter::Transform(IMediaSample *src, IMediaSample *ds
 
 	end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
 	dst->SetTime(&start_time, &end_time);
+	dst->SetSyncPoint(TRUE);
 
 	return S_OK;
 

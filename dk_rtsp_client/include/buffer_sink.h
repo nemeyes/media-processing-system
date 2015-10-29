@@ -28,6 +28,9 @@ protected:
     unsigned char * _buffer;
     unsigned _buffer_size;
 
+	bool _change_sps;
+	bool _change_pps;
+	bool _is_first_idr_rcvd;
 	unsigned char _extra_data[400];
 	size_t _extra_data_size;
 

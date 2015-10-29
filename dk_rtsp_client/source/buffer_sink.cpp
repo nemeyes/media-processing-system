@@ -10,6 +10,9 @@ buffer_sink::buffer_sink(dk_rtsp_client * front, dk_rtsp_client::MEDIA_TYPE_T mt
     , _same_presentation_time_counter(0)
 	, _mt(mt)
 	, _smt(smt)
+	, _change_sps(false)
+	, _change_pps(false)
+	, _is_first_idr_rcvd(false)
 {
     _buffer = new unsigned char[buffer_size];
 	//_buffer = static_cast<unsigned char*>(tc_malloc(buffer_size));
@@ -74,6 +77,82 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 		if ((_mt == dk_rtsp_client::MEDIA_TYPE_VIDEO) && (_smt == dk_rtsp_client::SUBMEDIA_TYPE_H264))
 		{
 			size_t saved_sps_size = 0;
+			unsigned char * saved_sps = _front->get_sps(saved_sps_size);
+			size_t saved_pps_size = 0;
+			unsigned char * saved_pps = _front->get_pps(saved_pps_size);
+
+			bool is_sps = stream_parser::is_sps(_smt, data[4] & 0x1F);
+			if (is_sps)
+			{
+				if (saved_sps_size < 1 || !saved_sps)
+				{
+					_front->set_sps(data, data_size);
+					_change_sps = true;
+				}
+				else
+				{
+					if (memcmp(saved_sps, data, saved_sps_size))
+					{
+						_front->set_sps(data, data_size);
+						_change_sps = true;
+					}
+				}
+			}
+
+			bool is_pps = stream_parser::is_pps(_smt, data[4] & 0x1F);
+			if (is_pps)
+			{
+				if (saved_pps_size < 1 || !saved_pps)
+				{
+					_front->set_pps(data, data_size);
+					_change_pps = true;
+				}
+				else
+				{
+					if (memcmp(saved_pps, data, saved_pps_size))
+					{
+						_front->set_pps(data, data_size);
+						_change_pps = true;
+					}
+				}
+			}
+
+			bool is_idr = stream_parser::is_idr(_smt, data[4] & 0x1F);
+
+			if (_change_sps || _change_pps)
+			{
+				saved_sps = _front->get_sps(saved_sps_size);
+				saved_pps = _front->get_pps(saved_pps_size);
+				if ((saved_sps_size > 0) && (saved_pps_size > 0))
+				{
+					memcpy(_extra_data, saved_sps, saved_sps_size);
+					memcpy(_extra_data + saved_sps_size, saved_pps, saved_pps_size);
+					_extra_data_size = saved_sps_size + saved_pps_size;
+
+					if (is_idr && !_is_first_idr_rcvd)
+					{
+						memmove(data + _extra_data_size, data, data_size);
+						memmove(data, _extra_data, _extra_data_size);
+						_is_first_idr_rcvd = true;
+
+						_front->on_begin_media(_mt, _smt, saved_sps, saved_sps_size, saved_pps, saved_pps_size, data, data_size + _extra_data_size, presentation_time);
+						_change_sps = false;
+						_change_pps = false;
+					}
+				}
+			}
+			
+			if (!is_sps && !is_pps && _is_first_idr_rcvd)
+			{
+				saved_sps = _front->get_sps(saved_sps_size);
+				saved_pps = _front->get_pps(saved_pps_size);
+				if (saved_sps_size > 0 && saved_pps_size > 0)
+				{
+					_front->on_recv_media(_mt, _smt, data, data_size, presentation_time);
+				}
+			}
+
+			/*size_t saved_sps_size = 0;
 			unsigned char * saved_sps = _front->get_sps(saved_sps_size);
 			size_t saved_pps_size = 0;
 			unsigned char * saved_pps = _front->get_pps(saved_pps_size);
@@ -179,81 +258,7 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 					break;
 
 				begin = end;
-
-				/*end = stream_parser::find_start_code(begin, remained_size, &sync_accumulator);
-				begin = end;
-				bool is_sps = stream_parser::is_sps(_smt, begin[0] & 0x1F);
-				if (is_sps)
-				{
-					const uint8_t * sps_begin = begin - 4;
-					const uint8_t * sps_end = stream_parser::find_start_code(begin, data + data_size, &sync_accumulator);
-					if (sps_end<(data + data_size))
-						sps_end = sps_end - 4;
-					if (saved_sps_size < 1 || !saved_sps)
-					{
-						_front->set_sps((unsigned char*)sps_begin, sps_end - sps_begin);
-						change_sps = true;
-					}
-					else
-					{
-						if (memcmp(saved_sps, sps_begin, saved_sps_size))
-						{
-							_front->set_sps((unsigned char*)sps_begin, sps_end - sps_begin);
-							change_sps = true;
-						}
-					}
-				}
-				bool is_pps = stream_parser::is_pps(_smt, begin[0] & 0x1F);
-				if (is_pps)
-				{
-					const uint8_t * pps_begin = begin - 4;
-					const uint8_t * pps_end = stream_parser::find_start_code(begin, data + data_size, &sync_accumulator);
-					if (pps_end<(data + data_size))
-						pps_end = pps_end - 4;
-					if (saved_pps_size < 1 || !saved_pps)
-					{
-						_front->set_pps((unsigned char*)pps_begin, pps_end - pps_begin);
-						change_pps = true;
-					}
-					else
-					{
-						if (memcmp(saved_pps, pps_begin, saved_pps_size))
-						{
-							_front->set_pps((unsigned char*)pps_begin, pps_end - pps_begin);
-							change_pps = true;
-						}
-					}
-				}
-
-				if (change_sps || change_pps)
-				{
-					saved_sps = _front->get_sps(saved_sps_size);
-					saved_pps = _front->get_pps(saved_pps_size);
-					if ((saved_sps_size > 0) && (saved_pps_size > 0))
-					{
-						memcpy(_extra_data, saved_sps, saved_sps_size);
-						memcpy(_extra_data + saved_sps_size, saved_pps, saved_pps_size);
-						_extra_data_size = saved_sps_size + saved_pps_size;
-						_front->on_begin_media(_mt, _smt, _extra_data, _extra_data_size, presentation_time);
-					}
-				}
-				else
-				{
-					if (!is_sps && !is_pps)
-					{
-						saved_sps = _front->get_sps(saved_sps_size);
-						saved_pps = _front->get_pps(saved_pps_size);
-						if (saved_sps_size > 0 && saved_pps_size > 0)
-						{
-							const uint8_t * nal_begin = begin - 4;
-							const uint8_t * nal_end = stream_parser::find_start_code(begin, data + data_size, &sync_accumulator);
-							if (nal_end<(data + data_size))
-								nal_end = nal_end - 4;
-							_front->on_recv_media(_mt, _smt, nal_begin, nal_end-nal_begin, presentation_time);
-						}
-					}
-				}*/
-			}
+			}*/
 		}
 		else if ((_mt == dk_rtsp_client::MEDIA_TYPE_VIDEO) && (_smt == dk_rtsp_client::SUBMEDIA_TYPE_H265))
 		{
@@ -281,9 +286,9 @@ void buffer_sink::after_getting_frame(unsigned frame_size, unsigned truncated_by
 		else
 			memmove(_buffer+4, _buffer, frame_size);
 	}
-	//memmove(_buffer, start_code, sizeof(start_code));
-	memcpy(_buffer, start_code, sizeof(start_code));
-    add_data(_buffer, frame_size, presentation_time);
+	memmove(_buffer, start_code, sizeof(start_code));
+	//memcpy(_buffer, start_code, sizeof(start_code));
+    add_data(_buffer, frame_size+4, presentation_time);
 
     continuePlaying();
 }

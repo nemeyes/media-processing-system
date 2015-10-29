@@ -177,11 +177,35 @@ HCURSOR dk_record_server_controller_dlg::OnQueryDragIcon()
 void dk_record_server_controller_dlg::OnBnClickedButtonStartPreview()
 {
 	// TODO: Add your control notification handler code here
+	CString str_url;
+	CString str_username;
+	CString str_password;
+	_url.GetWindowTextW(str_url);
+	_username.GetWindowTextW(str_username);
+	_password.GetWindowTextW(str_password);
+
+	char * url = 0;
+	char * username = 0;
+	char * password = 0;
+
+	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_url, &url);
+	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_username, &username);
+	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_password, &password);
+
+	_rtsp_receiver.start_preview(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel(), ::GetDlgItem(this->m_hWnd, IDC_VIDEO_VIEW));
+
+	if (url)
+		free(url);
+	if (username)
+		free(username);
+	if (password)
+		free(password);
 }
 
 void dk_record_server_controller_dlg::OnBnClickedButtonStopPreview()
 {
 	// TODO: Add your control notification handler code here
+	_rtsp_receiver.stop_preview();
 }
 
 void dk_record_server_controller_dlg::OnBnClickedButtonStartRecord()
