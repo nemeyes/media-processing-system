@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "dk_rtsp_receiver.h"
+#include "dk_image_creator.h"
 
 static unsigned char const singleBitMask[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 
@@ -209,6 +210,7 @@ unsigned CBitVector::get_expGolomb()
 dk_rtsp_receiver::dk_rtsp_receiver(void)
 	: _is_preview_enabled(false)
 	, _is_recording_enabled(false)
+	, _frame_count(0)
 {
 	_buffer = static_cast<uint8_t*>(malloc(1920 * 1080 * 4));
 }
@@ -367,7 +369,7 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 		config.bitrate = 4000000;
 		_mpeg2ts_muxer->initialize(config);
 	}
-	TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
+	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
 
 void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
@@ -383,6 +385,18 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 			dk_ff_video_decoder::ERR_CODE decode_err = _decoder->decode(&encoded, &decoded);
 			if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 			{
+				/*
+				if (_frame_count>1000 && _frame_count<1100)
+				{
+					dk_image_creator bmp_creator(_decoder_config.owidth, _decoder_config.oheight);
+					memcpy(bmp_creator.pixel_buffer, _buffer, _decoder_config.owidth*_decoder_config.oheight * 4);
+					wchar_t filename[100] = { 0, };
+					_snwprintf_s(filename, sizeof(filename), L"%d.bmp", _frame_count);
+					bmp_creator.save(filename);
+				}
+				_frame_count++;
+				*/
+
 				dk_render_entity_t render = { 0, };
 				render.data = decoded.data;
 				render.data_size = decoded.data_size;
@@ -396,11 +410,11 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 			else
 				_mpeg2ts_muxer->put_video_stream((unsigned char*)data, data_size, 0, false);
 		}
-		TRACE(_T("on_recv_media : received video data size is %d\n"), data_size);
+		//TRACE(_T("on_recv_media : received video data size is %d\n"), data_size);
 	}
 	else if (mt == dk_rtsp_client::MEDIA_TYPE_AUDIO)
 	{
-		TRACE(_T("on_recv_media : received audio data size is %d\n"), data_size);
+		//TRACE(_T("on_recv_media : received audio data size is %d\n"), data_size);
 	}
 }
 

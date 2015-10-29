@@ -288,21 +288,21 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder_core::decode(dk_video_entity_t * en
 		else if (_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32)
 		{
 			if (_front->_config->ostride < 1)
-				_front->_config->ostride = _front->_config->owidth;
+				_front->_config->ostride = _front->_config->owidth * 4;
 
 			uint8_t * dst = decoded->data;
 			int32_t dst_stride = _front->_config->ostride;
-			decoded->data_size = dst_stride*y_height * 4;
+			decoded->data_size = dst_stride*y_height;
 			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
 		}
 		else if (_front->_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB24)
 		{
 			if (_front->_config->ostride < 1)
-				_front->_config->ostride = _front->_config->owidth;
+				_front->_config->ostride = _front->_config->owidth * 3;
 
 			uint8_t * dst = decoded->data;
 			int32_t dst_stride = _front->_config->ostride;
-			decoded->data_size = dst_stride*y_height * 3;
+			decoded->data_size = dst_stride*y_height;
 			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
 		}
 		return dk_ff_video_decoder::ERR_CODE_SUCCESS;

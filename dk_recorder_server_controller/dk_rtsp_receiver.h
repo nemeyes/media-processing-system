@@ -98,5 +98,8 @@ private:
 
 	uint8_t * _buffer;
 
+	int64_t _frame_count;
+	//dk_image_creator * _image_creator;
+
 };
 

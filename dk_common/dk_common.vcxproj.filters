@@ -51,8 +51,5 @@
     <ClInclude Include="include\dk_util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dk_video_decoder_base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

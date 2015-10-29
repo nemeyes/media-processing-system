@@ -1,5 +1,8 @@
 #pragma once
 #include <cmath>
+#include <gdiplus.h>
+
+#pragma comment(lib, "gdiplus.lib")
 
 class dk_image_creator
 {
@@ -21,6 +24,8 @@ public:
 		, bmih(0)
 		, pixel_buffer(0)
 	{
+		Gdiplus::GdiplusStartupInput gpsi;
+		Gdiplus::GdiplusStartup(&_token, &gpsi, NULL);
 	}
 
 	dk_image_creator(int width, int height)
@@ -32,12 +37,15 @@ public:
 		, bmih(0)
 		, pixel_buffer(0)
 	{
+		Gdiplus::GdiplusStartupInput gpsi;
+		Gdiplus::GdiplusStartup(&_token, &gpsi, NULL);
 		load(width, height);
 	}
 
 	virtual ~dk_image_creator(void)
 	{
 		empty();
+		Gdiplus::GdiplusShutdown(_token);
 	}
 
 	void empty(void)
@@ -76,5 +84,51 @@ public:
 		}
 		return true;
 	}
+
+	bool save(LPTSTR filename)
+	{
+		Gdiplus::Bitmap *image = new Gdiplus::Bitmap(dib, NULL);
+
+		CLSID clsid;
+		int retVal = get_encoder_clsid(L"image/bmp", &clsid);
+		image->Save(filename, &clsid, NULL);
+		delete image;
+
+		return true;
+	}
+
+private:
+	int get_encoder_clsid(const WCHAR* format, CLSID* pClsid)
+	{
+		UINT  num = 0;          // number of image encoders
+		UINT  size = 0;         // size of the image encoder array in bytes
+
+		Gdiplus::ImageCodecInfo * pImageCodecInfo = NULL;
+
+		Gdiplus::GetImageEncodersSize(&num, &size);
+		if (size == 0)
+			return -1;  // Failure
+
+		pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
+		if (pImageCodecInfo == NULL)
+			return -1;  // Failure
+
+		Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
+
+		for (UINT j = 0; j < num; ++j)
+		{
+			if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+			{
+				*pClsid = pImageCodecInfo[j].Clsid;
+				free(pImageCodecInfo);
+				return j;  // Success
+			}
+		}
+		free(pImageCodecInfo);
+		return -1;  // Failure
+	}
+
+private:
+	ULONG_PTR _token;
 
 };
