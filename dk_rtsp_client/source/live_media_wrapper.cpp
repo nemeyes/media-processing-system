@@ -11,12 +11,12 @@
 
 //MediaSubsessionIterator * live_media_wrapper::_iter;
 
-live_media_wrapper * live_media_wrapper::createNew(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, unsigned int http_port_number, bool * kill_flag)
+live_media_wrapper * live_media_wrapper::createNew(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, unsigned int http_port_number, bool * kill_flag)
 {
-	return new live_media_wrapper(front, env, url, username, password, transport_option, recv_option, http_port_number, kill_flag);
+	return new live_media_wrapper(front, env, url, username, password, transport_option, recv_option, recv_timeout, http_port_number, kill_flag);
 }
 
-live_media_wrapper::live_media_wrapper(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, unsigned int http_port_number, bool * kill_flag)
+live_media_wrapper::live_media_wrapper(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, unsigned int http_port_number, bool * kill_flag)
 	: RTSPClient(env, url, 1, "dk_rtsp_client", http_port_number, -1)
 	, _front(front)
 	, _kill_flag(kill_flag)
@@ -31,7 +31,7 @@ live_media_wrapper::live_media_wrapper(dk_rtsp_client * front, UsageEnvironment 
     , _socket_input_buffer_size(0)
     , _made_progress(false)
     , _session_timeout_parameter(60)
-    , _inter_packet_gap_max_time(3)
+	, _inter_packet_gap_max_time(recv_timeout)
     , _total_packets_received(~0)
     , _duration(0.0)
     , _duration_slot(-1.0)

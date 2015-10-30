@@ -25,7 +25,7 @@ dk_rtsp_client::~dk_rtsp_client( void )
 	WSACleanup();
 }
 
-dk_rtsp_client::ERROR_CODE dk_rtsp_client::play(const char * url, const char * username, const char * password, int transport_option, int recv_option, bool repeat)
+dk_rtsp_client::ERROR_CODE dk_rtsp_client::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, bool repeat)
 {
     if( !url || strlen(url)<1 )
 		return ERROR_CODE_FAIL;
@@ -41,6 +41,7 @@ dk_rtsp_client::ERROR_CODE dk_rtsp_client::play(const char * url, const char * u
 		strcpy(_password, password);
 	_transport_option = transport_option;
 	_recv_option = recv_option;
+	_recv_timeout = recv_timeout;
 	_repeat = repeat;
 
 #if defined(WIN32)
@@ -84,14 +85,14 @@ unsigned char * dk_rtsp_client::get_pps(size_t & pps_size)
 	return _pps;
 }
 
-void dk_rtsp_client::set_sps(unsigned char * sps, size_t sps_size)
+void dk_rtsp_client::set_sps(uint8_t * sps, size_t sps_size)
 {
 	memset(_sps, 0x00, sizeof(_sps));
 	memcpy(_sps, sps, sps_size);
 	_sps_size = sps_size;
 }
 
-void dk_rtsp_client::set_pps(unsigned char * pps, size_t pps_size)
+void dk_rtsp_client::set_pps(uint8_t * pps, size_t pps_size)
 {
 	memset(_pps, 0x00, sizeof(_pps));
 	memcpy(_pps, pps, pps_size);
@@ -110,9 +111,9 @@ void dk_rtsp_client::process( void )
 		TaskScheduler * sched = BasicTaskScheduler::createNew();
 		UsageEnvironment * env = BasicUsageEnvironment::createNew(*sched);
 		if (strlen(_username) > 0 && strlen(_password) > 0)
-			_live = live_media_wrapper::createNew(this, *env, _url, _username, _password, _transport_option, _recv_option, 0, &_kill);
+			_live = live_media_wrapper::createNew(this, *env, _url, _username, _password, _transport_option, _recv_option, _recv_timeout, 0, &_kill);
 		else
-			_live = live_media_wrapper::createNew(this, *env, _url, 0, 0, _transport_option, _recv_option, 0, &_kill);
+			_live = live_media_wrapper::createNew(this, *env, _url, 0, 0, _transport_option, _recv_option, _recv_timeout, 0, &_kill);
 
 		_kill = false;
 		live_media_wrapper::continue_after_client_creation(_live);

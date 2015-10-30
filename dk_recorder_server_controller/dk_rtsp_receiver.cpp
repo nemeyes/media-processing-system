@@ -226,7 +226,7 @@ void dk_rtsp_receiver::start_preview(const char * url, const char * username, co
 	_renderer = new dk_ddraw_video_renderer();
 	_is_preview_enabled = true;
 	_normal_hwnd = handle;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, true);
+	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
 }
 
 void dk_rtsp_receiver::stop_preview(void)
@@ -246,7 +246,7 @@ void dk_rtsp_receiver::start_recording(const char * url, const char * username, 
 {
 	_mpeg2ts_muxer = new dk_ff_mpeg2ts_muxer();
 	_is_recording_enabled = true;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, true);
+	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
 }
 
 void dk_rtsp_receiver::stop_recording(void)

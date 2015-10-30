@@ -11,7 +11,7 @@
 class live_media_wrapper : public RTSPClient
 {
 public:
-	static live_media_wrapper * createNew(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, unsigned int http_port_number, bool * kill_flag);
+	static live_media_wrapper * createNew(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, unsigned int http_port_number, bool * kill_flag);
 
     static void continue_after_client_creation(RTSPClient * param);
     static void continue_after_options(RTSPClient * param, int result_code, char * result_string);
@@ -23,7 +23,7 @@ public:
 	void close(void);
 
 protected:
-	live_media_wrapper(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, unsigned int http_port_number, bool * kill_flag);
+	live_media_wrapper(dk_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, unsigned int http_port_number, bool * kill_flag);
 	~live_media_wrapper(void);
 
 private:

@@ -58,7 +58,7 @@ public:
 
 	dk_rtsp_client(void);
 	~dk_rtsp_client(void);
-	dk_rtsp_client::ERROR_CODE play(const char * url, const char * username, const char * password, int transport_option, int recv_option, bool repeat = true);
+	dk_rtsp_client::ERROR_CODE play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, bool repeat = true);
 	dk_rtsp_client::ERROR_CODE stop(void);
 	
 	unsigned char * get_sps(size_t & sps_size);
@@ -71,8 +71,8 @@ public:
 
 	bool ignore_sdp(void);
 private:
-	void set_sps(unsigned char * sps, size_t sps_size);
-	void set_pps(unsigned char * pps, size_t pps_size);
+	void set_sps(uint8_t * sps, size_t sps_size);
+	void set_pps(uint8_t * pps, size_t pps_size);
 
 	void process( void );
 #if !defined(WIN32)
@@ -90,18 +90,19 @@ private:
 	char _url[260];
 	char _username[260];
 	char _password[260];
-	int _transport_option;
-	int _recv_option;
+	int32_t _transport_option;
+	int32_t _recv_option;
+	int32_t _recv_timeout;
 	bool _repeat;
 
     live_media_wrapper * _live;	
     bool _kill;
 	bool _ignore_sdp;
 
-	unsigned char _sps[100];
-	unsigned char _pps[100];
-	int _sps_size;
-	int _pps_size;
+	uint8_t _sps[100];
+	uint8_t _pps[100];
+	int32_t _sps_size;
+	int32_t _pps_size;
 };
 
 #endif // dk_rtsp_client_H
