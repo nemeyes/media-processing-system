@@ -31,7 +31,7 @@ live_media_wrapper::live_media_wrapper(dk_rtsp_client * front, UsageEnvironment 
     , _socket_input_buffer_size(0)
     , _made_progress(false)
     , _session_timeout_parameter(60)
-    , _inter_packet_gap_max_time(0)
+    , _inter_packet_gap_max_time(3)
     , _total_packets_received(~0)
     , _duration(0.0)
     , _duration_slot(-1.0)
@@ -101,7 +101,7 @@ void live_media_wrapper::set_user_agent_string(const char * user_agent)
 void live_media_wrapper::continue_after_client_creation(RTSPClient * param)
 {
     live_media_wrapper * self = static_cast<live_media_wrapper*>(param);
-    self->set_user_agent_string("DebugerKing");
+    self->set_user_agent_string("Debuger King ICT");
     self->get_options(continue_after_options);
 }
 
@@ -173,7 +173,12 @@ void live_media_wrapper::continue_after_describe(RTSPClient * param, int result_
 		return;
 	} while (0);
 
+#if 0
 	self->shutdown();
+#else
+	self->_shutting_down = false;
+	self->close();
+#endif
 }
 
 void live_media_wrapper::continue_after_setup( RTSPClient * param, int result_code, char * result_string )
@@ -228,7 +233,12 @@ void live_media_wrapper::continue_after_play( RTSPClient * param, int result_cod
 
 	} while (0);
 
+#if 0
 	self->shutdown();
+#else
+	self->_shutting_down = false;
+	self->close();
+#endif
 }
 
 void live_media_wrapper::continue_after_teardown( RTSPClient * param, int result_code, char * result_string )
@@ -292,7 +302,12 @@ void live_media_wrapper::subsession_bye_handler( void * param )
 void live_media_wrapper::session_after_playing( void * param )
 {
     live_media_wrapper * self = static_cast<live_media_wrapper*>( param );
+#if 0
 	self->shutdown();
+#else
+	self->_shutting_down = false;
+	self->close();
+#endif
 }
 
 void live_media_wrapper::setup_streams( void )
@@ -464,7 +479,7 @@ void live_media_wrapper::check_inter_packet_gaps( void * param )
     if( total_packets_received==self->_total_packets_received )
     {
         self->_inter_packet_gap_check_timer_task = 0;
-        self->session_after_playing();
+        self->session_after_playing(self);
     }
     else
     {
@@ -494,8 +509,11 @@ void live_media_wrapper::check_session_timeout_broken_server( void * param )
 void live_media_wrapper::kill_trigger(void * param)
 {
 	live_media_wrapper * self = static_cast<live_media_wrapper*>(param);
+	self->shutdown();
+
 	if (self->_kill_flag)
 		(*self->_kill_flag) = true;
+
 	Medium::close(self);
 }
 

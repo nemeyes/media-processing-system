@@ -15,10 +15,11 @@ buffer_sink::buffer_sink(dk_rtsp_client * front, dk_rtsp_client::MEDIA_TYPE_T mt
 	, _smt(smt)
 	, _change_sps(false)
 	, _change_pps(false)
+	, _sps_not_changed(false)
+	, _pps_not_changed(false)
 	, _is_first_idr_rcvd(false)
 {
     _buffer = new unsigned char[buffer_size];
-	//_buffer = static_cast<unsigned char*>(tc_malloc(buffer_size));
     _prev_presentation_time.tv_sec = ~0;
     _prev_presentation_time.tv_usec = ~0;
 }
@@ -28,7 +29,6 @@ buffer_sink::~buffer_sink(void)
 	if (_buffer)
 	{
 		delete[] _buffer;
-		//tc_free(_buffer);
 		_buffer = 0;
 	}
 }
@@ -99,6 +99,10 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 						_front->set_sps(data, data_size);
 						_change_sps = true;
 					}
+					else
+					{
+						_sps_not_changed = true;
+					}
 				}
 			}
 
@@ -116,6 +120,10 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 					{
 						_front->set_pps(data, data_size);
 						_change_pps = true;
+					}
+					else
+					{
+						_pps_not_changed = true;
 					}
 				}
 			}
@@ -144,6 +152,9 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 					}
 				}
 			}
+
+			//if (_sps_not_changed && _pps_not_changed && is_idr && !_is_first_idr_rcvd)
+			//	_is_first_idr_rcvd = true;
 			
 			if (!is_sps && !is_pps && _is_first_idr_rcvd)
 			{

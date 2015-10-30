@@ -129,6 +129,10 @@ void dk_rtsp_client::process( void )
 			sched = 0;
 		}
 
+		_sps_size = 0;
+		_pps_size = 0;
+		memset(_sps, 0x00, sizeof(_sps));
+		memset(_pps, 0x00, sizeof(_pps));
 	} while (_repeat);
 }
 
