@@ -61,8 +61,8 @@ public:
 	dk_rtsp_client::ERROR_CODE play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, bool repeat = true);
 	dk_rtsp_client::ERROR_CODE stop(void);
 	
-	unsigned char * get_sps(size_t & sps_size);
-	unsigned char * get_pps(size_t & pps_size);
+	uint8_t * get_sps(size_t & sps_size);
+	uint8_t * get_pps(size_t & pps_size);
 
 	virtual void on_begin_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, 
 								uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, 

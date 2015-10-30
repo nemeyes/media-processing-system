@@ -176,7 +176,6 @@ void live_media_wrapper::continue_after_describe(RTSPClient * param, int result_
 #if 0
 	self->shutdown();
 #else
-	self->_shutting_down = false;
 	self->close();
 #endif
 }
@@ -236,7 +235,6 @@ void live_media_wrapper::continue_after_play( RTSPClient * param, int result_cod
 #if 0
 	self->shutdown();
 #else
-	self->_shutting_down = false;
 	self->close();
 #endif
 }
@@ -305,7 +303,6 @@ void live_media_wrapper::session_after_playing( void * param )
 #if 0
 	self->shutdown();
 #else
-	self->_shutting_down = false;
 	self->close();
 #endif
 }
@@ -509,6 +506,7 @@ void live_media_wrapper::check_session_timeout_broken_server( void * param )
 void live_media_wrapper::kill_trigger(void * param)
 {
 	live_media_wrapper * self = static_cast<live_media_wrapper*>(param);
+	self->_shutting_down = false;
 	self->shutdown();
 
 	if (self->_kill_flag)

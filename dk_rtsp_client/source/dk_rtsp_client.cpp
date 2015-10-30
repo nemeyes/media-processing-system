@@ -73,13 +73,13 @@ dk_rtsp_client::ERROR_CODE dk_rtsp_client::stop(void)
 	return dk_rtsp_client::ERROR_CODE_SUCCESS;
 }
 
-unsigned char * dk_rtsp_client::get_sps(size_t & sps_size)
+uint8_t * dk_rtsp_client::get_sps(size_t & sps_size)
 {
 	sps_size = _sps_size;
 	return _sps;
 }
 
-unsigned char * dk_rtsp_client::get_pps(size_t & pps_size)
+uint8_t * dk_rtsp_client::get_pps(size_t & pps_size)
 {
 	pps_size = _pps_size;
 	return _pps;
