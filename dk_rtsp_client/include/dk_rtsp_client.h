@@ -94,7 +94,7 @@ private:
 	int _recv_option;
 	bool _repeat;
 
-    live_media_wrapper * _live;
+    live_media_wrapper * _live;	
     bool _kill;
 	bool _ignore_sdp;
 

@@ -98,33 +98,33 @@ public:
 	}
 
 private:
-	int get_encoder_clsid(const WCHAR* format, CLSID* pClsid)
+	int get_encoder_clsid(const WCHAR * format, CLSID * clsid)
 	{
 		UINT  num = 0;          // number of image encoders
 		UINT  size = 0;         // size of the image encoder array in bytes
 
-		Gdiplus::ImageCodecInfo * pImageCodecInfo = NULL;
+		Gdiplus::ImageCodecInfo * image_codec_info = NULL;
 
 		Gdiplus::GetImageEncodersSize(&num, &size);
 		if (size == 0)
 			return -1;  // Failure
 
-		pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
-		if (pImageCodecInfo == NULL)
+		image_codec_info = (Gdiplus::ImageCodecInfo*)(malloc(size));
+		if (image_codec_info == NULL)
 			return -1;  // Failure
 
-		Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
+		Gdiplus::GetImageEncoders(num, size, image_codec_info);
 
 		for (UINT j = 0; j < num; ++j)
 		{
-			if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+			if (wcscmp(image_codec_info[j].MimeType, format) == 0)
 			{
-				*pClsid = pImageCodecInfo[j].Clsid;
-				free(pImageCodecInfo);
+				*clsid = image_codec_info[j].Clsid;
+				free(image_codec_info);
 				return j;  // Success
 			}
 		}
-		free(pImageCodecInfo);
+		free(image_codec_info);
 		return -1;  // Failure
 	}
 

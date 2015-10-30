@@ -9,6 +9,10 @@
 #include <cstring>
 #include "live_media_wrapper.h"
 
+#if defined(_DEBUG)
+#include <vld.h>
+#endif
+
 dk_rtsp_client::dk_rtsp_client( void )
 	: _ignore_sdp(true)
 {
@@ -113,7 +117,6 @@ void dk_rtsp_client::process( void )
 		_kill = false;
 		live_media_wrapper::continue_after_client_creation(_live);
 		env->taskScheduler().doEventLoop((char*)&_kill);
-
 
 		if (env)
 		{
