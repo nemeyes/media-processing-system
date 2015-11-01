@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -110,6 +110,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "media_foundation", "media_foundation", "{CEC35B42-298C-4DC0-832B-266F2AE2D0CC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gstreamer", "gstreamer", "{96BA55B4-B33F-4C10-8D2D-E7384655F353}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kiss_fft", "..\..\3rdparty\kiss_fft\kiss_fft.vcxproj", "{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "signal", "signal", "{E77CDDFD-82A5-45BB-8FF5-23DC3C0280E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -315,6 +319,12 @@ Global
 		{FE82C889-4DAA-4BBA-9D47-B67D23426D06}.Release|Win32.ActiveCfg = Release|Win32
 		{FE82C889-4DAA-4BBA-9D47-B67D23426D06}.Release|Win32.Build.0 = Release|Win32
 		{FE82C889-4DAA-4BBA-9D47-B67D23426D06}.Release|x64.ActiveCfg = Release|Win32
+		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4}.Debug|Win32.Build.0 = Debug|Win32
+		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4}.Debug|x64.ActiveCfg = Debug|Win32
+		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4}.Release|Win32.ActiveCfg = Release|Win32
+		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4}.Release|Win32.Build.0 = Release|Win32
+		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -367,5 +377,7 @@ Global
 		{5A2603BF-18EB-4EB6-800E-77BD5A85C2E2} = {E4B8A439-8AD6-40B4-AF49-854160791F6E}
 		{5F93C136-07A0-491C-8784-A2A06A4AEE16} = {5A2603BF-18EB-4EB6-800E-77BD5A85C2E2}
 		{FE82C889-4DAA-4BBA-9D47-B67D23426D06} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
+		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4} = {E77CDDFD-82A5-45BB-8FF5-23DC3C0280E3}
+		{E77CDDFD-82A5-45BB-8FF5-23DC3C0280E3} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 	EndGlobalSection
 EndGlobal
