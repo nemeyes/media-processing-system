@@ -47,6 +47,7 @@ private:
 	~dk_dshow_helper(void);
 };
 
+
 template <class T>
 void safe_release(T ** ppT)
 {

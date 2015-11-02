@@ -11,19 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{FE82C889-4DAA-4BBA-9D47-B67D23426D06}</ProjectGuid>
+    <ProjectGuid>{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>dk_dshow_base</RootNamespace>
+    <RootNamespace>dk_rtsp_source_filter</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -39,14 +39,19 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DK_RTSP_SOURCE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -62,7 +67,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DK_RTSP_SOURCE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -73,31 +78,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <ClInclude Include="dk_rtsp_source_filter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="css_auth.h" />
-    <ClInclude Include="css_scramble.h" />
-    <ClInclude Include="dk_com_initiator.h" />
-    <ClInclude Include="dk_dshow_helper.h" />
-    <ClInclude Include="dk_dxva2_allocator.h" />
-    <ClInclude Include="dk_dxva2_sample.h" />
-    <ClInclude Include="dk_transform_input_pin.h" />
-    <ClInclude Include="dk_video_decode_filter.h" />
-    <ClInclude Include="dk_video_decode_input_pin.h" />
-    <ClInclude Include="dk_video_decode_output_pin.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="css_auth.cpp" />
-    <ClCompile Include="css_scramble.cpp" />
-    <ClCompile Include="dk_com_initiator.cpp" />
-    <ClCompile Include="dk_dshow_helper.cpp" />
-    <ClCompile Include="dk_dxva2_allocator.cpp" />
-    <ClCompile Include="dk_dxva2_sample.cpp" />
-    <ClCompile Include="dk_transform_input_pin.cpp" />
-    <ClCompile Include="dk_video_decode_filter.cpp" />
-    <ClCompile Include="dk_video_decode_input_pin.cpp" />
-    <ClCompile Include="dk_video_decode_output_pin.cpp" />
+    <ClCompile Include="dk_rtsp_source_filter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
