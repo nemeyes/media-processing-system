@@ -115,6 +115,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "signal", "signal", "{E77CDD
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_rtsp_source_filter", "..\..\dk_rtsp_source_filter\dk_rtsp_source_filter.vcxproj", "{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "buffering", "buffering", "{4C6573A4-38D4-4997-BD95-16049A955EB3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_media_bufffering", "..\..\dk_media_bufffering\dk_media_bufffering.vcxproj", "{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -325,6 +329,12 @@ Global
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}.Release|Win32.ActiveCfg = Release|Win32
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}.Release|Win32.Build.0 = Release|Win32
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}.Release|x64.ActiveCfg = Release|Win32
+		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Debug|Win32.Build.0 = Debug|Win32
+		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Debug|x64.ActiveCfg = Debug|Win32
+		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Release|Win32.ActiveCfg = Release|Win32
+		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Release|Win32.Build.0 = Release|Win32
+		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -379,5 +389,7 @@ Global
 		{A6B296F2-8497-4A8A-BFCC-0E7ACECBEDA4} = {E77CDDFD-82A5-45BB-8FF5-23DC3C0280E3}
 		{E77CDDFD-82A5-45BB-8FF5-23DC3C0280E3} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
+		{4C6573A4-38D4-4997-BD95-16049A955EB3} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
+		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782} = {4C6573A4-38D4-4997-BD95-16049A955EB3}
 	EndGlobalSection
 EndGlobal
