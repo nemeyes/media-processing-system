@@ -357,17 +357,17 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 			}
 		} while (0);
 	}
-	else if (_is_recording_enabled)
+	if (_is_recording_enabled)
 	{
 		dk_ff_mpeg2ts_muxer::configuration_t config;
-		config.extra_data_size = data_size;
-		memcpy(config.extra_data, data, data_size);
+		config.extradata_size = data_size;
+		memcpy(config.extradata, data, data_size);
 		config.width = 1280;
 		config.height = 720;
 		config.fps = 30;
 		config.stream_index = 0;
 		config.bitrate = 4000000;
-		_mpeg2ts_muxer->initialize(config);
+		_mpeg2ts_muxer->initialize(&config);
 	}
 	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }

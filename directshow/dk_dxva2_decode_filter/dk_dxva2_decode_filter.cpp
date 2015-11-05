@@ -541,6 +541,8 @@ HRESULT dk_dxva2_decode_filter::configure_dxva2(IPin * pin)
 		_dxva2_decoder_guid = guid_decoder;
 		_dxva2_device = device;	
 
+		//DXVA2_ModeH264_VLD_FGT
+
 
 		LPDIRECT3DSURFACE9 surfaces[DXVA2_MAX_SURFACES] = { 0 };
 		UINT num_surfaces = max(config.ConfigMinRenderTargetBuffCount, 1);

@@ -119,6 +119,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "buffering", "buffering", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_media_bufffering", "..\..\dk_media_bufffering\dk_media_bufffering.vcxproj", "{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_player_framework", "..\..\directshow\dk_player_framework\dk_player_framework.vcxproj", "{650534BE-C312-4857-890F-70D2C6A164DF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_player_framework_test", "..\..\test\dk_player_framework_test\dk_player_framework_test.vcxproj", "{9111B875-0647-41DB-9E9B-0F70E5B435C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -335,6 +339,18 @@ Global
 		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Release|Win32.ActiveCfg = Release|Win32
 		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Release|Win32.Build.0 = Release|Win32
 		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782}.Release|x64.ActiveCfg = Release|Win32
+		{650534BE-C312-4857-890F-70D2C6A164DF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{650534BE-C312-4857-890F-70D2C6A164DF}.Debug|Win32.Build.0 = Debug|Win32
+		{650534BE-C312-4857-890F-70D2C6A164DF}.Debug|x64.ActiveCfg = Debug|Win32
+		{650534BE-C312-4857-890F-70D2C6A164DF}.Release|Win32.ActiveCfg = Release|Win32
+		{650534BE-C312-4857-890F-70D2C6A164DF}.Release|Win32.Build.0 = Release|Win32
+		{650534BE-C312-4857-890F-70D2C6A164DF}.Release|x64.ActiveCfg = Release|Win32
+		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Debug|Win32.Build.0 = Debug|Win32
+		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Debug|x64.ActiveCfg = Debug|Win32
+		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Release|Win32.ActiveCfg = Release|Win32
+		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Release|Win32.Build.0 = Release|Win32
+		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -391,5 +407,7 @@ Global
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
 		{4C6573A4-38D4-4997-BD95-16049A955EB3} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782} = {4C6573A4-38D4-4997-BD95-16049A955EB3}
+		{650534BE-C312-4857-890F-70D2C6A164DF} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
+		{9111B875-0647-41DB-9E9B-0F70E5B435C0} = {20A20008-298C-4904-A58B-A23BA1F883E1}
 	EndGlobalSection
 EndGlobal

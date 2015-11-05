@@ -1,6 +1,8 @@
 #ifndef _DK_FF_MPEG2TS_MUXER_H_
 #define _DK_FF_MPEG2TS_MUXER_H_
 
+#include <cstdint>
+
 #if defined(_WIN32)
 # include <windows.h>
 # if defined(EXPORT_LIB)
@@ -34,53 +36,21 @@ public:
 		int height;
 		int bitrate;
 		int fps;
-		unsigned char extra_data[500];
-		int extra_data_size;
-		_configuration_t(void)
-			: stream_index(0)
-			, width(0)
-			, height(0)
-			, bitrate(0)
-			, fps(30)
-			, extra_data_size(0)
-		{
-			memset(extra_data, 0x00, sizeof(extra_data));
-		}
-
-		_configuration_t(const _configuration_t & clone)
-		{
-			stream_index = clone.stream_index;
-			width = clone.width;
-			height = clone.height;
-			bitrate = clone.bitrate;
-			fps = clone.fps;
-			bitrate = clone.bitrate;
-			extra_data_size = clone.extra_data_size;
-			memset(extra_data, 0x00, sizeof(extra_data));
-		}
-
-		_configuration_t operator=(const _configuration_t & clone)
-		{
-			stream_index = clone.stream_index;
-			width = clone.width;
-			height = clone.height;
-			bitrate = clone.bitrate;
-			fps = clone.fps;
-			bitrate = clone.bitrate;
-			extra_data_size = clone.extra_data_size;
-			memset(extra_data, 0x00, sizeof(extra_data));
-			return (*this);
-		}
+		unsigned char extradata[500];
+		int extradata_size;
+		_configuration_t(void);
+		_configuration_t(const _configuration_t & clone);
+		_configuration_t operator=(const _configuration_t & clone);
 	} configuration_t;
 
 
 	dk_ff_mpeg2ts_muxer(void);
 	~dk_ff_mpeg2ts_muxer(void);
 
-	dk_ff_mpeg2ts_muxer::ERR_CODE initialize(configuration_t & config);
+	dk_ff_mpeg2ts_muxer::ERR_CODE initialize(configuration_t * config);
 	dk_ff_mpeg2ts_muxer::ERR_CODE release(void);
 
-	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(unsigned char * buffer, size_t nb, long long pts, bool keyframe);
+	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe);
 
 private:
 	ff_mpeg2ts_muxer_core * _core;

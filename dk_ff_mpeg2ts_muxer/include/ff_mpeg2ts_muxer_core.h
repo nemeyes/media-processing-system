@@ -27,17 +27,17 @@ public:
 	ff_mpeg2ts_muxer_core(void);
 	~ff_mpeg2ts_muxer_core(void);
 
-	dk_ff_mpeg2ts_muxer::ERR_CODE initialize(dk_ff_mpeg2ts_muxer::configuration_t config);
+	dk_ff_mpeg2ts_muxer::ERR_CODE initialize(dk_ff_mpeg2ts_muxer::configuration_t * config);
 	dk_ff_mpeg2ts_muxer::ERR_CODE release(void);
-	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(unsigned char * buffer, size_t nb, long long pts, bool keyframe);
+	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe);
 
 private:
-	AVOutputFormat * m_pFmt;
-	AVFormatContext * m_pFormatCtx;
-	AVStream * m_pVideoStream;
+	dk_ff_mpeg2ts_muxer::configuration_t _config;
 
-	unsigned char _extra_data[500];
-	int _extra_data_size;
+
+	AVOutputFormat * _ofmt;
+	AVFormatContext * _format_ctx;
+	AVStream * _vstream;
 
 	bool m_bInited;
 	int m_nProcessedFramesNum;
