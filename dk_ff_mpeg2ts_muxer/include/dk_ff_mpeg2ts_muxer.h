@@ -31,13 +31,22 @@ public:
 
 	typedef struct EXP_DLL _configuration_t
 	{
-		int stream_index;
-		int width;
-		int height;
-		int bitrate;
-		int fps;
-		unsigned char extradata[500];
-		int extradata_size;
+		typedef struct EXP_DLL _video_configuration_t
+		{
+			int32_t stream_index;
+			int32_t width;
+			int32_t height;
+			int32_t bitrate;
+			int32_t fps;
+			int32_t extradata_size;
+			uint8_t extradata[500];
+			_video_configuration_t(void);
+			_video_configuration_t(const _video_configuration_t & clone);
+			_video_configuration_t operator=(const _video_configuration_t & clone);
+		} video_configuration_t;
+
+		video_configuration_t vconfig;
+
 		_configuration_t(void);
 		_configuration_t(const _configuration_t & clone);
 		_configuration_t operator=(const _configuration_t & clone);
@@ -51,6 +60,8 @@ public:
 	dk_ff_mpeg2ts_muxer::ERR_CODE release(void);
 
 	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe);
+
+	virtual dk_ff_mpeg2ts_muxer::ERR_CODE on_recv_ts_stream(uint8_t * ts, size_t stream_size) = 0;
 
 private:
 	ff_mpeg2ts_muxer_core * _core;

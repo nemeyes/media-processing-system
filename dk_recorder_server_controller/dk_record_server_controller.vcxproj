@@ -114,6 +114,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dk_mpeg2ts_saver.h" />
     <ClInclude Include="dk_record_server_controller.h" />
     <ClInclude Include="dk_record_server_controller_dlg.h" />
     <ClInclude Include="Resource.h" />
@@ -122,6 +123,9 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dk_mpeg2ts_saver.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="dk_record_server_controller.cpp" />
     <ClCompile Include="dk_record_server_controller_dlg.cpp" />
     <ClCompile Include="dk_rtsp_receiver.cpp" />

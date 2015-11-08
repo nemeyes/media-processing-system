@@ -24,7 +24,7 @@ extern "C"
 class ff_mpeg2ts_muxer_core
 {
 public:
-	ff_mpeg2ts_muxer_core(void);
+	ff_mpeg2ts_muxer_core(dk_ff_mpeg2ts_muxer * front);
 	~ff_mpeg2ts_muxer_core(void);
 
 	dk_ff_mpeg2ts_muxer::ERR_CODE initialize(dk_ff_mpeg2ts_muxer::configuration_t * config);
@@ -32,15 +32,34 @@ public:
 	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe);
 
 private:
+	dk_ff_mpeg2ts_muxer * _front;
+
+	static int32_t on_write_packet(void * opaque, uint8_t * buffer, int32_t size);
+
+
 	dk_ff_mpeg2ts_muxer::configuration_t _config;
+
+	//ts_buffered_output_t _buffered_output;
+
+	uint8_t * _avio_buffer;
+	int32_t _avio_buffer_size;
+
+
+	uint8_t * _buffered_ts_output;
+	int32_t _buffered_ts_output_pos;
+	int32_t _buffered_ts_output_size;
+
 
 
 	AVOutputFormat * _ofmt;
+	
 	AVFormatContext * _format_ctx;
 	AVStream * _vstream;
+	AVIOContext * _avio_ctx;
+	
 
-	bool m_bInited;
-	int m_nProcessedFramesNum;
+	bool _is_initialized;
+	int32_t _nframes;
 };
 
 

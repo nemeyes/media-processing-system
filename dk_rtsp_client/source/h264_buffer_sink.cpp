@@ -1,10 +1,6 @@
 
 #include "h264_buffer_sink.h"
 
-#if defined(_DEBUG)
-#include <vld.h>
-#endif
-
 h264_buffer_sink::h264_buffer_sink(dk_rtsp_client * front, UsageEnvironment & env, const char * spspps, unsigned buffer_size)
 	: h2645_buffer_sink(front, dk_rtsp_client::SUBMEDIA_TYPE_H264, env, buffer_size, spspps, 0, 0)
 {

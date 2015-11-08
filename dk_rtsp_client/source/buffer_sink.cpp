@@ -1,10 +1,6 @@
 #include "buffer_sink.h"
 #include <GroupsockHelper.hh>
 #include "stream_parser.h"
-//#include <gperftools/tcmalloc.h>
-#if defined(_DEBUG)
-#include <vld.h>
-#endif
 
 buffer_sink::buffer_sink(dk_rtsp_client * front, dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, UsageEnvironment & env, unsigned buffer_size)
     : MediaSink(env)

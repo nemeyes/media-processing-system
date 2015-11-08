@@ -9,10 +9,6 @@
 #include <cstring>
 #include "live_media_wrapper.h"
 
-#if defined(_DEBUG)
-#include <vld.h>
-#endif
-
 dk_rtsp_client::dk_rtsp_client( void )
 	: _ignore_sdp(true)
 {

@@ -3,8 +3,9 @@
 #include <cstdint>
 #include <dk_rtsp_client.h>
 #include <dk_ff_video_decoder.h>
-#include <dk_ff_mpeg2ts_muxer.h>
+//#include <dk_ff_mpeg2ts_muxer.h>
 #include <dk_ddraw_video_renderer.h>
+#include "dk_mpeg2ts_saver.h"
 
 #define DEBUG_PRINT(x) do {x = x;} while (0)
 
@@ -89,7 +90,8 @@ private:
 	dk_ff_video_decoder * _decoder;
 	dk_ff_video_decoder::configuration_t _decoder_config;	
 
-	dk_ff_mpeg2ts_muxer * _mpeg2ts_muxer;
+	//dk_ff_mpeg2ts_muxer * _mpeg2ts_muxer;
+	dk_mpeg2ts_saver * _mpeg2ts_saver;
 
 	HWND _normal_hwnd;
 	dk_ddraw_video_renderer * _renderer;

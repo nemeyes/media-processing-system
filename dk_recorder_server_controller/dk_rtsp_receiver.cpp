@@ -244,7 +244,7 @@ void dk_rtsp_receiver::stop_preview(void)
 
 void dk_rtsp_receiver::start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option)
 {
-	_mpeg2ts_muxer = new dk_ff_mpeg2ts_muxer();
+	_mpeg2ts_saver = new dk_mpeg2ts_saver();
 	_is_recording_enabled = true;
 	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
 }
@@ -253,10 +253,10 @@ void dk_rtsp_receiver::stop_recording(void)
 {
 	dk_rtsp_client::stop();
 	_is_recording_enabled = false;
-	if (_mpeg2ts_muxer)
+	if (_mpeg2ts_saver)
 	{
-		delete _mpeg2ts_muxer;
-		_mpeg2ts_muxer = nullptr;
+		delete _mpeg2ts_saver;
+		_mpeg2ts_saver = nullptr;
 	}
 }
 
@@ -360,14 +360,14 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 	if (_is_recording_enabled)
 	{
 		dk_ff_mpeg2ts_muxer::configuration_t config;
-		config.extradata_size = data_size;
-		memcpy(config.extradata, data, data_size);
-		config.width = 1280;
-		config.height = 720;
-		config.fps = 30;
-		config.stream_index = 0;
-		config.bitrate = 4000000;
-		_mpeg2ts_muxer->initialize(&config);
+		config.vconfig.extradata_size = data_size;
+		memcpy(config.vconfig.extradata, data, data_size);
+		config.vconfig.width = 1280;
+		config.vconfig.height = 720;
+		config.vconfig.fps = 30;
+		config.vconfig.stream_index = 0;
+		config.vconfig.bitrate = 4000000;
+		_mpeg2ts_saver->initialize(&config);
 	}
 	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
@@ -406,9 +406,9 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 		else if (_is_recording_enabled)
 		{
 			if ((data[3] & 0x1F)==0x05)
-				_mpeg2ts_muxer->put_video_stream((unsigned char*)data, data_size, 0, true);
+				_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
 			else
-				_mpeg2ts_muxer->put_video_stream((unsigned char*)data, data_size, 0, false);
+				_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
 		}
 		//TRACE(_T("on_recv_media : received video data size is %d\n"), data_size);
 	}

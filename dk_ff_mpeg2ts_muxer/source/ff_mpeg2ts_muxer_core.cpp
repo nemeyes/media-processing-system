@@ -1,13 +1,22 @@
 #include "ff_mpeg2ts_muxer_core.h"
 
-ff_mpeg2ts_muxer_core::ff_mpeg2ts_muxer_core(void)
+ff_mpeg2ts_muxer_core::ff_mpeg2ts_muxer_core(dk_ff_mpeg2ts_muxer * front)
+	: _front(front)
+	, _avio_ctx(nullptr)
+	, _avio_buffer(nullptr)
+	, _avio_buffer_size(1024*1024*2)
 {
-
+	_avio_buffer = static_cast<uint8_t*>(av_malloc(_avio_buffer_size));
 }
 
 ff_mpeg2ts_muxer_core::~ff_mpeg2ts_muxer_core(void)
 {
-
+	if (_avio_buffer)
+	{
+		av_free(_avio_buffer);
+		_avio_buffer = nullptr;
+	}
+	_avio_buffer_size = 0;
 }
 
 dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::initialize(dk_ff_mpeg2ts_muxer::configuration_t * config)
@@ -17,7 +26,6 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::initialize(dk_ff_mpeg2ts_mu
 	_ofmt = av_guess_format("mpegts", NULL, NULL);
 	if (!_ofmt)
 		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
-
 	_ofmt->video_codec = AV_CODEC_ID_H264;
 
 	_format_ctx = avformat_alloc_context();
@@ -25,7 +33,15 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::initialize(dk_ff_mpeg2ts_mu
 		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
 	
 	_format_ctx->oformat = _ofmt;
+#if 0
 	sprintf_s(_format_ctx->filename, "%s", "test.ts");
+	// Open the output container file
+	if (avio_open(&_format_ctx->pb, _format_ctx->filename, AVIO_FLAG_WRITE) < 0)
+		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
+#else
+	_avio_ctx = avio_alloc_context(_avio_buffer, _avio_buffer_size, 1, this, NULL, ff_mpeg2ts_muxer_core::on_write_packet, NULL);
+	_format_ctx->pb = _avio_ctx;
+#endif
 
 	if (_ofmt->video_codec == AV_CODEC_ID_NONE)
 		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
@@ -37,18 +53,15 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::initialize(dk_ff_mpeg2ts_mu
 	AVCodecContext * c = _vstream->codec;
 	c->codec_id = _ofmt->video_codec;
 	c->codec_type = AVMEDIA_TYPE_VIDEO;
-	c->bit_rate = _config.bitrate * 1000;
-	c->width = _config.width;
-	c->height = _config.height;
-
-	// time base: this is the fundamental unit of time (in seconds) in terms of which frame timestamps are represented. for fixed-fps content,
-	//            timebase should be 1/framerate and timestamp increments should be identically 1.
-	c->time_base.den = _config.fps;
-	c->time_base.num = 1;
-
-	// Some formats want stream headers to be separate
-	if (_format_ctx->oformat->flags & AVFMT_GLOBALHEADER)
+	c->bit_rate = _config.vconfig.bitrate * 1000;
+	c->width = _config.vconfig.width;
+	c->height = _config.vconfig.height;
+	c->time_base.den = _config.vconfig.fps; //time base : this is the fundamental unit of time(in seconds) in terms of which frame timestamps are represented. for fixed - fps content,
+	c->time_base.num = 1;					//timebase should be 1/framerate and timestamp increments should be identically 1.
+	if (_format_ctx->oformat->flags & AVFMT_GLOBALHEADER) // Some formats want stream headers to be separate
 		c->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	c->extradata = _config.vconfig.extradata; // Codec "extradata" conveys the H.264 stream SPS and PPS info (MPEG2: sequence header is housed in SPS buffer, PPS buffer is empty)
+	c->extradata_size = _config.vconfig.extradata_size;
 
 #ifdef ENCODE_AUDIO
 	if (m_pFmt->audio_codec != AV_CODEC_ID_NONE) 
@@ -61,33 +74,18 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::initialize(dk_ff_mpeg2ts_mu
 	}
 #endif
 
-	// Open the output container file
-	if (avio_open(&_format_ctx->pb, _format_ctx->filename, AVIO_FLAG_WRITE) < 0)
-		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
-
-	/*m_pExtDataBuffer = (mfxU8*)av_malloc(SPSbufsize + PPSbufsize);
-	if (!m_pExtDataBuffer) {
-		_tcprintf(_T("FFMPEG: could not allocate required buffer\n"));
-		return MFX_ERR_UNKNOWN;
-	}*/
-
-
-	// Codec "extradata" conveys the H.264 stream SPS and PPS info (MPEG2: sequence header is housed in SPS buffer, PPS buffer is empty)
-	c->extradata = _config.extradata;
-	c->extradata_size = _config.extradata_size;
-
 	// Write container header
 	if (avformat_write_header(_format_ctx, NULL))
 		dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
 
-	m_nProcessedFramesNum = 0;
-	m_bInited = true;
+	_nframes = 0;
+	_is_initialized = true;
 	return dk_ff_mpeg2ts_muxer::ERR_CODE_SUCCESS;
 }
 
 dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::release(void)
 {
-	if (m_bInited)
+	if (_is_initialized)
 	{
 #ifdef ENCODE_AUDIO
 		flush_audio(m_pFormatCtx);
@@ -111,8 +109,8 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::release(void)
 		av_free(_format_ctx);
 	}
 
-	m_bInited = false;
-	m_nProcessedFramesNum = 0;
+	_is_initialized = false;
+	_nframes = 0;
 	return dk_ff_mpeg2ts_muxer::ERR_CODE_SUCCESS;
 }
 
@@ -121,7 +119,7 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::put_video_stream(uint8_t * 
 	// Note for H.264 :
 	//    At the moment the SPS/PPS will be written to container again for the first frame here
 	//    To eliminate this we would have to search to first slice (or right after PPS)
-	++m_nProcessedFramesNum;
+	++_nframes;
 
 	AVPacket pkt;
 	av_init_packet(&pkt);
@@ -129,7 +127,7 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::put_video_stream(uint8_t * 
 	AVCodecContext * c = _vstream->codec;
 
 	//m_pVideoStream->pts.val = m_nProcessedFramesNum;
-	pkt.pts = av_rescale_q(m_nProcessedFramesNum/*m_pVideoStream->pts.val*/, c->time_base, _vstream->time_base);
+	pkt.pts = av_rescale_q(_nframes/*m_pVideoStream->pts.val*/, c->time_base, _vstream->time_base);
 	pkt.dts = AV_NOPTS_VALUE;
 	pkt.stream_index = _vstream->index;
 	pkt.data = buffer;
@@ -153,6 +151,17 @@ dk_ff_mpeg2ts_muxer::ERR_CODE ff_mpeg2ts_muxer_core::put_video_stream(uint8_t * 
 #endif
 
 	return dk_ff_mpeg2ts_muxer::ERR_CODE_SUCCESS;
+}
+
+int32_t ff_mpeg2ts_muxer_core::on_write_packet(void * opaque, uint8_t * buffer, int32_t size)
+{
+	ff_mpeg2ts_muxer_core * self = reinterpret_cast<ff_mpeg2ts_muxer_core*>(opaque);
+
+	if (self && self->_front)
+		self->_front->on_recv_ts_stream(buffer, size);
+	//memcpy(out->outBuffer + out->bytesSet, buf, buf_size);
+	//out->bytesSet += buf_size;
+	return size;
 }
 
 /*int ff_mpeg2ts_muxer_core::initialize(const char* outputName)

@@ -1,8 +1,7 @@
 #include "dk_ff_mpeg2ts_muxer.h"
 #include "ff_mpeg2ts_muxer_core.h"
 
-
-dk_ff_mpeg2ts_muxer::_configuration_t::_configuration_t(void)
+dk_ff_mpeg2ts_muxer::_configuration_t::_video_configuration_t::_video_configuration_t(void)
 	: stream_index(0)
 	, width(0)
 	, height(0)
@@ -13,7 +12,7 @@ dk_ff_mpeg2ts_muxer::_configuration_t::_configuration_t(void)
 	memset(extradata, 0x00, sizeof(extradata));
 }
 
-dk_ff_mpeg2ts_muxer::_configuration_t::_configuration_t(const dk_ff_mpeg2ts_muxer::_configuration_t & clone)
+dk_ff_mpeg2ts_muxer::_configuration_t::_video_configuration_t::_video_configuration_t(const dk_ff_mpeg2ts_muxer::_configuration_t::_video_configuration_t & clone)
 {
 	stream_index = clone.stream_index;
 	width = clone.width;
@@ -33,7 +32,7 @@ dk_ff_mpeg2ts_muxer::_configuration_t::_configuration_t(const dk_ff_mpeg2ts_muxe
 	}
 }
 
-dk_ff_mpeg2ts_muxer::_configuration_t dk_ff_mpeg2ts_muxer::_configuration_t::operator = (const dk_ff_mpeg2ts_muxer::_configuration_t & clone)
+dk_ff_mpeg2ts_muxer::_configuration_t::_video_configuration_t dk_ff_mpeg2ts_muxer::_configuration_t::_video_configuration_t::operator = (const dk_ff_mpeg2ts_muxer::_configuration_t::_video_configuration_t & clone)
 {
 	stream_index = clone.stream_index;
 	width = clone.width;
@@ -54,9 +53,25 @@ dk_ff_mpeg2ts_muxer::_configuration_t dk_ff_mpeg2ts_muxer::_configuration_t::ope
 	return (*this);
 }
 
+
+dk_ff_mpeg2ts_muxer::_configuration_t::_configuration_t(void)
+{
+}
+
+dk_ff_mpeg2ts_muxer::_configuration_t::_configuration_t(const dk_ff_mpeg2ts_muxer::_configuration_t & clone)
+{
+	vconfig = clone.vconfig;
+}
+
+dk_ff_mpeg2ts_muxer::_configuration_t dk_ff_mpeg2ts_muxer::_configuration_t::operator = (const dk_ff_mpeg2ts_muxer::_configuration_t & clone)
+{
+	vconfig = clone.vconfig;
+	return (*this);
+}
+
 dk_ff_mpeg2ts_muxer::dk_ff_mpeg2ts_muxer(void)
 {
-	_core = new ff_mpeg2ts_muxer_core();
+	_core = new ff_mpeg2ts_muxer_core(this);
 }
 
 dk_ff_mpeg2ts_muxer::~dk_ff_mpeg2ts_muxer(void)
