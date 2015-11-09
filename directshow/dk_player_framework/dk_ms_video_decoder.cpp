@@ -24,6 +24,8 @@ HRESULT dk_ms_video_decoder::add_to_graph(CComPtr<IGraphBuilder> graph, bool dxv
 	if (FAILED(hr))
 		return hr;
 
+
+	AM_QUERY_DECODER_DXVA_1_SUPPORT
 	if (dxva2)
 	{
 		VARIANT variant;
