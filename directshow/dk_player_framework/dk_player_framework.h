@@ -1,6 +1,7 @@
 #pragma once
 
 const UINT WM_GRAPH_EVENT = WM_APP + 1;
+typedef void (CALLBACK * fn_graph_event)(HWND hwnd, long eventCode, LONG_PTR param1, LONG_PTR param2);
 
 #if defined(EXPORT_LIB)
 #define EXP_CLASS __declspec(dllexport)
@@ -29,7 +30,7 @@ public:
 	dk_player_framework(void);
 	~dk_player_framework(void);
 
-	dk_player_framework::ERR_CODE initialize(HWND hwnd);
+	dk_player_framework::ERR_CODE initialize(HWND hwnd, bool aspect_ratio, bool use_clock);
 	dk_player_framework::ERR_CODE release(void);
 
 	dk_player_framework::STATE state(void);
@@ -39,6 +40,14 @@ public:
 	dk_player_framework::ERR_CODE play(void);
 	dk_player_framework::ERR_CODE pause(void);
 	dk_player_framework::ERR_CODE stop(void);
+
+	void aspect_ratio(bool enable);
+	void fullscreen(bool enable);
+
+	HRESULT update_video_windows(const LPRECT rect);
+	HRESULT repaint(HDC hdc);
+	HRESULT on_change_displaymode(void);
+	HRESULT handle_graphevent(fn_graph_event func);
 
 private:
 	dshow_player_framework * _core;

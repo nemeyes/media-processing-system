@@ -5,11 +5,7 @@
 
 dk_com_initiator::dk_com_initiator(void)
 {
-	HRESULT hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
-	if (FAILED(hr))
-	{
-		int a = 2;
-	}
+	::CoInitializeEx(NULL, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
 }
 
 dk_com_initiator::~dk_com_initiator(void)

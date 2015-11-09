@@ -12,9 +12,9 @@ dk_player_framework::~dk_player_framework(void)
 	delete _core;
 }
 
-dk_player_framework::ERR_CODE dk_player_framework::initialize(HWND hwnd)
+dk_player_framework::ERR_CODE dk_player_framework::initialize(HWND hwnd, bool aspect_ratio, bool use_clock)
 {
-	return _core->initialize(hwnd);
+	return _core->initialize(hwnd, aspect_ratio, use_clock);
 }
 
 dk_player_framework::ERR_CODE dk_player_framework::release(void)
@@ -46,4 +46,34 @@ dk_player_framework::ERR_CODE dk_player_framework::pause(void)
 dk_player_framework::ERR_CODE dk_player_framework::stop(void)
 {
 	return _core->stop();
+}
+
+void dk_player_framework::aspect_ratio(bool enable)
+{
+	return _core->aspect_ratio(enable);
+}
+
+void dk_player_framework::fullscreen(bool enable)
+{
+	return _core->fullscreen(enable);
+}
+
+HRESULT dk_player_framework::update_video_windows(const LPRECT rect)
+{
+	return _core->update_video_windows(rect);
+}
+
+HRESULT dk_player_framework::repaint(HDC hdc)
+{
+	return _core->repaint(hdc);
+}
+
+HRESULT dk_player_framework::on_change_displaymode(void)
+{
+	return _core->on_change_displaymode();
+}
+
+HRESULT dk_player_framework::handle_graphevent(fn_graph_event func)
+{
+	return _core->handle_graphevent(func);
 }

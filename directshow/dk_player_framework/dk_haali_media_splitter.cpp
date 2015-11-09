@@ -20,19 +20,13 @@ HRESULT dk_haali_media_splitter::add_to_graph(CComPtr<IGraphBuilder> graph, wcha
 	CComPtr<IBaseFilter> source;
 	HRESULT hr = dk_dshow_helper::add_filter_by_clsid(graph, L"Source", CLSID_HaaliMediaSplitter, &source);
 	if (FAILED(hr))
-	{
 		return hr;
-	}
 
 	CComQIPtr<IFileSourceFilter> file_source = source;
 	hr = file_source->Load(file, NULL);
 	if (FAILED(hr))
-	{
 		return hr;
-	}
-
 	_source = source;
-//done:
 	return hr;
 }
 

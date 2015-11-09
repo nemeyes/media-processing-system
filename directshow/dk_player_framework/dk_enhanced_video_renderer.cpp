@@ -5,6 +5,7 @@
 #include <initguid.h>
 
 dk_enhanced_video_renderer::dk_enhanced_video_renderer(void)
+	: _fullscreen(false)
 {
 
 }
@@ -14,8 +15,59 @@ dk_enhanced_video_renderer::~dk_enhanced_video_renderer(void)
 
 }
 
+void dk_enhanced_video_renderer::aspect_ratio(bool enable)
+{
+	if (_display)
+	{
+		HRESULT hr;
+		if (enable)
+			hr = _display->SetAspectRatioMode(MFVideoARMode_PreservePicture);
+		else
+			hr = _display->SetAspectRatioMode(MFVideoARMode_None);
+	}
+}
 
-HRESULT dk_enhanced_video_renderer::add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool dxva2)
+void dk_enhanced_video_renderer::fullscreen(bool enable)
+{
+	if (_fullscreen == enable)
+		return;
+	if (enable)
+	{
+		GetWindowRect(_hwnd, &_original_rect);
+		HMONITOR monitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+		if (!monitor) 
+			return;
+
+		MONITORINFO info;
+		info.cbSize = sizeof(info);
+		if (!GetMonitorInfo(monitor, &info))
+			return;
+
+		if (_display)
+			_display->SetFullscreen(TRUE);
+
+		RECT rect(info.rcMonitor);
+		::SetWindowPos(_hwnd, HWND_TOPMOST, rect.left, rect.top, rect.right, rect.bottom, SWP_SHOWWINDOW);
+		::ShowCursor(FALSE);
+		::SetFocus(_hwnd);
+	}
+	else
+	{
+		::SetWindowPos(_hwnd, HWND_NOTOPMOST, _original_rect.left, _original_rect.top, _original_rect.right, _original_rect.bottom, SWP_HIDEWINDOW);
+
+		if (_display)
+			_display->SetFullscreen(FALSE);
+
+		::ShowCursor(TRUE);
+		::ShowWindow(_hwnd, SW_SHOW);
+		::SetFocus(_hwnd);
+	}
+
+	_fullscreen = enable;
+}
+
+
+HRESULT dk_enhanced_video_renderer::add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool aspect_ratio, bool dxva2)
 {
 	CComPtr<IBaseFilter> renderer;
 	HRESULT hr = dk_dshow_helper::add_filter_by_clsid(graph, L"EVR", CLSID_EnhancedVideoRenderer, &renderer);
@@ -38,44 +90,26 @@ HRESULT dk_enhanced_video_renderer::add_to_graph(CComPtr<IGraphBuilder> graph, H
 		return hr;
 
 	// Preserve aspect ratio by letter-boxing
-	hr = display->SetAspectRatioMode(MFVideoARMode_PreservePicture);
+	if (aspect_ratio)
+		hr = display->SetAspectRatioMode(MFVideoARMode_PreservePicture);
+	else
+		hr = display->SetAspectRatioMode(MFVideoARMode_None);
 	if (FAILED(hr))
 		return hr;
 	
 	_renderer = renderer;
 	_display = display;
+	_hwnd = hwnd;
 	return hr;
 }
-
-/*HRESULT dk_enhanced_video_renderer::finalize_graph(IGraphBuilder * graph)
-{
-	if (_evr == NULL)
-	{
-		return S_OK;
-	}
-
-	BOOL bremoved;
-	HRESULT hr = eap_dshow_helper::remove_unconnected_renderer(graph, _evr, &bremoved);
-	if (bremoved)
-	{
-		safe_release(&_evr);
-		safe_release(&_video_display);
-	}
-	return hr;
-}*/
-
 
 HRESULT dk_enhanced_video_renderer::update_video_window(HWND hwnd, const LPRECT rect)
 {
 	if (!_display)
-	{
 		return S_OK;
-	}
 
 	if (rect)
-	{
 		return _display->SetVideoPosition(NULL, rect);
-	}
 	else
 	{
 		RECT rect2;
@@ -87,13 +121,9 @@ HRESULT dk_enhanced_video_renderer::update_video_window(HWND hwnd, const LPRECT 
 HRESULT dk_enhanced_video_renderer::repaint(HWND hwnd, HDC hdc)
 {
 	if (_display)
-	{
 		return _display->RepaintVideo();
-	}
 	else
-	{
 		return S_OK;
-	}
 }
 
 HRESULT dk_enhanced_video_renderer::on_change_displaymode(void)

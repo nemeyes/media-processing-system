@@ -22,9 +22,7 @@ HRESULT dk_ms_video_decoder::add_to_graph(CComPtr<IGraphBuilder> graph, bool dxv
 	CComPtr<IBaseFilter> decoder;
 	HRESULT hr = dk_dshow_helper::add_filter_by_clsid(graph, L"Decoder", CLSID_Microsoft_DTV_DVD_VideoDecoder, &decoder);
 	if (FAILED(hr))
-	{
-		goto done;
-	}
+		return hr;
 
 	if (dxva2)
 	{
@@ -34,12 +32,8 @@ HRESULT dk_ms_video_decoder::add_to_graph(CComPtr<IGraphBuilder> graph, bool dxv
 		CComQIPtr<ICodecAPI> codec_api = decoder;
 		hr = codec_api->SetValue(&CODECAPI_AVDecVideoAcceleration_H264, &variant);
 		if (FAILED(hr))
-		{
-			goto done;
-		}
+			return hr;
 	}
-
 	_decoder = decoder;
-done:
 	return hr;
 }
