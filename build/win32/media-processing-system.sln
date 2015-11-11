@@ -123,6 +123,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_player_framework", "..\.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_player_framework_test", "..\..\test\dk_player_framework_test\dk_player_framework_test.vcxproj", "{9111B875-0647-41DB-9E9B-0F70E5B435C0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_mpeg2ts_demuxer", "..\..\dk_mpeg2ts_demuxer\dk_mpeg2ts_demuxer.vcxproj", "{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_ts_analyzer_test", "..\..\test\dk_ts_analyzer_test\dk_ts_analyzer_test.vcxproj", "{9C0491E2-330A-4300-BFC3-022170E0BBDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -351,6 +355,18 @@ Global
 		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Release|Win32.ActiveCfg = Release|Win32
 		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Release|Win32.Build.0 = Release|Win32
 		{9111B875-0647-41DB-9E9B-0F70E5B435C0}.Release|x64.ActiveCfg = Release|Win32
+		{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F}.Debug|Win32.Build.0 = Debug|Win32
+		{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F}.Debug|x64.ActiveCfg = Debug|Win32
+		{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F}.Release|Win32.ActiveCfg = Release|Win32
+		{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F}.Release|Win32.Build.0 = Release|Win32
+		{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F}.Release|x64.ActiveCfg = Release|Win32
+		{9C0491E2-330A-4300-BFC3-022170E0BBDE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9C0491E2-330A-4300-BFC3-022170E0BBDE}.Debug|Win32.Build.0 = Debug|Win32
+		{9C0491E2-330A-4300-BFC3-022170E0BBDE}.Debug|x64.ActiveCfg = Debug|Win32
+		{9C0491E2-330A-4300-BFC3-022170E0BBDE}.Release|Win32.ActiveCfg = Release|Win32
+		{9C0491E2-330A-4300-BFC3-022170E0BBDE}.Release|Win32.Build.0 = Release|Win32
+		{9C0491E2-330A-4300-BFC3-022170E0BBDE}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -409,5 +425,7 @@ Global
 		{C830DDBD-BB36-4D10-B2E4-367FBF3CB782} = {4C6573A4-38D4-4997-BD95-16049A955EB3}
 		{650534BE-C312-4857-890F-70D2C6A164DF} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
 		{9111B875-0647-41DB-9E9B-0F70E5B435C0} = {20A20008-298C-4904-A58B-A23BA1F883E1}
+		{AFB9098A-6A84-4C4D-A75E-74D440E9FE6F} = {689D861F-DF0F-4DFB-8A0F-181D5142552E}
+		{9C0491E2-330A-4300-BFC3-022170E0BBDE} = {20A20008-298C-4904-A58B-A23BA1F883E1}
 	EndGlobalSection
 EndGlobal
