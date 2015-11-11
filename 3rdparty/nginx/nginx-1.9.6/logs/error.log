@@ -1,0 +1,1 @@
+2015/11/11 15:11:17 [error] 8440#4484: *1 CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.6/html/favicon.ico" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "127.0.0.1", referrer: "http://127.0.0.1/"

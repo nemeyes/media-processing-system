@@ -72,6 +72,10 @@ BEGIN_MESSAGE_MAP(Cdk_player_framework_testDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_PAUSE, &Cdk_player_framework_testDlg::OnBnClickedButtonPause)
 	ON_BN_CLICKED(IDC_CHECK_ASPECT_RATIO, &Cdk_player_framework_testDlg::OnBnClickedCheckAspectRatio)
 	ON_WM_LBUTTONDBLCLK()
+	ON_BN_CLICKED(IDC_BUTTON_OPEN_FILE, &Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile)
+	ON_BN_CLICKED(IDC_BUTTON_OPEN_RTSP, &Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtsp)
+	ON_BN_CLICKED(IDC_BUTTON_HSL, &Cdk_player_framework_testDlg::OnBnClickedButtonHsl)
+	ON_BN_CLICKED(IDC_BUTTON_OPEN_RTMP, &Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp)
 END_MESSAGE_MAP()
 
 
@@ -183,14 +187,6 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonPlay()
 	{
 		_player.play();
 	}
-	else
-	{
-		BOOL ar_checked = IsDlgButtonChecked(IDC_CHECK_ASPECT_RATIO);
-		BOOL uc_checked = IsDlgButtonChecked(IDC_CHECK_USE_CLOCK);
-		_player.initialize(::GetDlgItem(this->m_hWnd, IDC_STATIC_VIDEO_VIEW), ar_checked ? true : false, uc_checked ? true : false);
-		_player.open_file(L"C:\\workspace\\03.movie\\Heroes.Reborn.S01E05.720p.HDTV.x264-KILLERS.mkv");
-		_player.play();
-	}
 }
 
 void Cdk_player_framework_testDlg::OnBnClickedButtonStop()
@@ -265,4 +261,47 @@ void Cdk_player_framework_testDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 		_fullscreen = TRUE;
 	}
 	CDialogEx::OnLButtonDblClk(nFlags, point);
+}
+
+
+void Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile()
+{
+	// TODO: Add your control notification handler code here
+	BOOL ar_checked = IsDlgButtonChecked(IDC_CHECK_ASPECT_RATIO);
+	BOOL uc_checked = IsDlgButtonChecked(IDC_CHECK_USE_CLOCK);
+
+	wchar_t filter[] = L"MKV Media Files(*.mkv)|*.mkv||"; //L"All Files(*.*)|*.*||";
+	CFileDialog dlg(TRUE, L"mkv", NULL, OFN_HIDEREADONLY, filter);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		_filename = dlg.GetPathName();
+
+		if (_player.state() == dk_player_framework::STATE_RUNNING || _player.state() == dk_player_framework::STATE_PAUSED)
+		{
+			_player.stop();
+			_player.release();
+		}
+		_player.initialize(::GetDlgItem(this->m_hWnd, IDC_STATIC_VIDEO_VIEW), ar_checked ? true : false, uc_checked ? true : false);
+		_player.open_file((LPWSTR)(LPCWSTR)_filename);
+		_player.play();
+	}
+}
+
+
+void Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtsp()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void Cdk_player_framework_testDlg::OnBnClickedButtonHsl()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp()
+{
+	// TODO: Add your control notification handler code here
 }

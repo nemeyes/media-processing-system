@@ -23,6 +23,7 @@ private:
 	dk_player_framework _player;
 	CRect _original_rect;
 	BOOL _fullscreen;
+	CString _filename;
 
 // Implementation
 protected:
@@ -42,4 +43,8 @@ public:
 	afx_msg void OnBnClickedButtonPause();
 	afx_msg void OnBnClickedCheckAspectRatio();
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnBnClickedButtonOpenFile();
+	afx_msg void OnBnClickedButtonOpenRtsp();
+	afx_msg void OnBnClickedButtonHsl();
+	afx_msg void OnBnClickedButtonOpenRtmp();
 };
