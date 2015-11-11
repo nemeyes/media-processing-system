@@ -15,6 +15,23 @@ dk_enhanced_video_renderer::~dk_enhanced_video_renderer(void)
 
 }
 
+CComPtr<IBaseFilter> dk_enhanced_video_renderer::get_filter(void)
+{
+	return _renderer;
+}
+
+CComPtr<IPin> dk_enhanced_video_renderer::get_output_pin(void)
+{
+	return NULL;
+}
+
+CComPtr<IPin> dk_enhanced_video_renderer::get_input_pin(void)
+{
+	CComPtr<IPin> inpin;
+	dk_dshow_helper::get_pin(_renderer, L"EVR Input0", &inpin);
+	return inpin;
+}
+
 void dk_enhanced_video_renderer::aspect_ratio(bool enable)
 {
 	if (_display)
@@ -67,7 +84,7 @@ void dk_enhanced_video_renderer::fullscreen(bool enable)
 }
 
 
-HRESULT dk_enhanced_video_renderer::add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool aspect_ratio, bool dxva2)
+HRESULT dk_enhanced_video_renderer::add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool aspect_ratio)
 {
 	CComPtr<IBaseFilter> renderer;
 	HRESULT hr = dk_dshow_helper::add_filter_by_clsid(graph, L"EVR", CLSID_EnhancedVideoRenderer, &renderer);

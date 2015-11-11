@@ -3,14 +3,19 @@
 #include <atlconv.h>
 #include <dshow.h>
 
-class dk_haali_media_splitter
+#include "dk_base_filter.h"
+
+class dk_haali_media_splitter : public dk_base_source_filter
 {
 public:
 	dk_haali_media_splitter(void);
 	~dk_haali_media_splitter(void);
 
+	CComPtr<IBaseFilter> get_filter(void);
+	CComPtr<IPin> get_output_pin(void);
+	CComPtr<IPin> get_input_pin(void);
+
 	HRESULT add_to_graph(CComPtr<IGraphBuilder> graph, wchar_t * file);
-	CComPtr<IPin> get_outpin(void);
 
 private:
 	CComPtr<IBaseFilter> _source;

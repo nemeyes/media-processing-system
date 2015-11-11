@@ -33,10 +33,13 @@
     <ClInclude Include="..\dk_dshow_base\dk_dshow_helper.h">
       <Filter>dshow_base</Filter>
     </ClInclude>
-    <ClInclude Include="dk_ms_video_decoder.h">
+    <ClInclude Include="dk_haali_media_splitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dk_haali_media_splitter.h">
+    <ClInclude Include="dk_base_filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_microsoft_video_decoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,10 +59,10 @@
     <ClCompile Include="..\dk_dshow_base\dk_dshow_helper.cpp">
       <Filter>dshow_base</Filter>
     </ClCompile>
-    <ClCompile Include="dk_ms_video_decoder.cpp">
+    <ClCompile Include="dk_haali_media_splitter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dk_haali_media_splitter.cpp">
+    <ClCompile Include="dk_microsoft_video_decoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,11 +1,12 @@
 #include <windows.h>
+#include <dk_dshow_helper.h>
 #include "dshow_player_framework.h"
 
+
 dshow_player_framework::dshow_player_framework(void)
+	: _state(dk_player_framework::STATE_NO_GRAPH)
 {
-	_source = new dk_haali_media_splitter();
-	_decoder = new dk_ms_video_decoder();
-	_renderer = new dk_enhanced_video_renderer();
+
 }
 
 dshow_player_framework::~dshow_player_framework(void)
@@ -82,10 +83,14 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 	if (!path || wcslen(path) < 1)
 		return dk_player_framework::ERR_CODE_FAILED;
 
+	_source = new dk_haali_media_splitter();
+	_decoder = new dk_microsoft_video_decoder();
+	_renderer = new dk_enhanced_video_renderer();
+
 	hr = _source->add_to_graph(_graph, path);
-	hr = _decoder->add_to_graph(_graph, false);
-	hr = _renderer->add_to_graph(_graph, _hwnd, _aspect_ratio, false);
-	hr = _graph->Render(_source->get_outpin());
+	hr = _decoder->add_to_graph(_graph);
+	hr = _renderer->add_to_graph(_graph, _hwnd, _aspect_ratio);
+	hr = _graph->Render(_source->get_output_pin());
 	if (SUCCEEDED(hr))
 		return dk_player_framework::ERR_CODE_SUCCESS;
 	else
@@ -146,11 +151,50 @@ dk_player_framework::ERR_CODE dshow_player_framework::stop(void)
 	HRESULT hr = _control->Stop();
 	if (SUCCEEDED(hr))
 	{
+		CComPtr<IBaseFilter> sf = _source->get_filter();
+		CComPtr<IBaseFilter> tf = _decoder->get_filter();
+		CComPtr<IBaseFilter> rf = _renderer->get_filter();
+
+		hr = dk_dshow_helper::remove_filter_chain(_graph, sf, rf);
+		if (SUCCEEDED(hr))
+		{
+			if (_source)
+			{
+				delete _source;
+				_source = nullptr;
+			}
+			if (_decoder)
+			{
+				delete _decoder;
+				_decoder = nullptr;
+			}
+			if (_renderer)
+			{
+				delete _renderer;
+				_decoder = nullptr;
+			}
+		}
+
 		_state = dk_player_framework::STATE_STOPPED;
 		return dk_player_framework::ERR_CODE_SUCCESS;
 	}
 	else
 	{
+		if (_source)
+		{
+			delete _source;
+			_source = nullptr;
+		}
+		if (_decoder)
+		{
+			delete _decoder;
+			_decoder = nullptr;
+		}
+		if (_renderer)
+		{
+			delete _renderer;
+			_decoder = nullptr;
+		}
 		return dk_player_framework::ERR_CODE_FAILED;
 	}
 }

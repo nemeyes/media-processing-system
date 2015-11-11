@@ -1,4 +1,5 @@
 #pragma once
+#include <tchar.h>
 #include <vector>
 #include <mfidl.h>
 #include <dshow.h>

@@ -8,6 +8,7 @@
 #include <vmr9.h>
 #include <evr.h>
 
+#include "dk_base_filter.h"
 
 /*#define DXVA2_ModeH264_MoComp_NoFGT DXVA2_ModeH264_A
 #define DXVA2_ModeH264_MoComp_FGT   DXVA2_ModeH264_B
@@ -16,17 +17,20 @@
 #define DXVA2_ModeH264_VLD_NoFGT    DXVA2_ModeH264_E
 #define DXVA2_ModeH264_VLD_FGT      DXVA2_ModeH264_F*/
 
-class dk_enhanced_video_renderer
+class dk_enhanced_video_renderer : public dk_base_render_filter
 {
 public:
 	dk_enhanced_video_renderer(void);
 	~dk_enhanced_video_renderer(void);
 
+	CComPtr<IBaseFilter> get_filter(void);
+	CComPtr<IPin> get_output_pin(void);
+	CComPtr<IPin> get_input_pin(void);
 
 	void aspect_ratio(bool enable);
 	void fullscreen(bool enable);
 
-	HRESULT add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool aspect_ratio, bool dxva2);
+	HRESULT add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool aspect_ratio);
 
 	//HRESULT finalize_graph(IGraphBuilder * graph);
 	HRESULT update_video_window(HWND hwnd, const LPRECT rect);

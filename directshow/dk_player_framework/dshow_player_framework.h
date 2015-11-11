@@ -7,7 +7,7 @@
 #include <initguid.h>
 
 #include "dk_haali_media_splitter.h"
-#include "dk_ms_video_decoder.h"
+#include "dk_microsoft_video_decoder.h"
 #include "dk_enhanced_video_renderer.h"
 
 class dshow_player_framework
@@ -45,7 +45,7 @@ private:
 	CComPtr<IMediaControl> _control;
 	CComPtr<IMediaEventEx> _event;
 
-	dk_haali_media_splitter * _source;
-	dk_ms_video_decoder * _decoder;
-	dk_enhanced_video_renderer * _renderer;
+	dk_base_source_filter * _source;
+	dk_base_transform_filter * _decoder;
+	dk_base_render_filter * _renderer;
 };
