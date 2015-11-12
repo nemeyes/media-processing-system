@@ -1,9 +1,9 @@
 #include "dk_aac_encoder.h"
-#include "aac_enc_core.h"
+#include "faac_encoder.h"
 
 dk_aac_encoder::dk_aac_encoder(void)
 {
-	_core = new aac_enc_core();
+	_core = new faac_encoder();
 }
 
 dk_aac_encoder::~dk_aac_encoder(void)

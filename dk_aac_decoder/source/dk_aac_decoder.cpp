@@ -1,9 +1,9 @@
 #include "dk_aac_decoder.h"
-#include "aac_dec_core.h"
+#include "faad2_decoder.h"
 
 dk_aac_decoder::dk_aac_decoder(void)
 {
-	_core = new aac_dec_core();
+	_core = new faad2_decoder();
 }
 
 dk_aac_decoder::~dk_aac_decoder(void)

@@ -83,6 +83,103 @@ void dk_enhanced_video_renderer::fullscreen(bool enable)
 	_fullscreen = enable;
 }
 
+void dk_enhanced_video_renderer::list_dxva2_decoder_guids(std::vector<GUID> * guids)
+{
+	CComPtr<IPin> input_pin;
+	HRESULT hr;
+	if (_renderer)
+	{
+		input_pin = get_input_pin();
+
+		UINT cnt_decoder_guids = 0;
+		GUID * decoder_guids = NULL;
+		//BOOL found_dxva2_configuration = FALSE;
+		//GUID decoder_guid = GUID_NULL;
+
+		DXVA2_ConfigPictureDecode dxva2_config;
+		ZeroMemory(&dxva2_config, sizeof(dxva2_config));
+
+		CComPtr<IDirect3DDeviceManager9> d3d_device_manager;
+		CComPtr<IDirectXVideoDecoderService> d3d_video_decoder_service;
+		
+		HANDLE d3d_device = INVALID_HANDLE_VALUE;
+
+		CComQIPtr<IMFGetService> mf_get_service(input_pin);
+		if (mf_get_service)
+		{
+			hr = mf_get_service->GetService(MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(&d3d_device_manager));
+
+			if (SUCCEEDED(hr))
+			{
+				hr = d3d_device_manager->OpenDeviceHandle(&d3d_device);
+				if (SUCCEEDED(hr))
+				{
+					hr = d3d_device_manager->GetVideoService(d3d_device, IID_PPV_ARGS(&d3d_video_decoder_service));
+					if (SUCCEEDED(hr))
+					{
+						hr = d3d_video_decoder_service->GetDecoderDeviceGuids(&cnt_decoder_guids, &decoder_guids);
+						if (SUCCEEDED(hr))
+						{
+							for (UINT index = 0; index < cnt_decoder_guids; index++)
+							{
+								guids->push_back(decoder_guids[index]);
+								{
+									UINT count_configurations = 0;
+									DXVA2_ConfigPictureDecode * configurations = NULL;
+
+									/*D3DFORMAT * formats = NULL;
+									UINT count_formats = 0;
+									
+									hr = d3d_video_decoder_service->GetDecoderRenderTargets(decoder_guids[index], &count_formats, &formats);
+									if (SUCCEEDED(hr))
+									{
+										//for (UINT format_index = 0; format_index < count_formats; format_index++)
+										//{
+										//	if (formats[])
+										//}*/
+										DXVA2_VideoDesc video_desc = { 0 };
+										//videoDesc.Format = formats[]
+										hr = d3d_video_decoder_service->GetDecoderConfigurations(decoder_guids[index], &video_desc, NULL, &count_configurations, &configurations);
+										for (UINT config_index = 0; config_index < count_configurations; config_index++)
+										{
+											configurations[config_index].Config4GroupedCoefs;
+										}
+
+									/*}*/
+
+
+
+								}
+								/*// Do we support this mode?
+								if (!IsSupportedDecoderMode(pDecoderGuids[iGuid]))
+								{
+									continue;
+								}
+
+								// Find a configuration that we support. 
+								hr = FindDecoderConfiguration(pDecoderService, pDecoderGuids[iGuid],
+									&config, &bFoundDXVA2Configuration);
+								if (FAILED(hr))
+								{
+									break;
+								}
+
+								if (bFoundDXVA2Configuration)
+								{
+									// Found a good configuration. Save the GUID and exit the loop.
+									guidDecoder = pDecoderGuids[iGuid];
+									break;
+								}*/
+							}
+						}
+					}
+				}
+			}
+
+		}
+	}
+}
+
 
 HRESULT dk_enhanced_video_renderer::add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool aspect_ratio)
 {

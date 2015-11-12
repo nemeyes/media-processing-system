@@ -29,10 +29,10 @@ public:
 
 	void aspect_ratio(bool enable);
 	void fullscreen(bool enable);
+	void list_dxva2_decoder_guids(std::vector<GUID> * guids);
 
 	HRESULT add_to_graph(CComPtr<IGraphBuilder> graph, HWND hwnd, bool aspect_ratio);
 
-	//HRESULT finalize_graph(IGraphBuilder * graph);
 	HRESULT update_video_window(HWND hwnd, const LPRECT rect);
 	HRESULT repaint(HWND hwnd, HDC hdc);
 	HRESULT on_change_displaymode(void);

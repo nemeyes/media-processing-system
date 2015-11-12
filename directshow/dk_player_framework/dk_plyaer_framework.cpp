@@ -58,6 +58,11 @@ void dk_player_framework::fullscreen(bool enable)
 	return _core->fullscreen(enable);
 }
 
+void dk_player_framework::list_dxva2_decoder_guids(std::vector<GUID> * guids)
+{
+	return _core->list_dxva2_decoder_guids(guids);
+}
+
 HRESULT dk_player_framework::update_video_windows(const LPRECT rect)
 {
 	return _core->update_video_windows(rect);

@@ -211,6 +211,12 @@ void dshow_player_framework::fullscreen(bool enable)
 		_renderer->fullscreen(enable);
 }
 
+void dshow_player_framework::list_dxva2_decoder_guids(std::vector<GUID> * guids)
+{
+	if (_renderer)
+		_renderer->list_dxva2_decoder_guids(guids);
+}
+
 HRESULT dshow_player_framework::update_video_windows(const LPRECT rect)
 {
 	if (_renderer)

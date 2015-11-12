@@ -4,6 +4,7 @@
 
 #pragma once
 #include <dk_player_framework.h>
+#include "afxwin.h"
 
 
 // Cdk_player_framework_testDlg dialog
@@ -24,6 +25,8 @@ private:
 	CRect _original_rect;
 	BOOL _fullscreen;
 	CString _filename;
+
+	CComboBox _dxva2_decoder_guids;
 
 // Implementation
 protected:

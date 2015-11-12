@@ -9,6 +9,8 @@ typedef void (CALLBACK * fn_graph_event)(HWND hwnd, long eventCode, LONG_PTR par
 #define EXP_CLASS __declspec(dllimport)
 #endif
 
+#include <vector>
+
 class dshow_player_framework;
 class EXP_CLASS dk_player_framework
 {
@@ -43,6 +45,7 @@ public:
 
 	void aspect_ratio(bool enable);
 	void fullscreen(bool enable);
+	void list_dxva2_decoder_guids(std::vector<GUID> * guids);
 
 	HRESULT update_video_windows(const LPRECT rect);
 	HRESULT repaint(HDC hdc);

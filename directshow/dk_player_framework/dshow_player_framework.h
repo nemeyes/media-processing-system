@@ -29,6 +29,7 @@ public:
 
 	void aspect_ratio(bool enable);
 	void fullscreen(bool enalbe);
+	void list_dxva2_decoder_guids(std::vector<GUID> * guids);
 
 	HRESULT update_video_windows(const LPRECT rect);
 	HRESULT repaint(HDC hdc);

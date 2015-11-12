@@ -35,7 +35,7 @@
 # define EXP_DLL
 #endif
 
-class aac_enc_core;
+class faac_encoder;
 class EXP_DLL dk_aac_encoder
 {
 public:
@@ -191,7 +191,7 @@ public:
 	dk_aac_encoder::ERR_CODE encode(unsigned char * input, unsigned int isize, unsigned char * output, unsigned int &osize);
 
 private:
-	aac_enc_core * _core;
+	faac_encoder * _core;
 
 };
 

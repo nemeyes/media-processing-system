@@ -13,7 +13,7 @@
 # define EXP_DLL
 #endif
 
-class aac_dec_core;
+class faad2_decoder;
 class EXP_DLL dk_aac_decoder
 {
 public:
@@ -117,7 +117,7 @@ public:
 	dk_aac_decoder::ERR_CODE decode(unsigned char * input, unsigned int isize, unsigned char * output, unsigned int & osize);
 
 private:
-	aac_dec_core * _core;
+	faad2_decoder * _core;
 
 };
 

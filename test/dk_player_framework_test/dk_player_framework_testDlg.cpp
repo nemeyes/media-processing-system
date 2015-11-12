@@ -6,6 +6,10 @@
 #include "dk_player_framework_test.h"
 #include "dk_player_framework_testDlg.h"
 #include "afxdialogex.h"
+#include <uuids.h>
+#include <initguid.h>
+#include <d3d9.h>
+#include <dxva2api.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,6 +64,7 @@ Cdk_player_framework_testDlg::Cdk_player_framework_testDlg(CWnd* pParent /*=NULL
 void Cdk_player_framework_testDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_COMBO_DXVA2_DECODER_GUIDS, _dxva2_decoder_guids);
 }
 
 BEGIN_MESSAGE_MAP(Cdk_player_framework_testDlg, CDialogEx)
@@ -284,6 +289,89 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile()
 		}
 		_player.initialize(::GetDlgItem(this->m_hWnd, IDC_STATIC_VIDEO_VIEW), ar_checked ? true : false, uc_checked ? true : false);
 		_player.open_file((LPWSTR)(LPCWSTR)_filename);
+
+
+		_dxva2_decoder_guids.Clear();
+		std::vector<GUID>::iterator iter;
+		std::vector<GUID> dxva2_decoder_guids;
+		_player.list_dxva2_decoder_guids(&dxva2_decoder_guids);
+		for (iter = dxva2_decoder_guids.begin(); iter != dxva2_decoder_guids.end(); iter++)
+		{
+			if(IsEqualGUID(DXVA2_ModeMPEG2_MoComp, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG2_MoComp");
+			else if (IsEqualGUID(DXVA2_ModeMPEG2_IDCT, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG2_IDCT");
+			else if (IsEqualGUID(DXVA2_ModeMPEG2_VLD, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG2_VLD");
+			else if (IsEqualGUID(DXVA2_ModeMPEG1_VLD, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG1_VLD");
+			else if (IsEqualGUID(DXVA2_ModeMPEG2and1_VLD, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG2and1_VLD");
+			else if (IsEqualGUID(DXVA2_ModeH264_A, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_A");
+			else if (IsEqualGUID(DXVA2_ModeH264_B, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_B");
+			else if (IsEqualGUID(DXVA2_ModeH264_C, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_C");
+			else if (IsEqualGUID(DXVA2_ModeH264_D, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_D");
+			else if (IsEqualGUID(DXVA2_ModeH264_E, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_E");
+			else if (IsEqualGUID(DXVA2_ModeH264_F, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_F");
+			else if (IsEqualGUID(DXVA2_ModeH264_VLD_Stereo_Progressive_NoFGT, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_VLD_Stereo_Progressive_NoFGT");
+			else if (IsEqualGUID(DXVA2_ModeH264_VLD_Stereo_NoFGT, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_VLD_Stereo_NoFGT");
+			else if (IsEqualGUID(DXVA2_ModeH264_VLD_Multiview_NoFGT, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeH264_VLD_Multiview_NoFGT");
+			else if (IsEqualGUID(DXVA2_ModeWMV8_A, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeWMV8_A");
+			else if (IsEqualGUID(DXVA2_ModeWMV8_B, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeWMV8_B");
+			else if (IsEqualGUID(DXVA2_ModeWMV9_A, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeWMV9_A");
+			else if (IsEqualGUID(DXVA2_ModeWMV9_B, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeWMV9_B");
+			else if (IsEqualGUID(DXVA2_ModeWMV9_C, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeWMV9_C");
+			else if (IsEqualGUID(DXVA2_ModeVC1_A, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeVC1_A");
+			else if (IsEqualGUID(DXVA2_ModeVC1_B, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeVC1_B");
+			else if (IsEqualGUID(DXVA2_ModeVC1_C, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeVC1_C");
+			else if (IsEqualGUID(DXVA2_ModeVC1_D, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeVC1_D");
+			else if (IsEqualGUID(DXVA2_ModeVC1_D2010, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeVC1_D2010");
+			else if (IsEqualGUID(DXVA2_NoEncrypt, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_NoEncrypt");
+			else if (IsEqualGUID(DXVA2_VideoProcProgressiveDevice, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_VideoProcProgressiveDevice");
+			else if (IsEqualGUID(DXVA2_VideoProcBobDevice, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_VideoProcBobDevice");
+			else if (IsEqualGUID(DXVA2_VideoProcSoftwareDevice, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_VideoProcSoftwareDevice");
+			else if (IsEqualGUID(DXVA2_ModeMPEG4pt2_VLD_Simple, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG4pt2_VLD_Simple");
+			else if (IsEqualGUID(DXVA2_ModeMPEG4pt2_VLD_AdvSimple_NoGMC, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG4pt2_VLD_AdvSimple_NoGMC");
+			else if (IsEqualGUID(DXVA2_ModeMPEG4pt2_VLD_AdvSimple_GMC, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG4pt2_VLD_AdvSimple_GMC");
+			else if (IsEqualGUID(DXVA2_ModeHEVC_VLD_Main, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeHEVC_VLD_Main");
+			else if (IsEqualGUID(DXVA2_ModeHEVC_VLD_Main10, (*iter)))
+				_dxva2_decoder_guids.AddString(L"DXVA2_ModeHEVC_VLD_Main10");
+			else
+			{
+				OLECHAR wszGuid[40] = { 0 };
+				CoCreateGuid(&(*iter));
+				StringFromGUID2((*iter), wszGuid, _countof(wszGuid));
+				_dxva2_decoder_guids.AddString(wszGuid);
+			}
+		}
+
 		_player.play();
 	}
 }
