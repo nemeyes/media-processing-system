@@ -40,8 +40,7 @@ DEFINE_GUID(CLSID_DK_AAC_ENCODE_FILTER,
 DEFINE_GUID(CLSID_DK_AAC_ENCODE_FILTER_PROPERTIES,
 	0xa5c18f00, 0x78db, 0x4997, 0x89, 0xc6, 0xd0, 0xea, 0x38, 0xfc, 0x23, 0x5b);
 
-class dk_aac_encode_filter : public CTransformFilter, 
-								  public ISpecifyPropertyPages
+class dk_aac_encode_filter : public CTransformFilter, public ISpecifyPropertyPages
 {
 public:
 	dk_aac_encode_filter(LPUNKNOWN unk, HRESULT *hr);
@@ -58,8 +57,7 @@ public:
 	virtual HRESULT GetMediaType(int position, CMediaType *type);
 	virtual HRESULT CheckTransform(const CMediaType *itype, const CMediaType *otype);
 	virtual HRESULT DecideBufferSize(IMemAllocator *allocator, ALLOCATOR_PROPERTIES *pprop);
-	virtual HRESULT SetMediaType(PIN_DIRECTION direction, const CMediaType * mt);
-	virtual HRESULT Transform(IMediaSample *src, IMediaSample *dst);
+	//virtual HRESULT Transform(IMediaSample *src, IMediaSample *dst);
 	
 
 	// you can also override these if you want to know about streaming
@@ -75,7 +73,10 @@ public:
 	virtual HRESULT AlterQuality(Quality quality);
 
 	// override this to know when the media type is actually set
-	//virtual HRESULT SetMediaType(PIN_DIRECTION direction, const CMediaType *type);
+	virtual HRESULT SetMediaType(PIN_DIRECTION direction, const CMediaType * mt);
+
+	virtual HRESULT Receive(IMediaSample *pSample);
+	virtual HRESULT GetDeliveryBuffer(IMediaSample **sample);
 
 	// if you override Receive, you may need to override these three too
 	virtual HRESULT EndOfStream(void);
@@ -86,20 +87,18 @@ public:
 	//ISpecifyPropertyPages
 	STDMETHODIMP	GetPages(CAUUID *pages);
 
-	int RowWidth(int w)
-	{
-		if (w % 4)
-			w += 4 - w % 4;
-		return w;
-	};
-
 private:
-	bool _got_time;
-	REFERENCE_TIME _start_time;
-	unsigned long long _time_count;
+	//REFERENCE_TIME _start_time;
+	//unsigned long long _time_count;
 
-	unsigned long _input_samples;
-	unsigned long _max_output_bytes;
+	unsigned long _frame_size;
+	//unsigned long _max_output_bytes;
+	int64_t _frame_done;
+	bool _got_time;
+	REFERENCE_TIME _rt_begin;
+	int16_t * _buffer;
+	int32_t _samples;
+
 	unsigned char _extra_data[100];
 	size_t _extra_data_size;
 	dk_aac_encoder::configuration_t _config;

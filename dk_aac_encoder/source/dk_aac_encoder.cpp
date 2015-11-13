@@ -25,9 +25,9 @@ dk_aac_encoder::ERR_CODE dk_aac_encoder::release(void)
 	return _core->release();
 }
 
-dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(uint8_t * input, size_t isize, uint8_t * output, size_t osize)
+dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(int32_t * input, size_t isize, uint8_t * output, size_t osize, size_t & bytes_written)
 {
-	return _core->encode(input, isize, output, osize);
+	return _core->encode(input, isize, output, osize, bytes_written);
 }
 
 dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize, int64_t & encode_done)

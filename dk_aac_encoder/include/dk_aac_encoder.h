@@ -91,7 +91,7 @@ public:
 		uint32_t use_lfe; // Use one of the channels as LFE channel
 		uint32_t use_tns; // Use Temporal Noise Shaping
 		uint32_t bitrate; // bitrate / channel of AAC file
-		unsigned long sample_rate;
+		unsigned long samplerate;
 		uint32_t channels;
 		uint32_t bitpersamples;
 		unsigned long input_samples;
@@ -129,7 +129,7 @@ public:
 			, use_lfe(0)
 			, use_tns(0)
 			, bitrate(128000)
-			, sample_rate(0)
+			, samplerate(0)
 			, channels(2)
 			, bitpersamples(32)
 			, input_samples(0)
@@ -150,7 +150,7 @@ public:
 			use_lfe = clone.use_lfe;
 			use_tns = clone.use_tns;
 			bitrate = clone.bitrate;
-			sample_rate = clone.sample_rate;
+			samplerate = clone.samplerate;
 			channels = clone.channels;
 			bitpersamples = clone.bitpersamples;
 			input_samples = clone.input_samples;
@@ -170,7 +170,7 @@ public:
 			use_lfe = clone.use_lfe;
 			use_tns = clone.use_tns;
 			bitrate = clone.bitrate;
-			sample_rate = clone.sample_rate;
+			samplerate = clone.samplerate;
 			channels = clone.channels;
 			bitpersamples = clone.bitpersamples;
 			input_samples = clone.input_samples;
@@ -191,7 +191,7 @@ public:
 	dk_aac_encoder::ERR_CODE initialize(dk_aac_encoder::configuration_t config, unsigned long & input_samples, unsigned long & max_output_bytes, uint8_t * extra_data, size_t & extra_data_size);
 	dk_aac_encoder::ERR_CODE release(void);
 
-	dk_aac_encoder::ERR_CODE encode(uint8_t * input, size_t isize, uint8_t * output, size_t osize);
+	dk_aac_encoder::ERR_CODE encode(int32_t * input, size_t isize, uint8_t * output, size_t osize, size_t & bytes_written);
 	dk_aac_encoder::ERR_CODE encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize, int64_t & encode_done);
 
 private:

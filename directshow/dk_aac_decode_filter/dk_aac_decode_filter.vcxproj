@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{451D6868-00A2-4AAA-977F-9C7AF8D1B374}</ProjectGuid>
+    <ProjectGuid>{CE10836C-C035-404D-B6A1-E7B9D1DDB82F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>dk_aac_encoder</RootNamespace>
+    <RootNamespace>dk_aac_decode_filter</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -42,14 +42,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)x86\debug\bin\</OutDir>
+    <TargetExt>.ax</TargetExt>
     <IntDir>$(SolutionDir)x86\debug\intermediate\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)faac\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)platform\win32\x86\debug\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)x86\release\bin\</OutDir>
     <IntDir>$(SolutionDir)x86\release\intermediate\$(ProjectName)\</IntDir>
+    <TargetExt>.ax</TargetExt>
     <IncludePath>$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -59,19 +61,21 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DK_AAC_DECODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\3rdparty\faac\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\baseclasses;..\..\dk_aac_decoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
-      <AdditionalDependencies>libfaac_s.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\3rdparty\faac\win32\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;dk_aac_decoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dk_aac_decode_filter.def</ModuleDefinitionFile>
+      <ImportLibrary>$(SolutionDir)platform\win32\x86\debug\lib\$(ProjectName).lib</ImportLibrary>
+      <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -81,28 +85,35 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DK_AAC_DECODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\3rdparty\faac\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\baseclasses;..\..\dk_aac_decoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
-      <AdditionalDependencies>libfaac_s.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\3rdparty\faac\win32\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>strmbase.lib;strmiids.lib;winmm.lib;dk_aac_decoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dk_aac_decode_filter.def</ModuleDefinitionFile>
+      <ImportLibrary>$(SolutionDir)platform\win32\x86\release\lib\$(ProjectName).lib</ImportLibrary>
+      <AdditionalLibraryDirectories>$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\faac_encoder.h" />
-    <ClInclude Include="include\dk_aac_encoder.h" />
+    <ClInclude Include="include\dk_aac_decode_filter.h" />
+    <ClInclude Include="include\dk_aac_decode_filter_properties.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\faac_encoder.cpp" />
-    <ClCompile Include="source\dk_aac_encoder.cpp" />
+    <ClCompile Include="source\dk_aac_decode_filter.cpp" />
+    <ClCompile Include="source\dk_aac_decode_filter_properties.cpp" />
+    <ClCompile Include="source\setup.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dk_aac_decode_filter.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

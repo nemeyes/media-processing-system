@@ -19,16 +19,18 @@
 
 dk_aac_encode_filter::dk_aac_encode_filter(LPUNKNOWN unk, HRESULT *hr)
 	: CTransformFilter(g_szFilterName, unk, CLSID_DK_AAC_ENCODE_FILTER)
-	, _input_samples(0)
-	, _max_output_bytes(0)
+	, _frame_size(0)
+	//, _max_output_bytes(0)
 	, _extra_data_size(0)
 	, _got_time(false)
-	, _start_time(0)
+	//, _start_time(0)
 {
 
 	m_pInput = new CTransformInputPin(NAME("Input"), this, hr, L"In");
 	m_pOutput = new CTransformOutputPin(NAME("Output"), this, hr, L"Out");
 
+
+	_buffer = (short*)malloc(10 * 2 * 48000 * sizeof(short));
 	memset(_extra_data, 0x00, sizeof(_extra_data));
 	_encoder = new dk_aac_encoder();
 }
@@ -38,7 +40,12 @@ dk_aac_encode_filter::~dk_aac_encode_filter(VOID)
 	if (_encoder)
 	{
 		delete _encoder;
-		_encoder = 0;
+		_encoder = nullptr;
+	}
+	if (_buffer)
+	{
+		free(_buffer);
+		_buffer = nullptr;
 	}
 }
 
@@ -65,9 +72,9 @@ STDMETHODIMP dk_aac_encode_filter::NonDelegatingQueryInterface(REFIID riid, void
 
 HRESULT  dk_aac_encode_filter::StartStreaming()
 {
-	_got_time = false;
-	_start_time = 0;
-	_time_count = 0;
+	//_got_time = false;
+	//_start_time = 0;
+	//_time_count = 0;
 	return NOERROR;
 }
 
@@ -101,8 +108,11 @@ HRESULT  dk_aac_encode_filter::CompleteConnect(PIN_DIRECTION direction, IPin *pi
 {
 	if (direction == PINDIR_INPUT)
 	{
+		unsigned long ob;
 		if (_encoder)
-			_encoder->initialize(_config, _input_samples, _max_output_bytes, _extra_data, _extra_data_size);
+			_encoder->initialize(_config, _frame_size, ob, _extra_data, _extra_data_size);
+
+		_frame_done = 0;
 	}
 
 	UNREFERENCED_PARAMETER(direction);
@@ -277,7 +287,7 @@ HRESULT  dk_aac_encode_filter::GetMediaType(int position, CMediaType *type)
 		memset(wfx, 0x00, sizeof(*wfx));
 		wfx->cbSize = _extra_data_size;
 		wfx->nChannels = _config.channels;
-		wfx->nSamplesPerSec = _config.sample_rate;
+		wfx->nSamplesPerSec = _config.samplerate;
 		wfx->wFormatTag = WAVE_FORMAT_AAC;
 		unsigned char * wfxex = ((unsigned char*)(wfx)) + sizeof(*wfx);
 		memcpy(wfxex, _extra_data, _extra_data_size);
@@ -345,7 +355,7 @@ HRESULT dk_aac_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedia
 		//if (wfx->wBitsPerSample != 16) 
 		//	return E_FAIL;
 		_config.channels = wfx->nChannels;
-		_config.sample_rate = wfx->nSamplesPerSec;
+		_config.samplerate = wfx->nSamplesPerSec;
 		_config.bitpersamples = wfx->wBitsPerSample;
 		switch (_config.bitpersamples)
 		{
@@ -366,7 +376,133 @@ HRESULT dk_aac_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedia
 	return NOERROR;
 }
 
-HRESULT dk_aac_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
+HRESULT dk_aac_encode_filter::Receive(IMediaSample *pSample)
+{
+	if (!_got_time) 
+	{
+		// odchytime si casy
+		REFERENCE_TIME rt_begin, rt_end;
+		HRESULT hr = pSample->GetTime(&rt_begin, &rt_end);
+		if (hr == NOERROR) 
+		{
+			_rt_begin = rt_begin;
+			_got_time = true;
+		}
+		else 
+		{
+			return NOERROR;
+		}
+	}
+
+	if (!m_pOutput->IsConnected()) 
+	{
+		return NOERROR;
+	}
+
+	HRESULT	hr = NOERROR;
+	BYTE	*buf;
+	long	size;
+	pSample->GetPointer(&buf);
+	size = pSample->GetActualDataLength();
+
+	short	*in_buf = (short*)buf;
+	long	in_samples = size / sizeof(short);
+
+	memcpy(_buffer + _samples, in_buf, in_samples * sizeof(short));
+	_samples += in_samples;
+
+	/**************************************************************************
+	**
+	**	Enkodovanie packetov
+	**
+	***************************************************************************/
+
+	size_t outsize = 32 * 1024;
+	BYTE	*outbuf = (BYTE*)malloc(outsize);
+
+	int		cur_sample = 0;
+	short	*cur_buf = _buffer;
+	while (cur_sample + _frame_size <= _samples)
+	{
+		// dame zakodovat frame
+		size_t bytes_written = 0;
+		dk_aac_encoder::ERR_CODE ret = _encoder->encode((int*)cur_buf, _frame_size, outbuf, outsize, bytes_written);//faacEncEncode(encoder, (int*)cur_buf, info.frame_size, outbuf, outsize);
+		if (ret == dk_aac_encoder::ERR_CODE_SUCCESS) 
+		{
+
+			REFERENCE_TIME		rtStart, rtStop;
+			IMediaSample		*sample = NULL;
+			HRESULT				hr;
+
+			// dorucime data
+			hr = GetDeliveryBuffer(&sample);
+			if (FAILED(hr)) 
+				break;
+
+			// spocitame timestampy
+			int		fs = _frame_size / _config.channels;
+
+			rtStart = (_frame_done*fs * 10000000) / _config.samplerate;
+			rtStop = ((((_frame_done + 1)*fs) - 1) * 10000000) / _config.samplerate;
+			rtStart += _rt_begin;
+			rtStop += _rt_begin;
+
+			sample->SetTime(&rtStart, &rtStop);
+
+			// napiseme data
+			BYTE	*out;
+			sample->GetPointer(&out);
+			memcpy(out, outbuf, bytes_written);
+			sample->SetActualDataLength(bytes_written);
+
+			hr = m_pOutput->Deliver(sample);
+			sample->Release();
+			if (FAILED(hr)) 
+				break;
+
+			_frame_done++;
+		}
+
+		// na dalsi frame
+		cur_sample += _frame_size;
+		cur_buf += _frame_size;
+	}
+
+	free(outbuf);
+
+	// discardujeme stare data
+	if (cur_sample > 0) 
+	{
+		int	left = _samples - cur_sample;
+		if (left > 0) 
+			memcpy(_buffer, _buffer + cur_sample, left*sizeof(short));
+		_samples = left;
+	}
+
+	return hr;
+}
+
+HRESULT dk_aac_encode_filter::GetDeliveryBuffer(IMediaSample ** ms)
+{
+	IMediaSample * oms;
+	HRESULT hr = m_pOutput->GetDeliveryBuffer(&oms, NULL, NULL, 0);
+	*ms = oms;
+	if (FAILED(hr)) 
+		return hr;
+
+	// ak sa zmenil type, tak aktualizujeme nase info
+	AM_MEDIA_TYPE *mt;
+	if (oms->GetMediaType(&mt) == NOERROR) 
+	{
+		CMediaType _mt(*mt);
+		SetMediaType(PINDIR_OUTPUT, &_mt);
+		DeleteMediaType(mt);
+	}
+	return NOERROR;
+}
+
+
+/*HRESULT dk_aac_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 {
 	HRESULT hr = S_OK;
 	BYTE *input_buffer = NULL;
@@ -406,16 +542,16 @@ HRESULT dk_aac_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 
 	if (output_data_size>0)
 	{
-		int fs = _input_samples / _config.channels;
-		start_time = (frame_done * fs * 10000000) / _config.sample_rate;
-		end_time = ((((frame_done + 1)*fs) - 1) * 10000000) / _config.sample_rate;
+		int fs = _frame_size / _config.channels;
+		start_time = (frame_done * fs * 10000000) / _config.samplerate;
+		end_time = ((((frame_done + 1)*fs) - 1) * 10000000) / _config.samplerate;
 		start_time += _start_time;
 		end_time += _start_time;
 		dst->SetTime(&start_time, &end_time);
 	}
 	dst->SetActualDataLength(output_data_size);
 	return S_OK;
-}
+}*/
 
 STDMETHODIMP dk_aac_encode_filter::GetPages(CAUUID *pPages)
 {
