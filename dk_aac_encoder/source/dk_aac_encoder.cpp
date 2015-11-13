@@ -30,9 +30,9 @@ dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(int32_t * input, size_t isize, u
 	return _core->encode(input, isize, output, osize, bytes_written);
 }
 
-dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize, int64_t & encode_done)
+dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize)
 {
-	return _core->encode(input, isize, output, osize, encode_done);
+	return _core->encode(input, isize, output, osize);
 }
 
 

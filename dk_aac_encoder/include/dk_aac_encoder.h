@@ -192,7 +192,7 @@ public:
 	dk_aac_encoder::ERR_CODE release(void);
 
 	dk_aac_encoder::ERR_CODE encode(int32_t * input, size_t isize, uint8_t * output, size_t osize, size_t & bytes_written);
-	dk_aac_encoder::ERR_CODE encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize, int64_t & encode_done);
+	dk_aac_encoder::ERR_CODE encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize);
 
 private:
 	faac_encoder * _core;

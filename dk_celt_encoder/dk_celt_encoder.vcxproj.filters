@@ -18,9 +18,15 @@
     <ClInclude Include="include\dk_celt_encoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\celt_encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_celt_encoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\celt_encoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
