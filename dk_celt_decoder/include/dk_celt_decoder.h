@@ -1,5 +1,5 @@
-#ifndef _DK_CELT_ENCODER_H_
-#define _DK_CELT_ENCODER_H_
+#ifndef _DK_CELT_DECODER_H_
+#define _DK_CELT_DECODER_H_
 
 #include <cstdint>
 
@@ -14,8 +14,8 @@
 # define EXP_DLL
 #endif
 
-class celt_encoder;
-class EXP_DLL dk_celt_encoder
+class celt_decoder;
+class EXP_DLL dk_celt_decoder
 {
 public:
 	typedef enum _ERR_CODE
@@ -28,13 +28,13 @@ public:
 	{
 		int32_t samplerate;
 		int32_t channels;
-		//int32_t framesize;
-		int32_t bitrate;
+		int32_t framesize;
+		int32_t bitdepth;
 		_configuration_t(void)
 			: samplerate(48000)
 			, channels(2)
-			//, framesize(960)
-			, bitrate(64000)
+			, framesize(960)
+			, bitdepth(16)
 		{
 		}
 
@@ -42,29 +42,29 @@ public:
 		{
 			samplerate = clone.samplerate;
 			channels = clone.channels;
-			//framesize = clone.framesize;
-			bitrate = clone.bitrate;
+			framesize = clone.framesize;
+			bitdepth = clone.bitdepth;
 		}
 
 		_configuration_t operator=(const _configuration_t & clone)
 		{
 			samplerate = clone.samplerate;
 			channels = clone.channels;
-			//framesize = clone.framesize;
-			bitrate = clone.bitrate;
+			framesize = clone.framesize;
+			bitdepth = clone.bitdepth;
 			return (*this);
 		}
 	} configuration_t;
 
-	dk_celt_encoder(void);
-	~dk_celt_encoder(void);
+	dk_celt_decoder(void);
+	~dk_celt_decoder(void);
 
-	dk_celt_encoder::ERR_CODE initialize(dk_celt_encoder::configuration_t * config);
-	dk_celt_encoder::ERR_CODE encode(int16_t * input, size_t isize, uint8_t * output, size_t & osize);
-	dk_celt_encoder::ERR_CODE release(void);
+	dk_celt_decoder::ERR_CODE initialize(dk_celt_decoder::configuration_t * config);
+	dk_celt_decoder::ERR_CODE decode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize);
+	dk_celt_decoder::ERR_CODE release(void);
 
 private:
-	celt_encoder * _core;
+	celt_decoder * _core;
 };
 
 

@@ -133,6 +133,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_aac_decode_filter", "..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_aac_encode_filter", "..\..\directshow\dk_aac_encode_filter\dk_aac_encode_filter.vcxproj", "{1B40CBD6-7771-4119-836F-C2DE1E8B48F9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_celt_decoder", "..\..\dk_celt_decoder\dk_celt_decoder.vcxproj", "{E1A45844-699D-4393-A6AB-6A2CC1D18EFC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_celt_encode_filter", "..\..\directshow\dk_celt_encode_filter\dk_celt_encode_filter.vcxproj", "{967A509A-CB66-4DEE-9523-082C25D672B1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_celt_decode_filter", "..\..\directshow\dk_celt_decode_filter\dk_celt_decode_filter.vcxproj", "{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -391,6 +397,24 @@ Global
 		{1B40CBD6-7771-4119-836F-C2DE1E8B48F9}.Release|Win32.ActiveCfg = Release|Win32
 		{1B40CBD6-7771-4119-836F-C2DE1E8B48F9}.Release|Win32.Build.0 = Release|Win32
 		{1B40CBD6-7771-4119-836F-C2DE1E8B48F9}.Release|x64.ActiveCfg = Release|Win32
+		{E1A45844-699D-4393-A6AB-6A2CC1D18EFC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E1A45844-699D-4393-A6AB-6A2CC1D18EFC}.Debug|Win32.Build.0 = Debug|Win32
+		{E1A45844-699D-4393-A6AB-6A2CC1D18EFC}.Debug|x64.ActiveCfg = Debug|Win32
+		{E1A45844-699D-4393-A6AB-6A2CC1D18EFC}.Release|Win32.ActiveCfg = Release|Win32
+		{E1A45844-699D-4393-A6AB-6A2CC1D18EFC}.Release|Win32.Build.0 = Release|Win32
+		{E1A45844-699D-4393-A6AB-6A2CC1D18EFC}.Release|x64.ActiveCfg = Release|Win32
+		{967A509A-CB66-4DEE-9523-082C25D672B1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{967A509A-CB66-4DEE-9523-082C25D672B1}.Debug|Win32.Build.0 = Debug|Win32
+		{967A509A-CB66-4DEE-9523-082C25D672B1}.Debug|x64.ActiveCfg = Debug|Win32
+		{967A509A-CB66-4DEE-9523-082C25D672B1}.Release|Win32.ActiveCfg = Release|Win32
+		{967A509A-CB66-4DEE-9523-082C25D672B1}.Release|Win32.Build.0 = Release|Win32
+		{967A509A-CB66-4DEE-9523-082C25D672B1}.Release|x64.ActiveCfg = Release|Win32
+		{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B}.Debug|Win32.Build.0 = Debug|Win32
+		{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B}.Debug|x64.ActiveCfg = Debug|Win32
+		{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B}.Release|Win32.ActiveCfg = Release|Win32
+		{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B}.Release|Win32.Build.0 = Release|Win32
+		{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -454,5 +478,8 @@ Global
 		{4788E7BB-2ED4-42EF-AAB6-189DCD4887CC} = {2D4D34F3-2439-41B0-83D2-77978268E880}
 		{CE10836C-C035-404D-B6A1-E7B9D1DDB82F} = {6D4C1D99-AF19-4E30-B886-CE165AFC002F}
 		{1B40CBD6-7771-4119-836F-C2DE1E8B48F9} = {6D4C1D99-AF19-4E30-B886-CE165AFC002F}
+		{E1A45844-699D-4393-A6AB-6A2CC1D18EFC} = {2D4D34F3-2439-41B0-83D2-77978268E880}
+		{967A509A-CB66-4DEE-9523-082C25D672B1} = {6D4C1D99-AF19-4E30-B886-CE165AFC002F}
+		{5DBD6C4C-39C6-4B31-972E-FAE6AEAFC62B} = {6D4C1D99-AF19-4E30-B886-CE165AFC002F}
 	EndGlobalSection
 EndGlobal

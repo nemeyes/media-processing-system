@@ -1,31 +1,52 @@
 #pragma once
 #include <process.h>
 #include <time.h>
-#include <dk_aac_decoder.h>
+#include <dk_celt_decoder.h>
 
 /* TODO
 1. validate various bitpersample
 2. make properties page
 */
 
-#define g_szFilterName L"DK AAC Decode filter"
+#define g_szFilterName L"DK CELT Decode filter"
 
 		
 // {B5D4DC1B-8EF0-48DF-B641-48DE829C8459}
-DEFINE_GUID(CLSID_DK_AAC_DECODE_FILTER,
+DEFINE_GUID(CLSID_DK_CELT_DECODE_FILTER,
 	0xb5d4dc1b, 0x8ef0, 0x48df, 0xb6, 0x41, 0x48, 0xde, 0x82, 0x9c, 0x84, 0x59);
 
 // {840A8628-8D7E-4E12-94AA-91A6C1908C6C}
-DEFINE_GUID(CLSID_DK_AAC_DECODE_FILTER_PROPERTIES,
+DEFINE_GUID(CLSID_DK_CELT_DECODE_FILTER_PROPERTIES,
 	0x840a8628, 0x8d7e, 0x4e12, 0x94, 0xaa, 0x91, 0xa6, 0xc1, 0x90, 0x8c, 0x6c);
 
+#if 0
 
-class dk_aac_decode_filter : public CTransformFilter, 
+// {0DFEE29C-12CD-418E-A08A-36FF4D684236}
+DEFINE_GUID(MEDIASUBTYPE_CELT,
+	0xdfee29c, 0x12cd, 0x418e, 0xa0, 0x8a, 0x36, 0xff, 0x4d, 0x68, 0x42, 0x36);
+
+// {212B4516-A75A-4220-90B1-7A16822856AE}
+DEFINE_GUID(KSDATAFORMAT_SUBTYPE_CELT,
+	0x212b4516, 0xa75a, 0x4220, 0x90, 0xb1, 0x7a, 0x16, 0x82, 0x28, 0x56, 0xae);
+
+#else
+
+// {B940AE21-195E-4CE6-B324-E703AE733AEC}
+DEFINE_GUID(MEDIASUBTYPE_CELT,
+	0xb940ae21, 0x195e, 0x4ce6, 0xb3, 0x24, 0xe7, 0x3, 0xae, 0x73, 0x3a, 0xec);
+
+// {1DAD5025-02FA-4330-9A60-EC0121E3CE3D}
+DEFINE_GUID(KSDATAFORMAT_SUBTYPE_CELT,
+	0x1dad5025, 0x2fa, 0x4330, 0x9a, 0x60, 0xec, 0x1, 0x21, 0xe3, 0xce, 0x3d);
+
+#endif
+
+class dk_celt_decode_filter : public CTransformFilter, 
 							 public ISpecifyPropertyPages
 {
 public:
-	dk_aac_decode_filter(LPUNKNOWN unk, HRESULT *hr);
-	~dk_aac_decode_filter(VOID);
+	dk_celt_decode_filter(LPUNKNOWN unk, HRESULT *hr);
+	~dk_celt_decode_filter(VOID);
 
 	static CUnknown * WINAPI CreateInstance(LPUNKNOWN unk, HRESULT *hr);
 
@@ -69,11 +90,11 @@ private:
 	REFERENCE_TIME _start_time;
 	unsigned long long _time_count;
 
-	unsigned char _extra_data[100];
-	unsigned long _extra_data_size;
+	//unsigned char _extra_data[100];
+	//unsigned long _extra_data_size;
 	//int _channels;
 	//int _samplerate;
 	//int _bitpersamples;
-	dk_aac_decoder::configuration_t _config;
-	dk_aac_decoder	*_decoder;
+	dk_celt_decoder::configuration_t _config;
+	dk_celt_decoder	* _decoder;
 };

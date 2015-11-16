@@ -11,28 +11,28 @@
 #include <streams.h>
 #include <dvdmedia.h>
 
-#include "dk_aac_decode_filter.h"
-#include "dk_aac_decode_filter_properties.h"
-#include "../resource.h"
+#include "dk_celt_encode_filter.h"
+#include "dk_celt_encode_filter_properties.h"
+#include "resource.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-dk_aac_decode_filter_properties::dk_aac_decode_filter_properties(LPUNKNOWN unk)
-	:CBasePropertyPage(NAME("dk_aac_decode_filter_properties"), unk, IDD_PROPPAGE_MEDIUM, IDS_PROPPAGE_TITLE)
+dk_celt_encode_filter_properties::dk_celt_encode_filter_properties(LPUNKNOWN unk)
+	:CBasePropertyPage(NAME("dk_celt_encode_filter_properties"), unk, IDD_PROPPAGE_MEDIUM, IDS_PROPPAGE_TITLE)
 {
 
 }
 
-dk_aac_decode_filter_properties::~dk_aac_decode_filter_properties(VOID)
+dk_celt_encode_filter_properties::~dk_celt_encode_filter_properties(VOID)
 {
 
 }
 
-CUnknown* WINAPI dk_aac_decode_filter_properties::CreateInstance(LPUNKNOWN unk, HRESULT *hr)
+CUnknown* WINAPI dk_celt_encode_filter_properties::CreateInstance(LPUNKNOWN unk, HRESULT *hr)
 {
-	CUnknown *punk = new dk_aac_decode_filter_properties(unk);
+	CUnknown *punk = new dk_celt_encode_filter_properties(unk);
 	if (punk == NULL)
 	{
 		*hr = E_OUTOFMEMORY;
@@ -40,7 +40,7 @@ CUnknown* WINAPI dk_aac_decode_filter_properties::CreateInstance(LPUNKNOWN unk, 
 	return punk;
 }
 
-HRESULT dk_aac_decode_filter_properties::OnConnect(IUnknown *unk)
+HRESULT dk_celt_encode_filter_properties::OnConnect(IUnknown *unk)
 {
 	//HRESULT hr = unk->QueryInterface(IID_IVmxnetVideoDecodeSetting, (void **)&_setting);
 	//if (FAILED(hr))
@@ -48,7 +48,7 @@ HRESULT dk_aac_decode_filter_properties::OnConnect(IUnknown *unk)
 	return S_OK;
 }
 
-HRESULT dk_aac_decode_filter_properties::OnDisconnect(VOID)
+HRESULT dk_celt_encode_filter_properties::OnDisconnect(VOID)
 {
 	//if (_setting == NULL)
 	//	return E_UNEXPECTED;
@@ -57,17 +57,17 @@ HRESULT dk_aac_decode_filter_properties::OnDisconnect(VOID)
 	return S_OK;
 }
 
-HRESULT dk_aac_decode_filter_properties::OnActivate(VOID)
+HRESULT dk_celt_encode_filter_properties::OnActivate(VOID)
 {
 	return S_OK;
 }
 
-HRESULT dk_aac_decode_filter_properties::OnDeactivate(VOID)
+HRESULT dk_celt_encode_filter_properties::OnDeactivate(VOID)
 {
 	return S_OK;
 }
 
-HRESULT dk_aac_decode_filter_properties::OnApplyChanges(VOID)
+HRESULT dk_celt_encode_filter_properties::OnApplyChanges(VOID)
 {
 	//if (_setting)
 	//{
@@ -76,7 +76,7 @@ HRESULT dk_aac_decode_filter_properties::OnApplyChanges(VOID)
 	return E_FAIL;
 }
 
-INT_PTR dk_aac_decode_filter_properties::OnReceiveMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+INT_PTR dk_celt_encode_filter_properties::OnReceiveMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	HWND hwnd_edit;
 	switch (msg)

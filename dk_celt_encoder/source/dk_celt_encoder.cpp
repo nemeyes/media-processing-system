@@ -20,7 +20,7 @@ dk_celt_encoder::ERR_CODE dk_celt_encoder::initialize(dk_celt_encoder::configura
 	return _core->initialize(config);
 }
 
-dk_celt_encoder::ERR_CODE dk_celt_encoder::encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize)
+dk_celt_encoder::ERR_CODE dk_celt_encoder::encode(int16_t * input, size_t isize, uint8_t * output, size_t & osize)
 {
 	return _core->encode(input, isize, output, osize);
 }

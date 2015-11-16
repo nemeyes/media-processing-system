@@ -4,8 +4,8 @@
 #pragma warning(disable:4312) 
 #include <streams.h>
 #pragma warning(pop)     
-#include "dk_aac_decode_filter_properties.h"
-#include "dk_aac_decode_filter.h"
+#include "dk_celt_encode_filter_properties.h"
+#include "dk_celt_encode_filter.h"
 
 const AMOVIESETUP_MEDIATYPE sudPinTypes =
 { &MEDIATYPE_NULL,	// Major CLSID
@@ -29,7 +29,7 @@ const AMOVIESETUP_PIN psudPins[] =
 
 const AMOVIESETUP_FILTER sudFilter =
 {
-	&CLSID_DK_AAC_DECODE_FILTER,		// CLSID of filter
+	&CLSID_DK_CELT_ENCODE_FILTER,		// CLSID of filter
 	g_szFilterName,						// Filter's name
 	MERIT_DO_NOT_USE,					// Filter merit
 	1,									// Number of pins
@@ -40,15 +40,15 @@ CFactoryTemplate g_Templates[] =
 {
 	{
 		g_szFilterName,
-		&CLSID_DK_AAC_DECODE_FILTER,
-		dk_aac_decode_filter::CreateInstance,
+		&CLSID_DK_CELT_ENCODE_FILTER,
+		dk_celt_encode_filter::CreateInstance,
 		NULL,
 		&sudFilter
 	},
 	{
-		L"dk_aac_decode_filter_properties",
-		&CLSID_DK_AAC_DECODE_FILTER_PROPERTIES,
-		dk_aac_decode_filter_properties::CreateInstance,
+		L"dk_celt_encode_filter_properties",
+		&CLSID_DK_CELT_ENCODE_FILTER_PROPERTIES,
+		dk_celt_encode_filter_properties::CreateInstance,
 		NULL,
 		NULL
 	},
