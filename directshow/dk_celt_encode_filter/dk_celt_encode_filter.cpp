@@ -18,8 +18,7 @@
 
 dk_celt_encode_filter::dk_celt_encode_filter(LPUNKNOWN unk, HRESULT *hr)
 	: CTransformFilter(g_szFilterName, unk, CLSID_DK_CELT_ENCODE_FILTER)
-	, _frame_size(960)
-	//, _max_output_bytes(0)
+	, _frame_size(20)
 	, _got_time(false)
 	//, _start_time(0)
 {
@@ -94,7 +93,7 @@ HRESULT  dk_celt_encode_filter::BreakConnect(PIN_DIRECTION direction)
 	if (direction == PINDIR_INPUT)
 	{
 		if (_encoder)
-			_encoder->release();
+			_encoder->release_encoder();
 	}
 	UNREFERENCED_PARAMETER(direction);
 	return NOERROR;
@@ -106,12 +105,12 @@ HRESULT  dk_celt_encode_filter::CompleteConnect(PIN_DIRECTION direction, IPin *p
 	if (direction == PINDIR_INPUT)
 	{
 		if (_encoder)
-			_encoder->initialize(&_config);
-
+			_encoder->initialize_encoder(&_config);
+		_frame_size = _frame_size * _config.samplerate / 1000;
 		_frame_done = 0;
 	}
 
-	UNREFERENCED_PARAMETER(direction);
+	UNREFERENCED_PARAMETER(direction);	
 	UNREFERENCED_PARAMETER(pin);
 	return NOERROR;
 }
@@ -187,13 +186,14 @@ HRESULT  dk_celt_encode_filter::CheckInputType(const CMediaType * mt)
 	WAVEFORMATEX * wfx = (WAVEFORMATEX*)mt->pbFormat;
 	if (!wfx)
 		return E_FAIL;
-	if (wfx->wFormatTag != WAVE_FORMAT_PCM)
+	if (wfx->wFormatTag != WAVE_FORMAT_PCM && wfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE)
 		return E_FAIL;
 	if (wfx->wBitsPerSample != 16)
 		return E_FAIL;
 	if ((wfx->nChannels < 0) || (wfx->nChannels > 2))
 		return E_FAIL;
 
+#if 0
 	switch (wfx->nSamplesPerSec)
 	{
 	case 48000:
@@ -205,6 +205,7 @@ HRESULT  dk_celt_encode_filter::CheckInputType(const CMediaType * mt)
 	default:
 		return E_FAIL;
 	}
+#endif
 
 	return NOERROR;
 }
@@ -235,7 +236,7 @@ HRESULT  dk_celt_encode_filter::GetMediaType(int position, CMediaType *type)
 		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->pbFormat;
 		wfx->wFormatTag = WAVE_FORMAT_EXTENSIBLE;
 		wfx->nChannels = _config.channels;
-		wfx->nSamplesPerSec = _config.samplerate;
+		wfx->nSamplesPerSec = _config.codingrate;
 		wfx->wBitsPerSample = 16;
 		wfx->nBlockAlign = wfx->nChannels * wfx->wBitsPerSample / 8;
 		wfx->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
@@ -316,13 +317,14 @@ HRESULT dk_celt_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedi
 		WAVEFORMATEX * wfx = (WAVEFORMATEX*)mt->pbFormat;
 		if (!wfx)
 			return E_FAIL;
-		if (wfx->wFormatTag != WAVE_FORMAT_PCM)
+		if (wfx->wFormatTag != WAVE_FORMAT_PCM && wfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE)
 			return E_FAIL;
 		if (wfx->wBitsPerSample != 16)
 			return E_FAIL;
 		if ((wfx->nChannels < 0) || (wfx->nChannels > 2))
 			return E_FAIL;
 
+#if 0
 		switch (wfx->nSamplesPerSec)
 		{
 		case 48000:
@@ -334,15 +336,27 @@ HRESULT dk_celt_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedi
 		default:
 			return E_FAIL;
 		}
+		_config.channels = wfx->nChannels;
+		_config.samplerate = wfx->nSamplesPerSec;
+		_config.codingrate = wfx->nSamplesPerSec;
+#else
 
 		_config.channels = wfx->nChannels;
 		_config.samplerate = wfx->nSamplesPerSec;
-		return NOERROR;
+
+		if (_config.samplerate > 24000)
+			_config.codingrate = 48000;
+		else if (_config.samplerate > 16000)
+			_config.codingrate = 24000;
+		else if (_config.samplerate > 12000)
+			_config.codingrate = 16000;
+		else if (_config.samplerate > 8000)
+			_config.codingrate = 12000;
+		else
+			_config.codingrate = 8000;
+#endif
 	}
-	else
-	{
-		return NOERROR;
-	}
+	return NOERROR;
 }
 
 HRESULT dk_celt_encode_filter::Receive(IMediaSample *pSample)
@@ -384,11 +398,11 @@ HRESULT dk_celt_encode_filter::Receive(IMediaSample *pSample)
 
 	int		cur_sample = 0;
 	short	*cur_buf = _buffer;
-	while (cur_sample + (_frame_size /** _config.channels * 2*/) <= _samples)
+	while (cur_sample + (_frame_size * _config.channels) <= _samples)
 	{
-		// dame zakodovat frame
-		size_t bytes_written = outsize;
-		dk_celt_encoder::ERR_CODE ret = _encoder->encode(cur_buf, _frame_size, outbuf, bytes_written);//faacEncEncode(encoder, (int*)cur_buf, info.frame_size, outbuf, outsize);
+		dk_audio_entity_t pcm = { cur_buf, _frame_size, 0 };
+		dk_audio_entity_t encoded = { outbuf, outsize, 0 };
+		dk_celt_encoder::ERR_CODE ret = _encoder->encode(&pcm, &encoded);
 		if (ret == dk_celt_encoder::ERR_CODE_SUCCESS)
 		{
 
@@ -396,24 +410,23 @@ HRESULT dk_celt_encode_filter::Receive(IMediaSample *pSample)
 			IMediaSample		*sample = NULL;
 			HRESULT				hr;
 
-			// dorucime data
 			hr = GetDeliveryBuffer(&sample);
 			if (FAILED(hr)) 
 				break;
 
-			int	fs = _frame_size;// / _config.channels;
+			int	fs = _frame_size * _config.channels;
 
 			rtStart = (_frame_done*fs * 10000000) / _config.samplerate;
 			rtStop = ((((_frame_done + 1)*fs) - 1) * 10000000) / _config.samplerate;
 			rtStart += _rt_begin;
 			rtStop += _rt_begin;
 
-			//sample->SetTime(&rtStart, &rtStop);
+			sample->SetTime(&rtStart, &rtStop);
 
 			BYTE	*out;
 			sample->GetPointer(&out);
-			memcpy(out, outbuf, bytes_written);
-			sample->SetActualDataLength(bytes_written);
+			memcpy(out, outbuf, encoded.data_size);
+			sample->SetActualDataLength(encoded.data_size);
 
 			hr = m_pOutput->Deliver(sample);
 			sample->Release();
@@ -422,8 +435,8 @@ HRESULT dk_celt_encode_filter::Receive(IMediaSample *pSample)
 
 			_frame_done++;
 		}
-		cur_sample += _frame_size;// *_config.channels * 2;
-		cur_buf += _frame_size;//*_config.channels * 2;
+		cur_sample += _frame_size * _config.channels;
+		cur_buf += _frame_size * _config.channels;
 	}
 
 	free(outbuf);

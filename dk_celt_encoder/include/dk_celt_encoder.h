@@ -3,65 +3,21 @@
 
 #include <cstdint>
 
-#if defined(_WIN32)
-# include <windows.h>
-# if defined(EXPORT_LIB)
-#  define EXP_DLL __declspec(dllexport)
-# else
-#  define EXP_DLL __declspec(dllimport)
-# endif
-#else
-# define EXP_DLL
-#endif
+#include <dk_audio_base.h>
 
 class celt_encoder;
-class EXP_DLL dk_celt_encoder
+class EXP_CLASS dk_celt_encoder : public dk_audio_encoder
 {
 public:
-	typedef enum _ERR_CODE
-	{
-		ERR_CODE_SUCCESS,
-		ERR_CODE_FAILED,
-	} ERR_CODE;
-
-	typedef struct EXP_DLL _configuration_t
-	{
-		int32_t samplerate;
-		int32_t channels;
-		//int32_t framesize;
-		int32_t bitrate;
-		_configuration_t(void)
-			: samplerate(48000)
-			, channels(2)
-			//, framesize(960)
-			, bitrate(64000)
-		{
-		}
-
-		_configuration_t(const _configuration_t & clone)
-		{
-			samplerate = clone.samplerate;
-			channels = clone.channels;
-			//framesize = clone.framesize;
-			bitrate = clone.bitrate;
-		}
-
-		_configuration_t operator=(const _configuration_t & clone)
-		{
-			samplerate = clone.samplerate;
-			channels = clone.channels;
-			//framesize = clone.framesize;
-			bitrate = clone.bitrate;
-			return (*this);
-		}
-	} configuration_t;
-
 	dk_celt_encoder(void);
 	~dk_celt_encoder(void);
 
-	dk_celt_encoder::ERR_CODE initialize(dk_celt_encoder::configuration_t * config);
-	dk_celt_encoder::ERR_CODE encode(int16_t * input, size_t isize, uint8_t * output, size_t & osize);
-	dk_celt_encoder::ERR_CODE release(void);
+	dk_celt_encoder::ERR_CODE initialize_encoder(dk_celt_encoder::configuration_t * config);
+	dk_celt_encoder::ERR_CODE release_encoder(void);
+
+	dk_celt_encoder::ERR_CODE encode(dk_audio_entity_t * encoded, dk_audio_entity_t * decoded);
+	//dk_celt_encoder::ERR_CODE encode(int16_t * input, size_t isize, uint8_t * output, size_t & osize);
+	
 
 private:
 	celt_encoder * _core;

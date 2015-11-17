@@ -210,46 +210,63 @@ HRESULT  dk_celt_decode_filter::GetMediaType(int position, CMediaType *type)
 			return hr;
 		type->SetSubtype(&MEDIASUBTYPE_PCM);
 		type->SetFormatType(&FORMAT_WaveFormatEx);
+		type->bFixedSizeSamples = TRUE;
 		type->SetTemporalCompression(FALSE);
 
-		//type->Format();
+#if 0
+		type->AllocFormatBuffer(sizeof(WAVEFORMATEX));
+		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->pbFormat;
+		memset(wfx, 0x00, sizeof(WAVEFORMATEX));
+		wfx->wFormatTag = WAVE_FORMAT_PCM;
+		wfx->nChannels = _config.channels;
+		wfx->nSamplesPerSec = _config.samplerate;
+		wfx->wBitsPerSample = _config.bitdepth;
+		wfx->nBlockAlign = (wfx->nChannels * wfx->wBitsPerSample / 8);
+		wfx->nAvgBytesPerSec = wfx->nSamplesPerSec * wfx->nBlockAlign;
+		//wfx->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
+#else
+		type->AllocFormatBuffer(sizeof(WAVEFORMATEXTENSIBLE));
+		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->pbFormat;
+		memset(wfx, 0x00, sizeof(WAVEFORMATEX));
+		wfx->wFormatTag = WAVE_FORMAT_PCM;
+		wfx->nChannels = _config.channels;
+		wfx->nSamplesPerSec = _config.samplerate;
+		wfx->wBitsPerSample = _config.bitdepth;
+		wfx->nBlockAlign = (wfx->nChannels * wfx->wBitsPerSample / 8);
+		wfx->nAvgBytesPerSec = wfx->nSamplesPerSec * wfx->nBlockAlign;
+		wfx->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
 
-		WAVEFORMATEXTENSIBLE wfex;
-		memset(&wfex, 0x00, sizeof(wfex));
-		wfex.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-		//wfex.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
-		wfex.Format.nChannels = _config.channels;
-		wfex.Format.nSamplesPerSec = _config.samplerate;
-		wfex.Format.wBitsPerSample = _config.bitdepth;
-		wfex.Format.nBlockAlign = (wfex.Format.nChannels * wfex.Format.wBitsPerSample / 8);
-		wfex.Format.nAvgBytesPerSec = wfex.Format.nSamplesPerSec * wfex.Format.nBlockAlign;
+		WAVEFORMATEXTENSIBLE * wfext = (WAVEFORMATEXTENSIBLE*)type->pbFormat;
+		wfext->Samples.wValidBitsPerSample = wfext->Format.wBitsPerSample;
+		wfext->SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+		wfext->Format.wFormatTag = (_config.channels <= 2) ? WAVE_FORMAT_PCM : WAVE_FORMAT_EXTENSIBLE;
 		switch (_config.channels)
 		{
 		case 1:
-			wfex.dwChannelMask = KSAUDIO_SPEAKER_MONO;
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_MONO;
 			break;
 		case 2:
-			wfex.dwChannelMask = KSAUDIO_SPEAKER_STEREO;
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_STEREO;
 			break;
 		case 3:
-			wfex.dwChannelMask = KSAUDIO_SPEAKER_STEREO | SPEAKER_FRONT_CENTER;
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_STEREO | SPEAKER_FRONT_CENTER;
 			break;
 		case 4:
 			//wfex.dwChannelMask = KSAUDIO_SPEAKER_QUAD;
-			wfex.dwChannelMask = (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER);
+			wfext->dwChannelMask = (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER);
 			break;
 		case 5:
-			wfex.dwChannelMask = KSAUDIO_SPEAKER_QUAD | SPEAKER_FRONT_CENTER;
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_QUAD | SPEAKER_FRONT_CENTER;
 			break;
 		case 6:
-			wfex.dwChannelMask = KSAUDIO_SPEAKER_5POINT1;
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_5POINT1;
 			break;
 		default:
-			wfex.dwChannelMask = KSAUDIO_SPEAKER_DIRECTOUT; // XXX : or SPEAKER_ALL ??
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_DIRECTOUT; // XXX : or SPEAKER_ALL ??
 			break;
 		}
-		wfex.Samples.wValidBitsPerSample = wfex.Format.wBitsPerSample;
-		//type->SetFormat((BYTE*)&wfex, sizeof(WAVEFORMATEX) + wfex.Format.cbSize);
+		
+#endif
 	}
 	return S_OK;
 }
@@ -259,8 +276,8 @@ HRESULT  dk_celt_decode_filter::CheckTransform(const CMediaType *itype, const CM
 	if (!IsEqualGUID(*(itype->Type()), MEDIATYPE_Audio) || !IsEqualGUID(*(otype->Type()), MEDIATYPE_Audio))
 		return VFW_E_TYPE_NOT_ACCEPTED;
 
-	//if (!IsEqualGUID(*itype->Subtype(), MEDIASUBTYPE_CELT))
-	//	return VFW_E_TYPE_NOT_ACCEPTED;
+	if (!IsEqualGUID(*itype->Subtype(), MEDIASUBTYPE_CELT))
+		return VFW_E_TYPE_NOT_ACCEPTED;
 
 	if (!IsEqualGUID(*(otype->Subtype()), MEDIASUBTYPE_PCM))
 		return VFW_E_TYPE_NOT_ACCEPTED;
