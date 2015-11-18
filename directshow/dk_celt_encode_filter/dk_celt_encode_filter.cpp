@@ -186,7 +186,7 @@ HRESULT  dk_celt_encode_filter::CheckInputType(const CMediaType * mt)
 	WAVEFORMATEX * wfx = (WAVEFORMATEX*)mt->pbFormat;
 	if (!wfx)
 		return E_FAIL;
-	if (wfx->wFormatTag != WAVE_FORMAT_PCM && wfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE)
+	if (wfx->wFormatTag != WAVE_FORMAT_PCM /*&& wfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE*/)
 		return E_FAIL;
 	if (wfx->wBitsPerSample != 16)
 		return E_FAIL;
@@ -317,29 +317,12 @@ HRESULT dk_celt_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedi
 		WAVEFORMATEX * wfx = (WAVEFORMATEX*)mt->pbFormat;
 		if (!wfx)
 			return E_FAIL;
-		if (wfx->wFormatTag != WAVE_FORMAT_PCM && wfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE)
+		if (wfx->wFormatTag != WAVE_FORMAT_PCM /*&& wfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE*/)
 			return E_FAIL;
 		if (wfx->wBitsPerSample != 16)
 			return E_FAIL;
 		if ((wfx->nChannels < 0) || (wfx->nChannels > 2))
 			return E_FAIL;
-
-#if 0
-		switch (wfx->nSamplesPerSec)
-		{
-		case 48000:
-		case 24000:
-		case 16000:
-		case 12000:
-		case 8000:
-			break;
-		default:
-			return E_FAIL;
-		}
-		_config.channels = wfx->nChannels;
-		_config.samplerate = wfx->nSamplesPerSec;
-		_config.codingrate = wfx->nSamplesPerSec;
-#else
 
 		_config.channels = wfx->nChannels;
 		_config.samplerate = wfx->nSamplesPerSec;
@@ -354,7 +337,6 @@ HRESULT dk_celt_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedi
 			_config.codingrate = 12000;
 		else
 			_config.codingrate = 8000;
-#endif
 	}
 	return NOERROR;
 }
