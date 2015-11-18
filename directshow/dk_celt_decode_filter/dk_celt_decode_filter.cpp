@@ -84,7 +84,7 @@ HRESULT  dk_celt_decode_filter::BreakConnect(PIN_DIRECTION direction)
 	if (direction==PINDIR_INPUT)
 	{
 		if (_decoder)
-			_decoder->release();
+			_decoder->release_decoder();
 	}
 	UNREFERENCED_PARAMETER(direction);
 	return NOERROR;
@@ -97,7 +97,7 @@ HRESULT  dk_celt_decode_filter::CompleteConnect(PIN_DIRECTION direction, IPin *p
 	{
 		if (_decoder)
 		{	
-			_decoder->initialize(&_config);
+			_decoder->initialize_decoder(&_config);
 		}
 	}
 
@@ -351,37 +351,41 @@ HRESULT dk_celt_decode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 	if (FAILED(hr) || !output_buffer)
 		return S_FALSE;
 
-	REFERENCE_TIME start_time, end_time;
-	hr = src->GetTime(&start_time, &end_time);
-	if (hr == NOERROR)
-	{
-		_start_time = start_time;
-		_got_time = true;
-	}
-	else
-	{
-		return NOERROR;
-	}
+	//REFERENCE_TIME start_time, end_time;
+	//hr = src->GetTime(&start_time, &end_time);
+	//if (hr == NOERROR)
+	//{
+	//	_start_time = start_time;
+	//	_got_time = true;
+	//}
+	//else
+	//{
+	//	return NOERROR;
+	//}
 
 	CMediaType mt;
 	hr = m_pOutput->ConnectionMediaType(&mt);
 	WAVEFORMATEX * wfex = (WAVEFORMATEX*)mt.pbFormat;
 
-	size_t framesize = output_data_size / (wfex->nChannels * sizeof(int16_t));
-	dk_celt_decoder::ERR_CODE result = _decoder->decode(input_buffer, input_data_size, output_buffer, framesize);
+	//size_t framesize = output_data_size / (wfex->nChannels * sizeof(int16_t));
+	//dk_celt_decoder::ERR_CODE result = _decoder->decode(input_buffer, input_data_size, output_buffer, framesize);
+	dk_audio_entity_t encoded = {input_buffer, input_data_size, 0};
+	dk_audio_entity_t pcm = { output_buffer, 0, output_data_size };
+	dk_celt_decoder::ERR_CODE result = _decoder->decode(&encoded, &pcm);
+
 	if (result != dk_celt_decoder::ERR_CODE_SUCCESS)
 		return S_FALSE;
 
-	if (framesize>0)
+	if (pcm.data_size>0)
 	{
-		double duration = (double)framesize / (_config.bitdepth*_config.samplerate) * 10000000.0;
-		start_time = end_time;
-		end_time = start_time+(duration + 0.5);
+		//double duration = (double)framesize / (_config.bitdepth*_config.samplerate) * 10000000.0;
+		//start_time = end_time;
+		//end_time = start_time+(duration + 0.5);
 
-		dst->SetTime(&start_time, &end_time);
+		//dst->SetTime(&start_time, &end_time);
 
 		dst->SetSyncPoint(TRUE);
-		dst->SetActualDataLength(framesize* wfex->nChannels * sizeof(int16_t));
+		dst->SetActualDataLength(pcm.data_size);
 	}
 	else
 	{

@@ -22,7 +22,7 @@ dk_celt_encode_filter::dk_celt_encode_filter(LPUNKNOWN unk, HRESULT *hr)
 	, _got_time(false)
 	//, _start_time(0)
 {
-
+	DbgSetModuleLevel(LOG_TIMING, 10);
 	m_pInput = new CTransformInputPin(NAME("Input"), this, hr, L"In");
 	m_pOutput = new CTransformOutputPin(NAME("Output"), this, hr, L"Out");
 
@@ -361,6 +361,86 @@ HRESULT dk_celt_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedi
 
 HRESULT dk_celt_encode_filter::Receive(IMediaSample *pSample)
 {
+#if 1
+	if (!_got_time)
+	{
+		REFERENCE_TIME rt_begin, rt_end;
+		HRESULT hr = pSample->GetTime(&rt_begin, &rt_end);
+		if (hr == NOERROR) 
+		{
+			_rt_begin = rt_begin;
+			_got_time = true;
+		}
+		else 
+		{
+			return NOERROR;
+		}
+	}
+
+	if (!m_pOutput->IsConnected()) 
+	{
+		return NOERROR;
+	}
+
+	HRESULT	hr = NOERROR;
+	BYTE * inbuffer;
+	long insize;
+	pSample->GetPointer(&inbuffer);
+	insize = pSample->GetActualDataLength();
+
+	size_t outsize = 32 * 1024;
+	BYTE * outbuffer = (BYTE*)malloc(outsize);
+
+	dk_audio_entity_t pcm = { inbuffer, insize, 0 };
+	dk_celt_encoder::ERR_CODE ret = _encoder->encode(&pcm);
+	if (ret == dk_celt_encoder::ERR_CODE_SUCCESS)
+	{
+		while (1)
+		{
+			dk_audio_entity_t encoded = { outbuffer, 0, outsize };
+			ret = _encoder->get_queued_data(&encoded);
+			if (ret == dk_celt_encoder::ERR_CODE_SUCCESS && encoded.data_size>0)
+			{
+				REFERENCE_TIME		rtStart, rtStop;
+				IMediaSample		*sample = NULL;
+				HRESULT				hr;
+
+				hr = GetDeliveryBuffer(&sample);
+				if (FAILED(hr))
+					break;
+
+				int	fs = _frame_size * _config.channels;
+
+				rtStart = (_frame_done*fs * 10000000) / _config.samplerate;
+				rtStop = ((((_frame_done + 1)*fs) - 1) * 10000000) / _config.samplerate;
+				rtStart += _rt_begin;
+				rtStop += _rt_begin;
+
+				sample->SetTime(&rtStart, &rtStop);
+
+				BYTE	* out;
+				sample->GetPointer(&out);
+				memcpy(out, encoded.data, encoded.data_size);
+				sample->SetActualDataLength(encoded.data_size);
+
+				hr = m_pOutput->Deliver(sample);
+				sample->Release();
+				if (FAILED(hr))
+					break;
+
+				_frame_done++;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	free(outbuffer);
+	outbuffer = nullptr;
+
+	return hr;
+#else
 	if (!_got_time) 
 	{
 		REFERENCE_TIME rt_begin, rt_end;
@@ -400,8 +480,8 @@ HRESULT dk_celt_encode_filter::Receive(IMediaSample *pSample)
 	short	*cur_buf = _buffer;
 	while (cur_sample + (_frame_size * _config.channels) <= _samples)
 	{
-		dk_audio_entity_t pcm = { cur_buf, _frame_size, 0 };
-		dk_audio_entity_t encoded = { outbuf, outsize, 0 };
+		dk_audio_entity_t pcm = { cur_buf, _frame_size*sizeof(short), 0 };
+		dk_audio_entity_t encoded = { outbuf, 0, outsize };
 		dk_celt_encoder::ERR_CODE ret = _encoder->encode(&pcm, &encoded);
 		if (ret == dk_celt_encoder::ERR_CODE_SUCCESS)
 		{
@@ -450,6 +530,7 @@ HRESULT dk_celt_encode_filter::Receive(IMediaSample *pSample)
 	}
 
 	return hr;
+#endif
 }
 
 HRESULT dk_celt_encode_filter::GetDeliveryBuffer(IMediaSample ** ms)
@@ -512,9 +593,13 @@ HRESULT dk_celt_encode_filter::GetDeliveryBuffer(IMediaSample ** ms)
 
 	size_t framesize = input_data_size / (wfex->nChannels * sizeof(int16_t));
 	//output_data_size = 3 * 1276;
-	dk_celt_encoder::ERR_CODE result = _encoder->encode((int16_t*)input_buffer, framesize, output_buffer, output_data_size);
 
-	if (output_data_size>0)
+	dk_audio_entity_t pcm = { input_buffer, input_data_size, 0 };
+	dk_audio_entity_t encoded = { output_buffer, 0, output_data_size };
+	dk_celt_encoder::ERR_CODE ret = _encoder->encode(&pcm, &encoded);
+	//dk_celt_encoder::ERR_CODE result = _encoder->encode((int16_t*)input_buffer, framesize, output_buffer, output_data_size);
+
+	if (encoded.data_size>0)
 	{
 		int		fs = _frame_size / _config.channels;
 		start_time = (_frame_done*fs * 10000000) / _config.samplerate;
@@ -524,7 +609,9 @@ HRESULT dk_celt_encode_filter::GetDeliveryBuffer(IMediaSample ** ms)
 		dst->SetTime(&start_time, &end_time);
 	}
 	_frame_done++;
-	dst->SetActualDataLength(output_data_size);
+	hr = dst->SetActualDataLength(encoded.data_size);
+	if (FAILED(hr))
+		return S_OK;
 	return S_OK;
 }*/
 

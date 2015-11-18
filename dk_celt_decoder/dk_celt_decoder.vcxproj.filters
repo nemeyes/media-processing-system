@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="audio_base">
+      <UniqueIdentifier>{639f935b-bc95-483f-ac87-faa3f888fefd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_celt_decoder.h">
@@ -21,6 +24,9 @@
     <ClInclude Include="include\celt_decoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\dk_audio_base\include\dk_audio_base.h">
+      <Filter>audio_base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_celt_decoder.cpp">
@@ -28,6 +34,9 @@
     </ClCompile>
     <ClCompile Include="source\celt_decoder.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_audio_base\source\dk_audio_base.cpp">
+      <Filter>audio_base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

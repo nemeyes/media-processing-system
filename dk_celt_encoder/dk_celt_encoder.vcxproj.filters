@@ -16,6 +16,9 @@
     <Filter Include="audio_base">
       <UniqueIdentifier>{6b6f185a-a4bd-412d-8641-85793c8906da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="buffering">
+      <UniqueIdentifier>{4f906928-da38-4992-8ec1-5b82f533653a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_celt_encoder.h">
@@ -39,6 +42,9 @@
     <ClInclude Include="..\dk_audio_base\include\dk_audio_base.h">
       <Filter>audio_base</Filter>
     </ClInclude>
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h">
+      <Filter>buffering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_celt_encoder.cpp">
@@ -52,6 +58,9 @@
     </ClCompile>
     <ClCompile Include="..\dk_audio_base\source\dk_audio_base.cpp">
       <Filter>audio_base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp">
+      <Filter>buffering</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
