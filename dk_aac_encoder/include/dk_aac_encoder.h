@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include <dk_audio_base.h>
+
 /* TODO
 1. verify various input format(PCM 8bit, 24bit, 32bit)
 2. verify various output format(ADTS, LATM)
@@ -38,15 +40,9 @@
 #endif
 
 class faac_encoder;
-class EXP_DLL dk_aac_encoder
+class EXP_DLL dk_aac_encoder : public dk_audio_encoder
 {
 public:
-	typedef enum _ERR_CODE
-	{
-		ERR_CODE_SUCCESS,
-		ERR_CODE_FAILED,
-	} ERR_CODE;
-
 	typedef enum _MPEG_VERSION_TYPE
 	{
 		VERSION_TYPE_MPEG4,
@@ -87,116 +83,46 @@ public:
 	{
 		dk_aac_encoder::MPEG_VERSION_TYPE mpeg_version;
 		dk_aac_encoder::AAC_OBJECT_TYPE object_type;
-		uint32_t allow_midside; // Allow mid/side coding
-		uint32_t use_lfe; // Use one of the channels as LFE channel
-		uint32_t use_tns; // Use Temporal Noise Shaping
-		uint32_t bitrate; // bitrate / channel of AAC file
-		unsigned long samplerate;
-		uint32_t channels;
-		uint32_t bitpersamples;
-		unsigned long input_samples;
-		unsigned long max_output_bytes;
-		uint32_t bandwidth; // AAC file frequency bandwidth
+		int32_t allow_midside; // Allow mid/side coding
+		int32_t use_lfe; // Use one of the channels as LFE channel
+		int32_t use_tns; // Use Temporal Noise Shaping
+		int32_t bitrate; // bitrate / channel of AAC file
+		int32_t samplerate;
+		int32_t channels;
+		int32_t bitdepth;
+		unsigned long framesize;
+		unsigned long ob;
+		int32_t bandwidth; // AAC file frequency bandwidth
 		unsigned long quantization_quality; // Quantizer quality
 		dk_aac_encoder::BLOCK_TYPE shortctl;
 		dk_aac_encoder::INPUT_FORMAT_TYPE input_format;
 		dk_aac_encoder::OUTPUT_FORMAT_TYPE output_format; // Bitstream output format (0 = Raw; 1 = ADTS)
-
-		/*
-			32000,
-			40000,
-			48000,
-			56000,
-			64000,
-			72000,
-			80000,
-			88000,
-			96000,
-			104000,
-			112000,
-			120000,
-			128000,
-			140000,
-			160000,
-			192000,
-			224000,
-			256000
-		*/
-		_configuration_t(void)
-			: mpeg_version(dk_aac_encoder::VERSION_TYPE_MPEG4)
-			, object_type(dk_aac_encoder::AAC_OBJECT_TYPE_LOW)
-			, allow_midside(0)
-			, use_lfe(0)
-			, use_tns(0)
-			, bitrate(128000)
-			, samplerate(0)
-			, channels(2)
-			, bitpersamples(32)
-			, input_samples(0)
-			, max_output_bytes(0)
-			, bandwidth(0)
-			, quantization_quality(100)
-			, shortctl(BLOCK_TYPE_NORMAL)
-			, input_format(dk_aac_encoder::FORMAT_TYPE_16BIT)
-			, output_format(dk_aac_encoder::FORMAT_TYPE_RAW)
-		{
-		}
-
-		_configuration_t(const _configuration_t & clone)
-		{
-			mpeg_version = clone.mpeg_version;
-			object_type = clone.object_type;
-			allow_midside = clone.allow_midside;
-			use_lfe = clone.use_lfe;
-			use_tns = clone.use_tns;
-			bitrate = clone.bitrate;
-			samplerate = clone.samplerate;
-			channels = clone.channels;
-			bitpersamples = clone.bitpersamples;
-			input_samples = clone.input_samples;
-			max_output_bytes = clone.max_output_bytes;
-			bandwidth = clone.bandwidth;
-			quantization_quality = clone.quantization_quality;
-			shortctl = clone.shortctl;
-			input_format = clone.input_format;
-			output_format = clone.output_format;
-		}
-
-		_configuration_t operator=(const _configuration_t & clone)
-		{
-			mpeg_version = clone.mpeg_version;
-			object_type = clone.object_type;
-			allow_midside = clone.allow_midside;
-			use_lfe = clone.use_lfe;
-			use_tns = clone.use_tns;
-			bitrate = clone.bitrate;
-			samplerate = clone.samplerate;
-			channels = clone.channels;
-			bitpersamples = clone.bitpersamples;
-			input_samples = clone.input_samples;
-			max_output_bytes = clone.max_output_bytes;
-			bandwidth = clone.bandwidth;
-			quantization_quality = clone.quantization_quality;
-			shortctl = clone.shortctl;
-			input_format = clone.input_format;
-			output_format = clone.output_format;
-			return (*this);
-		}
+		_configuration_t(void);
+		_configuration_t(const _configuration_t & clone);
+		_configuration_t operator=(const _configuration_t & clone);
 	} configuration_t;
 
 
 	dk_aac_encoder(void);
-	~dk_aac_encoder(void);
+	virtual ~dk_aac_encoder(void);
 
-	dk_aac_encoder::ERR_CODE initialize(dk_aac_encoder::configuration_t config, unsigned long & input_samples, unsigned long & max_output_bytes, uint8_t * extra_data, size_t & extra_data_size);
-	dk_aac_encoder::ERR_CODE release(void);
+	//dk_aac_encoder::ERR_CODE initialize(dk_aac_encoder::configuration_t config, unsigned long & input_samples, unsigned long & max_output_bytes, uint8_t * extra_data, size_t & extra_data_size);
 
-	dk_aac_encoder::ERR_CODE encode(int32_t * input, size_t isize, uint8_t * output, size_t osize, size_t & bytes_written);
-	dk_aac_encoder::ERR_CODE encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize);
+	dk_aac_encoder::ERR_CODE initialize_encoder(void * config);
+	dk_aac_encoder::ERR_CODE release_encoder(void);
+
+	dk_aac_encoder::ERR_CODE encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded);
+	dk_aac_encoder::ERR_CODE encode(dk_audio_entity_t * pcm);
+	dk_aac_encoder::ERR_CODE get_queued_data(dk_audio_entity_t * encoded);
+
+	virtual uint8_t * extradata(void);
+	virtual size_t extradata_size(void);
+
+	//dk_aac_encoder::ERR_CODE encode(int32_t * input, size_t isize, uint8_t * output, size_t osize, size_t & bytes_written);
+	//dk_aac_encoder::ERR_CODE encode(uint8_t * input, size_t isize, uint8_t * output, size_t & osize);
 
 private:
 	faac_encoder * _core;
-
 };
 
 

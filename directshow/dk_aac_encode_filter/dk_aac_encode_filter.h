@@ -99,8 +99,6 @@ private:
 	int16_t * _buffer;
 	int32_t _samples;
 
-	unsigned char _extra_data[100];
-	size_t _extra_data_size;
 	dk_aac_encoder::configuration_t _config;
 	dk_aac_encoder	*_encoder;
 };

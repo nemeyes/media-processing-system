@@ -20,8 +20,6 @@
 dk_aac_encode_filter::dk_aac_encode_filter(LPUNKNOWN unk, HRESULT *hr)
 	: CTransformFilter(g_szFilterName, unk, CLSID_DK_AAC_ENCODE_FILTER)
 	, _frame_size(0)
-	//, _max_output_bytes(0)
-	, _extra_data_size(0)
 	, _got_time(false)
 	//, _start_time(0)
 {
@@ -31,7 +29,6 @@ dk_aac_encode_filter::dk_aac_encode_filter(LPUNKNOWN unk, HRESULT *hr)
 
 
 	_buffer = (short*)malloc(10 * 2 * 48000 * sizeof(short));
-	memset(_extra_data, 0x00, sizeof(_extra_data));
 	_encoder = new dk_aac_encoder();
 }
 
@@ -97,7 +94,7 @@ HRESULT  dk_aac_encode_filter::BreakConnect(PIN_DIRECTION direction)
 	if (direction == PINDIR_INPUT)
 	{
 		if (_encoder)
-			_encoder->release();
+			_encoder->release_encoder();
 	}
 	UNREFERENCED_PARAMETER(direction);
 	return NOERROR;
@@ -108,10 +105,11 @@ HRESULT  dk_aac_encode_filter::CompleteConnect(PIN_DIRECTION direction, IPin *pi
 {
 	if (direction == PINDIR_INPUT)
 	{
-		unsigned long ob;
 		if (_encoder)
-			_encoder->initialize(_config, _frame_size, ob, _extra_data, _extra_data_size);
-
+		{
+			_encoder->initialize_encoder(&_config);// _frame_size, ob, _extra_data, _extra_data_size);
+			_frame_size = _config.framesize;
+		}
 		_frame_done = 0;
 	}
 
@@ -261,14 +259,14 @@ HRESULT  dk_aac_encode_filter::GetMediaType(int position, CMediaType *type)
 			return hr;
 		type->SetSubtype(&MEDIASUBTYPE_MPEG_ADTS_AAC); //ADTS AAC
 		type->SetFormatType(&FORMAT_WaveFormatEx);
-		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->AllocFormatBuffer(sizeof(*wfx) + _extra_data_size);
+		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->AllocFormatBuffer(sizeof(*wfx) + _encoder->extradata_size());
 		memset(wfx, 0x00, sizeof(*wfx));
-		wfx->cbSize = _extra_data_size;
+		wfx->cbSize = _encoder->extradata_size();
 		wfx->nChannels = _config.channels;
 		wfx->nSamplesPerSec = _config.sample_rate;
 		wfx->wFormatTag = WAVE_FORMAT_AAC;
 		unsigned char * wfxex = ((unsigned char*)(wfx)) + sizeof(*wfx);
-		memcpy(wfxex, _extra_data, _extra_data_size);
+		memcpy(wfxex, _encoder->extradata(), _encoder->extradata_size());
 		_config.output_format = dk_aac_encoder::FORMAT_TYPE_ADTS;
 	}
 #else
@@ -283,14 +281,14 @@ HRESULT  dk_aac_encode_filter::GetMediaType(int position, CMediaType *type)
 			return hr;
 		type->SetSubtype(&MEDIASUBTYPE_RAW_AAC1); //RAW AAC
 		type->SetFormatType(&FORMAT_WaveFormatEx);
-		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->AllocFormatBuffer(sizeof(*wfx) + _extra_data_size);
+		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->AllocFormatBuffer(sizeof(*wfx) + _encoder->extradata_size());
 		memset(wfx, 0x00, sizeof(*wfx));
-		wfx->cbSize = _extra_data_size;
+		wfx->cbSize = _encoder->extradata_size();
 		wfx->nChannels = _config.channels;
 		wfx->nSamplesPerSec = _config.samplerate;
 		wfx->wFormatTag = WAVE_FORMAT_AAC;
 		unsigned char * wfxex = ((unsigned char*)(wfx)) + sizeof(*wfx);
-		memcpy(wfxex, _extra_data, _extra_data_size);
+		memcpy(wfxex, _encoder->extradata(), _encoder->extradata_size());
 		_config.output_format = dk_aac_encoder::FORMAT_TYPE_RAW;
 	}
 #endif
@@ -356,8 +354,8 @@ HRESULT dk_aac_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedia
 		//	return E_FAIL;
 		_config.channels = wfx->nChannels;
 		_config.samplerate = wfx->nSamplesPerSec;
-		_config.bitpersamples = wfx->wBitsPerSample;
-		switch (_config.bitpersamples)
+		_config.bitdepth = wfx->wBitsPerSample;
+		switch (_config.bitdepth)
 		{
 		case 16:
 			_config.input_format = dk_aac_encoder::FORMAT_TYPE_16BIT;
@@ -378,6 +376,86 @@ HRESULT dk_aac_encode_filter::SetMediaType(PIN_DIRECTION direction, const CMedia
 
 HRESULT dk_aac_encode_filter::Receive(IMediaSample *pSample)
 {
+#if 1
+	if (!_got_time)
+	{
+		REFERENCE_TIME rt_begin, rt_end;
+		HRESULT hr = pSample->GetTime(&rt_begin, &rt_end);
+		if (hr == NOERROR) 
+		{
+			_rt_begin = rt_begin;
+			_got_time = true;
+		}
+		else 
+		{
+			return NOERROR;
+		}
+	}
+
+	if (!m_pOutput->IsConnected()) 
+	{
+		return NOERROR;
+	}
+
+	HRESULT	hr = NOERROR;
+	BYTE * inbuffer;
+	long insize;
+	pSample->GetPointer(&inbuffer);
+	insize = pSample->GetActualDataLength();
+
+	size_t outsize = 32 * 1024;
+	BYTE * outbuffer = (BYTE*)malloc(outsize);
+
+	dk_audio_entity_t pcm = { inbuffer, insize, 0 };
+	dk_aac_encoder::ERR_CODE ret = _encoder->encode(&pcm);
+	if (ret == dk_aac_encoder::ERR_CODE_SUCCESS)
+	{
+		while (1)
+		{
+			dk_audio_entity_t encoded = { outbuffer, 0, outsize };
+			ret = _encoder->get_queued_data(&encoded);
+			if (ret == dk_aac_encoder::ERR_CODE_SUCCESS && encoded.data_size>0)
+			{
+				REFERENCE_TIME		rtStart, rtStop;
+				IMediaSample		*sample = NULL;
+				HRESULT				hr;
+
+				hr = GetDeliveryBuffer(&sample);
+				if (FAILED(hr))
+					break;
+
+				int	fs = _frame_size * _config.channels;
+
+				rtStart = (_frame_done*fs * 10000000) / _config.samplerate;
+				rtStop = ((((_frame_done + 1)*fs) - 1) * 10000000) / _config.samplerate;
+				rtStart += _rt_begin;
+				rtStop += _rt_begin;
+
+				sample->SetTime(&rtStart, &rtStop);
+
+				BYTE	* out;
+				sample->GetPointer(&out);
+				memcpy(out, encoded.data, encoded.data_size);
+				sample->SetActualDataLength(encoded.data_size);
+
+				hr = m_pOutput->Deliver(sample);
+				sample->Release();
+				if (FAILED(hr))
+					break;
+
+				_frame_done++;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	free(outbuffer);
+	outbuffer = nullptr;
+
+	return hr;
+#else
 	if (!_got_time) 
 	{
 		// odchytime si casy
@@ -411,12 +489,6 @@ HRESULT dk_aac_encode_filter::Receive(IMediaSample *pSample)
 	memcpy(_buffer + _samples, in_buf, in_samples * sizeof(short));
 	_samples += in_samples;
 
-	/**************************************************************************
-	**
-	**	Enkodovanie packetov
-	**
-	***************************************************************************/
-
 	size_t outsize = 32 * 1024;
 	BYTE	*outbuf = (BYTE*)malloc(outsize);
 
@@ -424,9 +496,10 @@ HRESULT dk_aac_encode_filter::Receive(IMediaSample *pSample)
 	short	*cur_buf = _buffer;
 	while (cur_sample + _frame_size <= _samples)
 	{
-		// dame zakodovat frame
-		size_t bytes_written = 0;
-		dk_aac_encoder::ERR_CODE ret = _encoder->encode((int*)cur_buf, _frame_size, outbuf, outsize, bytes_written);//faacEncEncode(encoder, (int*)cur_buf, info.frame_size, outbuf, outsize);
+		dk_audio_entity_t pcm = {cur_buf, _frame_size << 1, 0};
+		dk_audio_entity_t encoded = {outbuf, 0, outsize};
+		//dk_aac_encoder::ERR_CODE ret = _encoder->encode((int*)cur_buf, _frame_size, outbuf, outsize, bytes_written);//faacEncEncode(encoder, (int*)cur_buf, info.frame_size, outbuf, outsize);
+		dk_aac_encoder::ERR_CODE ret = _encoder->encode(&pcm, &encoded);//faacEncEncode(encoder, (int*)cur_buf, info.frame_size, outbuf, outsize);
 		if (ret == dk_aac_encoder::ERR_CODE_SUCCESS) 
 		{
 
@@ -452,8 +525,8 @@ HRESULT dk_aac_encode_filter::Receive(IMediaSample *pSample)
 			// napiseme data
 			BYTE	*out;
 			sample->GetPointer(&out);
-			memcpy(out, outbuf, bytes_written);
-			sample->SetActualDataLength(bytes_written);
+			memcpy(out, outbuf, encoded.data_size);
+			sample->SetActualDataLength(encoded.data_size);
 
 			hr = m_pOutput->Deliver(sample);
 			sample->Release();
@@ -463,14 +536,12 @@ HRESULT dk_aac_encode_filter::Receive(IMediaSample *pSample)
 			_frame_done++;
 		}
 
-		// na dalsi frame
 		cur_sample += _frame_size;
 		cur_buf += _frame_size;
 	}
 
 	free(outbuf);
 
-	// discardujeme stare data
 	if (cur_sample > 0) 
 	{
 		int	left = _samples - cur_sample;
@@ -478,8 +549,9 @@ HRESULT dk_aac_encode_filter::Receive(IMediaSample *pSample)
 			memcpy(_buffer, _buffer + cur_sample, left*sizeof(short));
 		_samples = left;
 	}
-
 	return hr;
+#endif
+
 }
 
 HRESULT dk_aac_encode_filter::GetDeliveryBuffer(IMediaSample ** ms)
@@ -490,7 +562,6 @@ HRESULT dk_aac_encode_filter::GetDeliveryBuffer(IMediaSample ** ms)
 	if (FAILED(hr)) 
 		return hr;
 
-	// ak sa zmenil type, tak aktualizujeme nase info
 	AM_MEDIA_TYPE *mt;
 	if (oms->GetMediaType(&mt) == NOERROR) 
 	{

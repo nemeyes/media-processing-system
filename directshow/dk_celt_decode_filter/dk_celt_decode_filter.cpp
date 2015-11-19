@@ -27,6 +27,9 @@ dk_celt_decode_filter::dk_celt_decode_filter(LPUNKNOWN unk, HRESULT *hr)
 	, _start_time(0)
 	, _time_count(0)
 {
+	m_pInput = new CTransformInputPin(NAME("Input"), this, hr, L"In");
+	m_pOutput = new CTransformOutputPin(NAME("Output"), this, hr, L"Out");
+
 	_decoder = new dk_celt_decoder();
 }
 

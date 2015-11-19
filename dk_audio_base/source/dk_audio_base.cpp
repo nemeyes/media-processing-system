@@ -126,20 +126,21 @@ dk_audio_decoder::~dk_audio_decoder(void)
 
 }
 
-/*dk_audio_decoder::ERR_CODE dk_audio_decoder::initialize_decoder(configuration_t * config)
+dk_audio_decoder::ERR_CODE dk_audio_decoder::initialize_decoder(void * config)
 {
-	return ERR_CODE_SUCCESS;
+	return ERR_CODE_NOT_IMPLEMENTED;
 }
 
 dk_audio_decoder::ERR_CODE dk_audio_decoder::release_decoder(void)
 {
-	return ERR_CODE_SUCCESS;
+	return ERR_CODE_NOT_IMPLEMENTED;
 }
 
-dk_audio_decoder::ERR_CODE dk_audio_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * decoded)
+dk_audio_decoder::ERR_CODE dk_audio_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
 {
 	return ERR_CODE_NOT_IMPLEMENTED;
-}*/
+}
+
 
 /*dk_audio_decoder::ERR_CODE dk_audio_decoder::decode(dk_audio_entity_t * encoded)
 {
@@ -156,12 +157,37 @@ dk_audio_encoder::~dk_audio_encoder(void)
 
 }
 
-/*dk_audio_encoder::ERR_CODE dk_audio_encoder::initialize_encoder(dk_audio_encoder::configuration_t * config)
+dk_audio_encoder::ERR_CODE dk_audio_encoder::initialize_encoder(void * config)
 {
-	return ERR_CODE_SUCCESS;
+	return ERR_CODE_NOT_IMPLEMENTED;
 }
 
 dk_audio_encoder::ERR_CODE dk_audio_encoder::release_encoder(void)
 {
-	return ERR_CODE_SUCCESS;
-}*/
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_audio_encoder::ERR_CODE dk_audio_encoder::encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_audio_encoder::ERR_CODE dk_audio_encoder::encode(dk_audio_entity_t * pcm)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_audio_encoder::ERR_CODE dk_audio_encoder::get_queued_data(dk_audio_entity_t * encoded)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+uint8_t * dk_audio_encoder::extradata(void)
+{
+	return nullptr;
+}
+
+size_t dk_audio_encoder::extradata_size(void)
+{
+	return 0;
+}

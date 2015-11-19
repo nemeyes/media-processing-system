@@ -61,7 +61,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\3rdparty\faad2\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\dk_audio_base\include;..\dk_media_buffering\include;..\3rdparty\faad2\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -81,7 +81,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\3rdparty\faad2\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\dk_audio_base\include;..\dk_media_buffering\include;..\3rdparty\faad2\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,10 +94,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\dk_audio_base\include\dk_audio_base.h" />
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h" />
     <ClInclude Include="include\faad2_decoder.h" />
     <ClInclude Include="include\dk_aac_decoder.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\dk_audio_base\source\dk_audio_base.cpp" />
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp" />
     <ClCompile Include="source\faad2_decoder.cpp" />
     <ClCompile Include="source\dk_aac_decoder.cpp" />
   </ItemGroup>

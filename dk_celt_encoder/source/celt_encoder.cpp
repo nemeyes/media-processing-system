@@ -7,6 +7,7 @@ celt_encoder::celt_encoder(dk_celt_encoder * front)
 	, _resampler(nullptr)
 	, _skip(0)
 	, _buffer_pos(0)
+	, _buffer4queue(nullptr)
 	, _buffer4queue_size(0)
 {
 	_buffer = (int16_t*)malloc(10 * 2 * 48000 * sizeof(int16_t));
@@ -31,6 +32,27 @@ dk_celt_encoder::ERR_CODE celt_encoder::initialize_encoder(dk_celt_encoder::conf
 	_encoder = opus_encoder_create(config->codingrate, config->channels, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &err);
 	if (err != OPUS_OK || _encoder == NULL)
 		return dk_celt_encoder::ERR_CODE_FAILED;
+
+	err = opus_encoder_ctl(_encoder, OPUS_SET_EXPERT_FRAME_DURATION(OPUS_FRAMESIZE_ARG));
+	if (err != OPUS_OK)
+	{
+		opus_encoder_destroy(_encoder);
+		return dk_celt_encoder::ERR_CODE_FAILED;
+	}
+
+	err = opus_encoder_ctl(_encoder, OPUS_SET_VBR(1));
+	if (err != OPUS_OK)
+	{
+		opus_encoder_destroy(_encoder);
+		return dk_celt_encoder::ERR_CODE_FAILED;
+	}
+
+	err = opus_encoder_ctl(_encoder, OPUS_SET_VBR_CONSTRAINT(1));
+	if (err != OPUS_OK)
+	{
+		opus_encoder_destroy(_encoder);
+		return dk_celt_encoder::ERR_CODE_FAILED;
+	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_BITRATE(_config.bitrate));
 	if (err != OPUS_OK)
@@ -119,40 +141,42 @@ dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_audio_entity_t * pcm, dk_audio
 dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_audio_entity_t * pcm)
 {
 	int16_t * intermediate = (int16_t*)pcm->data;
-	size_t isamples = pcm->data_size / (sizeof(int16_t)*_config.channels);
+	size_t isamples = pcm->data_size >> 1;
 	if (_resampler)
 	{
-		intermediate = _resampler->outbuffers;
-		int32_t obuffer_size = _resampler->outbuffer_size / (sizeof(int16_t)/*_resampler->channels*/);
-		size_t osamples = 0;
-		int16_t * pcmbuffer = _resampler->inbuffers;
-		int32_t pcmbuffer_pos = 0;// &_resampler->inbuffer_pos;
-		int32_t prev_framesize = _config.framesize * _config.samplerate / 1000;
+		size_t osamples				= 0;
+		intermediate				= _resampler->outbuffers;
+		int32_t		obuffer_size	= _resampler->outbuffer_size >> 1;
+		int16_t *	pcmbuffer		= _resampler->inbuffers;
+		int32_t		pcmbuffer_pos	= 0;
+		int32_t		pcm_framesize	= _config.framesize * _resampler->samplerate / 1000;
+		int32_t		pcm_step		= pcm_framesize *_resampler->channels;
 		while (pcmbuffer_pos < isamples)
 		{
-			uint32_t inlength, outlength;
-			outlength = obuffer_size - osamples;
-			memcpy(pcmbuffer, (int16_t*)pcm->data + pcmbuffer_pos*_resampler->channels, prev_framesize*sizeof(int16_t)*_resampler->channels);
-			pcmbuffer_pos += prev_framesize*_resampler->channels;
-			inlength = prev_framesize;
-			speex_resampler_process_interleaved_int(_resampler->resampler, pcmbuffer, &inlength, intermediate + osamples, &outlength);
+			memcpy(pcmbuffer, (int16_t*)pcm->data + pcmbuffer_pos, pcm_step << 1);
+
+			uint32_t inlength = pcm_framesize;
+			uint32_t outlength = obuffer_size - osamples;
+			pcmbuffer_pos += pcm_step;
+			speex_resampler_process_interleaved_int(_resampler->resampler, pcmbuffer, &inlength, intermediate + osamples*_resampler->channels, &outlength);
 			osamples += outlength;
 			if (inlength == 0)
 			{
-				for (int32_t i = osamples*_resampler->channels; i<_framesize*_resampler->channels; i++)
+				for (int32_t i = osamples; i<_framesize*_resampler->channels; i++)
 					intermediate[i] = 0;
 
-				pcm->data_size = osamples * sizeof(int16_t) * _config.channels;
-				isamples = osamples;
+				pcm->data_size = (osamples*_resampler->channels) << 1;
+				isamples = osamples*_resampler->channels;
 				break;
 			}
 			//for (int32_t i = 0; i<_resampler->channels*((*inbuffer_pos) - (long int)inlength); i++)
 			//	pcmbuffer[i] = pcmbuffer[i + _resampler->channels*inlength];
 			//(*inbuffer_pos) -= inlength;
 		}
-		pcm->data_size = osamples * sizeof(int16_t) * _config.channels;
-		isamples = osamples;
+		pcm->data_size = (osamples*_resampler->channels) << 1;
+		isamples = osamples*_resampler->channels;
 	}
+
 
 	memcpy(_buffer + _buffer_pos, intermediate, pcm->data_size);
 	_buffer_pos += isamples;

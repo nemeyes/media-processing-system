@@ -28,7 +28,6 @@ public:
 	dk_celt_encoder::ERR_CODE initialize_encoder(dk_celt_encoder::configuration_t * config);
 	dk_celt_encoder::ERR_CODE release_encoder(void);
 
-	//dk_celt_encoder::ERR_CODE encode(int16_t * input, size_t isize, uint8_t * output, size_t & osize);
 	dk_celt_encoder::ERR_CODE encode(dk_audio_entity_t * encoded, dk_audio_entity_t * decoded);
 	dk_celt_encoder::ERR_CODE encode(dk_audio_entity_t * pcm);
 	dk_celt_encoder::ERR_CODE get_queued_data(dk_audio_entity_t * encoded);

@@ -69,11 +69,6 @@ private:
 	REFERENCE_TIME _start_time;
 	unsigned long long _time_count;
 
-	unsigned char _extra_data[100];
-	unsigned long _extra_data_size;
-	//int _channels;
-	//int _samplerate;
-	//int _bitpersamples;
 	dk_aac_decoder::configuration_t _config;
 	dk_aac_decoder	*_decoder;
 };

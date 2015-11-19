@@ -23,7 +23,6 @@
 
 dk_aac_decode_filter::dk_aac_decode_filter(LPUNKNOWN unk, HRESULT *hr)
 	: CTransformFilter(g_szFilterName, unk, CLSID_DK_AAC_DECODE_FILTER)
-	, _extra_data_size(0)
 	, _got_time(false)
 	, _start_time(0)
 	, _time_count(0)
@@ -32,7 +31,6 @@ dk_aac_decode_filter::dk_aac_decode_filter(LPUNKNOWN unk, HRESULT *hr)
 	m_pInput = new CTransformInputPin(NAME("Input"), this, hr, L"In");
 	m_pOutput = new CTransformOutputPin(NAME("Output"), this, hr, L"Out");
 
-	memset(_extra_data, 0x00, sizeof(_extra_data));
 	_decoder = new dk_aac_decoder();
 }
 
@@ -90,7 +88,7 @@ HRESULT  dk_aac_decode_filter::BreakConnect(PIN_DIRECTION direction)
 	if (direction==PINDIR_INPUT)
 	{
 		if (_decoder)
-			_decoder->release();
+			_decoder->release_decoder();
 	}
 	UNREFERENCED_PARAMETER(direction);
 	return NOERROR;
@@ -103,10 +101,7 @@ HRESULT  dk_aac_decode_filter::CompleteConnect(PIN_DIRECTION direction, IPin *pi
 	{
 		if (_decoder)
 		{	
-			int channels, samplerate;
-			_decoder->initialize(_config, _extra_data, _extra_data_size, samplerate, channels);
-			_config.samplerate = samplerate;
-			_config.channels = channels;
+			_decoder->initialize_decoder(&_config);
 		}
 	}
 
@@ -199,8 +194,8 @@ HRESULT  dk_aac_decode_filter::CheckInputType(const CMediaType *type)
 				if (wavhdr->cbSize < 2)
 					return VFW_E_TYPE_NOT_ACCEPTED;
 
-				_extra_data_size = wavhdr->cbSize;
-				memcpy(_extra_data, (char*)wavhdr + sizeof(WAVEFORMATEX), _extra_data_size);
+				_config.extradata_size = wavhdr->cbSize;
+				memcpy(_config.extradata, (char*)wavhdr + sizeof(WAVEFORMATEX), _config.extradata_size);
 				return S_OK;
 			}
 		}
@@ -228,16 +223,57 @@ HRESULT  dk_aac_decode_filter::GetMediaType(int position, CMediaType *type)
 		type->SetFormatType(&FORMAT_WaveFormatEx);
 		type->SetTemporalCompression(FALSE);
 
-		//type->Format();
+		type->AllocFormatBuffer(sizeof(WAVEFORMATEXTENSIBLE));
+		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->pbFormat;
+		memset(wfx, 0x00, sizeof(WAVEFORMATEX));
+		wfx->wFormatTag = WAVE_FORMAT_PCM;
+		wfx->nChannels = _config.channels;
+		wfx->nSamplesPerSec = _config.samplerate;
+		wfx->wBitsPerSample = _config.bitdepth;
+		wfx->nBlockAlign = (wfx->nChannels * wfx->wBitsPerSample / 8);
+		wfx->nAvgBytesPerSec = wfx->nSamplesPerSec * wfx->nBlockAlign;
+		wfx->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
 
-		WAVEFORMATEXTENSIBLE wfex;
+		WAVEFORMATEXTENSIBLE * wfext = (WAVEFORMATEXTENSIBLE*)type->pbFormat;
+		wfext->Samples.wValidBitsPerSample = wfext->Format.wBitsPerSample;
+		wfext->SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+		wfext->Format.wFormatTag = (_config.channels <= 2) ? WAVE_FORMAT_PCM : WAVE_FORMAT_EXTENSIBLE;
+		switch (_config.channels)
+		{
+		case 1:
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_MONO;
+			break;
+		case 2:
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_STEREO;
+			break;
+		case 3:
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_STEREO | SPEAKER_FRONT_CENTER;
+			break;
+		case 4:
+			//wfex.dwChannelMask = KSAUDIO_SPEAKER_QUAD;
+			wfext->dwChannelMask = (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER);
+			break;
+		case 5:
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_QUAD | SPEAKER_FRONT_CENTER;
+			break;
+		case 6:
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_5POINT1;
+			break;
+		default:
+			wfext->dwChannelMask = KSAUDIO_SPEAKER_DIRECTOUT; // XXX : or SPEAKER_ALL ??
+			break;
+		}
+
+
+
+		/*WAVEFORMATEXTENSIBLE wfex;
 		memset(&wfex, 0x00, sizeof(wfex));
 		wfex.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
 		wfex.Format.wFormatTag = (_config.channels <= 2) ? WAVE_FORMAT_PCM : WAVE_FORMAT_EXTENSIBLE;
 		wfex.Format.cbSize = (_config.channels <= 2) ? 0 : sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
 		wfex.Format.nChannels = (unsigned short)_config.channels;
 		wfex.Format.nSamplesPerSec = (unsigned short)_config.samplerate;
-		wfex.Format.wBitsPerSample = _config.bitpersamples;
+		wfex.Format.wBitsPerSample = _config.bitdepth;
 		wfex.Format.nBlockAlign = (unsigned short)((wfex.Format.nChannels * wfex.Format.wBitsPerSample) / 8);
 		wfex.Format.nAvgBytesPerSec = wfex.Format.nSamplesPerSec * wfex.Format.nBlockAlign;
 		switch (_config.channels)
@@ -266,7 +302,7 @@ HRESULT  dk_aac_decode_filter::GetMediaType(int position, CMediaType *type)
 			break;
 		}
 		wfex.Samples.wValidBitsPerSample = wfex.Format.wBitsPerSample;
-		type->SetFormat((BYTE*)&wfex, sizeof(WAVEFORMATEX) + wfex.Format.cbSize);
+		type->SetFormat((BYTE*)&wfex, sizeof(WAVEFORMATEX) + wfex.Format.cbSize);*/
 	}
 	return S_OK;
 }
@@ -365,14 +401,16 @@ HRESULT dk_aac_decode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 		}
 	//}
 
-	dk_aac_decoder::ERR_CODE result = _decoder->decode(input_buffer, input_data_size, output_buffer, output_data_size);
+	dk_audio_entity_t encoded = { input_buffer , input_data_size, 0};
+	dk_audio_entity_t pcm = { output_buffer, 0, output_data_size };
+	dk_aac_decoder::ERR_CODE result = _decoder->decode(&encoded, &pcm);
 
 	if (result != dk_aac_decoder::ERR_CODE_SUCCESS)
 		return S_FALSE;
 
-	if (output_data_size>0)
+	if (pcm.data_size>0)
 	{
-		double duration = (double)output_data_size / (_config.bitpersamples*_config.samplerate) * 10000000.0;
+		double duration = (double)pcm.data_size / (_config.bitdepth*_config.samplerate) * 10000000.0;
 		start_time = end_time;
 		end_time = start_time+(duration + 0.5);
 
@@ -384,7 +422,7 @@ HRESULT dk_aac_decode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 	dst->SetMediaTime(NULL, NULL);
 	dst->SetPreroll(FALSE);
 	dst->SetSyncPoint(TRUE);
-	dst->SetActualDataLength(output_data_size);
+	dst->SetActualDataLength(pcm.data_size);
 	return S_OK;
 }
 

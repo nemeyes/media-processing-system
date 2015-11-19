@@ -17,7 +17,6 @@
 #include <cstdio>
 #include <cstdint>
 #include <memory>
-//#include <dk_circular_buffer.h>
 
 typedef struct _dk_audio_entity_t
 {
@@ -88,96 +87,27 @@ public:
 	dk_audio_decoder(void);
 	virtual ~dk_audio_decoder(void);
 
-	typedef struct EXP_CLASS _configuration_t
-	{
-		int32_t samplerate;
-		int32_t channels;
-		int32_t framesize;
-		int32_t bitdepth;
-		_configuration_t(void)
-			: samplerate(48000)
-			, channels(2)
-			, framesize(20)
-			, bitdepth(16)
-		{
-		}
+	virtual ERR_CODE initialize_decoder(void * config);
+	virtual ERR_CODE release_decoder(void);
 
-		_configuration_t(const _configuration_t & clone)
-		{
-			samplerate = clone.samplerate;
-			channels = clone.channels;
-			framesize = clone.framesize;
-			bitdepth = clone.bitdepth;
-		}
-
-		_configuration_t operator=(const _configuration_t & clone)
-		{
-			samplerate = clone.samplerate;
-			channels = clone.channels;
-			framesize = clone.framesize;
-			bitdepth = clone.bitdepth;
-			return (*this);
-		}
-	} configuration_t;
-
-	virtual ERR_CODE initialize_decoder(configuration_t * config) = 0;
-	virtual ERR_CODE release_decoder(void) = 0;
-
-	virtual ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm) = 0;
+	virtual ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm);
 };
 
 class EXP_CLASS dk_audio_encoder : public dk_audio_base
 {
 public:
-	typedef struct EXP_CLASS _configuration_t
-	{
-		int32_t samplerate;
-		int32_t codingrate;
-		int32_t channels;
-		int32_t framesize;
-		int32_t bitrate;
-		int32_t complexity;
-		_configuration_t(void)
-			: samplerate(48000)
-			, codingrate(48000)
-			, channels(2)
-			, framesize(20)
-			, bitrate(256000)
-			, complexity(10)
-		{
-		}
-
-		_configuration_t(const _configuration_t & clone)
-		{
-			samplerate = clone.samplerate;
-			codingrate = clone.codingrate;
-			channels = clone.channels;
-			framesize = clone.framesize;
-			bitrate = clone.bitrate;
-			complexity = clone.complexity;
-		}
-
-		_configuration_t operator=(const _configuration_t & clone)
-		{
-			samplerate = clone.samplerate;
-			codingrate = clone.codingrate;
-			channels = clone.channels;
-			framesize = clone.framesize;
-			bitrate = clone.bitrate;
-			complexity = clone.complexity;
-			return (*this);
-		}
-	} configuration_t;
-
 	dk_audio_encoder(void);
 	virtual ~dk_audio_encoder(void);
 
-	virtual ERR_CODE initialize_encoder(configuration_t * config) = 0;
-	virtual ERR_CODE release_encoder(void) = 0;
+	virtual ERR_CODE initialize_encoder(void * config);
+	virtual ERR_CODE release_encoder(void);
 
-	virtual ERR_CODE encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded) = 0;
-	virtual ERR_CODE encode(dk_audio_entity_t * pcm) = 0;
-	virtual ERR_CODE get_queued_data(dk_audio_entity_t * encoded) = 0;
+	virtual ERR_CODE encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded);
+	virtual ERR_CODE encode(dk_audio_entity_t * pcm);
+	virtual ERR_CODE get_queued_data(dk_audio_entity_t * encoded);
+
+	virtual uint8_t * extradata(void);
+	virtual size_t extradata_size(void);
 };
 
 

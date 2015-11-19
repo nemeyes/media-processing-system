@@ -22,7 +22,7 @@ dk_celt_encode_filter::dk_celt_encode_filter(LPUNKNOWN unk, HRESULT *hr)
 	, _got_time(false)
 	//, _start_time(0)
 {
-	DbgSetModuleLevel(LOG_TIMING, 10);
+	//DbgSetModuleLevel(LOG_TIMING, 10);
 	m_pInput = new CTransformInputPin(NAME("Input"), this, hr, L"In");
 	m_pOutput = new CTransformOutputPin(NAME("Output"), this, hr, L"Out");
 

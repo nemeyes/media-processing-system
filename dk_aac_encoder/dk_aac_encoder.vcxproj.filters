@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="audio_base">
+      <UniqueIdentifier>{9a51fb82-e315-4cf1-8868-a8a265c55d40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="buffering">
+      <UniqueIdentifier>{92bb852c-f42d-48c6-abff-f61976cfde2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_aac_encoder.h">
@@ -21,6 +27,12 @@
     <ClInclude Include="include\faac_encoder.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="..\dk_audio_base\include\dk_audio_base.h">
+      <Filter>audio_base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h">
+      <Filter>buffering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_aac_encoder.cpp">
@@ -28,6 +40,12 @@
     </ClCompile>
     <ClCompile Include="source\faac_encoder.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_audio_base\source\dk_audio_base.cpp">
+      <Filter>audio_base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp">
+      <Filter>buffering</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
