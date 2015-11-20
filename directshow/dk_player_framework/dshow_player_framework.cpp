@@ -106,7 +106,6 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 	}
 	else if (!wcscmp(str_ext.c_str(), L"mp4"))
 	{
-		//_source = new dk_haali_media_splitter();
 		_source = new dk_gdcl_mpeg4_demuxer();
 	}
 	hr = _source->add_to_graph(_graph, path);
