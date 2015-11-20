@@ -21,16 +21,18 @@ CComPtr<IBaseFilter> dk_haali_media_splitter::get_filter(void)
 	return _source;
 }
 
-CComPtr<IPin> dk_haali_media_splitter::get_output_pin(void)
+CComPtr<IPin> dk_haali_media_splitter::get_video_output_pin(void)
 {
 	CComPtr<IPin> outpin;
 	dk_dshow_helper::get_pin(_source, L"Video", &outpin);
 	return outpin;
 }
 
-CComPtr<IPin> dk_haali_media_splitter::get_input_pin(void)
+CComPtr<IPin> dk_haali_media_splitter::get_audio_output_pin(void)
 {
-	return NULL;
+	CComPtr<IPin> outpin;
+	dk_dshow_helper::get_pin(_source, L"Audio", &outpin);
+	return outpin;
 }
 
 HRESULT dk_haali_media_splitter::add_to_graph(CComPtr<IGraphBuilder> graph, wchar_t * file)

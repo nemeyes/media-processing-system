@@ -23,6 +23,7 @@ public:
 
 	static HRESULT get_pin(IBaseFilter * filter, PIN_DIRECTION direction, IPin ** pin);
 	static HRESULT get_pin(IBaseFilter * filter, LPCWSTR name, IPin ** pin);
+	static HRESULT get_pin(IBaseFilter * filter, PIN_DIRECTION direction, GUID major_type, IPin ** pin);
 	static HRESULT add_to_rot(IUnknown * graph_unknown, DWORD * rot_id);
 	static HRESULT remove_from_rot(DWORD * rot_id);
 	static HRESULT get_next_filter(IBaseFilter * filter, PIN_DIRECTION pin_direction, IBaseFilter ** next);

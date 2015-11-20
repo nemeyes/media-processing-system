@@ -32,7 +32,7 @@ public:
 	dk_player_framework(void);
 	~dk_player_framework(void);
 
-	dk_player_framework::ERR_CODE initialize(HWND hwnd, bool aspect_ratio, bool use_clock);
+	dk_player_framework::ERR_CODE initialize(HWND hwnd, bool aspect_ratio, bool use_clock, bool enable_audio);
 	dk_player_framework::ERR_CODE release(void);
 
 	dk_player_framework::STATE state(void);
@@ -52,8 +52,8 @@ public:
 	HRESULT on_change_displaymode(void);
 	HRESULT handle_graphevent(fn_graph_event func);
 
+	long long get_total_duration(void);
+	float get_duration_step(void);
 private:
 	dshow_player_framework * _core;
-
-
 };

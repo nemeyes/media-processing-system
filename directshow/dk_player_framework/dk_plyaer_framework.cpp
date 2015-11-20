@@ -12,9 +12,9 @@ dk_player_framework::~dk_player_framework(void)
 	delete _core;
 }
 
-dk_player_framework::ERR_CODE dk_player_framework::initialize(HWND hwnd, bool aspect_ratio, bool use_clock)
+dk_player_framework::ERR_CODE dk_player_framework::initialize(HWND hwnd, bool aspect_ratio, bool use_clock, bool enable_audio)
 {
-	return _core->initialize(hwnd, aspect_ratio, use_clock);
+	return _core->initialize(hwnd, aspect_ratio, use_clock, enable_audio);
 }
 
 dk_player_framework::ERR_CODE dk_player_framework::release(void)
@@ -81,4 +81,14 @@ HRESULT dk_player_framework::on_change_displaymode(void)
 HRESULT dk_player_framework::handle_graphevent(fn_graph_event func)
 {
 	return _core->handle_graphevent(func);
+}
+
+long long dk_player_framework::get_total_duration(void)
+{
+	return _core->get_total_duration();
+}
+
+float dk_player_framework::get_duration_step(void)
+{
+	return _core->get_duration_step();
 }

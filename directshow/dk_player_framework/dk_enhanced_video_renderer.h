@@ -17,11 +17,11 @@
 #define DXVA2_ModeH264_VLD_NoFGT    DXVA2_ModeH264_E
 #define DXVA2_ModeH264_VLD_FGT      DXVA2_ModeH264_F*/
 
-class dk_enhanced_video_renderer : public dk_base_render_filter
+class dk_enhanced_video_renderer : public dk_base_video_render_filter
 {
 public:
 	dk_enhanced_video_renderer(void);
-	~dk_enhanced_video_renderer(void);
+	virtual ~dk_enhanced_video_renderer(void);
 
 	CComPtr<IBaseFilter> get_filter(void);
 	CComPtr<IPin> get_output_pin(void);

@@ -16,6 +16,24 @@
     <Filter Include="dshow_base">
       <UniqueIdentifier>{b2d69699-5e59-4d7b-bd5e-dfb0a1786180}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\decoder">
+      <UniqueIdentifier>{ab39a76c-8025-4afd-aeaa-9b202228a6e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\render">
+      <UniqueIdentifier>{cc3df1ca-f4b2-40fd-89ed-025b9e88b652}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\source">
+      <UniqueIdentifier>{63176725-5aa4-4f87-a18b-d07c57afa1ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\decoder">
+      <UniqueIdentifier>{3762b15e-6040-4e36-8db9-fccccb694bd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source">
+      <UniqueIdentifier>{a79f259f-fdc6-41ff-86ce-4f37852b7b31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\render">
+      <UniqueIdentifier>{cae074f0-9796-47d7-96a7-29f8dc07214c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dk_player_framework.h">
@@ -24,23 +42,41 @@
     <ClInclude Include="dshow_player_framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dk_enhanced_video_renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\dk_dshow_base\dk_com_initiator.h">
       <Filter>dshow_base</Filter>
     </ClInclude>
     <ClInclude Include="..\dk_dshow_base\dk_dshow_helper.h">
       <Filter>dshow_base</Filter>
     </ClInclude>
-    <ClInclude Include="dk_haali_media_splitter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="dk_base_filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dk_dmo_mpeg4s_decoder.h">
+      <Filter>Header Files\decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_microsoft_audio_decoder.h">
+      <Filter>Header Files\decoder</Filter>
+    </ClInclude>
     <ClInclude Include="dk_microsoft_video_decoder.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_default_direct_sound_renderer.h">
+      <Filter>Header Files\render</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_enhanced_video_renderer.h">
+      <Filter>Header Files\render</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_haali_media_splitter.h">
+      <Filter>Header Files\source</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_dmo_mp3_decoder.h">
+      <Filter>Header Files\decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_avi_splitter.h">
+      <Filter>Header Files\source</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_gdcl_mpeg4_demuxer.h">
+      <Filter>Header Files\source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,20 +86,38 @@
     <ClCompile Include="dshow_player_framework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dk_enhanced_video_renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\dk_dshow_base\dk_com_initiator.cpp">
       <Filter>dshow_base</Filter>
     </ClCompile>
     <ClCompile Include="..\dk_dshow_base\dk_dshow_helper.cpp">
       <Filter>dshow_base</Filter>
     </ClCompile>
-    <ClCompile Include="dk_haali_media_splitter.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="dk_dmo_mpeg4s_decoder.cpp">
+      <Filter>Source Files\decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_microsoft_audio_decoder.cpp">
+      <Filter>Source Files\decoder</Filter>
     </ClCompile>
     <ClCompile Include="dk_microsoft_video_decoder.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_haali_media_splitter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_default_direct_sound_renderer.cpp">
+      <Filter>Source Files\render</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_enhanced_video_renderer.cpp">
+      <Filter>Source Files\render</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_dmo_mp3_decoder.cpp">
+      <Filter>Source Files\decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_avi_splitter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_gdcl_mpeg4_demuxer.cpp">
+      <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

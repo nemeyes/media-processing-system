@@ -92,9 +92,15 @@
   <ItemGroup>
     <ClInclude Include="..\dk_dshow_base\dk_com_initiator.h" />
     <ClInclude Include="..\dk_dshow_base\dk_dshow_helper.h" />
+    <ClInclude Include="dk_avi_splitter.h" />
     <ClInclude Include="dk_base_filter.h" />
+    <ClInclude Include="dk_default_direct_sound_renderer.h" />
+    <ClInclude Include="dk_dmo_mp3_decoder.h" />
+    <ClInclude Include="dk_dmo_mpeg4s_decoder.h" />
     <ClInclude Include="dk_enhanced_video_renderer.h" />
+    <ClInclude Include="dk_gdcl_mpeg4_demuxer.h" />
     <ClInclude Include="dk_haali_media_splitter.h" />
+    <ClInclude Include="dk_microsoft_audio_decoder.h" />
     <ClInclude Include="dk_microsoft_video_decoder.h" />
     <ClInclude Include="dk_player_framework.h" />
     <ClInclude Include="dshow_player_framework.h" />
@@ -102,8 +108,14 @@
   <ItemGroup>
     <ClCompile Include="..\dk_dshow_base\dk_com_initiator.cpp" />
     <ClCompile Include="..\dk_dshow_base\dk_dshow_helper.cpp" />
+    <ClCompile Include="dk_avi_splitter.cpp" />
+    <ClCompile Include="dk_default_direct_sound_renderer.cpp" />
+    <ClCompile Include="dk_dmo_mp3_decoder.cpp" />
+    <ClCompile Include="dk_dmo_mpeg4s_decoder.cpp" />
     <ClCompile Include="dk_enhanced_video_renderer.cpp" />
+    <ClCompile Include="dk_gdcl_mpeg4_demuxer.cpp" />
     <ClCompile Include="dk_haali_media_splitter.cpp" />
+    <ClCompile Include="dk_microsoft_audio_decoder.cpp" />
     <ClCompile Include="dk_microsoft_video_decoder.cpp" />
     <ClCompile Include="dk_plyaer_framework.cpp" />
     <ClCompile Include="dshow_player_framework.cpp" />

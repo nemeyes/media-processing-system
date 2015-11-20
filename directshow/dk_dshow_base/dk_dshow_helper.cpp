@@ -96,6 +96,86 @@ HRESULT dk_dshow_helper::get_pin(IBaseFilter * filter, LPCWSTR name, IPin ** pin
 	return hr;
 }
 
+
+HRESULT dk_dshow_helper::get_pin(IBaseFilter * filter, PIN_DIRECTION direction, GUID major_type, IPin ** pin)
+{
+	HRESULT		hr = E_FAIL;
+	IEnumPins*	pin_enum = NULL;
+	IPin*		ppin = NULL;
+	DWORD		fetched = 0;
+	PIN_INFO	pin_info = { 0 };
+
+	// Create a pin enumerator
+	if (FAILED(filter->EnumPins(&pin_enum)))
+		return E_FAIL;
+
+	// Get the first instance
+	*pin = NULL;
+	hr = pin_enum->Next(1, &ppin, &fetched);
+	while (hr == S_OK)
+	{
+		ppin->QueryPinInfo(&pin_info);
+		if (pin_info.dir == direction)
+		{
+			IEnumMediaTypes * media_enum = 0;
+			hr = ppin->EnumMediaTypes(&media_enum);
+			AM_MEDIA_TYPE * mt;
+			while (S_OK == media_enum->Next(1, &mt, NULL))
+			{
+				if (IsEqualGUID(mt->majortype, major_type))
+				{
+					*pin = ppin;
+					break;
+				}
+			}
+			safe_release(&media_enum);
+
+			if (*pin)
+				break;
+		}
+		safe_release(&pin_info.pFilter);
+		safe_release(&ppin);
+
+		hr = pin_enum->Next(1, &ppin, &fetched);
+	}
+
+	safe_release(&pin_info.pFilter);
+	safe_release(&pin_enum);
+
+	// if the pPin address is null we didnt find a pin with the wanted name
+	if (&*ppin == NULL)
+		hr = VFW_E_NOT_FOUND;
+	return hr;
+}
+
+/*CComPtr<IPin> vopin = _source->get_video_output_pin();
+IEnumMediaTypes * venum = 0;
+hr = vopin->EnumMediaTypes(&venum);
+if (FAILED(hr))
+return dk_player_framework::ERR_CODE_FAILED;
+AM_MEDIA_TYPE * vmt;
+while (S_OK == venum->Next(1, &vmt, NULL))
+{
+	if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_H264) ||
+		IsEqualGUID(vmt->subtype, MEDIASUBTYPE_AVC1) ||
+		IsEqualGUID(vmt->subtype, MEDIASUBTYPE_avc1) ||
+		IsEqualGUID(vmt->subtype, MEDIASUBTYPE_h264) ||
+		IsEqualGUID(vmt->subtype, MEDIASUBTYPE_X264) ||
+		IsEqualGUID(vmt->subtype, MEDIASUBTYPE_x264))
+	{
+		_video_decoder = new dk_microsoft_video_decoder();
+		break;
+	}
+	else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP4V) ||
+		IsEqualGUID(vmt->subtype, MEDIASUBTYPE_XVID))
+	{
+		_video_decoder = new dk_dmo_mpeg4s_decoder();
+		break;
+	}
+}
+safe_release(&venum);*/
+
+
 HRESULT dk_dshow_helper::add_to_rot(IUnknown * graph_unknown, DWORD * rot_id)
 {
 	if (!graph_unknown || !rot_id)
