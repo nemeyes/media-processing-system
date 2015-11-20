@@ -116,10 +116,21 @@ HRESULT  dk_aac_decode_filter::AlterQuality(Quality quality)
 	return S_FALSE;
 }
 
-HRESULT  dk_aac_decode_filter::SetMediaType(PIN_DIRECTION direction, const CMediaType *type)
+HRESULT  dk_aac_decode_filter::SetMediaType(PIN_DIRECTION direction, const CMediaType * mt)
 {
-	UNREFERENCED_PARAMETER(direction);
-	UNREFERENCED_PARAMETER(type);
+	if (direction == PINDIR_INPUT)
+	{
+		WAVEFORMATEX * wfx = (WAVEFORMATEX*)mt->pbFormat;
+		if (!wfx)
+			return E_FAIL;
+
+		if (wfx->wBitsPerSample != 16) 
+			return E_FAIL;
+		_config.channels = wfx->nChannels;
+		_config.samplerate = wfx->nSamplesPerSec;
+		_config.bitdepth = wfx->wBitsPerSample;
+		_config.input_format = dk_aac_decoder::FORMAT_TYPE_RAW;
+	}
 	return NOERROR;
 }
 
@@ -343,7 +354,7 @@ HRESULT  dk_aac_decode_filter::DecideBufferSize(IMemAllocator *allocator, ALLOCA
 	//#define LAV_AUDIO_BUFFER_SIZE 6144000
 	properties->cBuffers = 4;//8;
 	//properties->cbAlign		= 1;
-	properties->cbBuffer = 6144000;// _config.channels * 2048 * sizeof(short);
+	properties->cbBuffer = _config.channels*_config.bitdepth*_config.samplerate>>2;
 	properties->cbPrefix = 0;
 
 	ALLOCATOR_PROPERTIES actual;
@@ -376,8 +387,8 @@ HRESULT dk_aac_decode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 	output_data_size = dst->GetSize();
 	if (input_data_size <= 0)
 		return S_FALSE;
-	if (output_data_size < (_config.channels * 2048 * sizeof(short)))
-		return S_FALSE;
+	//if (output_data_size < (_config.channels * 2048 * sizeof(short)))
+	//	return S_FALSE;
 
 	hr = src->GetPointer(&input_buffer);
 	if (FAILED(hr) || !input_buffer)
@@ -416,11 +427,11 @@ HRESULT dk_aac_decode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 
 		//start_time += _start_time;
 		//end_time += _start_time;
-		dst->SetTime(&start_time, &end_time);
+		//dst->SetTime(&start_time, &end_time);
 	}
 	//dst->SetDiscontinuity(TRUE);
-	dst->SetMediaTime(NULL, NULL);
-	dst->SetPreroll(FALSE);
+	//dst->SetMediaTime(NULL, NULL);
+	//dst->SetPreroll(FALSE);
 	dst->SetSyncPoint(TRUE);
 	dst->SetActualDataLength(pcm.data_size);
 	return S_OK;

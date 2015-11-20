@@ -283,10 +283,13 @@ HRESULT  dk_aac_encode_filter::GetMediaType(int position, CMediaType *type)
 		type->SetFormatType(&FORMAT_WaveFormatEx);
 		WAVEFORMATEX * wfx = (WAVEFORMATEX*)type->AllocFormatBuffer(sizeof(*wfx) + _encoder->extradata_size());
 		memset(wfx, 0x00, sizeof(*wfx));
-		wfx->cbSize = _encoder->extradata_size();
+		wfx->wFormatTag = WAVE_FORMAT_AAC;
 		wfx->nChannels = _config.channels;
 		wfx->nSamplesPerSec = _config.samplerate;
-		wfx->wFormatTag = WAVE_FORMAT_AAC;
+		wfx->wBitsPerSample = _config.bitdepth;
+		wfx->nBlockAlign = (wfx->nChannels * wfx->wBitsPerSample / 8);
+		wfx->nAvgBytesPerSec = wfx->nSamplesPerSec * wfx->nBlockAlign;
+		wfx->cbSize = _encoder->extradata_size();
 		unsigned char * wfxex = ((unsigned char*)(wfx)) + sizeof(*wfx);
 		memcpy(wfxex, _encoder->extradata(), _encoder->extradata_size());
 		_config.output_format = dk_aac_encoder::FORMAT_TYPE_RAW;
