@@ -249,6 +249,12 @@ dk_player_framework::ERR_CODE dshow_player_framework::stop(void)
 	HRESULT hr = _control->Stop();
 	if (SUCCEEDED(hr))
 	{
+		if (_seeking)
+		{
+			REFERENCE_TIME rt = 0;
+			_seeking->SetPositions(&rt, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning);
+		}
+
 		CComPtr<IBaseFilter> sf = _source->get_filter();
 		CComPtr<IBaseFilter> tf = _video_decoder->get_filter();
 		CComPtr<IBaseFilter> rf = _video_renderer->get_filter();
