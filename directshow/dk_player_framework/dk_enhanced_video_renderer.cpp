@@ -12,7 +12,7 @@ dk_enhanced_video_renderer::dk_enhanced_video_renderer(void)
 
 dk_enhanced_video_renderer::~dk_enhanced_video_renderer(void)
 {
-
+	safe_release(&_renderer);
 }
 
 CComPtr<IBaseFilter> dk_enhanced_video_renderer::get_filter(void)

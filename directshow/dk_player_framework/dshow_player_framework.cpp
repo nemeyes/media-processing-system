@@ -96,6 +96,7 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 	std::wstring str_ext = str_path.substr(str_path.find_last_of(L".") + 1);
 
 	//TODO check file format not by file extension
+	hr = stop();
 	if (!wcscmp(str_ext.c_str(), L"avi"))
 	{
 		_source = new dk_avi_splitter();

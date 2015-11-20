@@ -12,7 +12,7 @@ dk_haali_media_splitter::dk_haali_media_splitter(void)
 
 dk_haali_media_splitter::~dk_haali_media_splitter(void)
 {
-
+	safe_release(&_source);
 }
 
 
