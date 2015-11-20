@@ -145,7 +145,7 @@ dk_aac_decoder::ERR_CODE faad2_decoder::decode(dk_audio_entity_t * encoded, dk_a
 		}
 		else
 		{
-			pcm->data_size = _aac_frame_info.samples << 1;
+			pcm->data_size = _aac_frame_info.samples << 1;//float(_aac_frame_info.samples << 1) * float(_config.channels/_aac_frame_info.channels);
 			if (pcm->data_size>0)
 				memcpy(pcm->data, out_samples, pcm->data_size);
 			return dk_aac_decoder::ERR_CODE_SUCCESS;

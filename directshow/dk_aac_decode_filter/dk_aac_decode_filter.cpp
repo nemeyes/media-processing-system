@@ -126,7 +126,7 @@ HRESULT  dk_aac_decode_filter::SetMediaType(PIN_DIRECTION direction, const CMedi
 
 		if (wfx->wBitsPerSample != 16) 
 			return E_FAIL;
-		_config.channels = wfx->nChannels;
+		_config.channels = wfx->nChannels == 1 ? 2 : wfx->nChannels;
 		_config.samplerate = wfx->nSamplesPerSec;
 		_config.bitdepth = wfx->wBitsPerSample;
 		_config.input_format = dk_aac_decoder::FORMAT_TYPE_RAW;
