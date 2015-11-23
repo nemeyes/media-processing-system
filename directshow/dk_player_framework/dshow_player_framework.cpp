@@ -86,6 +86,27 @@ dk_player_framework::STATE dshow_player_framework::state(void)
 	return _state;
 }
 
+bool dshow_player_framework::seekable(void)
+{
+	bool  seekable = false;
+	DWORD caps = AM_SEEKING_CanSeekAbsolute | AM_SEEKING_CanGetDuration;
+	seekable = (S_OK == _seeking->CheckCapabilities(&caps));
+	return seekable;
+}
+
+dk_player_framework::ERR_CODE dshow_player_framework::forward_rate(double rate)
+{
+	HRESULT hr = E_FAIL;
+	if (_seeking)
+	{
+		hr = _seeking->SetRate(rate);
+	}
+	if (FAILED(hr))
+		return dk_player_framework::ERR_CODE_FAILED;
+	else
+		return dk_player_framework::ERR_CODE_SUCCESS;
+}
+
 dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 {
 	HRESULT hr;
@@ -187,7 +208,7 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 	long long duration_100nanosec = 0;
 	_seeking->GetDuration(&duration_100nanosec);
 	_total_duration = duration_100nanosec / 10000000;
-	_duration_step = (float)1000 / _total_duration;
+	_duration_step = (float)100 / _total_duration;
 
 	if (SUCCEEDED(hr))
 		return dk_player_framework::ERR_CODE_SUCCESS;

@@ -5,6 +5,8 @@
 #include <dk_submedia_type.h>
 #include <codecapi.h>
 
+typedef HRESULT(STDAPICALLTYPE * eapGDCLMpeg4DemuxerDllRegisterServer)();
+
 dk_gdcl_mpeg4_demuxer::dk_gdcl_mpeg4_demuxer(void)
 {
 
@@ -49,9 +51,35 @@ HRESULT dk_gdcl_mpeg4_demuxer::add_to_graph(CComPtr<IGraphBuilder> graph, wchar_
 		return hr;
 
 	CComPtr<IBaseFilter> parser;
-	hr = dk_dshow_helper::add_filter_by_clsid(graph, L"Parser", CLSID_GDCLMpeg4Demuxer, &parser);
-	if (FAILED(hr))
-		return hr;
+	do
+	{
+		hr = dk_dshow_helper::add_filter_by_clsid(graph, L"Parser", CLSID_GDCLMpeg4Demuxer, &parser);
+		if (FAILED(hr)/*hr==REGDB_E_CLASSNOTREG || hr==ERROR_MOD_NOT_FOUND*/)
+		{
+			wchar_t exe_path[MAX_PATH] = { 0 };
+			wchar_t module_path[MAX_PATH] = { 0 };
+			wchar_t * module_name = L"mp4demux.dll";
+			HMODULE exe = GetModuleHandle(NULL);
+			if (exe != NULL)
+			{
+				// When passing NULL to GetModuleHandle, it returns handle of exe itself
+				GetModuleFileName(exe, exe_path, (sizeof(exe_path)));
+				PathRemoveFileSpec(exe_path);
+				_snwprintf_s(module_path, sizeof(module_path), L"%s\\%s", exe_path, module_name);
+				HMODULE module = ::LoadLibrary(module_path);
+				if (module != INVALID_HANDLE_VALUE)
+				{
+					eapGDCLMpeg4DemuxerDllRegisterServer fnDllRegisterServer = (eapGDCLMpeg4DemuxerDllRegisterServer)::GetProcAddress(module, "DllRegisterServer");
+					hr = fnDllRegisterServer();
+					::FreeLibrary(module);
+				}
+			}
+		}
+		else
+		{
+			break;
+		}
+	} while (1);
 
 	CComPtr<IPin> outpin;
 	hr = dk_dshow_helper::get_pin(source, PINDIR_OUTPUT, &outpin);

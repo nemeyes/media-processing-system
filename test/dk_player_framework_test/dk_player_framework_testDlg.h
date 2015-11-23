@@ -29,6 +29,9 @@ private:
 	long long _play_elapsed;
 	CComboBox _dxva2_decoder_guids;
 
+private:
+	static void CALLBACK OnGraphEvent(HWND hwnd, long eventCode, LONG_PTR param1, LONG_PTR param2);
+
 // Implementation
 protected:
 	HICON m_hIcon;
@@ -52,4 +55,6 @@ protected:
 
 private:
 	CProgressCtrl _progress_play;
+public:
+	afx_msg void OnAppCommand(CWnd* pWnd, UINT nCmd, UINT nDevice, UINT nKey);
 };

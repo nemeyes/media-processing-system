@@ -30,6 +30,8 @@ public:
 	dk_player_framework::ERR_CODE release(void);
 
 	dk_player_framework::STATE state(void);
+	bool seekable(void);
+	dk_player_framework::ERR_CODE forward_rate(double rate);
 
 	dk_player_framework::ERR_CODE open_file(wchar_t * file);
 	dk_player_framework::ERR_CODE play(void);

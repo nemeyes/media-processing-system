@@ -17,7 +17,6 @@
 
 
 // CAboutDlg dialog used for App About
-
 class CAboutDlg : public CDialogEx
 {
 public:
@@ -50,10 +49,14 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
+void CAboutDlg::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+	// TODO: Add your message handler code here
+	// Do not call CDialogEx::OnPaint() for painting messages
+}
+
 // Cdk_player_framework_testDlg dialog
-
-
-
 Cdk_player_framework_testDlg::Cdk_player_framework_testDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Cdk_player_framework_testDlg::IDD, pParent)
 	, _fullscreen(FALSE)
@@ -82,6 +85,7 @@ BEGIN_MESSAGE_MAP(Cdk_player_framework_testDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_HSL, &Cdk_player_framework_testDlg::OnBnClickedButtonHsl)
 	ON_BN_CLICKED(IDC_BUTTON_OPEN_RTMP, &Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp)
 	ON_WM_TIMER()
+	ON_WM_APPCOMMAND()
 END_MESSAGE_MAP()
 
 
@@ -123,7 +127,7 @@ BOOL Cdk_player_framework_testDlg::OnInitDialog()
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_HIDE);
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_HIDE);
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), SW_HIDE);
-
+	::EnableWindow(::GetDlgItem(GetSafeHwnd(), IDC_PROGRESS_PLAY), FALSE);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -190,40 +194,6 @@ HCURSOR Cdk_player_framework_testDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void Cdk_player_framework_testDlg::OnBnClickedButtonPlay()
-{
-	// TODO: Add your control notification handler code here
-	if (_player.state() == dk_player_framework::STATE_PAUSED)
-	{
-		_player.play();
-		SetDlgItemText(IDC_BUTTON_PLAY, L"Pause");
-
-	}
-	else if (_player.state() == dk_player_framework::STATE_RUNNING)
-	{
-		_player.pause();
-		SetDlgItemText(IDC_BUTTON_PLAY, L"Play");
-	}
-}
-
-void Cdk_player_framework_testDlg::OnBnClickedButtonStop()
-{
-	// TODO: Add your control notification handler code here
-	_player.stop();
-	SetDlgItemText(IDC_BUTTON_PLAY, L"Play");
-	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_HIDE);
-	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_HIDE);
-	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), SW_HIDE);
-	_progress_play.SetPos(0);
-}
-
-void CAboutDlg::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-	// TODO: Add your message handler code here
-	// Do not call CDialogEx::OnPaint() for painting messages
-}
-
 void Cdk_player_framework_testDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
@@ -234,15 +204,36 @@ void Cdk_player_framework_testDlg::OnSize(UINT nType, int cx, int cy)
 	_player.update_video_windows(&rc);
 }
 
-
-void Cdk_player_framework_testDlg::OnBnClickedCheckAspectRatio()
+void Cdk_player_framework_testDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	// TODO: Add your control notification handler code here
-	BOOL ar_checked = IsDlgButtonChecked(IDC_CHECK_ASPECT_RATIO);
-	if (ar_checked)
-		_player.aspect_ratio(true);
-	else
-		_player.aspect_ratio(false);
+	// TODO: Add your message handler code here and/or call default
+	long long total_duration = _player.get_total_duration();
+	float duration_step = _player.get_duration_step();
+
+	if (_player.state() != dk_player_framework::STATE_RUNNING || _play_elapsed >= total_duration)
+		return;
+
+	_play_elapsed++;
+	int position = (int)(duration_step*(float)_play_elapsed);
+	_progress_play.SetPos(position);
+
+	wchar_t str_elapsed_time[256] = { 0 };
+	_snwprintf_s(str_elapsed_time, sizeof(str_elapsed_time), L"%02llu:%02llu:%02llu", (_play_elapsed / 3600) % 60, (_play_elapsed / 60) % 60, (_play_elapsed % 60));
+	::SetWindowText(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), str_elapsed_time);
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+void Cdk_player_framework_testDlg::OnAppCommand(CWnd* pWnd, UINT nCmd, UINT nDevice, UINT nKey)
+{
+	// This feature requires Windows 2000 or greater.
+	// The symbols _WIN32_WINNT and WINVER must be >= 0x0500.
+	CDialogEx::OnAppCommand(pWnd, nCmd, nDevice, nKey);
+
+	if (nCmd == WM_GRAPH_EVENT)
+	{
+		_player.handle_graphevent(OnGraphEvent);
+	}
 }
 
 void Cdk_player_framework_testDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
@@ -250,7 +241,7 @@ void Cdk_player_framework_testDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 	// TODO: Add your message handler code here and/or call default
 	if (_player.state() == dk_player_framework::STATE_NO_GRAPH)
 		return;
-		
+
 	if (_fullscreen)
 	{
 		SetWindowPos(&wndNoTopMost, _original_rect.left, _original_rect.top, _original_rect.Width(), _original_rect.Height(), SWP_HIDEWINDOW);
@@ -309,7 +300,7 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile()
 		_player.list_dxva2_decoder_guids(&dxva2_decoder_guids);
 		for (iter = dxva2_decoder_guids.begin(); iter != dxva2_decoder_guids.end(); iter++)
 		{
-			if(IsEqualGUID(DXVA2_ModeMPEG2_MoComp, (*iter)))
+			if (IsEqualGUID(DXVA2_ModeMPEG2_MoComp, (*iter)))
 				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG2_MoComp");
 			else if (IsEqualGUID(DXVA2_ModeMPEG2_IDCT, (*iter)))
 				_dxva2_decoder_guids.AddString(L"DXVA2_ModeMPEG2_IDCT");
@@ -384,61 +375,96 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile()
 			}
 		}
 
+		bool seekable = _player.seekable();
+
+
 		_player.play();
-		float duration_step = _player.get_duration_step();
-		_progress_play.SetRange(0, 1000);
-		_progress_play.SetStep(duration_step);
+		//_player.forward_rate(3);
+		if (seekable)
+		{
+			float duration_step = _player.get_duration_step();
+			_progress_play.SetRange(0, 100);
+			_progress_play.SetStep(duration_step);
 
-		long long total_duration = _player.get_total_duration();
-		wchar_t str_total_time[256] = { 0 };
-		_snwprintf_s(str_total_time, sizeof(str_total_time), L"%02llu:%02llu:%02llu", (total_duration / 3600) % 60, (total_duration / 60) % 60, (total_duration % 60));
-		::SetWindowText(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), str_total_time);
+			long long total_duration = _player.get_total_duration();
+			wchar_t str_total_time[256] = { 0 };
+			_snwprintf_s(str_total_time, sizeof(str_total_time), L"%02llu:%02llu:%02llu", (total_duration / 3600) % 60, (total_duration / 60) % 60, (total_duration % 60));
+			::SetWindowText(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), str_total_time);
 
-		_play_elapsed = 0;
-		SetTimer(1, 1000, NULL);
+			_play_elapsed = 0;
+			SetTimer(1, 1000, NULL);
 
+			::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_SHOW);
+			::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_SHOW);
+			::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), SW_SHOW);
+		}
 		SetDlgItemText(IDC_BUTTON_PLAY, L"Pause");
-		::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_SHOW);
-		::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_SHOW);
-		::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), SW_SHOW);
 	}
 }
-
 
 void Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtsp()
 {
 	// TODO: Add your control notification handler code here
 }
 
-
 void Cdk_player_framework_testDlg::OnBnClickedButtonHsl()
 {
 	// TODO: Add your control notification handler code here
 }
-
 
 void Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp()
 {
 	// TODO: Add your control notification handler code here
 }
 
-
-void Cdk_player_framework_testDlg::OnTimer(UINT_PTR nIDEvent)
+void Cdk_player_framework_testDlg::OnBnClickedButtonPlay()
 {
-	// TODO: Add your message handler code here and/or call default
-	long long total_duration = _player.get_total_duration();
-	float duration_step = _player.get_duration_step();
+	// TODO: Add your control notification handler code here
+	if (_player.state() == dk_player_framework::STATE_PAUSED)
+	{
+		_player.play();
+		SetDlgItemText(IDC_BUTTON_PLAY, L"Pause");
 
-	if (_player.state() != dk_player_framework::STATE_RUNNING || _play_elapsed >= total_duration)
-		return;
+	}
+	else if (_player.state() == dk_player_framework::STATE_RUNNING)
+	{
+		_player.pause();
+		SetDlgItemText(IDC_BUTTON_PLAY, L"Play");
+	}
+}
 
-	_play_elapsed++;
-	int position = (int)(duration_step*(float)_play_elapsed);
-	_progress_play.SetPos(position);
+void Cdk_player_framework_testDlg::OnBnClickedButtonStop()
+{
+	// TODO: Add your control notification handler code here
+	_player.stop();
+	SetDlgItemText(IDC_BUTTON_PLAY, L"Play");
+	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_HIDE);
+	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_HIDE);
+	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), SW_HIDE);
+	KillTimer(1);
+	_progress_play.SetPos(0);
+}
 
-	wchar_t str_elapsed_time[256] = { 0 };
-	_snwprintf_s(str_elapsed_time, sizeof(str_elapsed_time), L"%02llu:%02llu:%02llu", (_play_elapsed / 3600) % 60, (_play_elapsed / 60) % 60, (_play_elapsed % 60));
-	::SetWindowText(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), str_elapsed_time);
 
-	CDialogEx::OnTimer(nIDEvent);
+void Cdk_player_framework_testDlg::OnBnClickedCheckAspectRatio()
+{
+	// TODO: Add your control notification handler code here
+	BOOL ar_checked = IsDlgButtonChecked(IDC_CHECK_ASPECT_RATIO);
+	if (ar_checked)
+		_player.aspect_ratio(true);
+	else
+		_player.aspect_ratio(false);
+}
+
+
+void Cdk_player_framework_testDlg::OnGraphEvent(HWND hwnd, long eventCode, LONG_PTR param1, LONG_PTR param2)
+{
+	//switch (eventCode)
+	//{
+	//	// we process only the EC_COMPLETE message which is sent when the media is finished playing
+	//case EC_COMPLETE:
+	//	// Do a stop when it is finished playing
+	//	stop();
+	//	break;
+	//}
 }

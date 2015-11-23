@@ -27,6 +27,16 @@ dk_player_framework::STATE dk_player_framework::state(void)
 	return _core->state();
 }
 
+bool dk_player_framework::seekable(void)
+{
+	return _core->seekable();
+}
+
+dk_player_framework::ERR_CODE dk_player_framework::forward_rate(double rate)
+{
+	return _core->forward_rate(rate);
+}
+
 dk_player_framework::ERR_CODE dk_player_framework::open_file(wchar_t * file)
 {
 	return _core->open_file(file);
