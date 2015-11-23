@@ -183,9 +183,9 @@
   <ItemGroup>
     <ClCompile Include="..\dk_audio_base\source\dk_audio_base.cpp" />
     <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp" />
-    <ClCompile Include="include\resample.cpp" />
     <ClCompile Include="source\celt_encoder.cpp" />
     <ClCompile Include="source\dk_celt_encoder.cpp" />
+    <ClCompile Include="source\resample.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
