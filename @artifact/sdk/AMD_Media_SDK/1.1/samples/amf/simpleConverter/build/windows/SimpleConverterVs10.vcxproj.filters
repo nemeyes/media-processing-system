@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{820aed75-1d2c-4842-a9dd-175e84d6e0c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\inc">
+      <UniqueIdentifier>{18c9e827-4dc0-480a-9bc5-28fb3f9787e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\src">
+      <UniqueIdentifier>{01e4eaab-f32c-431a-82fb-2e101c375d63}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\SimpleConverter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\common\src\PlatformWindows.cpp">
+      <Filter>Common\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\common\src\Thread.cpp">
+      <Filter>Common\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\common\inc\AMFPlatform.h">
+      <Filter>Common\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\common\inc\PlatformWindows.h">
+      <Filter>Common\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\common\inc\Thread.h">
+      <Filter>Common\inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

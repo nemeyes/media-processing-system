@@ -1,0 +1,4 @@
+LIBRARY "mftDx11OverlayOpenCl"
+EXPORTS
+    DllMain                         PRIVATE
+    dx11OverlayCreateInstance

@@ -1,0 +1,55 @@
+﻿<Page
+    x:Class="videoEditAmpWinStore.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:videoEditAmpWinStore"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Margin="0,1,0,-1">
+        <Grid Background="Gray" Style="{StaticResource LayoutRootStyle}">
+            <Grid Margin="26,14,88,-125">
+                <Grid Margin="0,0,602,726">
+                    <TextBox x:Name="outputMsg" HorizontalAlignment="Left" Height="26" IsReadOnly="True" Margin="95,84,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="442" Background="Gray" BorderThickness="0"/>
+                    <TextBox x:Name="statusMessage" HorizontalAlignment="Left" Height="26" IsReadOnly="True" Margin="93,121,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="367" Background="Gray" BorderThickness="0"/>
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="26" Margin="0,88,0,0" TextWrapping="Wrap" Text="Output file:" VerticalAlignment="Top" Width="91"/>
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="26" Margin="13,52,0,0" RenderTransformOrigin="0.459,-0.946" TextWrapping="Wrap" Text="Input file:" VerticalAlignment="Top" Width="76"/>
+                    <TextBox x:Name="inputMsg" HorizontalAlignment="Left" Height="26" IsReadOnly="True" Margin="95,47,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="442" Background="Gray" BorderThickness="0"/>
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="26" Margin="37,123,0,0" RenderTransformOrigin="0.442,1.982" TextWrapping="Wrap" Text="Status:" VerticalAlignment="Top" Width="53"/>
+                    <Button x:Name="pickfileButton" Content="Pick Video File" FontSize="18" HorizontalAlignment="Left" Margin="18,0,0,0" RenderTransformOrigin="0.3,-6.486" VerticalAlignment="Top"/>
+                    <Button x:Name="transcodeButton" Content="Transcode" FontSize="18" HorizontalAlignment="Left" Margin="176,0,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="cancelButton" Content="Cancel" FontSize="18" HorizontalAlignment="Left" Margin="298,0,0,0" RenderTransformOrigin="-2.236,-11.745" VerticalAlignment="Top"/>
+                </Grid>
+                <Grid Margin="4,319,687,144"/>
+                <Grid Margin="16,164,602,566">
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="26" Margin="35,45,0,0" RenderTransformOrigin="-0.014,0.644" TextWrapping="Wrap" Text="Bitrate:" VerticalAlignment="Top" Width="59"/>
+                    <Slider x:Name="qualityVsSpeedSlider" HorizontalAlignment="Left" Height="32" Margin="443,73,-56,0" VerticalAlignment="Top" Width="178" IsEnabled="False" Value="50"/>
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="26" Margin="303,84,0,0" TextWrapping="Wrap" Text="Quality Vs Speed:" VerticalAlignment="Top" Width="140"/>
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="32" Margin="34,6,0,0" TextWrapping="Wrap" Text="Transcode Profile:" VerticalAlignment="Top" Width="142"/>
+                    <ComboBox HorizontalAlignment="Left" Height="29" IsEnabled="False" Margin="198,2,0,0" x:Name="transcodeProfileCombo" VerticalAlignment="Top" Width="179" Foreground="BlueViolet">
+                        <ComboBoxItem Content="1080p (1920x1080)"/>
+                        <ComboBoxItem Content="720p (1280x720)"/>
+                        <ComboBoxItem Content="WVGA (800x480)" IsSelected="True"/>
+                        <ComboBoxItem Content="NTSC (720x480)"/>
+                        <ComboBoxItem Content="PAL (720x576)"/>
+                        <ComboBoxItem Content="VGA (640x480)"/>
+                        <ComboBoxItem Content="QVGA (320x240)"/>
+                    </ComboBox>
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="30" Margin="35,84,0,0" TextWrapping="Wrap" Text="GOP Size:" VerticalAlignment="Top" Width="82"/>
+                    <TextBox x:Name="gopSizeTextBox" HorizontalAlignment="Left" Height="30" Margin="120,81,0,0" Text="0 (Default)" VerticalAlignment="Top" Width="163" IsEnabled="False"/>
+                    <Slider x:Name="bitrateSlider" HorizontalAlignment="Left" Height="27" IsEnabled="False" Margin="99,34,0,0" VerticalAlignment="Top" Width="522" Value="500000" Minimum="200000" Maximum="10000000" StepFrequency="100000"/>
+                    <TextBlock FontSize="18" HorizontalAlignment="Left" Height="30" Margin="35,120,0,0" TextWrapping="Wrap" Text="B frames:" VerticalAlignment="Top" Width="82"/>
+                    <ComboBox HorizontalAlignment="Left" Height="30"  Margin="120,117,0,0" x:Name="bFrameCountCombo" VerticalAlignment="Top" Width="163" Foreground="BlueViolet" IsEnabled="False">
+						<ComboBoxItem Content="0" IsSelected="True"/>
+						<ComboBoxItem Content="1"/>
+						<ComboBoxItem Content="2"/>
+						<ComboBoxItem Content="3"/>
+					</ComboBox>
+                </Grid>
+                <MediaElement x:Name="preview" HorizontalAlignment="Left" Height="359" Margin="45,344,0,0" UseLayoutRounding="True" VerticalAlignment="Top" Width="493"/>
+            </Grid>
+            <TextBlock FontSize="18" HorizontalAlignment="Left" Height="26" Margin="37,327,0,0" TextWrapping="Wrap" Text="Preview:" VerticalAlignment="Top" Width="91" RenderTransformOrigin="0.56,1.769"/>
+        </Grid>
+    </Grid>
+</Page>

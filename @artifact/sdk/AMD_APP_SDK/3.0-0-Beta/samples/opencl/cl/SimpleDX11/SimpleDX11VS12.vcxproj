@@ -1,0 +1,283 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{31243B51-D332-4A82-8F2B-F843E9F97B47}</ProjectGuid>
+    <RootNamespace>SimpleDX11</RootNamespace>
+    <ProjectName>SimpleDX11</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\x86\$(Configuration)\</OutDir>
+    <IntDir>temp\x86\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)bin\x86\$(Configuration)\</OutDir>
+    <IntDir>temp\x86\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\x86_64\$(Configuration)\</OutDir>
+    <IntDir>temp\x86_64\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\x86_64\$(Configuration)\</OutDir>
+    <IntDir>temp\x86_64\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../../../include;../../../../include/SDKUtil;$(DXSDK_DIR)\Include;$(AMDAPPSDKROOT)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4005;4996</DisableSpecificWarnings>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(SolutionDir)bin/x86/Debug/SimpleDX11.pdb</ProgramDataBaseFileName>
+      <AssemblerListingLocation>Debug</AssemblerListingLocation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86\$(Configuration);$(DXSDK_DIR)\Lib\x86;../../../../lib/win32/;$(AMDAPPSDKROOT)\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;dxgi.lib;d3d11.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalOptions> /machine:X86 /debug %(AdditionalOptions)</AdditionalOptions>
+      <ImportLibrary>$(SolutionDir)bin/x86/Debug/SimpleDX11.lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy SimpleDX11_Kernels.cl "$(OutDir)SimpleDX11_Kernels.cl" /Y
+copy SimpleDX11.bmp "$(OutDir)SimpleDX11.bmp" /Y
+copy SimpleDX11PixelShader.hlsl "$(OutDir)SimpleDX11PixelShader.hlsl" /Y
+copy SimpleDX11VertexShader.hlsl "$(OutDir)SimpleDX11VertexShader.hlsl" /Y
+copy *.cso "$(OutDir)*.cso" /Y
+	  </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../../../include;../../../../include/SDKUtil;$(DXSDK_DIR)\Include;$(AMDAPPSDKROOT)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(SolutionDir)bin/x86_64/Debug/SimpleDX11.pdb</ProgramDataBaseFileName>
+      <AssemblerListingLocation>Debug</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4005;4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64\$(Configuration);$(DXSDK_DIR)\Lib\x64;../../../../lib/win64/;$(AMDAPPSDKROOT)\lib\x86_64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;dxgi.lib;d3d11.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <ImportLibrary>$(SolutionDir)bin/x86_64/Debug/SimpleDX11.lib</ImportLibrary>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalOptions> /machine:x64 /debug %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy SimpleDX11_Kernels.cl "$(OutDir)SimpleDX11_Kernels.cl" /Y
+copy SimpleDX11.bmp "$(OutDir)SimpleDX11.bmp" /Y
+copy SimpleDX11PixelShader.hlsl "$(OutDir)SimpleDX11PixelShader.hlsl" /Y
+copy SimpleDX11VertexShader.hlsl "$(OutDir)SimpleDX11VertexShader.hlsl" /Y
+copy *.cso "$(OutDir)*.cso" /Y
+	  </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>../../../../include;../../../../include/SDKUtil;$(DXSDK_DIR)\Include;$(AMDAPPSDKROOT)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat />
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(SolutionDir)bin/x86/Release/SimpleDX11.pdb</ProgramDataBaseFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4005;4996</DisableSpecificWarnings>
+      <AssemblerListingLocation>Release</AssemblerListingLocation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>
+      </EnableCOMDATFolding>
+      <OptimizeReferences>
+      </OptimizeReferences>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;dxgi.lib;d3d11.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86\$(Configuration);$(DXSDK_DIR)\Lib\x86;../../../../lib/win32/;$(AMDAPPSDKROOT)\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <ImportLibrary>$(SolutionDir)bin/x86/Release/SimpleDX11.lib</ImportLibrary>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <PostBuildEvent>
+      <Command>copy SimpleDX11_Kernels.cl "$(OutDir)SimpleDX11_Kernels.cl" /Y
+copy SimpleDX11.bmp "$(OutDir)SimpleDX11.bmp" /Y
+copy SimpleDX11PixelShader.hlsl "$(OutDir)SimpleDX11PixelShader.hlsl" /Y
+copy SimpleDX11VertexShader.hlsl "$(OutDir)SimpleDX11VertexShader.hlsl" /Y
+copy *.cso "$(OutDir)*.cso" /Y
+	  </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>../../../../include;../../../../include/SDKUtil;$(DXSDK_DIR)\Include;$(AMDAPPSDKROOT)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <DebugInformationFormat />
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <AssemblerListingLocation>Release</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4005;4996</DisableSpecificWarnings>
+      <ProgramDataBaseFileName>$(SolutionDir)bin/x86_64/Release/SimpleDX11.pdb</ProgramDataBaseFileName>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>
+      </EnableCOMDATFolding>
+      <OptimizeReferences>
+      </OptimizeReferences>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64\$(Configuration);$(DXSDK_DIR)\Lib\x64;../../../../lib/win64/;$(AMDAPPSDKROOT)\lib\x86_64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;dxgi.lib;d3d11.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <LinkTimeCodeGeneration />
+      <ImportLibrary>$(SolutionDir)bin/x86_64/Release/SimpleDX11.lib</ImportLibrary>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalOptions> /machine:x64 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy SimpleDX11_Kernels.cl "$(OutDir)SimpleDX11_Kernels.cl" /Y
+copy SimpleDX11.bmp "$(OutDir)SimpleDX11.bmp" /Y
+copy SimpleDX11PixelShader.hlsl "$(OutDir)SimpleDX11PixelShader.hlsl" /Y
+copy SimpleDX11VertexShader.hlsl "$(OutDir)SimpleDX11VertexShader.hlsl" /Y
+copy *.cso "$(OutDir)*.cso" /Y
+	  </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="SimpleDX11.cpp" />
+    <ClCompile Include="BasicReader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BasicReader.hpp" />
+    <ClInclude Include="SimpleDX11.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SimpleDX11_Kernels.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SimpleDX11.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="SimpleDX11PixelShader.hlsl">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x86;$(ProgramFiles)\Windows Kits\8.0\bin\x86
+fxc.exe /T ps_5_0 /E ps_main /Fo SimpleDX11PixelShader.cso SimpleDX11PixelShader.hlsl</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SimpleDX11PixelShader.cso</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x64;$(ProgramFiles)\Windows Kits\8.0\bin\x64
+fxc.exe /T ps_5_0 /E ps_main /Fo SimpleDX11PixelShader.cso SimpleDX11PixelShader.hlsl</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SimpleDX11PixelShader.cso</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SimpleDX11PixelShader.cso</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">SimpleDX11PixelShader.cso</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x86;$(ProgramFiles)\Windows Kits\8.0\bin\x86
+fxc.exe /T ps_5_0 /E ps_main /Fo SimpleDX11PixelShader.cso SimpleDX11PixelShader.hlsl</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x64;$(ProgramFiles)\Windows Kits\8.0\bin\x64
+fxc.exe /T ps_5_0 /E ps_main /Fo SimpleDX11PixelShader.cso SimpleDX11PixelShader.hlsl</Command>
+    </CustomBuild>
+    <CustomBuild Include="SimpleDX11VertexShader.hlsl">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x86;$(ProgramFiles)\Windows Kits\8.0\bin\x86
+fxc.exe /T vs_5_0 /E vs_main /Fo SimpleDX11VertexShader.cso SimpleDX11VertexShader.hlsl</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SimpleDX11VertexShader.cso</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">SimpleDX11VertexShader.cso</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SimpleDX11VertexShader.cso</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SimpleDX11VertexShader.cso</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x86;$(ProgramFiles)\Windows Kits\8.0\bin\x86
+fxc.exe /T vs_5_0 /E vs_main /Fo SimpleDX11VertexShader.cso SimpleDX11VertexShader.hlsl</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x64;$(ProgramFiles)\Windows Kits\8.0\bin\x64
+fxc.exe /T vs_5_0 /E vs_main /Fo SimpleDX11VertexShader.cso SimpleDX11VertexShader.hlsl</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">path = $(path);$(DXSDK_DIR)\Utilities\bin\x64;$(ProgramFiles)\Windows Kits\8.0\bin\x64
+fxc.exe /T vs_5_0 /E vs_main /Fo SimpleDX11VertexShader.cso SimpleDX11VertexShader.hlsl</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

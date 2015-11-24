@@ -1,0 +1,1 @@
+-cl-std=CL2.0 -g -D CL_VERSION_2_0

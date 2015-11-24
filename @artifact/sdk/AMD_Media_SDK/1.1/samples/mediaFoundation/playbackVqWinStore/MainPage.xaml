@@ -1,0 +1,78 @@
+﻿<Page
+    x:Class="PlaybackVqWinStore.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PlaybackVqWinStore"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="Gray" Style="{StaticResource LayoutRootStyle}">
+    <Grid Margin="0,0,0,0">
+        <Button x:Name="pickfileButton" Content="Open Video File" FontSize="18" HorizontalAlignment="Left" Margin="5,30,0,0" VerticalAlignment="Top" BorderBrush="#33000000" Foreground="Black" ClickMode="Press" Background="#B2B6B6B6" Click="pickfile"/>
+        <Button x:Name="playButton" Content="Play" FontSize="18" HorizontalAlignment="Left" Margin="169,30,0,0" VerticalAlignment="Top" Width="113" BorderBrush="#33000000" Foreground="Black" ClickMode="Press" Background="#B2B6B6B6" Click="play"/>
+        <Button x:Name="pauseResumeButton" Content="Pause" FontSize="18" HorizontalAlignment="Left" Margin="283,30,0,0" VerticalAlignment="Top" Width="106" BorderBrush="#33000000" Foreground="Black" ClickMode="Press" Background="#B2B6B6B6" Click="pause"/>
+        <Button x:Name="stopButton" Content="Stop" FontSize="18" HorizontalAlignment="Left" Margin="389,30,0,0" VerticalAlignment="Top" Width="95" BorderBrush="#33000000" Foreground="Black" ClickMode="Press" Background="#B2B6B6B6" Click="stop"/>
+
+        <CheckBox x:Name="steadyVideoCheckBox" Content="Enable Steady Video" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,78,0,0"/>
+        <TextBlock x:Name="strengthTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="25,108,0,0" TextWrapping="Wrap" Text="Strength" VerticalAlignment="Top"/>
+        <Slider x:Name="strengthSlider" HorizontalAlignment="Left" Height="26" Margin="110,95,0,0" VerticalAlignment="Top" Width="100"/>
+        <TextBlock x:Name="videoDelayTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="25,133,0,0" TextWrapping="Wrap" Text="Video Delay" VerticalAlignment="Top"/>
+        <Slider x:Name="delaySlider" HorizontalAlignment="Left" Height="26" Margin="110,120,0,0" VerticalAlignment="Top" Width="100"/>
+        <TextBlock x:Name="zoomTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="25,158,0,0" TextWrapping="Wrap" Text="Zoom" VerticalAlignment="Top"/>
+        <Slider x:Name="zoomSlider" HorizontalAlignment="Left" Height="26" Margin="110,145,0,0" VerticalAlignment="Top" Width="100"/>
+
+        <TextBlock x:Name="brightnessTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="227,80,0,0" TextWrapping="Wrap" Text="Brightness" VerticalAlignment="Top"/>
+        <Slider x:Name="brightnessSlider" HorizontalAlignment="Left" Height="26" Margin="295,67,0,0" VerticalAlignment="Top" Width="208"/>
+        <TextBlock x:Name="contrastTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="225,105,0,0" TextWrapping="Wrap" Text="Contrast" VerticalAlignment="Top"/>
+        <Slider x:Name="contrastSlider" HorizontalAlignment="Left" Height="26" Margin="295,92,0,0" VerticalAlignment="Top" Width="208"/>
+        <TextBlock x:Name="saturationTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="225,130,0,0" TextWrapping="Wrap" Text="Saturation" VerticalAlignment="Top"/>
+        <Slider x:Name="saturationSlider" HorizontalAlignment="Left" Height="26" Margin="295,117,0,0" VerticalAlignment="Top" Width="208"/>
+        <TextBlock x:Name="tintTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="225,155,0,0" TextWrapping="Wrap" Text="Tint" VerticalAlignment="Top"/>
+        <Slider x:Name="tintSlider" HorizontalAlignment="Left" Height="26" Margin="295,142,0,0" VerticalAlignment="Top" Width="209"/>
+
+        <CheckBox x:Name="edgeEnhancementCheckBox" Content="Edge Enhancement" FontSize="14" HorizontalAlignment="Left" Margin="20,178,0,0" VerticalAlignment="Top"/>
+        <Slider x:Name="edgeEnhancementSlider" HorizontalAlignment="Left" Height="39" Margin="215,170,0,0" VerticalAlignment="Top" Width="280"/>
+        <CheckBox x:Name="denoiseCheckBox" Content="De-noise" FontSize="14" HorizontalAlignment="Left" Margin="20,203,0,0" VerticalAlignment="Top"/>
+        <Slider x:Name="denoiseSlider" HorizontalAlignment="Left" Height="39" Margin="215,195,0,0" VerticalAlignment="Top" Width="280"/>
+        <CheckBox x:Name="mosquitoCheckBox" Content="Mosquito Noise Reduction" FontSize="14" HorizontalAlignment="Left" Height="26" Margin="20,228,0,0" VerticalAlignment="Top" Width="191"/>
+        <Slider x:Name="mosquitoSlider" HorizontalAlignment="Left" Height="39" Margin="215,220,0,0" VerticalAlignment="Top" Width="280"/>
+        <CheckBox x:Name="deblockingCheckBox" Content="De-blocking" FontSize="14" HorizontalAlignment="Left" Margin="20,253,0,0" VerticalAlignment="Top"/>
+        <Slider x:Name="deblockingSlider" HorizontalAlignment="Left" Height="39" Margin="215,245,0,0" VerticalAlignment="Top" Width="280"/>
+
+        <TextBlock x:Name="deinterlacingTextBlock" FontSize="14" HorizontalAlignment="Left" Margin="20,288,0,0" TextWrapping="Wrap" Text="De-interlacing" VerticalAlignment="Top"/>
+        <RadioButton FontSize="14" x:Name="autoRadioButton" Content="Auto" GroupName="DeinterlacingRadioButtons" HorizontalAlignment="Left" Margin="60,308,0,0" VerticalAlignment="Top"/>
+        <RadioButton FontSize="14" x:Name="weaveRadioButton" Content="Weave" GroupName="DeinterlacingRadioButtons" HorizontalAlignment="Left" Margin="60,338,0,0" VerticalAlignment="Top"/>
+        <RadioButton FontSize="14" x:Name="bobRadioButton" Content="Bob" GroupName="DeinterlacingRadioButtons" HorizontalAlignment="Left" Margin="60,368,0,0" VerticalAlignment="Top"/>
+        <RadioButton FontSize="14" x:Name="adaptiveRadioButton" Content="Adaptive" GroupName="DeinterlacingRadioButtons" HorizontalAlignment="Left" Margin="200,308,0,0" VerticalAlignment="Top"/>
+        <RadioButton FontSize="14" x:Name="motionAdaptiveRadioButton" Content="Motion Adaptive" GroupName="DeinterlacingRadioButtons" HorizontalAlignment="Left" Margin="200,338,0,0" VerticalAlignment="Top"/>
+        <RadioButton FontSize="14" x:Name="vectorAdaptiveRadioButton" Content="Vector Adaptive" GroupName="DeinterlacingRadioButtons" HorizontalAlignment="Left" Margin="200,368,0,0" VerticalAlignment="Top"/>
+
+        <CheckBox x:Name="pulldownDetectionCheckBox" Content="Pulldown detection" FontSize="14" HorizontalAlignment="Left" Margin="130,398,0,0" VerticalAlignment="Top"/>
+
+        <CheckBox x:Name="videoGammaCheckBox" Content="Video Gamma" FontSize="14" HorizontalAlignment="Left" Margin="20,428,0,0" VerticalAlignment="Top"/>
+        <Slider x:Name="videoGammaSlider" HorizontalAlignment="Left" Height="39" Margin="215,418,0,0" VerticalAlignment="Top" Width="280"/>
+        <CheckBox x:Name="colorVibranceCheckBox" Content="Color Vibrance" FontSize="14" HorizontalAlignment="Left" Margin="20,453,0,0" VerticalAlignment="Top"/>
+        <Slider x:Name="colorVibranceSlider" HorizontalAlignment="Left" Height="39" Margin="215,443,0,0" VerticalAlignment="Top" Width="280"/>
+        <CheckBox x:Name="fleshToneCorrectionCheckBox" Content="Flesh Tone correction" FontSize="14" HorizontalAlignment="Left" Margin="20,478,0,0" VerticalAlignment="Top"/>
+        <Slider x:Name="fleshToneCorrectionSlider" HorizontalAlignment="Left" Height="39" Margin="215,468,0,0" VerticalAlignment="Top" Width="280"/>
+        <CheckBox Content="False Contour Reduction" x:Name="falseContourReduceCheckBox" FontSize="14" HorizontalAlignment="Left" Margin="20,503,0,0" VerticalAlignment="Top"/>
+        <Slider HorizontalAlignment="Left" x:Name="falseContourReduceSlider" Margin="215,493,0,0" VerticalAlignment="Top" Width="280" Height="39"/>
+
+        <CheckBox x:Name="dynamicRangeCheckBox" Content="Dynamic Range" FontSize="14" HorizontalAlignment="Left" Margin="20,533,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="fullRangeRadioButton" Content="Full(0 - 255)" GroupName="DynamicRangeRadioButtons" HorizontalAlignment="Left" Margin="60,563,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="limitedRangeRadioButton" Content="Limited(16 - 235)" GroupName="DynamicRangeRadioButtons" HorizontalAlignment="Left" Margin="200,563,0,0" VerticalAlignment="Top"/>
+
+        <CheckBox x:Name="dynamicContrastCheckBox" Content="Dynamic contrast" FontSize="14" HorizontalAlignment="Left" Margin="20,593,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="brighterWhitesCheckBox" Content="Brighter whites" FontSize="14" HorizontalAlignment="Left" Margin="200,593,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="demoModeCheckBox" Content="Demo mode" FontSize="14" HorizontalAlignment="Left" Margin="380,593,0,0" VerticalAlignment="Top"/>
+        
+        <TextBlock x:Name="transcodeProcessTimeText" HorizontalAlignment="Left" Margin="19,722,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="20" Width="323" FontSize="16"/>
+
+        <MediaElement x:Name="video" Margin="515,80,20,0" Opacity="0.965" />
+        <Button Content="Set recommended real-time settings"  x:Name="recommendedButton" HorizontalAlignment="Left" Margin="90,660,0,0" VerticalAlignment="Top"  BorderBrush="#33000000" Foreground="Black" Height="44" Width="377" ClickMode="Press" FontSize="20" Background="#B2B6B6B6" Click="setRecommendedSettings"/>
+        <TextBox x:Name="statusMessage" HorizontalAlignment="Left" Margin="506,30,0,0" TextWrapping="Wrap" IsReadOnly="True" VerticalAlignment="Top" Width="850" Height="35" />
+        <TextBox x:Name="vqSupportStatus" HorizontalAlignment="Left" Margin="240,710,0,0" TextWrapping="Wrap" IsReadOnly="True" VerticalAlignment="Top" Width="260" Height="35" Foreground="Red" Text="HW does not support VQ"  Visibility="Collapsed"/>
+    </Grid>
+    </Grid>
+</Page>

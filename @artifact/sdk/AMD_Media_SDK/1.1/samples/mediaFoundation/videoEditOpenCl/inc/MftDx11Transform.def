@@ -1,0 +1,4 @@
+LIBRARY "mftDx11ResizerOpenCl"
+EXPORTS
+    DllMain                         PRIVATE
+    dx11ResizerCreateInstance

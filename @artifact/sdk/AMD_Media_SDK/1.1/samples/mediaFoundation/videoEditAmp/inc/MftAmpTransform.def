@@ -1,0 +1,4 @@
+LIBRARY "mftResizerAmp"
+EXPORTS
+    DllMain                         PRIVATE
+    ampResizerCreateInstance

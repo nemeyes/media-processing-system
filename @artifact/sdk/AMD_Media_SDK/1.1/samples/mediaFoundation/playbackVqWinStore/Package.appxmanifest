@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
+  <Identity Name="PlaybackVqWinStore" Publisher="CN=&quot;Advanced Micro Devices, Inc.&quot;" Version="1.0.0.0" />
+  <Properties>
+    <DisplayName>playbackVqWinStore</DisplayName>
+    <PublisherDisplayName>Advanced Micro Devices, Inc.</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Prerequisites>
+    <OSMinVersion>6.2.1</OSMinVersion>
+    <OSMaxVersionTested>6.2.1</OSMaxVersionTested>
+  </Prerequisites>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="PlaybackVqWinStore.App">
+      <VisualElements DisplayName="PlaybackVqWinStore" Logo="Assets\Logo.png" SmallLogo="Assets\SmallLogo.png" Description="Playback with VQ effects sample" ForegroundText="light" BackgroundColor="#000000">
+        <DefaultTile ShowName="allLogos" />
+        <SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#000000" />
+      </VisualElements>
+    </Application>
+  </Applications>
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>amf-mft-vq-winrt.dll</Path>
+        <ActivatableClass ActivatableClassId="mftvqLib.AMFVideoTransform" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="mftvqLib.AMFCacheBuilder" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="mftvqLib.AMFCapabilityManager" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+  </Extensions>
+  <Capabilities>
+    <Capability Name="videosLibrary" />
+  </Capabilities>
+</Package>

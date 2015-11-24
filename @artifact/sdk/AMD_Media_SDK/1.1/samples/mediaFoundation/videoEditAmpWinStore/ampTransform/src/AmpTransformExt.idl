@@ -1,0 +1,11 @@
+import "Windows.Media.idl";
+
+#include <sdkddkver.h>
+
+namespace ampTransformExt
+{
+    [version(NTDDI_WIN8)]
+    runtimeclass ampTransform 
+    {
+    }
+}
