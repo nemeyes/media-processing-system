@@ -25,6 +25,8 @@ public:
 	{
 		STATE_NO_GRAPH,
 		STATE_RUNNING,
+		STATE_SLOW_FOWARD,
+		STATE_FAST_FOWARD,
 		STATE_PAUSED,
 		STATE_STOPPED,
 	} STATE;
@@ -40,8 +42,8 @@ public:
 	long long seek_time_scale(void);
 	long long current_seek_position(void);
 	dk_player_framework::ERR_CODE seek(int position);
-	dk_player_framework::ERR_CODE backward_rate(double rate);
-	dk_player_framework::ERR_CODE forward_rate(double rate);
+	dk_player_framework::ERR_CODE slowfoward_rate(double rate);
+	dk_player_framework::ERR_CODE fastforward_rate(double rate);
 
 	dk_player_framework::ERR_CODE open_file(wchar_t * file);
 	//dk_player_framework::ERR_CODE open_rtsp(wchar_t * url);

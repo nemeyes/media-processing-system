@@ -47,14 +47,14 @@ dk_player_framework::ERR_CODE dk_player_framework::seek(int position)
 	return _core->seek(position);
 }
 
-dk_player_framework::ERR_CODE dk_player_framework::backward_rate(double rate)
+dk_player_framework::ERR_CODE dk_player_framework::slowfoward_rate(double rate)
 {
-	return _core->backward_rate(rate);
+	return _core->slowfoward_rate(rate);
 }
 
-dk_player_framework::ERR_CODE dk_player_framework::forward_rate(double rate)
+dk_player_framework::ERR_CODE dk_player_framework::fastforward_rate(double rate)
 {
-	return _core->forward_rate(rate);
+	return _core->fastforward_rate(rate);
 }
 
 dk_player_framework::ERR_CODE dk_player_framework::open_file(wchar_t * file)

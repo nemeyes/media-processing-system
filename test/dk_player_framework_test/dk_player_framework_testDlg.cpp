@@ -219,7 +219,7 @@ void Cdk_player_framework_testDlg::OnTimer(UINT_PTR nIDEvent)
 		return;
 
 	long long current_seek_position = _player.current_seek_position();
-	//_slider_play.SetPos(current_seek_position);
+	_slider_play.SetPos(current_seek_position);
 
 	_play_elapsed++;
 	long long play_elapsed = (float)(_play_elapsed * 100) / time_scale;
@@ -487,7 +487,7 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonBackward()
 	if (_playing_rate > 0)
 		_playing_rate = 0.0;
 	_playing_rate = _playing_rate - 1.0;
-	_player.backward_rate(abs(_playing_rate));
+	_player.slowfoward_rate(abs(_playing_rate));
 }
 
 
@@ -497,7 +497,7 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonForward()
 	if (_playing_rate < 0)
 		_playing_rate = 0.0;
 	_playing_rate = _playing_rate + 1.0;
-	_player.forward_rate(_playing_rate);
+	_player.fastforward_rate(_playing_rate);
 }
 
 void Cdk_player_framework_testDlg::OnNMReleasedcaptureSliderPlay(NMHDR *pNMHDR, LRESULT *pResult)

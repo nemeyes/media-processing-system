@@ -132,7 +132,7 @@ long long dshow_player_framework::current_seek_position(void)
 	return seek_position;
 }
 
-dk_player_framework::ERR_CODE dshow_player_framework::backward_rate(double rate)
+dk_player_framework::ERR_CODE dshow_player_framework::slowfoward_rate(double rate)
 {
 	if (_state != dk_player_framework::STATE_PAUSED && _state != dk_player_framework::STATE_RUNNING)
 	{
@@ -150,7 +150,7 @@ dk_player_framework::ERR_CODE dshow_player_framework::backward_rate(double rate)
 		return dk_player_framework::ERR_CODE_SUCCESS;
 }
 
-dk_player_framework::ERR_CODE dshow_player_framework::forward_rate(double rate)
+dk_player_framework::ERR_CODE dshow_player_framework::fastforward_rate(double rate)
 {
 	if (_state != dk_player_framework::STATE_PAUSED && _state != dk_player_framework::STATE_RUNNING)
 	{
