@@ -1,5 +1,5 @@
-#ifndef _DK_MPEG2TS_MUXER_H_
-#define _DK_MPEG2TS_MUXER_H_
+#ifndef _DK_MPEG2TS_DEMUXER_H_
+#define _DK_MPEG2TS_DEMUXER_H_
 
 #include <cstdint>
 
