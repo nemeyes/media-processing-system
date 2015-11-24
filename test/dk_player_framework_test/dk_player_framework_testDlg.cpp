@@ -68,7 +68,8 @@ void Cdk_player_framework_testDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO_DXVA2_DECODER_GUIDS, _dxva2_decoder_guids);
-	DDX_Control(pDX, IDC_PROGRESS_PLAY, _progress_play);
+	//DDX_Control(pDX, IDC_PROGRESS_PLAY, _progress_play);
+	DDX_Control(pDX, IDC_SLIDER_PLAY, _slider_play);
 }
 
 BEGIN_MESSAGE_MAP(Cdk_player_framework_testDlg, CDialogEx)
@@ -77,6 +78,8 @@ BEGIN_MESSAGE_MAP(Cdk_player_framework_testDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_SIZE()
 	ON_WM_LBUTTONDBLCLK()
+	ON_WM_TIMER()
+	ON_WM_APPCOMMAND()
 	ON_BN_CLICKED(IDC_BUTTON_PLAY, &Cdk_player_framework_testDlg::OnBnClickedButtonPlay)
 	ON_BN_CLICKED(IDC_BUTTON_STOP, &Cdk_player_framework_testDlg::OnBnClickedButtonStop)
 	ON_BN_CLICKED(IDC_CHECK_ASPECT_RATIO, &Cdk_player_framework_testDlg::OnBnClickedCheckAspectRatio)
@@ -84,8 +87,9 @@ BEGIN_MESSAGE_MAP(Cdk_player_framework_testDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_OPEN_RTSP, &Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtsp)
 	ON_BN_CLICKED(IDC_BUTTON_HSL, &Cdk_player_framework_testDlg::OnBnClickedButtonHsl)
 	ON_BN_CLICKED(IDC_BUTTON_OPEN_RTMP, &Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp)
-	ON_WM_TIMER()
-	ON_WM_APPCOMMAND()
+	ON_BN_CLICKED(IDC_BUTTON_BACKWARD, &Cdk_player_framework_testDlg::OnBnClickedButtonBackward)
+	ON_BN_CLICKED(IDC_BUTTON_FORWARD, &Cdk_player_framework_testDlg::OnBnClickedButtonForward)
+	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_PLAY, &Cdk_player_framework_testDlg::OnNMReleasedcaptureSliderPlay)
 END_MESSAGE_MAP()
 
 
@@ -127,7 +131,7 @@ BOOL Cdk_player_framework_testDlg::OnInitDialog()
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_HIDE);
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_HIDE);
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), SW_HIDE);
-	::EnableWindow(::GetDlgItem(GetSafeHwnd(), IDC_PROGRESS_PLAY), FALSE);
+	//::EnableWindow(::GetDlgItem(GetSafeHwnd(), IDC_PROGRESS_PLAY), FALSE);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -208,17 +212,22 @@ void Cdk_player_framework_testDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
 	long long total_duration = _player.get_total_duration();
+	long long time_scale = _player.seek_time_scale();
 	float duration_step = _player.get_duration_step();
 
 	if (_player.state() != dk_player_framework::STATE_RUNNING || _play_elapsed >= total_duration)
 		return;
 
+	long long current_seek_position = _player.current_seek_position();
+	//_slider_play.SetPos(current_seek_position);
+
 	_play_elapsed++;
-	int position = (int)(duration_step*(float)_play_elapsed);
-	_progress_play.SetPos(position);
+	long long play_elapsed = (float)(_play_elapsed * 100) / time_scale;
+	//int position = (int)(duration_step*(float)current_seek_position);
+	//_slider_play.SetPos(position);
 
 	wchar_t str_elapsed_time[256] = { 0 };
-	_snwprintf_s(str_elapsed_time, sizeof(str_elapsed_time), L"%02llu:%02llu:%02llu", (_play_elapsed / 3600) % 60, (_play_elapsed / 60) % 60, (_play_elapsed % 60));
+	_snwprintf_s(str_elapsed_time, sizeof(str_elapsed_time), L"%02llu:%02llu:%02llu", (play_elapsed / 3600) % 60, (play_elapsed / 60) % 60, (play_elapsed % 60));
 	::SetWindowText(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), str_elapsed_time);
 
 	CDialogEx::OnTimer(nIDEvent);
@@ -376,23 +385,24 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile()
 		}
 
 		bool seekable = _player.seekable();
-
-
+		_playing_rate = 0.0;
 		_player.play();
-		//_player.forward_rate(3);
 		if (seekable)
 		{
-			float duration_step = _player.get_duration_step();
-			_progress_play.SetRange(0, 100);
-			_progress_play.SetStep(duration_step);
-
 			long long total_duration = _player.get_total_duration();
+			long long time_scale = _player.seek_time_scale();
+			float duration_step = _player.get_duration_step();
+
+			_slider_play.SetRange(0, (int)time_scale);
+			//_progress_play.SetRange(0, 1000);
+			//_progress_play.SetStep(duration_step);
+
 			wchar_t str_total_time[256] = { 0 };
 			_snwprintf_s(str_total_time, sizeof(str_total_time), L"%02llu:%02llu:%02llu", (total_duration / 3600) % 60, (total_duration / 60) % 60, (total_duration % 60));
 			::SetWindowText(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), str_total_time);
 
 			_play_elapsed = 0;
-			SetTimer(1, 1000, NULL);
+			SetTimer(1, 100000 / time_scale, NULL);
 
 			::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_SHOW);
 			::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_SHOW);
@@ -442,7 +452,9 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonStop()
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_HIDE);
 	::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), SW_HIDE);
 	KillTimer(1);
-	_progress_play.SetPos(0);
+	_playing_rate = 0.0;
+	//_progress_play.SetPos(0);
+	_slider_play.SetPos(0);
 }
 
 
@@ -467,4 +479,31 @@ void Cdk_player_framework_testDlg::OnGraphEvent(HWND hwnd, long eventCode, LONG_
 	//	stop();
 	//	break;
 	//}
+}
+
+void Cdk_player_framework_testDlg::OnBnClickedButtonBackward()
+{
+	// TODO: Add your control notification handler code here
+	if (_playing_rate > 0)
+		_playing_rate = 0.0;
+	_playing_rate = _playing_rate - 1.0;
+	_player.backward_rate(abs(_playing_rate));
+}
+
+
+void Cdk_player_framework_testDlg::OnBnClickedButtonForward()
+{
+	// TODO: Add your control notification handler code here
+	if (_playing_rate < 0)
+		_playing_rate = 0.0;
+	_playing_rate = _playing_rate + 1.0;
+	_player.forward_rate(_playing_rate);
+}
+
+void Cdk_player_framework_testDlg::OnNMReleasedcaptureSliderPlay(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO: Add your control notification handler code here
+	int position = _slider_play.GetPos();
+	_player.seek(position);
+	*pResult = 0;
 }

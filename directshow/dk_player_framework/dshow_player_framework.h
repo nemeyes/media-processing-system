@@ -31,6 +31,10 @@ public:
 
 	dk_player_framework::STATE state(void);
 	bool seekable(void);
+	long long seek_time_scale(void);
+	long long current_seek_position(void);
+	dk_player_framework::ERR_CODE seek(int position);
+	dk_player_framework::ERR_CODE backward_rate(double rate);
 	dk_player_framework::ERR_CODE forward_rate(double rate);
 
 	dk_player_framework::ERR_CODE open_file(wchar_t * file);
@@ -72,4 +76,5 @@ private:
 
 	long long _total_duration;
 	float _duration_step;
+	long long _time_scale;
 };

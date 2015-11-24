@@ -32,6 +32,26 @@ bool dk_player_framework::seekable(void)
 	return _core->seekable();
 }
 
+long long dk_player_framework::seek_time_scale(void)
+{
+	return _core->seek_time_scale();
+}
+
+long long dk_player_framework::current_seek_position(void)
+{
+	return _core->current_seek_position();
+}
+
+dk_player_framework::ERR_CODE dk_player_framework::seek(int position)
+{
+	return _core->seek(position);
+}
+
+dk_player_framework::ERR_CODE dk_player_framework::backward_rate(double rate)
+{
+	return _core->backward_rate(rate);
+}
+
 dk_player_framework::ERR_CODE dk_player_framework::forward_rate(double rate)
 {
 	return _core->forward_rate(rate);

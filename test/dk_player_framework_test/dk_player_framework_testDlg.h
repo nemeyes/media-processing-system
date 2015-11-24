@@ -29,6 +29,11 @@ private:
 	long long _play_elapsed;
 	CComboBox _dxva2_decoder_guids;
 
+	double _playing_rate;
+	//CProgressCtrl _progress_play;
+
+	CSliderCtrl _slider_play;
+
 private:
 	static void CALLBACK OnGraphEvent(HWND hwnd, long eventCode, LONG_PTR param1, LONG_PTR param2);
 
@@ -44,6 +49,8 @@ protected:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg void OnAppCommand(CWnd* pWnd, UINT nCmd, UINT nDevice, UINT nKey);
+	afx_msg void OnNMReleasedcaptureSliderPlay(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedButtonOpenFile();
 	afx_msg void OnBnClickedButtonOpenRtsp();
 	afx_msg void OnBnClickedButtonHsl();
@@ -51,10 +58,7 @@ protected:
 	afx_msg void OnBnClickedButtonPlay();
 	afx_msg void OnBnClickedButtonStop();
 	afx_msg void OnBnClickedCheckAspectRatio();
+	afx_msg void OnBnClickedButtonBackward();
+	afx_msg void OnBnClickedButtonForward();
 	DECLARE_MESSAGE_MAP()
-
-private:
-	CProgressCtrl _progress_play;
-public:
-	afx_msg void OnAppCommand(CWnd* pWnd, UINT nCmd, UINT nDevice, UINT nKey);
 };

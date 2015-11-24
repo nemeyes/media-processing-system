@@ -5,9 +5,11 @@
 #include <dk_submedia_type.h>
 #include <string>
 
+#define ONE_HUNDRED_NANO_SECOND 10000000
 
 dshow_player_framework::dshow_player_framework(void)
 	: _state(dk_player_framework::STATE_NO_GRAPH)
+	, _time_scale(1000)
 {
 
 }
@@ -94,8 +96,67 @@ bool dshow_player_framework::seekable(void)
 	return seekable;
 }
 
+long long dshow_player_framework::seek_time_scale(void)
+{
+	return _time_scale;
+}
+
+dk_player_framework::ERR_CODE dshow_player_framework::seek(int position)
+{
+	if (seekable())
+	{
+		pause();
+		REFERENCE_TIME time = ((_total_duration / _time_scale) * position) * 10000000;
+		HRESULT hr = _seeking->SetPositions(&time, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning);
+		play();
+		if (FAILED(hr))
+			return dk_player_framework::ERR_CODE_FAILED;
+		else
+			return dk_player_framework::ERR_CODE_SUCCESS;
+	}
+	return dk_player_framework::ERR_CODE_SUCCESS;
+}
+
+long long dshow_player_framework::current_seek_position(void)
+{
+	long long seek_position = 0;
+	if (seekable())
+	{
+		long long time;
+		HRESULT hr = _seeking->GetCurrentPosition(&time);
+		if (SUCCEEDED(hr))
+		{
+			seek_position = (time / 10000000) / (_total_duration / _time_scale);//(long long)((current_time*_time_scale) / _total_duration * 10000000);
+		}
+	}
+	return seek_position;
+}
+
+dk_player_framework::ERR_CODE dshow_player_framework::backward_rate(double rate)
+{
+	if (_state != dk_player_framework::STATE_PAUSED && _state != dk_player_framework::STATE_RUNNING)
+	{
+		return dk_player_framework::ERR_CODE_FAILED;
+	}
+
+	HRESULT hr = E_FAIL;
+	if (_seeking)
+	{
+		hr = _seeking->SetRate(1/rate);
+	}
+	if (FAILED(hr))
+		return dk_player_framework::ERR_CODE_FAILED;
+	else
+		return dk_player_framework::ERR_CODE_SUCCESS;
+}
+
 dk_player_framework::ERR_CODE dshow_player_framework::forward_rate(double rate)
 {
+	if (_state != dk_player_framework::STATE_PAUSED && _state != dk_player_framework::STATE_RUNNING)
+	{
+		return dk_player_framework::ERR_CODE_FAILED;
+	}
+
 	HRESULT hr = E_FAIL;
 	if (_seeking)
 	{
@@ -208,7 +269,7 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 	long long duration_100nanosec = 0;
 	_seeking->GetDuration(&duration_100nanosec);
 	_total_duration = duration_100nanosec / 10000000;
-	_duration_step = (float)100 / _total_duration;
+	_duration_step = (float)_time_scale / _total_duration;
 
 	if (SUCCEEDED(hr))
 		return dk_player_framework::ERR_CODE_SUCCESS;
@@ -415,7 +476,13 @@ HRESULT dshow_player_framework::handle_graphevent(fn_graph_event func)
 
 		hr = _event->FreeEventParams(code, param1, param2);
 		if (FAILED(hr))
+			break;
+
+		switch (code)
 		{
+		case EC_COMPLETE: // we process only the EC_COMPLETE message which is sent when the media is finished playing
+			// Do a stop when it is finished playing
+			stop();
 			break;
 		}
 	}
