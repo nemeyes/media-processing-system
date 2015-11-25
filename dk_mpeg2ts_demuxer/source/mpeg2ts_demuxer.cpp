@@ -30,26 +30,45 @@ dk_mpeg2ts_demuxer::ERR_CODE mpeg2ts_demuxer::demultiplexing(uint8_t * buffer, s
 
 	memcpy(_ts_buffer + _ts_buffer_pos, buffer, nb);
 
-	uint8_t * inbuffer = _ts_buffer;
-	size_t inbuffer_size = _ts_buffer_pos + nb;
-	size_t inbuffer_pos = 0;
-	while ((inbuffer_size - inbuffer_pos) >= TS_PACKET_LENGTH)
+	uint8_t * ibuff = _ts_buffer;
+	size_t ibuff_size = _ts_buffer_pos + nb;
+	size_t ibuff_pos = 0;
+	while ((ibuff_size - ibuff_pos) >= TS_PACKET_LENGTH)
 	{
 		ts_packet_t ts_packet;
-		memcpy(&ts_packet.header, inbuffer, TS_PACKET_HEADER_LENGTH);
-		inbuffer += TS_PACKET_HEADER_LENGTH;
+		if (ibuff[0] != 0x47)
+			return dk_mpeg2ts_demuxer::ERR_CODE_FAILED;
+
+		ts_packet.header.sync_byte = ibuff[0];
+		//1000 0000
+		ts_packet.header.transport_error_indicator = (ibuff[1] & 0x80) >> 7;
+		ts_packet.header.payload_unit_start_indicator = (ibuff[1] & 0x40) >> 6;
+		ts_packet.header.transport_priority = (ibuff[1] & 0x20) >> 5;
+		ts_packet.header.PID = ((ibuff[1] & 0x1F) << 8) | ibuff[2];
+		if (ts_packet.header.PID == NULL_PACKET)
+		{
+
+		}
+		ts_packet.header.transport_scrambling_control = (ibuff[3] & 0xC0) >> 4;
+		ts_packet.header.adaptation_field_control = (ibuff[3] & 0x30) >> 4;
+		ts_packet.header.continuity_counter = (ibuff[3] & 0x0F);
+
+
+
+
+		ibuff += TS_PACKET_HEADER_LENGTH;
 
 
 
 
 
-		inbuffer_pos += TS_PACKET_LENGTH;
+		ibuff_pos += TS_PACKET_LENGTH;
 	}
 
-	if (inbuffer_size > inbuffer_pos)
+	if (ibuff_size > ibuff_pos)
 	{
-		_ts_buffer_pos = inbuffer_size - inbuffer_pos;
-		memmove(_ts_buffer, _ts_buffer + inbuffer_pos, _ts_buffer_pos);
+		_ts_buffer_pos = ibuff_size - ibuff_pos;
+		memmove(_ts_buffer, _ts_buffer + ibuff_pos, _ts_buffer_pos);
 	}
 	return dk_mpeg2ts_demuxer::ERR_CODE_SUCCESS;
 }

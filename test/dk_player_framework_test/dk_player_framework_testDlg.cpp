@@ -219,7 +219,7 @@ void Cdk_player_framework_testDlg::OnTimer(UINT_PTR nIDEvent)
 		return;
 
 	long long current_seek_position = _player.current_seek_position();
-	_slider_play.SetPos(current_seek_position);
+	//_slider_play.SetPos(current_seek_position);
 
 	_play_elapsed++;
 	long long play_elapsed = (float)(_play_elapsed * 100) / time_scale;

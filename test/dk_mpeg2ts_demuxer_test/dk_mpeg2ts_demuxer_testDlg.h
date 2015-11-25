@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <dk_mpeg2ts_demuxer.h>
 
 // Cdk_mpeg2ts_demuxer_testDlg dialog
 class Cdk_mpeg2ts_demuxer_testDlg : public CDialogEx
@@ -15,7 +16,17 @@ public:
 // Dialog Data
 	enum { IDD = IDD_DK_MPEG2TS_DEMUXER_TEST_DIALOG };
 
-	protected:
+
+private:
+	CString _filename;
+	HANDLE _ts_demuxing_thread;
+	BOOL _ts_demuxing_run;
+
+private:
+	static unsigned __stdcall DemuxingProc(void * param);
+	void demuxing(void);
+
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
 
@@ -28,7 +39,8 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg void OnBnClickedButtonFile();
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedButtonFile();
+	afx_msg void OnDestroy();
 };

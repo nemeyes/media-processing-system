@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(Cdk_mpeg2ts_demuxer_testDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_FILE, &Cdk_mpeg2ts_demuxer_testDlg::OnBnClickedButtonFile)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -156,4 +157,84 @@ HCURSOR Cdk_mpeg2ts_demuxer_testDlg::OnQueryDragIcon()
 void Cdk_mpeg2ts_demuxer_testDlg::OnBnClickedButtonFile()
 {
 	// TODO: Add your control notification handler code here
+	wchar_t filter[] = L"TS Files(*.ts)|*.ts||"; //L"All Files(*.*)|*.*||";
+	CFileDialog dlg(TRUE, L"mkv", NULL, OFN_HIDEREADONLY, filter);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		_filename = dlg.GetPathName();
+		
+		if (_filename.GetLength() > 0)
+		{
+			unsigned int thrdaddr = 0;
+			_ts_demuxing_run = FALSE;
+			_ts_demuxing_thread = (HANDLE)_beginthreadex(NULL, 0, Cdk_mpeg2ts_demuxer_testDlg::DemuxingProc, this, 0, &thrdaddr);
+		}
+
+		/*
+
+		_ts_file = CreateFile(_filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (_ts_file == NULL || _ts_file == INVALID_HANDLE_VALUE)
+			return;
+
+		*/
+	}
+}
+
+
+void Cdk_mpeg2ts_demuxer_testDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	// TODO: Add your message handler code here
+	//_ts_demuxer.release();
+}
+
+
+unsigned Cdk_mpeg2ts_demuxer_testDlg::DemuxingProc(void * param)
+{
+	Cdk_mpeg2ts_demuxer_testDlg * self = static_cast<Cdk_mpeg2ts_demuxer_testDlg*>(param);
+	self->demuxing();
+	return 0;
+}
+
+void Cdk_mpeg2ts_demuxer_testDlg::demuxing(void)
+{
+	HANDLE ts_file = CreateFile(_filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (ts_file == NULL || ts_file == INVALID_HANDLE_VALUE)
+		return;
+
+	_ts_demuxing_run = TRUE;
+
+	DWORD ts_file_buffer_size = 1500;//1024 * 1024 * 2;
+	uint8_t * ts_file_buffer = static_cast<uint8_t*>(malloc(ts_file_buffer_size));
+
+	dk_mpeg2ts_demuxer ts_demuxer;
+	ts_demuxer.initialize();
+	while (_ts_demuxing_run)
+	{
+		/*
+		BOOL WINAPI ReadFile(
+		_In_        HANDLE       hFile,
+		_Out_       LPVOID       lpBuffer,
+		_In_        DWORD        nNumberOfBytesToRead,
+		_Out_opt_   LPDWORD      lpNumberOfBytesRead,
+		_Inout_opt_ LPOVERLAPPED lpOverlapped
+		);
+		*/
+		DWORD nb = 0;
+		BOOL ret = ReadFile(ts_file, ts_file_buffer, ts_file_buffer_size, &nb, NULL);
+		if (ret)
+		{
+			ts_demuxer.demultiplexing(ts_file_buffer, nb);
+		}
+	}
+
+	if (ts_file_buffer)
+	{
+		free(ts_file_buffer);
+		ts_file_buffer = nullptr;
+	}
+	ts_demuxer.release();
+	CloseHandle(ts_file);
 }
