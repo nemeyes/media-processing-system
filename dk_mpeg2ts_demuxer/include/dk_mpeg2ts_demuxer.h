@@ -18,7 +18,7 @@ class mpeg2ts_demuxer;
 class EXP_DLL dk_mpeg2ts_demuxer
 {
 public:
-	static int const TS_PACKET_LENGTH;
+
 
 	typedef enum _ERR_CODE
 	{

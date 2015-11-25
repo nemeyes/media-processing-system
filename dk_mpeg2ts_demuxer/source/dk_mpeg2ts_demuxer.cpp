@@ -1,8 +1,6 @@
 #include "dk_mpeg2ts_demuxer.h"
 #include "mpeg2ts_demuxer.h"
 
-int const dk_mpeg2ts_demuxer::TS_PACKET_LENGTH = 188;
-
 dk_mpeg2ts_demuxer::dk_mpeg2ts_demuxer(void)
 {
 	_core = new mpeg2ts_demuxer();

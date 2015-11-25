@@ -159,6 +159,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_ac3_decoder", "..\..\dk_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_vce_encoder", "..\..\dk_vce_encoder\dk_vce_encoder.vcxproj", "{30643D5C-2C7E-47EC-8944-54E10BA81889}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_mpeg2ts_demuxer_test", "..\..\test\dk_mpeg2ts_demuxer_test\dk_mpeg2ts_demuxer_test.vcxproj", "{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -447,6 +449,12 @@ Global
 		{30643D5C-2C7E-47EC-8944-54E10BA81889}.Release|Win32.ActiveCfg = Release|Win32
 		{30643D5C-2C7E-47EC-8944-54E10BA81889}.Release|Win32.Build.0 = Release|Win32
 		{30643D5C-2C7E-47EC-8944-54E10BA81889}.Release|x64.ActiveCfg = Release|Win32
+		{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87}.Debug|Win32.ActiveCfg = Debug|Win32
+		{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87}.Debug|Win32.Build.0 = Debug|Win32
+		{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87}.Debug|x64.ActiveCfg = Debug|Win32
+		{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87}.Release|Win32.ActiveCfg = Release|Win32
+		{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87}.Release|Win32.Build.0 = Release|Win32
+		{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -523,5 +531,6 @@ Global
 		{EC27A272-C635-4935-A98B-C367BF623E8E} = {2D4D34F3-2439-41B0-83D2-77978268E880}
 		{AF30B26D-83C0-49EA-AC7C-CC3E16D0926C} = {4C3F3A62-ECBF-4D7C-A359-9E079E92170B}
 		{30643D5C-2C7E-47EC-8944-54E10BA81889} = {A69865AB-8A9A-4945-8629-428B17D07932}
+		{00776D9B-F1F2-4258-BB0F-F9D6A30DDB87} = {20A20008-298C-4904-A58B-A23BA1F883E1}
 	EndGlobalSection
 EndGlobal
