@@ -189,6 +189,16 @@ dk_player_framework::ERR_CODE dshow_player_framework::fastforward_rate(double ra
 		return dk_player_framework::ERR_CODE_SUCCESS;
 }
 
+long long dshow_player_framework::get_total_duration(void)
+{
+	return _total_duration;
+}
+
+float dshow_player_framework::get_step_duration(void)
+{
+	return _step_duration;
+}
+
 dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 {
 	HRESULT hr;
@@ -507,14 +517,4 @@ HRESULT dshow_player_framework::handle_graphevent(fn_graph_event func)
 		}
 	}
 	return hr;
-}
-
-long long dshow_player_framework::get_total_duration(void)
-{
-	return _total_duration;
-}
-
-float dshow_player_framework::get_step_duration(void)
-{
-	return _step_duration;
 }

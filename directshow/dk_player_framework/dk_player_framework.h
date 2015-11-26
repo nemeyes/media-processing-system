@@ -42,6 +42,10 @@ public:
 	int seek_resolution(void);
 	int current_seek_position(void);
 	long long current_media_time(void);
+
+	long long get_total_duration(void);
+	float get_step_duration(void);
+
 	dk_player_framework::ERR_CODE seek(int position);
 	dk_player_framework::ERR_CODE slowfoward_rate(double rate);
 	dk_player_framework::ERR_CODE fastforward_rate(double rate);
@@ -63,8 +67,7 @@ public:
 	HRESULT on_change_displaymode(void);
 	HRESULT handle_graphevent(fn_graph_event func);
 
-	long long get_total_duration(void);
-	float get_step_duration(void);
+
 private:
 	dshow_player_framework * _core;
 };

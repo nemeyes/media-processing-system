@@ -47,6 +47,16 @@ long long dk_player_framework::current_media_time(void)
 	return _core->current_media_time();
 }
 
+long long dk_player_framework::get_total_duration(void)
+{
+	return _core->get_total_duration();
+}
+
+float dk_player_framework::get_step_duration(void)
+{
+	return _core->get_step_duration();
+}
+
 dk_player_framework::ERR_CODE dk_player_framework::seek(int position)
 {
 	return _core->seek(position);
@@ -116,14 +126,4 @@ HRESULT dk_player_framework::on_change_displaymode(void)
 HRESULT dk_player_framework::handle_graphevent(fn_graph_event func)
 {
 	return _core->handle_graphevent(func);
-}
-
-long long dk_player_framework::get_total_duration(void)
-{
-	return _core->get_total_duration();
-}
-
-float dk_player_framework::get_step_duration(void)
-{
-	return _core->get_step_duration();
 }
