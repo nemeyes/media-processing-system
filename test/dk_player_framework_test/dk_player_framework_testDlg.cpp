@@ -212,19 +212,16 @@ void Cdk_player_framework_testDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
 	long long total_duration = _player.get_total_duration();
-	long long time_scale = _player.seek_time_scale();
-	float duration_step = _player.get_duration_step();
+	int seek_resolution = _player.seek_resolution();
 
-	if (_player.state() != dk_player_framework::STATE_RUNNING || _play_elapsed >= total_duration)
+	if (_player.state() != dk_player_framework::STATE_RUNNING)
 		return;
 
-	long long current_seek_position = _player.current_seek_position();
+	int current_seek_position = _player.current_seek_position();
 	//_slider_play.SetPos(current_seek_position);
 
-	_play_elapsed++;
-	long long play_elapsed = (float)(_play_elapsed * 100) / time_scale;
-	//int position = (int)(duration_step*(float)current_seek_position);
-	//_slider_play.SetPos(position);
+	long long current_media_time = _player.current_media_time();
+	long long play_elapsed = current_media_time / 10000000.f;
 
 	wchar_t str_elapsed_time[256] = { 0 };
 	_snwprintf_s(str_elapsed_time, sizeof(str_elapsed_time), L"%02llu:%02llu:%02llu", (play_elapsed / 3600) % 60, (play_elapsed / 60) % 60, (play_elapsed % 60));
@@ -390,19 +387,15 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile()
 		if (seekable)
 		{
 			long long total_duration = _player.get_total_duration();
-			long long time_scale = _player.seek_time_scale();
-			float duration_step = _player.get_duration_step();
-
-			_slider_play.SetRange(0, (int)time_scale);
-			//_progress_play.SetRange(0, 1000);
-			//_progress_play.SetStep(duration_step);
+			long long seek_resolution = _player.seek_resolution();
+			long long play_total = total_duration / 10000000.f;
+			_slider_play.SetRange(0, (int)seek_resolution);
 
 			wchar_t str_total_time[256] = { 0 };
-			_snwprintf_s(str_total_time, sizeof(str_total_time), L"%02llu:%02llu:%02llu", (total_duration / 3600) % 60, (total_duration / 60) % 60, (total_duration % 60));
+			_snwprintf_s(str_total_time, sizeof(str_total_time), L"%02llu:%02llu:%02llu", (play_total / 3600) % 60, (play_total / 60) % 60, (play_total % 60));
 			::SetWindowText(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_TOTAL_DURATION), str_total_time);
 
-			_play_elapsed = 0;
-			SetTimer(1, 100000 / time_scale, NULL);
+			SetTimer(1, 100000 / seek_resolution, NULL);
 
 			::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_PLAY_DURATION), SW_SHOW);
 			::ShowWindow(::GetDlgItem(GetSafeHwnd(), IDC_STATIC_DURATION_SLASH), SW_SHOW);

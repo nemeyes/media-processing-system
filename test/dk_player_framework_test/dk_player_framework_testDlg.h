@@ -26,7 +26,6 @@ private:
 	CRect _original_rect;
 	BOOL _fullscreen;
 	CString _filename;
-	long long _play_elapsed;
 	CComboBox _dxva2_decoder_guids;
 
 	double _playing_rate;

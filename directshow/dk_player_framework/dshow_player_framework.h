@@ -31,8 +31,9 @@ public:
 
 	dk_player_framework::STATE state(void);
 	bool seekable(void);
-	long long seek_time_scale(void);
-	long long current_seek_position(void);
+	int seek_resolution(void);
+	int current_seek_position(void);
+	long long current_media_time(void);
 	dk_player_framework::ERR_CODE seek(int position);
 	dk_player_framework::ERR_CODE slowfoward_rate(double rate);
 	dk_player_framework::ERR_CODE fastforward_rate(double rate);
@@ -52,7 +53,7 @@ public:
 	HRESULT handle_graphevent(fn_graph_event func);
 
 	long long get_total_duration(void);
-	float get_duration_step(void);
+	float get_step_duration(void);
 private:
 	HWND _hwnd;
 	bool _aspect_ratio;
@@ -75,6 +76,7 @@ private:
 
 
 	long long _total_duration;
-	float _duration_step;
-	long long _time_scale;
+	float _step_duration;
+
+	int _seek_resolution;
 };

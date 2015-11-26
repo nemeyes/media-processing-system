@@ -32,14 +32,19 @@ bool dk_player_framework::seekable(void)
 	return _core->seekable();
 }
 
-long long dk_player_framework::seek_time_scale(void)
+int dk_player_framework::seek_resolution(void)
 {
-	return _core->seek_time_scale();
+	return _core->seek_resolution();
 }
 
-long long dk_player_framework::current_seek_position(void)
+int dk_player_framework::current_seek_position(void)
 {
 	return _core->current_seek_position();
+}
+
+long long dk_player_framework::current_media_time(void)
+{
+	return _core->current_media_time();
 }
 
 dk_player_framework::ERR_CODE dk_player_framework::seek(int position)
@@ -118,7 +123,7 @@ long long dk_player_framework::get_total_duration(void)
 	return _core->get_total_duration();
 }
 
-float dk_player_framework::get_duration_step(void)
+float dk_player_framework::get_step_duration(void)
 {
-	return _core->get_duration_step();
+	return _core->get_step_duration();
 }

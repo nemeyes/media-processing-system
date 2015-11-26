@@ -117,7 +117,7 @@
     <ClCompile Include="dk_haali_media_splitter.cpp" />
     <ClCompile Include="dk_microsoft_audio_decoder.cpp" />
     <ClCompile Include="dk_microsoft_video_decoder.cpp" />
-    <ClCompile Include="dk_plyaer_framework.cpp" />
+    <ClCompile Include="dk_player_framework.cpp" />
     <ClCompile Include="dshow_player_framework.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

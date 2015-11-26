@@ -5,11 +5,9 @@
 #include <dk_submedia_type.h>
 #include <string>
 
-#define ONE_HUNDRED_NANO_SECOND 10000000
-
 dshow_player_framework::dshow_player_framework(void)
 	: _state(dk_player_framework::STATE_NO_GRAPH)
-	, _time_scale(1000)
+	, _seek_resolution(1000)
 {
 
 }
@@ -60,6 +58,19 @@ dk_player_framework::ERR_CODE dshow_player_framework::initialize(HWND hwnd, bool
 			return dk_player_framework::ERR_CODE_FAILED;
 	}
 
+	GUID time_format_guid;
+	hr = seeking->GetTimeFormat(&time_format_guid);
+	if (FAILED(hr))
+		return dk_player_framework::ERR_CODE_FAILED;
+
+	if (!IsEqualGUID(time_format_guid, TIME_FORMAT_MEDIA_TIME))
+	{
+		time_format_guid = TIME_FORMAT_MEDIA_TIME;
+		hr = seeking->SetTimeFormat(&time_format_guid);
+		if (FAILED(hr))
+			return dk_player_framework::ERR_CODE_FAILED;
+	}
+
 	_hwnd = hwnd;
 	_aspect_ratio = aspect_ratio;
 	_use_clock = use_clock;
@@ -96,9 +107,9 @@ bool dshow_player_framework::seekable(void)
 	return seekable;
 }
 
-long long dshow_player_framework::seek_time_scale(void)
+int dshow_player_framework::seek_resolution(void)
 {
-	return _time_scale;
+	return _seek_resolution;
 }
 
 dk_player_framework::ERR_CODE dshow_player_framework::seek(int position)
@@ -106,7 +117,7 @@ dk_player_framework::ERR_CODE dshow_player_framework::seek(int position)
 	if (seekable())
 	{
 		pause();
-		REFERENCE_TIME time = ((_total_duration / _time_scale) * position) * 10000000;
+		REFERENCE_TIME time = (position*_total_duration) / _seek_resolution;
 		HRESULT hr = _seeking->SetPositions(&time, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning);
 		play();
 		if (FAILED(hr))
@@ -117,19 +128,29 @@ dk_player_framework::ERR_CODE dshow_player_framework::seek(int position)
 	return dk_player_framework::ERR_CODE_SUCCESS;
 }
 
-long long dshow_player_framework::current_seek_position(void)
+int dshow_player_framework::current_seek_position(void)
 {
-	long long seek_position = 0;
+	int seek_position = 0;
 	if (seekable())
 	{
 		long long time;
 		HRESULT hr = _seeking->GetCurrentPosition(&time);
 		if (SUCCEEDED(hr))
 		{
-			seek_position = (time / 10000000) / (_total_duration / _time_scale);//(long long)((current_time*_time_scale) / _total_duration * 10000000);
+			seek_position = (time*_seek_resolution) / _total_duration;
 		}
 	}
 	return seek_position;
+}
+
+long long dshow_player_framework::current_media_time(void)
+{
+	long long current_media_time = 0;
+	if (seekable())
+	{
+		_seeking->GetCurrentPosition(&current_media_time);
+	}
+	return current_media_time;
 }
 
 dk_player_framework::ERR_CODE dshow_player_framework::slowfoward_rate(double rate)
@@ -266,10 +287,9 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 
 	//1 second is equal to 1000 millisecond, or 1000000000 nanosecond
 	//1 millisecond is equal to 1000000 nanosecond
-	long long duration_100nanosec = 0;
-	_seeking->GetDuration(&duration_100nanosec);
-	_total_duration = duration_100nanosec / 10000000;
-	_duration_step = (float)_time_scale / _total_duration;
+	//long long _total_duration = 0;
+	_seeking->GetDuration(&_total_duration);
+	_step_duration = _total_duration/_seek_resolution;
 
 	if (SUCCEEDED(hr))
 		return dk_player_framework::ERR_CODE_SUCCESS;
@@ -494,7 +514,7 @@ long long dshow_player_framework::get_total_duration(void)
 	return _total_duration;
 }
 
-float dshow_player_framework::get_duration_step(void)
+float dshow_player_framework::get_step_duration(void)
 {
-	return _duration_step;
+	return _step_duration;
 }
