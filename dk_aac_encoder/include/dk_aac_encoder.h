@@ -28,19 +28,8 @@
 			256000)
 */
 
-#if defined(_WIN32)
-# include <windows.h>
-# if defined(EXPORT_LIB)
-#  define EXP_DLL __declspec(dllexport)
-# else
-#  define EXP_DLL __declspec(dllimport)
-# endif
-#else
-# define EXP_DLL
-#endif
-
 class faac_encoder;
-class EXP_DLL dk_aac_encoder : public dk_audio_encoder
+class EXP_CLASS dk_aac_encoder : public dk_audio_encoder
 {
 public:
 	typedef enum _MPEG_VERSION_TYPE
@@ -79,7 +68,7 @@ public:
 		BLOCK_TYPE_NOLONG
 	} BLOCK_TYPE;
 
-	typedef struct EXP_DLL _configuration_t
+	typedef struct EXP_CLASS _configuration_t
 	{
 		dk_aac_encoder::MPEG_VERSION_TYPE mpeg_version;
 		dk_aac_encoder::AAC_OBJECT_TYPE object_type;
