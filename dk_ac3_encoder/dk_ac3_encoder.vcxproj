@@ -89,10 +89,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\dk_audio_base\include\dk_audio_base.h" />
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h" />
     <ClInclude Include="include\aften_encoder.h" />
     <ClInclude Include="include\dk_ac3_encoder.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\dk_audio_base\source\dk_audio_base.cpp" />
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp" />
     <ClCompile Include="source\aften_encoder.cpp" />
     <ClCompile Include="source\dk_ac3_encoder.cpp" />
   </ItemGroup>
