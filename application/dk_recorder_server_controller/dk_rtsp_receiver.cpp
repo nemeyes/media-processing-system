@@ -353,7 +353,6 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 						}
 					}
 				}
-
 			}
 		} while (0);
 	}
