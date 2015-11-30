@@ -1,0 +1,4 @@
+LIBRARY "mftDx11ColorConvertOpenCl"
+EXPORTS
+    DllMain                         PRIVATE
+    dx11ColorConvertCreateInstance

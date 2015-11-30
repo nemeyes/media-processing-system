@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "videoEditAmp", "videoEditAmpVs12.vcxproj", "{9CC6EEA5-9876-4A3D-9DE1-41906483E827}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F4763299-7761-4460-A030-659F78C3AAC9} = {F4763299-7761-4460-A030-659F78C3AAC9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mftResizerAmp", "mftResizerAmpVs12.vcxproj", "{F4763299-7761-4460-A030-659F78C3AAC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Debug|Win32.Build.0 = Debug|Win32
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Debug|x64.ActiveCfg = Debug|x64
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Debug|x64.Build.0 = Debug|x64
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Release|Win32.ActiveCfg = Release|Win32
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Release|Win32.Build.0 = Release|Win32
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Release|x64.ActiveCfg = Release|x64
+		{9CC6EEA5-9876-4A3D-9DE1-41906483E827}.Release|x64.Build.0 = Release|x64
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Debug|Win32.Build.0 = Debug|Win32
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Debug|x64.ActiveCfg = Debug|x64
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Debug|x64.Build.0 = Debug|x64
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Release|Win32.ActiveCfg = Release|Win32
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Release|Win32.Build.0 = Release|Win32
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Release|x64.ActiveCfg = Release|x64
+		{F4763299-7761-4460-A030-659F78C3AAC9}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

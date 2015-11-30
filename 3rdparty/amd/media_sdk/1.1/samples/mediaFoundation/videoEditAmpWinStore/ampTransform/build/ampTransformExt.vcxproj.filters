@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>bdc52ff6-58cb-464b-bf4f-0c1804b135ff</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{7571f93b-e9ca-40c3-b262-ea4db6480fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{935fbbca-b1c3-4cf6-8b16-0758c5d7d2a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{28603122-f15d-48dc-8ad0-2484f1255704}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\inc\AmpTransform.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\Common.h" />
+    <ClInclude Include="..\inc\Transform.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\AmpTransform.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dllmain.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Common.cpp" />
+    <ClCompile Include="..\src\Transform.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\AmpTransform.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\src\ampTransformExt.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\src\CopyRGshader.hlsl">
+      <Filter>Sources</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\CopyRshader.hlsl">
+      <Filter>Sources</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
