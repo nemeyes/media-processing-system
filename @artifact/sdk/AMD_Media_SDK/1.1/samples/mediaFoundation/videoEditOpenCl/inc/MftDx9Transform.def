@@ -1,4 +1,0 @@
-LIBRARY "mftDx9ResizerOpenCl"
-EXPORTS
-    DllMain                         PRIVATE
-    dx9ResizerCreateInstance

@@ -1,4 +1,0 @@
-LIBRARY "mftDx9ColorConvertOpenCl"
-EXPORTS
-    DllMain                         PRIVATE
-    dx9ColorConvertCreateInstance

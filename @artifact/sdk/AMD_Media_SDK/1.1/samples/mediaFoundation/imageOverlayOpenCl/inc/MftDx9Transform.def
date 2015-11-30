@@ -1,4 +1,0 @@
-LIBRARY "mftDx9OverlayOpenCl"
-EXPORTS
-    DllMain                         PRIVATE
-    dx9OverlayCreateInstance
