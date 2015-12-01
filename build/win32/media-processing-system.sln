@@ -175,7 +175,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rtmp", "rtmp", "{36F7F80C-7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "raw", "raw", "{8745961A-B2A9-4224-BD89-B08FE4F80BDC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_avc_raw_stream_reader", "dk_avc_raw_stream_reader\dk_avc_raw_stream_reader.vcxproj", "{A53EA534-86D2-42EE-8F7F-00EA6D12FC7D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_avc_raw_stream_reader", "..\..\dk_avc_raw_stream_reader\dk_avc_raw_stream_reader.vcxproj", "{A53EA534-86D2-42EE-8F7F-00EA6D12FC7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
