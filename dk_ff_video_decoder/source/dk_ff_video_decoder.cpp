@@ -1,9 +1,9 @@
 #include "dk_ff_video_decoder.h"
-#include "ffmpeg_decoder_core.h"
+#include "ffmpeg_decoder.h"
 
 dk_ff_video_decoder::dk_ff_video_decoder(void)
 {
-	_core = new ffmpeg_decoder_core(this);
+	_core = new ffmpeg_decoder(this);
 }
 
 dk_ff_video_decoder::~dk_ff_video_decoder(void)
@@ -15,11 +15,10 @@ dk_ff_video_decoder::~dk_ff_video_decoder(void)
 	}
 }
 
-dk_ff_video_decoder::ERR_CODE dk_ff_video_decoder::initialize_decoder(configuration_t * config)
+dk_ff_video_decoder::ERR_CODE dk_ff_video_decoder::initialize_decoder(void * config)
 {
 	dk_ff_video_decoder::ERR_CODE status = dk_ff_video_decoder::ERR_CODE_FAILED;
-	status = _core->initialize_decoder(config);
-	_config = config;
+	status = _core->initialize_decoder(static_cast<dk_ff_video_decoder::configuration_t*>(config));
 	return status;
 }
 

@@ -10,6 +10,10 @@
 #include <streams.h>
 #include <dvdmedia.h>
 
+#include <initguid.h>
+#include <dk_submedia_type.h>
+
+
 #include "dk_ff_video_decode_filter_properties.h"
 #include "dk_ff_video_decode_filter.h"
 
@@ -188,6 +192,44 @@ HRESULT  dk_ff_video_decode_filter::CheckInputType(const CMediaType *type)
 					_config.iheight = vih->bmiHeader.biHeight;
 					_config.owidth = _config.iwidth;
 					_config.oheight = _config.iheight;
+					return S_OK;
+				}
+			}
+			else if (IsEqualGUID(*(type->Subtype()), MEDIASUBTYPE_AVC1))
+			{
+				if (IsEqualGUID(*(formaType), FORMAT_MPEG2_VIDEO))
+				{
+					MPEG2VIDEOINFO * mp2vi = reinterpret_cast<MPEG2VIDEOINFO*>(type->Format());
+					_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_AVC;
+					_config.iwidth = mp2vi->hdr.bmiHeader.biWidth;
+					_config.iheight = mp2vi->hdr.bmiHeader.biHeight;
+					_config.owidth = _config.iwidth;
+					_config.oheight = _config.iheight;
+
+					if (mp2vi->cbSequenceHeader>0)
+					{
+						uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
+						int32_t sps_size = 0;
+						int32_t pps_size = 0;
+						uint8_t spspps[200] = { 0 };
+						uint8_t * sequence_header = (uint8_t*)&mp2vi->dwSequenceHeader;
+					
+						sps_size = sequence_header[0] << 8 | sequence_header[1];
+						sequence_header += 2;
+						memcpy(spspps, start_code, sizeof(start_code));
+						memcpy(spspps + sizeof(start_code), sequence_header, sps_size);
+						sequence_header += sps_size;
+
+						pps_size = sequence_header[0] << 8 | sequence_header[1];
+						sequence_header += 2;
+
+						memcpy(spspps + sizeof(start_code) + sps_size, start_code, sizeof(start_code));
+						memcpy(spspps + sizeof(start_code)*2 + sps_size, sequence_header, pps_size);
+
+						_config.allocate_extradata(spspps, sps_size + pps_size + sizeof(start_code)*2);
+					}
+
+
 					return S_OK;
 				}
 			}

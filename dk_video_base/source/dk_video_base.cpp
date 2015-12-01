@@ -31,7 +31,7 @@ dk_video_decoder::~dk_video_decoder(void)
 
 }
 
-dk_video_decoder::ERR_CODE dk_video_decoder::initialize_decoder(configuration_t * config)
+dk_video_decoder::ERR_CODE dk_video_decoder::initialize_decoder(void * config)
 {
 	return ERR_CODE_SUCCESS;
 }

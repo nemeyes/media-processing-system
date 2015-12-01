@@ -35,13 +35,13 @@ public:
 		union _pcr_t
 		{
 			uint64_t program_clock_reference_base		: 33;
-			uint64_t reserved							: 6;
+			uint64_t reserved1							: 6;
 			uint64_t program_clock_reference_extension	: 9;
 		} PCR;
 		union _opcr_t
 		{
 			uint64_t original_program_clock_reference_base		: 33;
-			uint64_t reserved									: 6;
+			uint64_t reserved2									: 6;
 			uint64_t original_program_clock_reference_extensin	: 9;
 		} OPCR;
 
@@ -53,32 +53,36 @@ public:
 		uint8_t ltw_flag;
 		uint8_t piecewise_rate_flag;
 		uint8_t seamless_splice_flag;
+		uint8_t reserved3;
 
 		uint8_t ltw_valid_flag;
 		uint16_t ltw_offset;
 
+		uint8_t reserved4;
 		uint32_t piecewise_rate;
 
+		uint8_t splice_type;
+		uint8_t DTS_next_AU_32_30;
+		uint8_t marker_bit3;
+		uint8_t DTS_next_AU_29_15;
+		uint8_t marker_bit2;
+		uint8_t DTS_next_AU_14_0;
+		uint8_t marker_bit1;
 
 	} adaptation_field_t;
 
-	typedef struct _ts_packet_t
+
+	typedef struct _ts_packet_header_t
 	{
-		union _ts_packet_header_t
-		{
-			uint32_t	sync_byte						: 8;
-			uint32_t	transport_error_indicator		: 1;
-			uint32_t	payload_unit_start_indicator	: 1;
-			uint32_t	transport_priority				: 1;
-			uint32_t	PID								: 13;
-			uint32_t	transport_scrambling_control	: 2;
-			uint32_t	adaptation_field_control		: 2;
-			uint32_t	continuity_counter				: 4;
-		} header;
-
-		adaptation_field_t adaptation;
-	} ts_packet_t;
-
+		uint8_t		sync_byte;
+		uint8_t		transport_error_indicator;
+		uint8_t		payload_unit_start_indicator;
+		uint8_t		transport_priority;
+		uint16_t	pid;
+		uint8_t		transport_scrambling_control;
+		uint8_t		adaptation_field_control;
+		uint8_t		continuity_counter;
+	} ts_packet_header_t;
 
 	mpeg2ts_demuxer(void);
 	~mpeg2ts_demuxer(void);
@@ -97,6 +101,10 @@ private:
 
 	uint8_t _ts_buffer[TS_PACKET_LENGTH];
 	size_t _ts_buffer_pos;
+
+
+	uint64_t _ts_buffer_begin_pcr;
+	uint64_t _ts_buffer_end_pcr;
 };
 
 
