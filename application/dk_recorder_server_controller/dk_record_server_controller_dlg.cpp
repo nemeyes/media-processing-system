@@ -12,6 +12,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define RTSP 0
+#define RTMP 1
 
 // CAboutDlg dialog used for App About
 
@@ -74,6 +76,7 @@ BEGIN_MESSAGE_MAP(dk_record_server_controller_dlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_STOP_RECORD, &dk_record_server_controller_dlg::OnBnClickedButtonStopRecord)
 	ON_BN_CLICKED(IDC_BUTTON_START_PREVIEW, &dk_record_server_controller_dlg::OnBnClickedButtonStartPreview)
 	ON_BN_CLICKED(IDC_BUTTON_STOP_PREVIEW, &dk_record_server_controller_dlg::OnBnClickedButtonStopPreview)
+	ON_CBN_SELCHANGE(IDC_COMBO_STREAMING_PROTOCOL, &dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol)
 END_MESSAGE_MAP()
 
 
@@ -121,7 +124,7 @@ BOOL dk_record_server_controller_dlg::OnInitDialog()
 	_cmb_retry_connection.SetCurSel(0);
 
 	//_url.SetWindowTextW(_T("rtsp://127.0.0.1:8554/01.264"));
-	_url.SetWindowTextW(_T("rtsp://10.202.140.138/01.264"));
+	_url.SetWindowTextW(_T("rtsp://127.0.0.1/01.264"));
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -192,7 +195,18 @@ void dk_record_server_controller_dlg::OnBnClickedButtonStartPreview()
 	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_username, &username);
 	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_password, &password);
 
-	_rtsp_receiver.start_preview(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel(), ::GetDlgItem(this->m_hWnd, IDC_VIDEO_VIEW));
+
+	int32_t protocol = _cmb_streaming_protocol.GetCurSel();
+	if (protocol==RTSP)
+	{
+		_rtsp_receiver.start_preview(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel(), ::GetDlgItem(this->m_hWnd, IDC_VIDEO_VIEW));
+	}
+	else if (protocol == RTMP)
+	{
+		_rtmp_receiver.start_preview(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel(), ::GetDlgItem(this->m_hWnd, IDC_VIDEO_VIEW));
+	}
+
+	_cmb_streaming_protocol.EnableWindow(FALSE);
 
 	if (url)
 		free(url);
@@ -205,7 +219,17 @@ void dk_record_server_controller_dlg::OnBnClickedButtonStartPreview()
 void dk_record_server_controller_dlg::OnBnClickedButtonStopPreview()
 {
 	// TODO: Add your control notification handler code here
-	_rtsp_receiver.stop_preview();
+	int32_t protocol = _cmb_streaming_protocol.GetCurSel();
+	if (protocol == RTSP)
+	{
+		_rtsp_receiver.stop_preview();
+	}
+	else if (protocol == RTMP)
+	{
+		_rtmp_receiver.stop_preview();
+	}
+
+	_cmb_streaming_protocol.EnableWindow(TRUE);
 }
 
 void dk_record_server_controller_dlg::OnBnClickedButtonStartRecord()
@@ -226,7 +250,17 @@ void dk_record_server_controller_dlg::OnBnClickedButtonStartRecord()
 	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_username, &username);
 	dk_string_helper::convert_wide2multibyte((LPTSTR)(LPCTSTR)str_password, &password);
 
-	_rtsp_receiver.start_recording(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel());
+	int32_t protocol = _cmb_streaming_protocol.GetCurSel();
+	if (protocol == RTSP)
+	{
+		_rtsp_receiver.start_recording(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel());
+	}
+	else if (protocol == RTMP)
+	{
+		_rtmp_receiver.start_recording(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel());
+	}
+
+	_cmb_streaming_protocol.EnableWindow(FALSE);
 
 	if (url)
 		free(url);
@@ -239,8 +273,54 @@ void dk_record_server_controller_dlg::OnBnClickedButtonStartRecord()
 void dk_record_server_controller_dlg::OnBnClickedButtonStopRecord()
 {
 	// TODO: Add your control notification handler code here
-	_rtsp_receiver.stop_recording();
+	int32_t protocol = _cmb_streaming_protocol.GetCurSel();
+	if (protocol == RTSP)
+	{
+		_rtsp_receiver.stop_recording();
+	}
+	else if (protocol == RTMP)
+	{
+		_rtmp_receiver.stop_recording();
+	}
+
+	_cmb_streaming_protocol.EnableWindow(TRUE);
 }
 
+void dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol()
+{
+	// TODO: Add your control notification handler code here
+	int32_t protocol = _cmb_streaming_protocol.GetCurSel();
+	if (protocol==RTSP)
+	{
+		_cmb_transport_type.ResetContent();
+		_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_UDP, L"RTP OVER TCP");
+		_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_TCP, L"RTP OVER UDP");
+		_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_HTTP, L"RTP OVER HTTP");
+		_cmb_transport_type.SetCurSel(0);
 
+		_cmb_recv_option.ResetContent();
+		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO_VIDEO, L"Recv Audio & Video");
+		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_VIDEO, L"Recv Video");
+		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO, L"Recv Audio");
+		_cmb_recv_option.SetCurSel(0);
+		
+		_cmb_retry_connection.SetCurSel(0);
 
+		_url.SetWindowTextW(_T("rtsp://127.0.0.1/01.264"));
+	}
+	else if (protocol == RTMP)
+	{
+		_cmb_transport_type.ResetContent();
+		_cmb_transport_type.EnableWindow(FALSE);
+
+		_cmb_recv_option.ResetContent();
+		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO_VIDEO, L"Recv Audio & Video");
+		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_VIDEO, L"Recv Video");
+		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO, L"Recv Audio");
+		_cmb_recv_option.SetCurSel(0);
+
+		_cmb_retry_connection.SetCurSel(0);
+
+		_url.SetWindowTextW(_T("rtmp://127.0.0.1/01.264"));
+	}
+}

@@ -5,6 +5,7 @@
 #pragma once
 #include "afxwin.h"
 #include "dk_rtsp_receiver.h"
+#include "dk_rtmp_receiver.h"
 
 // Crecord_serverDlg dialog
 class dk_record_server_controller_dlg : public CDialogEx
@@ -39,6 +40,7 @@ private:
 	CEdit _password;
 
 	dk_rtsp_receiver _rtsp_receiver;
+	dk_rtmp_receiver _rtmp_receiver;
 	CComboBox _cmb_streaming_protocol;
 	CComboBox _cmb_transport_type;
 	CComboBox _cmb_recv_option;
@@ -47,4 +49,5 @@ private:
 public:
 	afx_msg void OnBnClickedButtonStartPreview();
 	afx_msg void OnBnClickedButtonStopPreview();
+	afx_msg void OnCbnSelchangeComboStreamingProtocol();
 };
