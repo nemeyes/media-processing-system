@@ -13,38 +13,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="dsutils">
-      <UniqueIdentifier>{b275f9f2-82d1-4ac4-8a7c-afa66a9d80a5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\dsutils\css_auth.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\css_scramble.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\dk_dsutils.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\dk_dxva2_allocator.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\dk_dxva2_sample.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\dk_transform_input_pin.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\dk_video_decode_filter.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\dk_video_decode_input_pin.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\dsutils\dk_video_decode_output_pin.cpp">
-      <Filter>dsutils</Filter>
-    </ClCompile>
     <ClCompile Include="dk_ff_video_decode_filter_properties.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -56,33 +26,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\dsutils\css_auth.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\css_scramble.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\dk_dsutils.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\dk_dxva2_allocator.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\dk_dxva2_sample.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\dk_transform_input_pin.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\dk_video_decode_filter.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\dk_video_decode_input_pin.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dsutils\dk_video_decode_output_pin.h">
-      <Filter>dsutils</Filter>
-    </ClInclude>
     <ClInclude Include="dk_ff_video_decode_filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
