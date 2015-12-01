@@ -1,66 +1,17 @@
 #pragma once
 #include <windows.h>
 #include <cstdint>
-#include <dk_rtsp_client.h>
+#include <dk_rtmp_client.h>
 #include <dk_ff_video_decoder.h>
 #include <dk_ddraw_video_renderer.h>
 #include "dk_mpeg2ts_saver.h"
 #include "dk_bit_vector.h"
 
-/*
-#define DEBUG_PRINT(x) do {x = x;} while (0)
-
-typedef enum
-{
-	BASELINE = 66,
-	MAIN = 77,
-	EXTENDED = 88,
-	HIGH = 100,
-	FREXT_Hi10P = 110,
-	FREXT_Hi422 = 122,
-	FREXT_Hi444 = 244,
-	FREXT_CAVLC444 = 44,
-} H264_PROFILE;
-
-class CBitVector 
+class dk_rtmp_receiver : public dk_rtmp_client
 {
 public:
-	CBitVector(unsigned char* baseBytePtr,
-		unsigned baseBitOffset,
-		unsigned totNumBits);
-
-	void setup(unsigned char* baseBytePtr,
-		unsigned baseBitOffset,
-		unsigned totNumBits);
-
-	void putBits(unsigned from, unsigned numBits); // "numBits" <= 32
-	void put1Bit(unsigned bit);
-
-	unsigned getBits(unsigned numBits); // "numBits" <= 32
-	unsigned get1Bit();
-
-	void skipBits(unsigned numBits);
-
-	unsigned curBitIndex() const { return fCurBitIndex; }
-	unsigned totNumBits() const { return fTotNumBits; }
-	unsigned numBitsRemaining() const { return fTotNumBits - fCurBitIndex; }
-
-	unsigned get_expGolomb();
-	// Returns the value of the next bits, assuming that they were encoded using an exponential-Golomb code of order 0
-
-private:
-	unsigned char* fBaseBytePtr;
-	unsigned fBaseBitOffset;
-	unsigned fTotNumBits;
-	unsigned fCurBitIndex;
-};
-*/
-
-class dk_rtsp_receiver : public dk_rtsp_client
-{
-public:
-	dk_rtsp_receiver(void);
-	~dk_rtsp_receiver(void);
+	dk_rtmp_receiver(void);
+	~dk_rtmp_receiver(void);
 
 	void start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle);
 	void stop_preview(void);
@@ -68,8 +19,8 @@ public:
 	void start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option);
 	void stop_recording(void);
 
-	void on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
-	void on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_begin_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_recv_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
 
 private:
 	// A general bit copy operation:
@@ -89,7 +40,7 @@ private:
 	bool _is_recording_enabled;
 
 	dk_ff_video_decoder * _decoder;
-	dk_ff_video_decoder::configuration_t _decoder_config;	
+	dk_ff_video_decoder::configuration_t _decoder_config;
 
 	//dk_ff_mpeg2ts_muxer * _mpeg2ts_muxer;
 	dk_mpeg2ts_saver * _mpeg2ts_saver;

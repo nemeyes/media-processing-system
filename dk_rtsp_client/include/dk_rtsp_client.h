@@ -4,14 +4,17 @@
 #include <cstdint>
 #if !defined(WIN32)
 #include <pthread.h>
+#define EXP_CLASS
+#else
+#if defined(EXPORT_LIB)
+#define EXP_CLASS __declspec(dllexport)
+#else
+#define EXP_CLASS __declspec(dllimport)
+#endif
 #endif
 
 class live_media_wrapper;
-#if defined(EXPORT_LIB)
-class __declspec(dllexport) dk_rtsp_client
-#else
-class __declspec(dllimport) dk_rtsp_client
-#endif
+class EXP_CLASS dk_rtsp_client
 {
 	friend class buffer_sink;
 public:

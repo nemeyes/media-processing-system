@@ -1,215 +1,8 @@
 #include "stdafx.h"
-#include "dk_rtsp_receiver.h"
+#include "dk_rtmp_receiver.h"
 #include "dk_image_creator.h"
 
-/*
-static unsigned char const singleBitMask[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-
-#define MAX_LENGTH 32
-
-static void shift_bits(unsigned char* toBasePtr, unsigned toBitOffset, unsigned char const* fromBasePtr, unsigned fromBitOffset, unsigned numBits)
-{
-	if (numBits == 0)
-		return;
-
-	// Note that from and to may overlap, if from>to
-	unsigned char const* fromBytePtr = fromBasePtr + fromBitOffset / 8;
-	unsigned fromBitRem = fromBitOffset % 8;
-	unsigned char* toBytePtr = toBasePtr + toBitOffset / 8;
-	unsigned toBitRem = toBitOffset % 8;
-
-	while (numBits-- > 0) 
-	{
-		unsigned char fromBitMask = singleBitMask[fromBitRem];
-		unsigned char fromBit = (*fromBytePtr)&fromBitMask;
-		unsigned char toBitMask = singleBitMask[toBitRem];
-
-		if (fromBit != 0) 
-		{
-			*toBytePtr |= toBitMask;
-		}
-		else 
-		{
-			*toBytePtr &= ~toBitMask;
-		}
-
-		if (++fromBitRem == 8) 
-		{
-			++fromBytePtr;
-			fromBitRem = 0;
-		}
-		if (++toBitRem == 8) 
-		{
-			++toBytePtr;
-			toBitRem = 0;
-		}
-	}
-}
-
-static void remove_emulation_bytes(uint8_t *dst, uint8_t *src, uint32_t max_size, uint32_t num_bytes_in_nal_unit, uint32_t *copy_size)
-{
-	unsigned int i;
-	if (num_bytes_in_nal_unit > max_size) return;
-	*copy_size = 0;
-	for (i = 0; i < num_bytes_in_nal_unit; i++) 
-	{
-		if (i + 2 < num_bytes_in_nal_unit && src[i] == 0 && src[i + 1] == 0 && src[i + 2] == 3) 
-		{
-			dst[(*copy_size)++] = src[i++];
-			dst[(*copy_size)++] = src[i++];
-		}
-		else 
-		{
-			dst[(*copy_size)++] = src[i];
-		}
-	}
-}
-
-static uint32_t __inline log2bin(uint32_t value)
-{
-	uint32_t n = 0;
-	while (value)
-	{
-		value >>= 1;
-		n++;
-	}
-	return n;
-}
-
-CBitVector::CBitVector(unsigned char* baseBytePtr, unsigned baseBitOffset, unsigned totNumBits) 
-{
-	setup(baseBytePtr, baseBitOffset, totNumBits);
-}
-
-void CBitVector::setup(unsigned char* baseBytePtr, unsigned baseBitOffset, unsigned totNumBits) 
-{
-	fBaseBytePtr = baseBytePtr;
-	fBaseBitOffset = baseBitOffset;
-	fTotNumBits = totNumBits;
-	fCurBitIndex = 0;
-}
-
-void CBitVector::putBits(unsigned from, unsigned numBits) 
-{
-	if (numBits == 0) 
-		return;
-
-	unsigned char tmpBuf[4];
-	unsigned overflowingBits = 0;
-
-	if (numBits > MAX_LENGTH) 
-	{
-		numBits = MAX_LENGTH;
-	}
-
-	if (numBits > fTotNumBits - fCurBitIndex) 
-	{
-		overflowingBits = numBits - (fTotNumBits - fCurBitIndex);
-	}
-
-	tmpBuf[0] = (unsigned char)(from >> 24);
-	tmpBuf[1] = (unsigned char)(from >> 16);
-	tmpBuf[2] = (unsigned char)(from >> 8);
-	tmpBuf[3] = (unsigned char)from;
-
-	shift_bits(fBaseBytePtr, fBaseBitOffset + fCurBitIndex, tmpBuf, MAX_LENGTH - numBits, numBits - overflowingBits);
-	fCurBitIndex += numBits - overflowingBits;
-}
-
-void CBitVector::put1Bit(unsigned bit) 
-{
-	// The following is equivalent to "putBits(..., 1)", except faster:
-	if (fCurBitIndex >= fTotNumBits) 
-	{ 
-		return; // overflow
-	}
-	else 
-	{
-		unsigned totBitOffset = fBaseBitOffset + fCurBitIndex++;
-		unsigned char mask = singleBitMask[totBitOffset % 8];
-		if (bit) 
-		{
-			fBaseBytePtr[totBitOffset / 8] |= mask;
-		}
-		else 
-		{
-			fBaseBytePtr[totBitOffset / 8] &= ~mask;
-		}
-	}
-}
-
-unsigned CBitVector::getBits(unsigned numBits) 
-{
-	if (numBits == 0) 
-		return 0;
-
-	unsigned char tmpBuf[4];
-	unsigned overflowingBits = 0;
-
-	if (numBits > MAX_LENGTH) 
-	{
-		numBits = MAX_LENGTH;
-	}
-
-	if (numBits > fTotNumBits - fCurBitIndex) 
-	{
-		overflowingBits = numBits - (fTotNumBits - fCurBitIndex);
-	}
-
-	shift_bits(tmpBuf, 0, fBaseBytePtr, fBaseBitOffset + fCurBitIndex, numBits - overflowingBits);
-	fCurBitIndex += numBits - overflowingBits;
-
-	unsigned result = (tmpBuf[0] << 24) | (tmpBuf[1] << 16) | (tmpBuf[2] << 8) | tmpBuf[3];
-	result >>= (MAX_LENGTH - numBits); // move into low-order part of word
-	result &= (0xFFFFFFFF << overflowingBits); // so any overflow bits are 0
-	return result;
-}
-
-unsigned CBitVector::get1Bit() 
-{
-	// The following is equivalent to "getBits(1)", except faster:
-	if (fCurBitIndex >= fTotNumBits) 
-	{ 
-		return 0; // overflow
-	}
-	else 
-	{
-		unsigned totBitOffset = fBaseBitOffset + fCurBitIndex++;
-		unsigned char curFromByte = fBaseBytePtr[totBitOffset / 8];
-		unsigned result = (curFromByte >> (7 - (totBitOffset % 8))) & 0x01;
-		return result;
-	}
-}
-
-void CBitVector::skipBits(unsigned numBits) 
-{
-	if (numBits > fTotNumBits - fCurBitIndex) 
-	{ 
-		fCurBitIndex = fTotNumBits; // overflow
-	}
-	else 
-	{
-		fCurBitIndex += numBits;
-	}
-}
-
-unsigned CBitVector::get_expGolomb() 
-{
-	unsigned numLeadingZeroBits = 0;
-	unsigned codeStart = 1;
-
-	while (get1Bit() == 0 && fCurBitIndex < fTotNumBits)
-	{
-		++numLeadingZeroBits;
-		codeStart *= 2;
-	}
-
-	return codeStart - 1 + getBits(numLeadingZeroBits);
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-*/
-
-dk_rtsp_receiver::dk_rtsp_receiver(void)
+dk_rtmp_receiver::dk_rtmp_receiver(void)
 	: _is_preview_enabled(false)
 	, _is_recording_enabled(false)
 	, _frame_count(0)
@@ -217,23 +10,23 @@ dk_rtsp_receiver::dk_rtsp_receiver(void)
 	_buffer = static_cast<uint8_t*>(malloc(1920 * 1080 * 4));
 }
 
-dk_rtsp_receiver::~dk_rtsp_receiver(void)
+dk_rtmp_receiver::~dk_rtmp_receiver(void)
 {
 	free(_buffer);
 }
 
-void dk_rtsp_receiver::start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle)
+void dk_rtmp_receiver::start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle)
 {
 	_decoder = new dk_ff_video_decoder();
 	_renderer = new dk_ddraw_video_renderer();
 	_is_preview_enabled = true;
 	_normal_hwnd = handle;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+	dk_rtmp_client::play(url, username, password, recv_option, true);
 }
 
-void dk_rtsp_receiver::stop_preview(void)
+void dk_rtmp_receiver::stop_preview(void)
 {
-	dk_rtsp_client::stop();
+	dk_rtmp_client::stop();
 	if (_decoder)
 	{
 		_decoder->release_decoder();
@@ -244,16 +37,16 @@ void dk_rtsp_receiver::stop_preview(void)
 	_is_preview_enabled = false;
 }
 
-void dk_rtsp_receiver::start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option)
+void dk_rtmp_receiver::start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option)
 {
 	_mpeg2ts_saver = new dk_mpeg2ts_saver();
 	_is_recording_enabled = true;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+	dk_rtmp_client::play(url, username, password, recv_option, true);
 }
 
-void dk_rtsp_receiver::stop_recording(void)
+void dk_rtmp_receiver::stop_recording(void)
 {
-	dk_rtsp_client::stop();
+	dk_rtmp_client::stop();
 	_is_recording_enabled = false;
 	if (_mpeg2ts_saver)
 	{
@@ -262,61 +55,61 @@ void dk_rtsp_receiver::stop_recording(void)
 	}
 }
 
-/*void dk_rtsp_receiver::on_begin_media_h264(uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, uint8_t * idr, size_t idrsize)
+/*void dk_rtmp_receiver::on_begin_media_h264(uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, uint8_t * idr, size_t idrsize)
 {
-	if (_is_preview_enabled)
-	{
-		do
-		{
-			if (parse_sps((BYTE*)(sps), spssize, &_decoder_config.iwidth, &_decoder_config.iheight, &_decoder_config.sarw, &_decoder_config.sarh) > 0)
-			{
-				_decoder_config.owidth = _decoder_config.iwidth;
-				_decoder_config.oheight = _decoder_config.iheight;
-				_decoder_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
-				_decoder_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
+if (_is_preview_enabled)
+{
+do
+{
+if (parse_sps((BYTE*)(sps), spssize, &_decoder_config.iwidth, &_decoder_config.iheight, &_decoder_config.sarw, &_decoder_config.sarh) > 0)
+{
+_decoder_config.owidth = _decoder_config.iwidth;
+_decoder_config.oheight = _decoder_config.iheight;
+_decoder_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
+_decoder_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
 
-				dk_ff_video_decoder::ERR_CODE decode_err = _decoder->initialize_decoder(&_decoder_config);
-				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
-				{
-					dk_video_entity_t encoded = { 0, };
-					dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
-					encoded.data = (uint8_t*)idr;
-					encoded.data_size = idrsize;
-					decode_err = _decoder->decode(&encoded, &decoded);
-					if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
-					{
-						dk_render_entity_t render = { 0, };
-						render.data = decoded.data;
-						render.data_size = decoded.data_size;
-						_renderer->render(&render);
-					}
-				}
+dk_ff_video_decoder::ERR_CODE decode_err = _decoder->initialize_decoder(&_decoder_config);
+if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
+{
+dk_video_entity_t encoded = { 0, };
+dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
+encoded.data = (uint8_t*)idr;
+encoded.data_size = idrsize;
+decode_err = _decoder->decode(&encoded, &decoded);
+if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
+{
+dk_render_entity_t render = { 0, };
+render.data = decoded.data;
+render.data_size = decoded.data_size;
+_renderer->render(&render);
+}
+}
 
-			}
-		} while (0);
+}
+} while (0);
 
-		_renderer_config.normal_hwnd = _normal_hwnd;
-		_renderer_config.width = _decoder_config.iwidth;
-		_renderer_config.height = _decoder_config.iheight;
-		_renderer->initialize_renderer(&_renderer_config);
-	}
-	else if (_is_recording_enabled)
-	{
-		//dk_ff_mpeg2ts_muxer::configuration_t config;
-		//config.extra_data_size = data_size;
-		//memcpy(config.extra_data, data, data_size);
-		//config.width = 1280;
-		//config.height = 720;
-		//config.fps = 30;
-		//config.stream_index = 0;
-		//config.bitrate = 4000000;
-		//_mpeg2ts_muxer->initialize(config);
-	}
-	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
+_renderer_config.normal_hwnd = _normal_hwnd;
+_renderer_config.width = _decoder_config.iwidth;
+_renderer_config.height = _decoder_config.iheight;
+_renderer->initialize_renderer(&_renderer_config);
+}
+else if (_is_recording_enabled)
+{
+//dk_ff_mpeg2ts_muxer::configuration_t config;
+//config.extra_data_size = data_size;
+//memcpy(config.extra_data, data, data_size);
+//config.width = 1280;
+//config.height = 720;
+//config.fps = 30;
+//config.stream_index = 0;
+//config.bitrate = 4000000;
+//_mpeg2ts_muxer->initialize(config);
+}
+//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }*/
 
-void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, 
-									  uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, 
+void dk_rtmp_receiver::on_begin_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, 
+									  uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size,
 									  struct timeval presentation_time)
 {
 	if (_is_preview_enabled)
@@ -373,9 +166,9 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
 
-void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_recv_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
-	if (mt == dk_rtsp_client::MEDIA_TYPE_VIDEO)
+	if (mt == dk_rtmp_client::MEDIA_TYPE_VIDEO)
 	{
 		if (_is_preview_enabled)
 		{
@@ -389,11 +182,11 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 				/*
 				if (_frame_count>1000 && _frame_count<1100)
 				{
-					dk_image_creator bmp_creator(_decoder_config.owidth, _decoder_config.oheight);
-					memcpy(bmp_creator.pixel_buffer, _buffer, _decoder_config.owidth*_decoder_config.oheight * 4);
-					wchar_t filename[100] = { 0, };
-					_snwprintf_s(filename, sizeof(filename), L"%d.bmp", _frame_count);
-					bmp_creator.save(filename);
+				dk_image_creator bmp_creator(_decoder_config.owidth, _decoder_config.oheight);
+				memcpy(bmp_creator.pixel_buffer, _buffer, _decoder_config.owidth*_decoder_config.oheight * 4);
+				wchar_t filename[100] = { 0, };
+				_snwprintf_s(filename, sizeof(filename), L"%d.bmp", _frame_count);
+				bmp_creator.save(filename);
 				}
 				_frame_count++;
 				*/
@@ -406,21 +199,21 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 		}
 		else if (_is_recording_enabled)
 		{
-			if ((data[3] & 0x1F)==0x05)
+			if ((data[3] & 0x1F) == 0x05)
 				_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
 			else
 				_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
 		}
 		//TRACE(_T("on_recv_media : received video data size is %d\n"), data_size);
 	}
-	else if (mt == dk_rtsp_client::MEDIA_TYPE_AUDIO)
+	else if (mt == dk_rtmp_client::MEDIA_TYPE_AUDIO)
 	{
 		//TRACE(_T("on_recv_media : received audio data size is %d\n"), data_size);
 	}
 }
 
 // Local Functions
-void dk_rtsp_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
+void dk_rtmp_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
 {
 	unsigned aspect_ratio_info_present_flag = bv.get1Bit();
 	DEBUG_PRINT(aspect_ratio_info_present_flag);
@@ -478,7 +271,7 @@ void dk_rtsp_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, un
 	}
 }
 
-int dk_rtsp_receiver::parse_pps(uint8_t * pps, int pps_size)
+int dk_rtmp_receiver::parse_pps(uint8_t * pps, int pps_size)
 {
 	if (pps_size <= 0 || pps == NULL)
 		return 0;
@@ -498,7 +291,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int dk_rtsp_receiver::parse_sps(uint8_t* data, int sizeOfSPS, int *width, int *height, int* sar_width, int* sar_height)
+int dk_rtmp_receiver::parse_sps(uint8_t* data, int sizeOfSPS, int *width, int *height, int* sar_width, int* sar_height)
 {
 	uint8_t* sps;
 	uint32_t sps_size;
@@ -685,7 +478,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int dk_rtsp_receiver::parse_mpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
+int dk_rtmp_receiver::parse_mpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
 {
 	// First, Find VOL Header
 	int i;
@@ -827,7 +620,7 @@ int dk_rtsp_receiver::parse_mpeg(uint8_t* data, int size, int *width, int *heigh
 	return 1;
 }
 
-int dk_rtsp_receiver::parse_jpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
+int dk_rtmp_receiver::parse_jpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
 {
 	int i, found = 0;
 
@@ -846,7 +639,7 @@ int dk_rtsp_receiver::parse_jpeg(uint8_t* data, int size, int *width, int *heigh
 	return found;
 }
 
-void dk_rtsp_receiver::make_adts_header(uint8_t* data, int size, char audioObjectType, char samplingFreqIndex, char channelConfig)
+void dk_rtmp_receiver::make_adts_header(uint8_t* data, int size, char audioObjectType, char samplingFreqIndex, char channelConfig)
 {
 	CBitVector bv(data, 0, 72);
 
