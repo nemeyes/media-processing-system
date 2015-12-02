@@ -101,11 +101,17 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="source\dk_rtmp_client.cpp" />
-    <ClCompile Include="source\rtmp_client.cpp" />
+    <ClCompile Include="source\rtmp_client.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\stream_parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_rtmp_client.h" />
-    <ClInclude Include="include\rtmp_client.h" />
+    <ClInclude Include="include\rtmp_client.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="include\stream_parser.h" />
     <ClInclude Include="librtmp\AMFObject.h" />
     <ClInclude Include="librtmp\bytes.h" />
     <ClInclude Include="librtmp\dh.h" />

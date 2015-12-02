@@ -105,7 +105,6 @@ private:
 	uint8_t * _buffer;
 	int32_t _buffer_size;
 
-
 	/*
 	int32_t _protocol;
 	char _host[512];

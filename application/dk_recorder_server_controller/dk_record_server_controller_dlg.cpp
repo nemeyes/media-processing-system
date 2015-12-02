@@ -321,6 +321,6 @@ void dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol()
 
 		_cmb_retry_connection.SetCurSel(0);
 
-		_url.SetWindowTextW(_T("rtmp://127.0.0.1/01.264"));
+		_url.SetWindowTextW(_T("rtmp://127.0.0.1/vod/01.flv"));
 	}
 }

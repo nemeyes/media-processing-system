@@ -54,6 +54,9 @@
     <ClCompile Include="librtmp\parseurl.cpp">
       <Filter>librtmp</Filter>
     </ClCompile>
+    <ClCompile Include="source\stream_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="librtmp\AMFObject.h">
@@ -84,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\rtmp_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stream_parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
