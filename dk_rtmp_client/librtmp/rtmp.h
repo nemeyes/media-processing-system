@@ -33,6 +33,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "rtmp_client.h"
+
 #include "amf.h"
 
 #ifdef __cplusplus
@@ -252,6 +254,8 @@ extern "C"
     RTMPPacket m_write;
     RTMPSockBuf m_sb;
     RTMP_LNK Link;
+
+	void * rtmp_client_wrapper;
   } RTMP;
 
   int RTMP_ParseURL(const char *url, int *protocol, AVal *host,

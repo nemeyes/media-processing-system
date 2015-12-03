@@ -2669,11 +2669,15 @@ HandleChangeChunkSize(RTMP *r, const RTMPPacket *packet)
 static void
 HandleAudio(RTMP *r, const RTMPPacket *packet)
 {
+	if (r && r->rtmp_client_wrapper)
+		((rtmp_client*)r->rtmp_client_wrapper)->process_audio(packet);
 }
 
 static void
 HandleVideo(RTMP *r, const RTMPPacket *packet)
 {
+	if (r && r->rtmp_client_wrapper)
+		((rtmp_client*)r->rtmp_client_wrapper)->process_video(packet);
 }
 
 static void

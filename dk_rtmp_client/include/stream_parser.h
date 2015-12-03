@@ -8,7 +8,6 @@
 class stream_parser
 {
 public:
-	static bool is_vps(dk_rtmp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type);
 	static bool is_sps(dk_rtmp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type);
 	static bool is_pps(dk_rtmp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type);
 	static bool is_idr(dk_rtmp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type);

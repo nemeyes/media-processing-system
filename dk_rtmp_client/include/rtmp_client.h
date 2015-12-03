@@ -3,11 +3,7 @@
 
 #include "dk_rtmp_client.h"
 
-namespace RTMP_LIB
-{
-	class CRTMP;
-}
-
+typedef struct RTMPPacket RTMPPacket;
 class rtmp_client
 {
 public:
@@ -15,6 +11,9 @@ public:
 	~rtmp_client(void);
 	dk_rtmp_client::ERROR_CODE play(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
 	dk_rtmp_client::ERROR_CODE stop(void);
+
+	void process_video(const RTMPPacket * packet);
+	void process_audio(const RTMPPacket * packet);
 
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
@@ -49,27 +48,22 @@ private:
 	int32_t _sps_size;
 	int32_t _pps_size;
 
-
-	uint8_t * _buffer;
+	char * _buffer;
 	int32_t _buffer_size;
 
+	//bool _first;
+	bool _rcv_first_idr;
+	bool _change_sps;
+	bool _change_pps;
 
-	bool _is_first_idr_rcvd;
+
 	/*
-	int32_t _protocol;
-	char _host[512];
-	uint32_t _port;
-	char _playpath[512];
-	char _app[512];
-	char _tc_url[512];
-	uint8_t * _swf_hash;
-	int32_t _swf_size;
-	char _flash_version[200];
-	char _subscribe_path[512];
-	long int _timeout;
-
-	RTMP_LIB::CRTMP * _librtmp;
+	uint8_t extradata[200] = { 0 };
+	size_t extradata_size = 0;
+	struct timeval presentation_time = { 0, 0 };
+	uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
 	*/
+
 };
 
 #endif // _DK_RTMP_CLIENT_H_
