@@ -53,7 +53,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\3rdparty\openssl\win32\x86\include;include;librtmp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -84,22 +84,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="librtmp\AMFObject.cpp" />
-    <ClCompile Include="librtmp\bytes.cpp" />
-    <ClCompile Include="librtmp\dh.cpp" />
-    <ClCompile Include="librtmp\handshake.cpp" />
-    <ClCompile Include="librtmp\log.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="librtmp\amf.cpp" />
+    <ClCompile Include="librtmp\hashswf.cpp" />
+    <ClCompile Include="librtmp\log.cpp" />
     <ClCompile Include="librtmp\parseurl.cpp" />
     <ClCompile Include="librtmp\rtmp.cpp" />
-    <ClCompile Include="librtmp\rtmpdump.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="librtmp\rtmppacket.cpp" />
-    <ClCompile Include="librtmp\streams.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="source\dk_rtmp_client.cpp" />
     <ClCompile Include="source\rtmp_client.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -112,14 +101,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="include\stream_parser.h" />
-    <ClInclude Include="librtmp\AMFObject.h" />
+    <ClInclude Include="librtmp\amf.h" />
     <ClInclude Include="librtmp\bytes.h" />
     <ClInclude Include="librtmp\dh.h" />
     <ClInclude Include="librtmp\dhgroups.h" />
+    <ClInclude Include="librtmp\handshake.h" />
+    <ClInclude Include="librtmp\http.h" />
     <ClInclude Include="librtmp\log.h" />
-    <ClInclude Include="librtmp\parseurl.h" />
     <ClInclude Include="librtmp\rtmp.h" />
-    <ClInclude Include="librtmp\rtmppacket.h" />
+    <ClInclude Include="librtmp\rtmp_sys.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

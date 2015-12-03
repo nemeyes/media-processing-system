@@ -1,55 +1,63 @@
-/*  RTMP Dump
+/*
  *  Copyright (C) 2008-2009 Andrej Stepanchuk
- *  Copyright (C) 2009 Howard Chu
+ *  Copyright (C) 2009-2010 Howard Chu
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
+ *  This file is part of librtmp.
  *
- *  This Program is distributed in the hope that it will be useful,
+ *  librtmp is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1,
+ *  or (at your option) any later version.
+ *
+ *  librtmp is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with RTMPDump; see the file COPYING.  If not, write to
- *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
- *  http://www.gnu.org/copyleft/gpl.html
- *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with librtmp see the file COPYING.  If not, write to
+ *  the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ *  Boston, MA  02110-1301, USA.
+ *  http://www.gnu.org/copyleft/lgpl.html
  */
 
-#ifndef __LOG_H__
-#define __LOG_H__
+#ifndef __RTMP_LOG_H__
+#define __RTMP_LOG_H__
 
 #include <stdio.h>
+#include <stdarg.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-// Enable this to get full debugging output
-//#define _DEBUG
-#define CRYPTO
+/* Enable this to get full debugging output */
+/* #define _DEBUG */
 
 #ifdef _DEBUG
 #undef NODEBUG
 #endif
 
-#define LOGCRIT         0
-#define LOGERROR        1
-#define LOGWARNING	2
-#define LOGINFO		3
-#define LOGDEBUG		4
-#define LOGALL		5
+typedef enum
+{ RTMP_LOGCRIT=0, RTMP_LOGERROR, RTMP_LOGWARNING, RTMP_LOGINFO,
+  RTMP_LOGDEBUG, RTMP_LOGDEBUG2, RTMP_LOGALL
+} RTMP_LogLevel;
 
-void LogSetOutput(FILE *file);
-void LogPrintf(const char *format, ...);
-void LogStatus(const char *format, ...);
-void Log(int level, const char *format, ...);
-void LogHex(int level, const char *data, unsigned long len);
-void LogHexString(const char *data, unsigned long len);
+extern RTMP_LogLevel RTMP_debuglevel;
+
+typedef void (RTMP_LogCallback)(int level, const char *fmt, va_list);
+void RTMP_LogSetCallback(RTMP_LogCallback *cb);
+void RTMP_LogSetOutput(FILE *file);
+void RTMP_LogPrintf(const char *format, ...);
+void RTMP_LogStatus(const char *format, ...);
+void RTMP_Log(int level, const char *format, ...);
+void RTMP_LogHex(int level, const uint8_t *data, unsigned long len);
+void RTMP_LogHexString(int level, const uint8_t *data, unsigned long len);
+void RTMP_LogSetLevel(RTMP_LogLevel lvl);
+RTMP_LogLevel RTMP_LogGetLevel(void);
 
 #ifdef __cplusplus
 }
 #endif
+
 #endif

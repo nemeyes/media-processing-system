@@ -18,34 +18,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="librtmp\AMFObject.cpp">
-      <Filter>librtmp</Filter>
-    </ClCompile>
-    <ClCompile Include="librtmp\handshake.cpp">
-      <Filter>librtmp</Filter>
-    </ClCompile>
-    <ClCompile Include="librtmp\rtmp.cpp">
-      <Filter>librtmp</Filter>
-    </ClCompile>
-    <ClCompile Include="librtmp\rtmpdump.cpp">
-      <Filter>librtmp</Filter>
-    </ClCompile>
-    <ClCompile Include="librtmp\rtmppacket.cpp">
-      <Filter>librtmp</Filter>
-    </ClCompile>
-    <ClCompile Include="librtmp\streams.cpp">
-      <Filter>librtmp</Filter>
-    </ClCompile>
     <ClCompile Include="source\dk_rtmp_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\rtmp_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="librtmp\bytes.cpp">
+    <ClCompile Include="source\stream_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="librtmp\amf.cpp">
       <Filter>librtmp</Filter>
     </ClCompile>
-    <ClCompile Include="librtmp\dh.cpp">
+    <ClCompile Include="librtmp\hashswf.cpp">
       <Filter>librtmp</Filter>
     </ClCompile>
     <ClCompile Include="librtmp\log.cpp">
@@ -54,12 +39,21 @@
     <ClCompile Include="librtmp\parseurl.cpp">
       <Filter>librtmp</Filter>
     </ClCompile>
-    <ClCompile Include="source\stream_parser.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="librtmp\rtmp.cpp">
+      <Filter>librtmp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="librtmp\AMFObject.h">
+    <ClInclude Include="include\dk_rtmp_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rtmp_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stream_parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="librtmp\amf.h">
       <Filter>librtmp</Filter>
     </ClInclude>
     <ClInclude Include="librtmp\bytes.h">
@@ -71,26 +65,20 @@
     <ClInclude Include="librtmp\dhgroups.h">
       <Filter>librtmp</Filter>
     </ClInclude>
-    <ClInclude Include="librtmp\log.h">
+    <ClInclude Include="librtmp\handshake.h">
       <Filter>librtmp</Filter>
     </ClInclude>
-    <ClInclude Include="librtmp\parseurl.h">
+    <ClInclude Include="librtmp\http.h">
+      <Filter>librtmp</Filter>
+    </ClInclude>
+    <ClInclude Include="librtmp\log.h">
       <Filter>librtmp</Filter>
     </ClInclude>
     <ClInclude Include="librtmp\rtmp.h">
       <Filter>librtmp</Filter>
     </ClInclude>
-    <ClInclude Include="librtmp\rtmppacket.h">
+    <ClInclude Include="librtmp\rtmp_sys.h">
       <Filter>librtmp</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dk_rtmp_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rtmp_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\stream_parser.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

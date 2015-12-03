@@ -13,11 +13,6 @@
 #endif
 #endif
 
-namespace RTMP_LIB
-{
-	class CRTMP;
-}
-
 class EXP_CLASS dk_rtmp_client
 {
 public:

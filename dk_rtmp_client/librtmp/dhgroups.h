@@ -1,33 +1,35 @@
-/*  RTMPDump - Diffie-Hellmann Key Exchange
+/*  librtmp - Diffie-Hellmann Key Exchange
  *  Copyright (C) 2009 Andrej Stepanchuk
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
+ *  This file is part of librtmp.
  *
- *  This Program is distributed in the hope that it will be useful,
+ *  librtmp is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1,
+ *  or (at your option) any later version.
+ *
+ *  librtmp is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with RTMPDump; see the file COPYING.  If not, write to
- *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
- *  http://www.gnu.org/copyleft/gpl.html
- *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with librtmp see the file COPYING.  If not, write to
+ *  the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ *  Boston, MA  02110-1301, USA.
+ *  http://www.gnu.org/copyleft/lgpl.html
  */
 
 /* from RFC 3526, see http://www.ietf.org/rfc/rfc3526.txt */
 
-// 2^768 - 2 ^704 - 1 + 2^64 * { [2^638 pi] + 149686 }
+/* 2^768 - 2 ^704 - 1 + 2^64 * { [2^638 pi] + 149686 } */
 #define P768 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
 	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
 	"EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245" \
 	"E485B576625E7EC6F44C42E9A63A3620FFFFFFFFFFFFFFFF"
 
-// 2^1024 - 2^960 - 1 + 2^64 * { [2^894 pi] + 129093 }
+/* 2^1024 - 2^960 - 1 + 2^64 * { [2^894 pi] + 129093 } */
 #define P1024 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
 	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
@@ -36,7 +38,7 @@
 	"EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE65381" \
 	"FFFFFFFFFFFFFFFF"
 
-// Group morder largest prime factor:
+/* Group morder largest prime factor: */
 #define Q1024 \
 	"7FFFFFFFFFFFFFFFE487ED5110B4611A62633145C06E0E68" \
         "948127044533E63A0105DF531D89CD9128A5043CC71A026E" \
@@ -45,7 +47,7 @@
         "F71C35FDAD44CFD2D74F9208BE258FF324943328F67329C0" \
         "FFFFFFFFFFFFFFFF"
 
-// 2^1536 - 2^1472 - 1 + 2^64 * { [2^1406 pi] + 741804 }
+/* 2^1536 - 2^1472 - 1 + 2^64 * { [2^1406 pi] + 741804 } */
 #define P1536 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
         "29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
@@ -56,7 +58,7 @@
         "83655D23DCA3AD961C62F356208552BB9ED529077096966D" \
         "670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF"
 
-// 2^2048 - 2^1984 - 1 + 2^64 * { [2^1918 pi] + 124476 }
+/* 2^2048 - 2^1984 - 1 + 2^64 * { [2^1918 pi] + 124476 } */
 #define P2048 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
 	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
@@ -70,7 +72,7 @@
 	"DE2BCBF6955817183995497CEA956AE515D2261898FA0510" \
 	"15728E5A8AACAA68FFFFFFFFFFFFFFFF"
 
-// 2^3072 - 2^3008 - 1 + 2^64 * { [2^2942 pi] + 1690314 }
+/* 2^3072 - 2^3008 - 1 + 2^64 * { [2^2942 pi] + 1690314 } */
 #define P3072 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
 	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
@@ -89,7 +91,7 @@
 	"BBE117577A615D6C770988C0BAD946E208E24FA074E5AB31" \
 	"43DB5BFCE0FD108E4B82D120A93AD2CAFFFFFFFFFFFFFFFF"
 
-// 2^4096 - 2^4032 - 1 + 2^64 * { [2^3966 pi] + 240904 }
+/* 2^4096 - 2^4032 - 1 + 2^64 * { [2^3966 pi] + 240904 } */
 #define P4096 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
 	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
@@ -114,7 +116,7 @@
 	"93B4EA988D8FDDC186FFB7DC90A6C08F4DF435C934063199" \
 	"FFFFFFFFFFFFFFFF"
 
-// 2^6144 - 2^6080 - 1 + 2^64 * { [2^6014 pi] + 929484 }
+/* 2^6144 - 2^6080 - 1 + 2^64 * { [2^6014 pi] + 929484 } */
 #define P6144 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
 	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
@@ -149,7 +151,7 @@
 	"DA56C9EC2EF29632387FE8D76E3C0468043E8F663F4860EE" \
 	"12BF2D5B0B7474D6E694F91E6DCC4024FFFFFFFFFFFFFFFF"
 
-// 2^8192 - 2^8128 - 1 + 2^64 * { [2^8062 pi] + 4743158 }
+/* 2^8192 - 2^8128 - 1 + 2^64 * { [2^8062 pi] + 4743158 } */
 #define P8192 \
 	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
 	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \

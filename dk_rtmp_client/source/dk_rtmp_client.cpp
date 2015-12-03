@@ -8,10 +8,10 @@
 #include <cstdio>
 #include <cstring>
 
-#include "rtmp.h"
+#include "rtmp_sys.h"
 #include "log.h"
-#include "AMFObject.h"
-#include "parseurl.h"
+#include "amf.h"
+#include "rtmp.h"
 
 #include "stream_parser.h"
 
@@ -19,12 +19,6 @@
 
 
 bool bCtrlC = false;
-
-#if defined(_DEBUG)
-int debuglevel = 1;
-FILE *netstackdump = 0;
-FILE *netstackdump_read = 0;
-#endif
 
 dk_rtmp_client::dk_rtmp_client(void)
 {
@@ -34,26 +28,6 @@ dk_rtmp_client::dk_rtmp_client(void)
 	_buffer_size = 1024 * 1024 * 2;//2MB
 	_buffer = (uint8_t*)malloc(_buffer_size);
 }
-
-/*
-dk_rtmp_client::dk_rtmp_client(void)
-	: _protocol(RTMP_PROTOCOL_UNDEFINED)
-	, _port(1935)
-	, _swf_hash(nullptr)
-	, _swf_size(0)
-	, _timeout(120) //timeout connection after 120 seconds
-{
-	memset(_host, 0x00, sizeof(_host));
-	memset(_playpath, 0x00, sizeof(_playpath));
-	memset(_app, 0x00, sizeof(_app));
-	memset(_tc_url, 0x00, sizeof(_tc_url));
-	strcpy(_flash_version, DEFAULT_FLASH_VER);
-	memset(_subscribe_path, 0x00, sizeof(_subscribe_path));
-
-	WSADATA wsd;
-	WSAStartup(MAKEWORD(2, 2), &wsd);
-}
-*/
 
 dk_rtmp_client::~dk_rtmp_client(void)
 {
@@ -128,57 +102,40 @@ void dk_rtmp_client::process(void)
 {
 	do
 	{
-#if defined(_DEBUG)
-		netstackdump = fopen("netstackdump", "wb");
-		netstackdump_read = fopen("netstackdump_read", "wb");
-#endif
-		//int32_t protocol = RTMP_PROTOCOL_UNDEFINED;
-		//char host[512] = { 0 };
-		//uint32_t port = 1935;
-		//char _playpath[512] = { 0 };
-		//char _app[512] = { 0 };
-		//char _tc_url[512] = { 0 };
-		char * _swf_hash = 0;
-		int32_t _swf_size = 0;
-		char _flash_version[512];
-		strcpy(_flash_version, DEFAULT_FLASH_VER);
-		char _subscribe_path[512] = { 0 };
-		long int _timeout = 120;
-
-		RTMP_LIB::CRTMP * rtmp = new RTMP_LIB::CRTMP();
-
-
-		int32_t protocol = RTMP_PROTOCOL_RTMP;
-		char * host = 0;
+		int32_t protocol = RTMP_PROTOCOL_UNDEFINED;
+		AVal host = { 0, 0 };
 		uint32_t port = 1935;
-		char * sock_host = 0;
-		char * playpath = 0;
-		char * app = 0;
-		char * tc_url = 0;
-		char * swf_url = 0;
-		char * page_url = 0;
-		char * auth = 0;
-		char * swf_hash = 0;
+		AVal playpath = { 0, 0 };
+		AVal app = { 0, 0 };
+		AVal tc_url = { 0, 0 };
+		AVal swf_url = { 0, 0 };
+		AVal page_url = { 0, 0 };
+		AVal auth = { 0, 0 };
+		AVal swf_hash = { 0, 0 };
 		int32_t swf_size = 0;
-		char * flash_version = _strdup(DEFAULT_FLASH_VER);
-		char * subscribe_path = 0;
+		AVal flash_version = { 0, 0 };
+		AVal sock_host = { 0, 0 };
+		AVal subscribe_path = { 0, 0 };
 
 		long int timeout = 120;
-		uint32_t seek = 0;	 // seek position in resume mode, 0 otherwise
-		uint32_t length = 0;
+		int32_t seek = 0;	 // seek position in resume mode, 0 otherwise
 		double duration = 0.0;
-
 		uint32_t buffer_time = 10 * 60 * 60 * 1000; // 10 hours as default
 
-		if (ParseUrl((char*)_url, &protocol, &host, &port, &playpath, &app))
+		RTMP rtmp = { 0 };
+		RTMP_debuglevel = RTMP_LOGINFO;
+		RTMP_Init(&rtmp);
+
+		if (RTMP_ParseURL((char*)_url, &protocol, &host, &port, &playpath, &app))
 		{
-			if (!tc_url && app)
+			if (tc_url.av_len==0)
 			{
 				char str[512] = { 0 };
-				_snprintf(str, 511, "%s://%s:%d/%s", RTMPProtocolStringsLower[protocol], host, port, app);
-				tc_url = _strdup(str);
+				tc_url.av_len = snprintf(str, 511, "%s://%.*s:%d/%.*s", RTMPProtocolStringsLower[protocol], host.av_len, host.av_val, port, app.av_len, app.av_val);
+				tc_url.av_val = (char *)malloc(tc_url.av_len + 1);
+				strcpy(tc_url.av_val, str);
 			}
-			rtmp->SetupStream(protocol, host, port, sock_host, playpath, tc_url, swf_url, page_url, app, auth, swf_hash, swf_size, flash_version, subscribe_path, 0, 0, true, timeout);
+			RTMP_SetupStream(&rtmp, protocol, &host, port, &sock_host, &playpath, &tc_url, &swf_url, &page_url, &app, &auth, &swf_hash, swf_size, &flash_version, &subscribe_path, 0, 0, true, timeout);
 		}
 
 		bool is_first_idr_rcvd = false;
@@ -191,42 +148,42 @@ void dk_rtmp_client::process(void)
 		struct timeval presentation_time = { 0, 0 };
 		uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
 
-
 		bool first = true;
-		while (!bCtrlC)
+		while (!RTMP_ctrlC)
 		{
-			rtmp->SetBufferMS(buffer_time);
+			RTMP_SetBufferMS(&rtmp, buffer_time);
 			if (first)
 			{
 				first = 0;
-				LogPrintf("Connecting ...\n");
+				RTMP_LogPrintf("Connecting ...\n");
 
-				if (!rtmp->Connect())
+				if (!RTMP_Connect(&rtmp, nullptr))
 				{
 					break;
 				}
 
-				Log(LOGINFO, "Connected...");
+				RTMP_Log(RTMP_LOGINFO, "Connected...");
 
-				if (!rtmp->ConnectStream(seek, length))
+				if (!RTMP_ConnectStream(&rtmp, seek))
 				{
 					break;
 				}
 			}
 			else
 			{
+				if (_repeat)
+				{
 
 
+
+
+				}
 			}
+			RTMP_Log(RTMP_LOGINFO, "Starting Live Stream\n");
 
-			LogPrintf("Starting Live Stream\n");
-
-
-
-
-			RTMP_LIB::RTMPPacket packet;
-			int32_t rtn_get_next_media_packet = rtmp->GetNextMediaPacket(packet);
-			if (rtn_get_next_media_packet)
+			RTMPPacket packet;
+			int32_t r = RTMP_ReadPacket(&rtmp, &packet);
+			if (r)
 			{
 				char * packet_body = packet.m_body;
 				uint32_t packet_length = packet.m_nBodySize;
@@ -237,20 +194,20 @@ void dk_rtmp_client::process(void)
 
 				if (packet.m_packetType == 0x09 && packet_length <= 5)
 				{
-					Log(LOGWARNING, "ignoring too small video packet: size: %d", packet_length);
+					RTMP_Log(RTMP_LOGWARNING, "ignoring too small video packet: size: %d", packet_length);
 					continue;
 				}
 
 				if (packet.m_packetType == 0x08 && packet_length <= 1)
 				{
-					Log(LOGWARNING, "ignoring too small audio packet: size: %d", packet_length);
+					RTMP_Log(RTMP_LOGWARNING, "ignoring too small audio packet: size: %d", packet_length);
 					continue;
 				}
 
 #ifdef _DEBUG
-				Log(LOGDEBUG, "type: %02X, size: %d, TS: %d ms, abs TS: %d", packet.m_packetType, packet_length, packet.m_nTimeStamp, packet.m_hasAbsTimestamp);
+				RTMP_Log(RTMP_LOGDEBUG, "type: %02X, size: %d, TS: %d ms, abs TS: %d", packet.m_packetType, packet_length, packet.m_nTimeStamp, packet.m_hasAbsTimestamp);
 				if (packet.m_packetType == 0x09)
-					Log(LOGDEBUG, "frametype: %02X", (*packet_body & 0xf0));
+					RTMP_Log(RTMP_LOGDEBUG, "frametype: %02X", (*packet_body & 0xf0));
 #endif
 
 				uint32_t size = packet_length + ((packet.m_packetType == 0x08 || packet.m_packetType == 0x09 || packet.m_packetType == 0x12) ? 11 : 0) + (packet.m_packetType != 0x16 ? 4 : 0);
@@ -346,8 +303,8 @@ void dk_rtmp_client::process(void)
 						}
 						else if (avc_packet_type == 1)
 						{
-							uint32_t ts = RTMP_LIB::CRTMP::ReadInt24(&packet_body[2]);
-							int32_t cts = (ts + 0xff800000) ^ 0xff800000;
+							//uint32_t ts = RTMP_ReadInt24(&packet_body[2]);
+							//int32_t cts = (ts + 0xff800000) ^ 0xff800000;
 
 							int32_t remained_packet_length = packet_length - 5;
 
@@ -408,45 +365,6 @@ void dk_rtmp_client::process(void)
 						{
 
 						}
-
-						/*if (!is_first_idr_rcvd)
-						{
-
-							bool is_idr = stream_parser::is_idr(dk_rtmp_client::SUBMEDIA_TYPE_H264, packet_body[4] & 0x1F);
-
-							if (change_sps || change_pps)
-							{
-								saved_sps = get_sps(saved_sps_size);
-								saved_pps = get_pps(saved_pps_size);
-								if ((saved_sps_size > 0) && (saved_pps_size > 0))
-								{
-									memcpy(extradata, saved_sps, saved_sps_size);
-									memcpy(extradata + saved_sps_size, saved_pps, saved_pps_size);
-									extradata_size = saved_sps_size + saved_pps_size;
-
-									if (is_idr && !is_first_idr_rcvd)
-									{
-										memmove(_buffer + extradata_size, packet_body, packet_length);
-										memmove(_buffer, extradata, extradata_size);
-										is_first_idr_rcvd = true;
-
-										on_begin_media(dk_rtmp_client::MEDIA_TYPE_VIDEO, dk_rtmp_client::SUBMEDIA_TYPE_H264, saved_sps, saved_sps_size, saved_pps, saved_pps_size, _buffer, packet_length + extradata_size, presentation_time);
-										change_sps = false;
-										change_pps = false;
-									}
-								}
-							}
-
-							if (!is_sps && !is_pps && is_first_idr_rcvd)
-							{
-								saved_sps = get_sps(saved_sps_size);
-								saved_pps = get_pps(saved_pps_size);
-								if (saved_sps_size > 0 && saved_pps_size > 0)
-								{
-									on_recv_media(dk_rtmp_client::MEDIA_TYPE_VIDEO, dk_rtmp_client::SUBMEDIA_TYPE_H264, (uint8_t*)packet_body, packet_length, presentation_time);
-								}
-							}
-						}*/
 					}
 				}
 				else if (packet.m_packetType == 0x08)
@@ -461,24 +379,7 @@ void dk_rtmp_client::process(void)
 			}
 		}
 
-		rtmp->Close();
-
-
-		if (host)
-			free(host);
-		if (playpath)
-			free(playpath);
-		if (app)
-			free(app);
-		if (tc_url)
-			free(tc_url);
-
-#if defined(_DEBUG)
-		if (netstackdump != 0)
-			fclose(netstackdump);
-		if (netstackdump_read != 0)
-			fclose(netstackdump_read);
-#endif
+		RTMP_Close(&rtmp);
 	} while (0/*_repeat*/);
 }
 
