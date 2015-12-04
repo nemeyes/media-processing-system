@@ -103,6 +103,18 @@ void rtmp_client::set_pps(uint8_t * pps, size_t pps_size)
 	_pps_size = pps_size;
 }
 
+void rtmp_client::clear_sps(void)
+{
+	memset(_sps, 0x00, sizeof(_sps));
+	_sps_size = 0;
+}
+
+void rtmp_client::clear_pps(void)
+{
+	memset(_pps, 0x00, sizeof(_pps));
+	_pps_size = 0;
+}
+
 void rtmp_client::process_video(const RTMPPacket * packet)
 {
 	uint8_t extradata[200] = { 0 };
@@ -304,6 +316,8 @@ void rtmp_client::process(void)
 			RTMP_SetupStream(&rtmp, protocol, &host, port, &sock_host, &playpath, &tc_url, &swf_url, &page_url, &app, &auth, &swf_hash, swf_size, &flash_version, &subscribe_path, 0, 0, true, timeout);
 		}
 
+		clear_sps();
+		clear_pps();
 		_rcv_first_idr = false;
 		_change_sps = false;
 		_change_pps = false;
@@ -317,11 +331,13 @@ void rtmp_client::process(void)
 
 		RTMP_ctrlC = false;
 		int32_t nb_read = 0;
-
-		uint32_t now = RTMP_GetTime();
 		do
 		{
 			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
+
+			double duration = RTMP_GetDuration(&rtmp);
+			Sleep(duration/1000.f);
+
 		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
 
 		RTMP_Close(&rtmp);

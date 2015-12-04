@@ -161,6 +161,7 @@ bool dk_ddraw_video_renderer::is_initialized(void)
 
 dk_ddraw_video_renderer::ERR_CODE dk_ddraw_video_renderer::initialize_renderer(configuration_t * config)
 {
+	release_renderer();
 	_config = config;
 	_full_screen_hwnd = _config->full_hwnd;
 	_noraml_screen_hwnd = _config->normal_hwnd;

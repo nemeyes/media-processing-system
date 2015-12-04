@@ -21,6 +21,8 @@ public:
 private:
 	void set_sps(uint8_t * sps, size_t sps_size);
 	void set_pps(uint8_t * pps, size_t pps_size);
+	void clear_sps(void);
+	void clear_pps(void);
 
 	void process(void);
 #if !defined(WIN32)
