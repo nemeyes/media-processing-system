@@ -6,6 +6,7 @@
 #include <pthread.h>
 #define EXP_CLASS
 #else
+#include <windows.h>
 #if defined(EXPORT_LIB)
 #define EXP_CLASS __declspec(dllexport)
 #else
@@ -23,17 +24,40 @@ public:
 		MEDIA_TYPE_AUDIO
 	} MEDIA_TYPE_T;
 
-	typedef enum _SUBMEDIA_TYPE_T
+	typedef enum _VIDEO_SUBMEDIA_TYPE_T
 	{
-		SUBMEDIA_TYPE_H264 = 0,
-		SUBMEDIA_TYPE_JPEG,
-	} SUBMEDIA_TYPE_T;
+		UNKNOWN_SUBMEDIA_TYPE = -1,
+		SUBMEDIA_TYPE_JPEG = 0,
+		SUBMEDIA_TYPE_SORENSON_H263,
+		SUBMEDIA_TYPE_SCREEN_VIDEO,
+		SUBMEDIA_TYPE_VP6,
+		SUBMEDIA_TYPE_VP_WITH_ALPHA_CHANNEL,
+		SUBMEDIA_TYPE_SCREEN_VIDEO_VERSION2,
+		SUBMEDIA_TYPE_AVC,
+	} VIDEO_SUBMEDIA_TYPE_T;
 
-	typedef enum _ERROR_CODE
+	typedef enum _AUDIO_SUBMEDIA_TYPE_T
 	{
-		ERROR_CODE_SUCCESS = 0,
-		ERROR_CODE_FAIL
-	} ERROR_CODE;
+		UNKNOWN_SUBMEDIA_TYPE = -1,
+		SUBMEDIA_TYPE_LINEAR_PCM_PE = 0, //platform endian
+		SUBMEDIA_TYPE_ADPCM,
+		SUBMEDIA_TYPE_MP3,
+		SUBMEDIA_TYPE_LINEAR_PCM_LE, //little endian
+		SUBMEDIA_TYPE_NELLYMOSER_16KHZ,
+		SUBMEDIA_TYPE_NELLYMOSER_8KHZ,
+		SUBMEDIA_TYPE_NELLYMOSER,
+		SUBMEDIA_TYPE_ALAW,
+		SUBMEDIA_TYPE_MLAW,
+		SUBMEDIA_TYPE_AAC = 10,
+		SUBMEDIA_TYPE_SPEEX,
+		SUBMEDIA_TYPE_MP3_8KHZ,
+	} AUDIO_SUBMEDIA_TYPE_T;
+
+	typedef enum _ERR_CODE
+	{
+		ERR_CODE_SUCCESS = 0,
+		ERR_CODE_FAIL
+	} ERR_CODE;
 
 	typedef enum _RECV_OPTION_T
 	{
@@ -42,30 +66,31 @@ public:
 		RECV_AUDIO
 	} RECV_OPTION_T;
 
-	typedef enum _TRANSPORT_OPTION_T
-	{
-		RTP_OVER_UDP = 0,
-		RTP_OVER_TCP,
-		RTP_OVER_HTTP
-	} TRANSPORT_OPTION_T;
-
-	typedef enum _FOCUS_OPTION_T
-	{
-		FOCUS_ON_NOTHING = 0,
-		FOCUS_ON_VIDEO,
-		FOCUS_ON_AUDIO
-	} FOCUS_OPTION_T;
-
 	dk_rtmp_client(void);
 	~dk_rtmp_client(void);
-	dk_rtmp_client::ERROR_CODE play(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
-	dk_rtmp_client::ERROR_CODE stop(void);
 
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
+	void set_sps(uint8_t * sps, size_t sps_size);
+	void set_pps(uint8_t * pps, size_t pps_size);
+	void clear_sps(void);
+	void clear_pps(void);
 
-	virtual void on_begin_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
-	virtual void on_recv_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
+	dk_rtmp_client::ERR_CODE subscribe_end(void);
+	//dk_rtmp_client::ERROR_CODE pause(void);
+	virtual void on_begin_media(MEDIA_TYPE_T mt, VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	virtual void on_recv_media(MEDIA_TYPE_T mt, VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+
+	virtual void on_begin_media(MEDIA_TYPE_T mt, AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configsize, struct timeval presentation_time) = 0;
+	virtual void on_recv_media(MEDIA_TYPE_T mt, AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+
+
+
+	dk_rtmp_client::ERR_CODE publish_begin(VIDEO_SUBMEDIA_TYPE_T vsmt, AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password);
+	dk_rtmp_client::ERR_CODE publish_video(uint8_t * bitstream, size_t nb);
+	dk_rtmp_client::ERR_CODE publish_audio(uint8_t * bitstream, size_t nb);
+	dk_rtmp_client::ERR_CODE publish_end(void);
 
 private:
 	rtmp_client * _core;

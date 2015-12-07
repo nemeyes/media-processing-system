@@ -21,12 +21,12 @@ void dk_rtmp_receiver::start_preview(const char * url, const char * username, co
 	_renderer = new dk_ddraw_video_renderer();
 	_is_preview_enabled = true;
 	_normal_hwnd = handle;
-	dk_rtmp_client::play(url, username, password, recv_option, true);
+	dk_rtmp_client::subscribe_begin(url, username, password, recv_option, true);
 }
 
 void dk_rtmp_receiver::stop_preview(void)
 {
-	dk_rtmp_client::stop();
+	dk_rtmp_client::subscribe_end();
 	if (_decoder)
 	{
 		_decoder->release_decoder();
@@ -41,12 +41,12 @@ void dk_rtmp_receiver::start_recording(const char * url, const char * username, 
 {
 	_mpeg2ts_saver = new dk_mpeg2ts_saver();
 	_is_recording_enabled = true;
-	dk_rtmp_client::play(url, username, password, recv_option, true);
+	dk_rtmp_client::subscribe_begin(url, username, password, recv_option, true);
 }
 
 void dk_rtmp_receiver::stop_recording(void)
 {
-	dk_rtmp_client::stop();
+	dk_rtmp_client::subscribe_end();
 	_is_recording_enabled = false;
 	if (_mpeg2ts_saver)
 	{

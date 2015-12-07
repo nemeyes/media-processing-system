@@ -16,6 +16,9 @@
     <Filter Include="librtmp">
       <UniqueIdentifier>{86e29c5d-6daf-4add-b2bc-3e15df86255f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="buffering">
+      <UniqueIdentifier>{41bc175a-7b8d-4a66-a281-ff337abb6ff7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_rtmp_client.cpp">
@@ -41,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="librtmp\rtmp.cpp">
       <Filter>librtmp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp">
+      <Filter>buffering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="librtmp\rtmp_sys.h">
       <Filter>librtmp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h">
+      <Filter>buffering</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
