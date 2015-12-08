@@ -55,62 +55,7 @@ void dk_rtmp_receiver::stop_recording(void)
 	}
 }
 
-/*void dk_rtmp_receiver::on_begin_media_h264(uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, uint8_t * idr, size_t idrsize)
-{
-if (_is_preview_enabled)
-{
-do
-{
-if (parse_sps((BYTE*)(sps), spssize, &_decoder_config.iwidth, &_decoder_config.iheight, &_decoder_config.sarw, &_decoder_config.sarh) > 0)
-{
-_decoder_config.owidth = _decoder_config.iwidth;
-_decoder_config.oheight = _decoder_config.iheight;
-_decoder_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
-_decoder_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
-
-dk_ff_video_decoder::ERR_CODE decode_err = _decoder->initialize_decoder(&_decoder_config);
-if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
-{
-dk_video_entity_t encoded = { 0, };
-dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
-encoded.data = (uint8_t*)idr;
-encoded.data_size = idrsize;
-decode_err = _decoder->decode(&encoded, &decoded);
-if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
-{
-dk_render_entity_t render = { 0, };
-render.data = decoded.data;
-render.data_size = decoded.data_size;
-_renderer->render(&render);
-}
-}
-
-}
-} while (0);
-
-_renderer_config.normal_hwnd = _normal_hwnd;
-_renderer_config.width = _decoder_config.iwidth;
-_renderer_config.height = _decoder_config.iheight;
-_renderer->initialize_renderer(&_renderer_config);
-}
-else if (_is_recording_enabled)
-{
-//dk_ff_mpeg2ts_muxer::configuration_t config;
-//config.extra_data_size = data_size;
-//memcpy(config.extra_data, data, data_size);
-//config.width = 1280;
-//config.height = 720;
-//config.fps = 30;
-//config.stream_index = 0;
-//config.bitrate = 4000000;
-//_mpeg2ts_muxer->initialize(config);
-}
-//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
-}*/
-
-void dk_rtmp_receiver::on_begin_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, 
-									  uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size,
-									  struct timeval presentation_time)
+void dk_rtmp_receiver::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
 	if (_is_preview_enabled)
 	{
@@ -166,49 +111,41 @@ void dk_rtmp_receiver::on_begin_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_c
 	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
 
-void dk_rtmp_receiver::on_recv_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
-	if (mt == dk_rtmp_client::MEDIA_TYPE_VIDEO)
+	if (_is_preview_enabled)
 	{
-		if (_is_preview_enabled)
+		dk_video_entity_t encoded = { 0, };
+		dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
+		encoded.data = (uint8_t*)data;
+		encoded.data_size = data_size;
+		dk_ff_video_decoder::ERR_CODE decode_err = _decoder->decode(&encoded, &decoded);
+		if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 		{
-			dk_video_entity_t encoded = { 0, };
-			dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
-			encoded.data = (uint8_t*)data;
-			encoded.data_size = data_size;
-			dk_ff_video_decoder::ERR_CODE decode_err = _decoder->decode(&encoded, &decoded);
-			if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
+			/*
+			if (_frame_count>1000 && _frame_count<1100)
 			{
-				/*
-				if (_frame_count>1000 && _frame_count<1100)
-				{
-				dk_image_creator bmp_creator(_decoder_config.owidth, _decoder_config.oheight);
-				memcpy(bmp_creator.pixel_buffer, _buffer, _decoder_config.owidth*_decoder_config.oheight * 4);
-				wchar_t filename[100] = { 0, };
-				_snwprintf_s(filename, sizeof(filename), L"%d.bmp", _frame_count);
-				bmp_creator.save(filename);
-				}
-				_frame_count++;
-				*/
-
-				dk_render_entity_t render = { 0, };
-				render.data = decoded.data;
-				render.data_size = decoded.data_size;
-				_renderer->render(&render);
+			dk_image_creator bmp_creator(_decoder_config.owidth, _decoder_config.oheight);
+			memcpy(bmp_creator.pixel_buffer, _buffer, _decoder_config.owidth*_decoder_config.oheight * 4);
+			wchar_t filename[100] = { 0, };
+			_snwprintf_s(filename, sizeof(filename), L"%d.bmp", _frame_count);
+			bmp_creator.save(filename);
 			}
+			_frame_count++;
+			*/
+
+			dk_render_entity_t render = { 0, };
+			render.data = decoded.data;
+			render.data_size = decoded.data_size;
+			_renderer->render(&render);
 		}
-		else if (_is_recording_enabled)
-		{
-			if ((data[3] & 0x1F) == 0x05)
-				_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
-			else
-				_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
-		}
-		//TRACE(_T("on_recv_media : received video data size is %d\n"), data_size);
 	}
-	else if (mt == dk_rtmp_client::MEDIA_TYPE_AUDIO)
+	else if (_is_recording_enabled)
 	{
-		//TRACE(_T("on_recv_media : received audio data size is %d\n"), data_size);
+		if ((data[3] & 0x1F) == 0x05)
+			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
+		else
+			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
 	}
 }
 

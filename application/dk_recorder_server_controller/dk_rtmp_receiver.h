@@ -19,8 +19,8 @@ public:
 	void start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option);
 	void stop_recording(void);
 
-	void on_begin_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
-	void on_recv_media(dk_rtmp_client::MEDIA_TYPE_T mt, dk_rtmp_client::SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
 
 private:
 	// A general bit copy operation:

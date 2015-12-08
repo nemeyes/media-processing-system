@@ -177,6 +177,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_avc_raw_stream_reader", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_vod_rtsp_server", "..\..\application\dk_vod_rtsp_server\dk_vod_rtsp_server.vcxproj", "{CE63423D-CDC5-43A1-9075-C98E28755DF4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_mpeg2ts_segmenter", "..\..\dk_mpeg2ts_segmenter\dk_mpeg2ts_segmenter.vcxproj", "{44781814-E2BA-4733-B9EB-C61337E81EAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -495,6 +497,12 @@ Global
 		{CE63423D-CDC5-43A1-9075-C98E28755DF4}.Release|Win32.ActiveCfg = Release|Win32
 		{CE63423D-CDC5-43A1-9075-C98E28755DF4}.Release|Win32.Build.0 = Release|Win32
 		{CE63423D-CDC5-43A1-9075-C98E28755DF4}.Release|x64.ActiveCfg = Release|Win32
+		{44781814-E2BA-4733-B9EB-C61337E81EAD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{44781814-E2BA-4733-B9EB-C61337E81EAD}.Debug|Win32.Build.0 = Debug|Win32
+		{44781814-E2BA-4733-B9EB-C61337E81EAD}.Debug|x64.ActiveCfg = Debug|Win32
+		{44781814-E2BA-4733-B9EB-C61337E81EAD}.Release|Win32.ActiveCfg = Release|Win32
+		{44781814-E2BA-4733-B9EB-C61337E81EAD}.Release|Win32.Build.0 = Release|Win32
+		{44781814-E2BA-4733-B9EB-C61337E81EAD}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -580,5 +588,6 @@ Global
 		{8745961A-B2A9-4224-BD89-B08FE4F80BDC} = {9866AB42-AAF7-427A-9F15-738174299D54}
 		{A53EA534-86D2-42EE-8F7F-00EA6D12FC7D} = {8745961A-B2A9-4224-BD89-B08FE4F80BDC}
 		{CE63423D-CDC5-43A1-9075-C98E28755DF4} = {E4B8A439-8AD6-40B4-AF49-854160791F6E}
+		{44781814-E2BA-4733-B9EB-C61337E81EAD} = {689D861F-DF0F-4DFB-8A0F-181D5142552E}
 	EndGlobalSection
 EndGlobal

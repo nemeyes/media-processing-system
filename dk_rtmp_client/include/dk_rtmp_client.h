@@ -26,7 +26,7 @@ public:
 
 	typedef enum _VIDEO_SUBMEDIA_TYPE_T
 	{
-		UNKNOWN_SUBMEDIA_TYPE = -1,
+		UNKNOWN_VIDEO_TYPE = -1,
 		SUBMEDIA_TYPE_JPEG = 0,
 		SUBMEDIA_TYPE_SORENSON_H263,
 		SUBMEDIA_TYPE_SCREEN_VIDEO,
@@ -38,7 +38,7 @@ public:
 
 	typedef enum _AUDIO_SUBMEDIA_TYPE_T
 	{
-		UNKNOWN_SUBMEDIA_TYPE = -1,
+		UNKNOWN_AUDIO_TYPE = -1,
 		SUBMEDIA_TYPE_LINEAR_PCM_PE = 0, //platform endian
 		SUBMEDIA_TYPE_ADPCM,
 		SUBMEDIA_TYPE_MP3,
@@ -79,11 +79,11 @@ public:
 	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
 	dk_rtmp_client::ERR_CODE subscribe_end(void);
 	//dk_rtmp_client::ERROR_CODE pause(void);
-	virtual void on_begin_media(MEDIA_TYPE_T mt, VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
-	virtual void on_recv_media(MEDIA_TYPE_T mt, VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	virtual void on_begin_media(VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	virtual void on_recv_media(VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
 
-	virtual void on_begin_media(MEDIA_TYPE_T mt, AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configsize, struct timeval presentation_time) = 0;
-	virtual void on_recv_media(MEDIA_TYPE_T mt, AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	//virtual void on_begin_media(AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configsize, struct timeval presentation_time) = 0;
+	//virtual void on_recv_media(AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
 
 
 

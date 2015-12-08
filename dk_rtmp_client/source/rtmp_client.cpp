@@ -20,6 +20,7 @@
 #define DEFAULT_BUFTIME	(10 * 60 * 60 * 1000)	/* 10 hours default */
 #define DEFAULT_SKIPFRM	0
 
+#define DEFAULT_METADATA_BUFFER_SIZE 2048
 
 #define MAX_VIDEO_SIZE 1024*1024*2
 
@@ -301,7 +302,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 
 							_rcv_first_idr = true;
 							if (_front)
-								_front->on_begin_media(dk_rtmp_client::MEDIA_TYPE_VIDEO, dk_rtmp_client::SUBMEDIA_TYPE_AVC, saved_sps, saved_sps_size, saved_pps, saved_pps_size, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
+								_front->on_begin_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, saved_sps, saved_sps_size, saved_pps, saved_pps_size, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
 							_change_sps = false;
 							_change_pps = false;
 						}
@@ -318,7 +319,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 						memcpy(_buffer, start_code, sizeof(start_code));
 						memcpy(_buffer + sizeof(start_code), nalu, nalu_size);
 						if (_front)
-							_front->on_recv_media(dk_rtmp_client::MEDIA_TYPE_VIDEO, dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, sizeof(start_code) + nalu_size, presentation_time);
+							_front->on_recv_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, sizeof(start_code) + nalu_size, presentation_time);
 					}
 				}
 
@@ -440,6 +441,10 @@ void rtmp_client::pb_process(void)
 		netstackdump_read = fopen("netstackdump_read", "wb");
 #endif
 
+		//char * pb_metadata_buffer = static_cast<char*>(malloc(DEFAULT_METADATA_BUFFER_SIZE));
+		//char * pb_meta_begin = pb_metadata_buffer + RTMP_MAX_HEADER_SIZE;
+		//char * pb_meta_end = pb_metadata_buffer + DEFAULT_METADATA_BUFFER_SIZE;
+		//pb_meta_begin = AMF_EncodeString(pb_meta_begin, pb_meta_end, &av_setDataFrame);
 		char * pb_video_buffer = static_cast<char*>(malloc(MAX_VIDEO_SIZE));
 		char * pb_audio_buffer = static_cast<char*>(malloc(MAX_AUDIO_SIZE));
 
@@ -459,9 +464,9 @@ void rtmp_client::pb_process(void)
 		AVal subscribe_path = { 0, 0 };
 
 		long int timeout = DEFAULT_TIMEOUT;
-		int32_t seek = 0;	 // seek position in resume mode, 0 otherwise
-		double duration = 0.0;
-		uint32_t buffer_time = DEFAULT_BUFTIME; // 10 hours as default
+		//int32_t seek = 0;	 // seek position in resume mode, 0 otherwise
+		//double duration = 0.0;
+		//uint32_t buffer_time = DEFAULT_BUFTIME; // 10 hours as default
 
 		RTMP rtmp = { 0 };
 		RTMP_debuglevel = RTMP_LOGINFO;
@@ -481,7 +486,7 @@ void rtmp_client::pb_process(void)
 			RTMP_SetupStream(&rtmp, protocol, &host, port, &sock_host, &playpath, &tc_url, &swf_url, &page_url, &app, &auth, &swf_hash, swf_size, &flash_version, &subscribe_path, 0, 0, true, timeout);
 		}
 
-		RTMP_SetBufferMS(&rtmp, buffer_time);
+		//RTMP_SetBufferMS(&rtmp, buffer_time);
 		if (!RTMP_Connect(&rtmp, NULL))
 			break;
 
@@ -493,16 +498,52 @@ void rtmp_client::pb_process(void)
 
 
 		RTMPPacket packet;
+		//packet.m_nChannel = 0x03;     // control channel (invoke)
+		//packet.m_headerType = RTMP_PACKET_SIZE_LARGE;
+		//packet.m_packetType = RTMP_PACKET_TYPE_INFO;
+		//packet.m_nTimeStamp = 0;
+		//packet.m_nInfoField2 = rtmp.m_stream_id;
+		//packet.m_hasAbsTimestamp = TRUE;
+		//packet.m_body = metaDataPacketBuffer.data() + RTMP_MAX_HEADER_SIZE;
+
+		//packet.m_nBodySize = metaDataPacketBuffer.size() - RTMP_MAX_HEADER_SIZE;
+		//if (!RTMP_SendPacket(rtmp, &packet, FALSE))
+		//{
+		//	App->PostStopMessage();
+		//	return;
+		//}
 
 
-		if (_vsmt!=dk_rtmp_client::UNKNOWN_SUBMEDIA_TYPE)
+		if (_vsmt!=dk_rtmp_client::UNKNOWN_VIDEO_TYPE)
 		{
 			packet.m_nChannel = 0x04; //source channel
 			packet.m_headerType = RTMP_PACKET_SIZE_LARGE;
 			packet.m_packetType = RTMP_PACKET_TYPE_VIDEO;
 			packet.m_body = pb_video_buffer + RTMP_MAX_HEADER_SIZE;
 
-
+			if (_vsmt == dk_rtmp_client::SUBMEDIA_TYPE_AVC)
+			{
+				size_t saved_sps_size = 0;
+				size_t saved_pps_size = 0;
+				uint8_t * saved_sps = get_sps(saved_sps_size);
+				uint8_t * saved_pps = get_sps(saved_pps_size);
+				if (saved_sps_size > 0 && saved_pps_size > 0)
+				{
+					memcpy(packet.m_body, saved_sps, saved_sps_size);
+					memcpy(packet.m_body + saved_sps_size, saved_pps, saved_pps_size);
+					packet.m_nBodySize = saved_sps_size + saved_pps_size;
+					if (!RTMP_SendPacket(&rtmp, &packet, FALSE))
+					{
+						RTMP_Close(&rtmp);
+						continue;
+					}
+				}
+				else
+				{
+					RTMP_Close(&rtmp);
+					continue;
+				}
+			}
 		}
 
 		do
@@ -530,7 +571,7 @@ void rtmp_client::pb_process(void)
 			fclose(netstackdump_read);
 #endif
 
-	} while (0/*_repeat*/);
+	} while (_repeat);
 }
 
 #if defined(WIN32)
