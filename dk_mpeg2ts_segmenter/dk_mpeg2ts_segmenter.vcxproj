@@ -80,11 +80,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_mpeg2ts_segmenter.h" />
-    <ClInclude Include="include\mpeg2ts_segmenter.h" />
+    <ClInclude Include="include\mpeg2ts_segment.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_mpeg2ts_segmenter.cpp" />
-    <ClCompile Include="source\mpeg2ts_segmenter.cpp" />
+    <ClCompile Include="source\mpeg2ts_segment.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
