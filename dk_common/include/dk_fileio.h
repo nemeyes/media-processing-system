@@ -51,7 +51,7 @@ inline U32 set_file_pointer64(HANDLE input_file, U64 file_offset, U64 * move_fil
 #endif
 }
 
-inline bool read_file(HANDLE input_file, void * buf, U32 bytes_to_read, U32 * bytes_read, void * operlapped)
+inline bool read_file(HANDLE input_file, void * buf, U32 bytes_to_read, U32 * bytes_read, void * overlapped)
 {
 #if defined (WIN32)
 	ReadFile(input_file, buf, bytes_to_read, (LPDWORD)bytes_read, 0);
@@ -65,6 +65,16 @@ inline bool read_file(HANDLE input_file, void * buf, U32 bytes_to_read, U32 * by
 		*bytes_read = num_bytes_read;
 	}
 	return true;
+#endif
+}
+
+inline bool write_file(HANDLE output_file, void * buf, U32 bytes_to_write, U32 * bytes_written, void * overlapped)
+{
+#if defined (WIN32)
+	::WriteFile(output_file, buf, bytes_to_write, (LPDWORD)bytes_written, 0);
+	return true;
+#elif defined __linux || defined __APPLE__ || defined __MACOSX
+	
 #endif
 }
 

@@ -7,6 +7,7 @@
 #include "dk_record_server_controller_dlg.h"
 #include "afxdialogex.h"
 #include <dk_string_helper.h>
+#include <dk_mpeg2ts_segmenter.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -77,6 +78,7 @@ BEGIN_MESSAGE_MAP(dk_record_server_controller_dlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_START_PREVIEW, &dk_record_server_controller_dlg::OnBnClickedButtonStartPreview)
 	ON_BN_CLICKED(IDC_BUTTON_STOP_PREVIEW, &dk_record_server_controller_dlg::OnBnClickedButtonStopPreview)
 	ON_CBN_SELCHANGE(IDC_COMBO_STREAMING_PROTOCOL, &dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol)
+	ON_BN_CLICKED(IDC_BUTTON_SEGMENT, &dk_record_server_controller_dlg::OnBnClickedButtonSegment)
 END_MESSAGE_MAP()
 
 
@@ -322,5 +324,23 @@ void dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol()
 		_cmb_retry_connection.SetCurSel(0);
 
 		_url.SetWindowTextW(_T("rtmp://121.135.165.90/vod/00.flv"));
+	}
+}
+
+
+void dk_record_server_controller_dlg::OnBnClickedButtonSegment()
+{
+	// TODO: Add your control notification handler code here
+	wchar_t filter[] = L"Media Files(*.ts)|*.ts||"; //L"All Files(*.*)|*.*||";
+	CFileDialog dlg(TRUE, L"ts", NULL, OFN_HIDEREADONLY, filter);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		CString filename = dlg.GetPathName();
+		dk_mpeg2ts_segmenter segmenter;
+
+		segmenter.initialize((LPWSTR)(LPCWSTR)filename, L"test", L"C:\\workspace\\01.reference\\media-processing-system\\build\\win32\\x86\\debug\\bin", L"stream", 30);
+		segmenter.segment();
+		segmenter.release();
 	}
 }

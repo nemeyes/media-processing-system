@@ -50,4 +50,5 @@ public:
 	afx_msg void OnBnClickedButtonStartPreview();
 	afx_msg void OnBnClickedButtonStopPreview();
 	afx_msg void OnCbnSelchangeComboStreamingProtocol();
+	afx_msg void OnBnClickedButtonSegment();
 };
