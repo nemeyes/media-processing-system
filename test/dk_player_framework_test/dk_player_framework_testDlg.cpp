@@ -284,7 +284,7 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenFile()
 	BOOL uc_checked = IsDlgButtonChecked(IDC_CHECK_USE_CLOCK);
 	BOOL ea_checked = IsDlgButtonChecked(IDC_CHECK_ENABLE_AUDIO);
 
-	wchar_t filter[] = L"Media Files(*.mkv, *.avi, *.mp4)|*.mkv;*.avi;*.mp4||"; //L"All Files(*.*)|*.*||";
+	wchar_t filter[] = L"Media Files(*.mkv, *.avi, *.mp4, *.wmv)|*.mkv;*.avi;*.mp4;*.wmv||"; //L"All Files(*.*)|*.*||";
 	CFileDialog dlg(TRUE, L"mkv", NULL, OFN_HIDEREADONLY, filter);
 
 	if (dlg.DoModal() == IDOK)

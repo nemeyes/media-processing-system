@@ -1,28 +1,12 @@
 #ifndef _DK_VCE_H264_ENCODER_H_
 #define _DK_VCE_H264_ENCODER_H_
 
-#if defined(_WIN32)
-# include <windows.h>
-# if defined(EXPORT_LIB)
-#  define EXP_DLL __declspec(dllexport)
-# else
-#  define EXP_DLL __declspec(dllimport)
-# endif
-#else
-# define EXP_DLL
-#endif
+#include <dk_video_base.h>
 
 class vce_encoder;
-class EXP_DLL dk_vce_encoder
+class EXP_CLASS dk_vce_encoder : public dk_video_encoder
 {
 public:
-	typedef enum _ERR_CODE
-	{
-		ERR_CODE_SUCCESS,
-		ERR_CODE_FAILED,
-		ERR_CODE_UNSUPPORTED_FUNCTION
-	} ERR_CODE;
-
 	typedef enum _COLOR_SPACE
 	{
 		COLOR_SPACE_I420,
@@ -69,18 +53,8 @@ public:
 		USAGE_LOW_LATENCY,
 		USAGE_WEBCAM
 	} USAGE;
-	
-	typedef enum _PIC_TYPE
-	{
-		PICTURE_TYPE_NONE = 0,
-		PICTURE_TYPE_SKIP,
-		PICTURE_TYPE_IDR,
-		PICTURE_TYPE_I,
-		PICTURE_TYPE_P,
-		PICTURE_TYPE_B
-	} PIC_TYPE;
 
-	typedef struct EXP_DLL _configuration_t
+	typedef struct EXP_CLASS _configuration_t
 	{
 		int cs;
 		int width;
@@ -179,9 +153,14 @@ public:
 	dk_vce_encoder(void);
 	~dk_vce_encoder(void);
 
-	dk_vce_encoder::ERR_CODE initialize(dk_vce_encoder::configuration_t conf);
+	dk_vce_encoder::ERR_CODE initialize(void * config);
 	dk_vce_encoder::ERR_CODE release(void);
-	dk_vce_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, dk_vce_encoder::PIC_TYPE & pic_type, bool flush = false);
+
+	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream, dk_vce_encoder::dk_video_entity_t * bitstream);
+	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream);
+	dk_vce_encoder::ERR_CODE get_queued_data(dk_vce_encoder::dk_video_entity_t * bitstream);
+
+	//dk_vce_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, dk_vce_encoder::PIC_TYPE & pic_type, bool flush = false);
 
 private:
 	vce_encoder * _core;

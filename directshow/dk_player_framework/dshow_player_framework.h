@@ -9,14 +9,17 @@
 #include "dk_haali_media_splitter.h"
 #include "dk_avi_splitter.h"
 #include "dk_gdcl_mpeg4_demuxer.h"
+#include "dk_wmv_splitter.h"
 
 #include "dk_microsoft_video_decoder.h"
 #include "dk_dmo_mpeg4s_decoder.h"
+#include "dk_dmo_mpeg4_decoder.h"
 
 #include "dk_enhanced_video_renderer.h"
 
 #include "dk_microsoft_audio_decoder.h"
 #include "dk_dmo_mp3_decoder.h"
+#include "dk_dmo_wmaudio_decoder.h"
 
 #include "dk_default_direct_sound_renderer.h"
 

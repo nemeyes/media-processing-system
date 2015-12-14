@@ -18,5 +18,10 @@ public:
 	HRESULT add_to_graph(CComPtr<IGraphBuilder> graph);
 
 private:
+	void enum_decoder_dmo(void);
+
+private:
 	CComPtr<IBaseFilter> _decoder;
+	CLSID _clsidDMO;
+	BOOL _found;
 };

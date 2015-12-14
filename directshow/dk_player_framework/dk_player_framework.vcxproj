@@ -63,7 +63,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;msdmo.lib;dmoguids.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
@@ -85,7 +85,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>strmbase.lib;strmiids.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>strmbase.lib;strmiids.lib;winmm.lib;msdmo.lib;dmodshow.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
@@ -97,12 +97,15 @@
     <ClInclude Include="dk_default_direct_sound_renderer.h" />
     <ClInclude Include="dk_dmo_mp3_decoder.h" />
     <ClInclude Include="dk_dmo_mpeg4s_decoder.h" />
+    <ClInclude Include="dk_dmo_mpeg4_decoder.h" />
+    <ClInclude Include="dk_dmo_wmaudio_decoder.h" />
     <ClInclude Include="dk_enhanced_video_renderer.h" />
     <ClInclude Include="dk_gdcl_mpeg4_demuxer.h" />
     <ClInclude Include="dk_haali_media_splitter.h" />
     <ClInclude Include="dk_microsoft_audio_decoder.h" />
     <ClInclude Include="dk_microsoft_video_decoder.h" />
     <ClInclude Include="dk_player_framework.h" />
+    <ClInclude Include="dk_wmv_splitter.h" />
     <ClInclude Include="dshow_player_framework.h" />
   </ItemGroup>
   <ItemGroup>
@@ -112,12 +115,15 @@
     <ClCompile Include="dk_default_direct_sound_renderer.cpp" />
     <ClCompile Include="dk_dmo_mp3_decoder.cpp" />
     <ClCompile Include="dk_dmo_mpeg4s_decoder.cpp" />
+    <ClCompile Include="dk_dmo_mpeg4_decoder.cpp" />
+    <ClCompile Include="dk_dmo_wmaudio_decoder.cpp" />
     <ClCompile Include="dk_enhanced_video_renderer.cpp" />
     <ClCompile Include="dk_gdcl_mpeg4_demuxer.cpp" />
     <ClCompile Include="dk_haali_media_splitter.cpp" />
     <ClCompile Include="dk_microsoft_audio_decoder.cpp" />
     <ClCompile Include="dk_microsoft_video_decoder.cpp" />
     <ClCompile Include="dk_player_framework.cpp" />
+    <ClCompile Include="dk_wmv_splitter.cpp" />
     <ClCompile Include="dshow_player_framework.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

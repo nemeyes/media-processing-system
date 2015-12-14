@@ -5,11 +5,11 @@
 
 #include "dk_base_filter.h"
 
-class dk_dmo_mp3_decoder : public dk_base_audio_decode_filter
+class dk_dmo_mpeg4_decoder : public dk_base_video_decode_filter
 {
 public:
-	dk_dmo_mp3_decoder(void);
-	virtual ~dk_dmo_mp3_decoder(void);
+	dk_dmo_mpeg4_decoder(void);
+	virtual ~dk_dmo_mpeg4_decoder(void);
 
 	CComPtr<IBaseFilter> get_filter(void);
 	CComPtr<IPin> get_output_pin(void);

@@ -15,6 +15,7 @@
 # define EXP_DLL
 #endif
 
+class m3u8_file;
 class mpeg2ts_file;
 class mpeg2ts_segment;
 class EXP_DLL dk_mpeg2ts_segmenter
@@ -98,6 +99,7 @@ private:
 	void append_segments_to_file(wchar_t * ifile_path, wchar_t * ofile_path, int64_t from, int64_t to);
 
 private:
+	m3u8_file * _m3u8_file;
 	mpeg2ts_file * _ts_file;
 	wchar_t _ifile_path[500];
 	//wchar_t _ofile_path[500];

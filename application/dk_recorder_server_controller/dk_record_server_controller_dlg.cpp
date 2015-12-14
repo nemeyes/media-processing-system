@@ -339,7 +339,7 @@ void dk_record_server_controller_dlg::OnBnClickedButtonSegment()
 		CString filename = dlg.GetPathName();
 		dk_mpeg2ts_segmenter segmenter;
 
-		segmenter.initialize((LPWSTR)(LPCWSTR)filename, L"test", L"C:\\workspace\\01.reference\\media-processing-system\\build\\win32\\x86\\debug\\bin", L"stream", 30);
+		segmenter.initialize((LPWSTR)(LPCWSTR)filename, L"test", L"C:\\workspace\\01.reference\\media-processing-system\\build\\win32\\x86\\debug\\bin", L"stream", 1);
 		segmenter.segment();
 		segmenter.release();
 	}

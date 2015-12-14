@@ -210,7 +210,11 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 
 	//TODO check file format not by file extension
 	hr = stop();
-	if (!wcscmp(str_ext.c_str(), L"avi"))
+	if (!wcscmp(str_ext.c_str(), L"wmv"))
+	{
+		_source = new dk_wmv_splitter();
+	}
+	else if (!wcscmp(str_ext.c_str(), L"avi"))
 	{
 		_source = new dk_avi_splitter();
 	}
@@ -249,6 +253,11 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 			_video_decoder = new dk_dmo_mpeg4s_decoder();
 			break;
 		}
+		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP42))
+		{
+			_video_decoder = new dk_dmo_mpeg4_decoder();
+			break;
+		}
 	}
 	safe_release(&venum);
 
@@ -282,6 +291,11 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 				else if (IsEqualGUID(amt->subtype, MEDIASUBTYPE_MP3))
 				{
 					_audio_decoder = new dk_dmo_mp3_decoder();
+					break;
+				}
+				else if (IsEqualGUID(amt->subtype, MEDIASUBTYPE_WMAUDIO2))
+				{
+					_audio_decoder = new dk_dmo_wmaudio_decoder();
 					break;
 				}
 			}
@@ -325,6 +339,7 @@ dk_player_framework::ERR_CODE dshow_player_framework::play(void)
 	}
 	else
 	{
+		DWORD err = ::GetLastError();
 		return dk_player_framework::ERR_CODE_FAILED;
 	}
 }

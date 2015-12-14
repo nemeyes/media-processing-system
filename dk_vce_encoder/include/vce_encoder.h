@@ -90,12 +90,17 @@ public:
 		unsigned char * bitstream_buffer;
 	} am_enc_buffer_t;
 
-	vce_encoder(void);
+	vce_encoder(dk_vce_encoder * front);
 	~vce_encoder(void);
 
-	dk_vce_encoder::ERR_CODE initialize(dk_vce_encoder::configuration_t conf);
-	dk_vce_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, dk_vce_encoder::PIC_TYPE & pic_type, bool flush = false);
+	dk_vce_encoder::ERR_CODE initialize(dk_vce_encoder::configuration_t * config);
 	dk_vce_encoder::ERR_CODE release(void);
+
+	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream, dk_vce_encoder::dk_video_entity_t * bitstream);
+	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream);
+	dk_vce_encoder::ERR_CODE get_queued_data(dk_vce_encoder::dk_video_entity_t * bitstream);
+
+	//dk_vce_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, dk_vce_encoder::PIC_TYPE & pic_type, bool flush = false);
 
 private:
 	void fill_surface(amf::AMFContext * context, amf::AMFSurface * surface, amf_int32 i);
@@ -103,10 +108,10 @@ private:
 	dk_vce_encoder::ERR_CODE allocate_io_buffers(void);
 	dk_vce_encoder::ERR_CODE release_io_buffers(void);
 private:
-	dk_vce_encoder::configuration_t _conf;
+	dk_vce_encoder::configuration_t * _config;
+	dk_vce_encoder * _front;
 
-
-	amf::AMF_MEMORY_TYPE _mem_type;
+	//amf::AMF_MEMORY_TYPE _mem_type;
     amf::AMFContextPtr _context;
     amf::AMFComponentPtr _encoder;
     amf::AMFSurfacePtr _surface;

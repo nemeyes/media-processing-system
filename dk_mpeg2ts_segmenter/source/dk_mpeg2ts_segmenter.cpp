@@ -1,6 +1,7 @@
 #include "dk_mpeg2ts_segmenter.h"
 
 #include "shlwapi.h"
+#include "m3u8_file.h"
 #include "mpeg2ts_file.h"
 #include "mpeg2ts_segment.h"
 
@@ -45,6 +46,7 @@ dk_mpeg2ts_segmenter::ERR_CODE dk_mpeg2ts_segmenter::initialize(wchar_t * ifile_
 	_ts_file = new mpeg2ts_file();
 	_ts_file->initialize(ifile_path);
 
+	_m3u8_file = new m3u8_file();
 	return dk_mpeg2ts_segmenter::ERR_CODE_SUCCESS;
 }
 
@@ -55,6 +57,13 @@ dk_mpeg2ts_segmenter::ERR_CODE dk_mpeg2ts_segmenter::release(void)
 		_ts_file->release();
 		delete _ts_file;
 		_ts_file = nullptr;
+	}
+
+	if (_m3u8_file)
+	{
+		_m3u8_file->release();
+		delete _m3u8_file;
+		_m3u8_file = nullptr;
 	}
 	return dk_mpeg2ts_segmenter::ERR_CODE_SUCCESS;
 }
@@ -72,6 +81,8 @@ dk_mpeg2ts_segmenter::ERR_CODE dk_mpeg2ts_segmenter::segment(void)
 
 	if (!_ts_file)
 		return dk_mpeg2ts_segmenter::ERR_CODE_FAIL;
+
+	_m3u8_file->initialize(_ofile_name, _opath, _duration, 0);
 
 	mpeg2ts_segment * segment = nullptr;
 	while (segment = _ts_file->next_segment())
@@ -109,7 +120,7 @@ dk_mpeg2ts_segmenter::ERR_CODE dk_mpeg2ts_segmenter::segment(void)
 			if (absolute_time >= _duration)
 			{
 				reference_time = segment->pts_to_second();
-				//m3u8file
+				_m3u8_file->insert_media(0);
 				wchar_t ofile_path[500] = { 0 };
 				_snwprintf_s(ofile_path, sizeof(ofile_path) / sizeof(wchar_t), L"%s\\%s_%d.ts", _opath, _ofile_name, file_count);
 				copy_segments_to_file(_ifile_path, ofile_path, last_segment_copied, last_association_table);
@@ -126,6 +137,7 @@ dk_mpeg2ts_segmenter::ERR_CODE dk_mpeg2ts_segmenter::segment(void)
 		if (std::round(absolute_time) > 0)
 		{
 			//m3u9file
+			_m3u8_file->insert_media(std::round(absolute_time));
 			wchar_t ofile_path[500] = { 0 };
 			_snwprintf_s(ofile_path, sizeof(ofile_path) / sizeof(wchar_t), L"%s\\%s_%d.ts", _opath, _ofile_name, file_count);
 			copy_segments_to_file(_ifile_path, ofile_path, last_segment_copied, last_association_table);
@@ -137,6 +149,8 @@ dk_mpeg2ts_segmenter::ERR_CODE dk_mpeg2ts_segmenter::segment(void)
 			append_segments_to_file(_ifile_path, ofile_path, last_segment_copied, last_association_table);
 		}
 	}
+
+	_m3u8_file->release();
 
 	return dk_mpeg2ts_segmenter::ERR_CODE_SUCCESS;
 }

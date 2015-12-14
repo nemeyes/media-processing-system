@@ -1,5 +1,6 @@
 #include "vce_encoder.h"
 
+
 #define MILLISEC_TIME	10000
 #define START_TIME_PROPERTY L"start_time_property"
 
@@ -64,18 +65,17 @@ void vce_polling_thread::Run(void)
 		}
 
 	}
-	/*
-	printf("latency  = %.4fms\nencode  per frame = %.4fms\nwrite per frame   = %.4fms\n", 
+	/*printf("latency  = %.4fms\nencode  per frame = %.4fms\nwrite per frame   = %.4fms\n", 
 			double(latency_time) / MILLISEC_TIME, 
 			double(encode_duration) / MILLISEC_TIME / frameCount, 
-			double(write_duration) / MILLISEC_TIME / frameCount); 
-			*/
+			double(write_duration) / MILLISEC_TIME / frameCount); */
 	_core->_encoder = 0;
 	_core->_context = 0;
 }
 
-vce_encoder::vce_encoder(void)
-	: _polling_thread(0)
+vce_encoder::vce_encoder(dk_vce_encoder * front)
+	: _front(front)
+	, _polling_thread(0)
 	, _enc_buffer_count(0)
 	, _bitstream_buffer_size(0)
 {
@@ -91,14 +91,11 @@ vce_encoder::~vce_encoder(void)
 	}
 }
 
-dk_vce_encoder::ERR_CODE vce_encoder::initialize(dk_vce_encoder::configuration_t conf)
+dk_vce_encoder::ERR_CODE vce_encoder::initialize(dk_vce_encoder::configuration_t * config)
 {
-	_conf = conf;
-
+	_config = config;
 	AMF_RESULT status = AMF_OK;
-	_mem_type = amf::AMF_MEMORY_DX9;
-
-	switch (_conf.cs)
+	switch (_config->cs)
 	{
 	case dk_vce_encoder::COLOR_SPACE_I420 : 
 		_cs = amf::AMF_SURFACE_YUV420P;
@@ -130,28 +127,28 @@ dk_vce_encoder::ERR_CODE vce_encoder::initialize(dk_vce_encoder::configuration_t
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
 
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_USAGE, _conf.usage);
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_USAGE, _config->usage);
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_TARGET_BITRATE, _conf.bitrate);
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_TARGET_BITRATE, _config->bitrate);
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_FRAMESIZE, ::AMFConstructSize(_conf.width, _conf.height));
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_FRAMESIZE, ::AMFConstructSize(_config->width, _config->height));
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_FRAMERATE, ::AMFConstructRate(_conf.fps, 1));
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_FRAMERATE, ::AMFConstructRate(_config->fps, 1));
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_B_PIC_PATTERN, _conf.numb);
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_B_PIC_PATTERN, _config->numb);
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_QUALITY_PRESET, _conf.preset);
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_QUALITY_PRESET, _config->preset);
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_GOP_SIZE, _conf.fps*_conf.keyframe_interval);
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_GOP_SIZE, _config->fps * _config->keyframe_interval);
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
-	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_IDR_PERIOD, _conf.fps*_conf.keyframe_interval);
+	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_IDR_PERIOD, _config->fps * _config->keyframe_interval);
 	if (status != AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
 	status = _encoder->SetProperty(AMF_VIDEO_ENCODER_SLICES_PER_FRAME, 1);
@@ -163,28 +160,54 @@ dk_vce_encoder::ERR_CODE vce_encoder::initialize(dk_vce_encoder::configuration_t
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
 #endif
-	status = _encoder->Init(_cs, _conf.width, _conf.height);
+	status = _encoder->Init(_cs, _config->width, _config->height);
 	if(status!=AMF_OK)
 		return dk_vce_encoder::ERR_CODE_FAILED;
 
 	_submitted = 0;
 	
-	_enc_buffer_count = _conf.numb + 4;
-	_bitstream_buffer_size = (_conf.bitrate / 8)*(_conf.keyframe_interval) * 2;
+	_enc_buffer_count = _config->numb + 4;
+	_bitstream_buffer_size = (_config->bitrate / 8)*(_config->keyframe_interval) * 2;
 
 	if (_polling_thread)
 		_polling_thread->Start();
 	return dk_vce_encoder::ERR_CODE_SUCCESS;
 }
 
-dk_vce_encoder::ERR_CODE vce_encoder::encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, dk_vce_encoder::PIC_TYPE & pic_type, bool flush)
+dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t * rawstream, dk_vce_encoder::dk_video_entity_t * bitstream)
+{
+	return dk_vce_encoder::ERR_CODE_SUCCESS;
+}
+
+dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t * rawstream)
+{
+	amf_pts start_time = amf_high_precision_clock();
+	AMF_RESULT status = AMF_OK;
+
+	if (_surface == 0)
+	{
+		status = _context->AllocSurface(_mem_type, _cs, _config->width, _config->height, &_surface);
+		if (status != AMF_OK)
+			return dk_vce_encoder::ERR_CODE_FAILED;
+		fill_surface(_context, _surface, _submitted);
+	}
+
+	return dk_vce_encoder::ERR_CODE_SUCCESS;
+}
+
+dk_vce_encoder::ERR_CODE vce_encoder::get_queued_data(dk_vce_encoder::dk_video_entity_t * bitstream)
+{
+	return dk_vce_encoder::ERR_CODE_SUCCESS;
+}
+
+/*dk_vce_encoder::ERR_CODE vce_encoder::encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, dk_vce_encoder::PIC_TYPE & pic_type, bool flush)
 {
 	amf_pts start_time = amf_high_precision_clock();
 	AMF_RESULT status = AMF_OK;
 
 	if(_surface==0)
 	{
-		status = _context->AllocSurface(_mem_type, _cs, _conf.width, _conf.height, &_surface);
+		status = _context->AllocSurface(_mem_type, _cs, _config->width, _config->height, &_surface);
 		if(status!=AMF_OK)
 			return dk_vce_encoder::ERR_CODE_FAILED;
 		fill_surface(_context, _surface, _submitted);
@@ -217,7 +240,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(unsigned char * input, unsigned int
 	}
 
 	return dk_vce_encoder::ERR_CODE_SUCCESS;
-}
+}*/
 
 dk_vce_encoder::ERR_CODE vce_encoder::release(void)
 {
@@ -260,11 +283,11 @@ void vce_encoder::fill_surface(amf::AMFContext * context, amf::AMFSurface * surf
 		IDirect3DSurface9* surfaceDX9 = (IDirect3DSurface9*)surface->GetPlaneAt(0)->GetNative(); // no reference counting - do not Release()
 		hr = deviceDX9->ColorFill(surfaceDX9, 0, color1);
 
-		if (_x_pos + _rect_size > _conf.width)
+		if (_x_pos + _rect_size > _config->width)
 		{
 			_x_pos = 0;
 		}
-		if (_y_pos + _rect_size > _conf.height)
+		if (_y_pos + _rect_size > _config->height)
 		{
 			_y_pos = 0;
 		}

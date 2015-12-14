@@ -1,31 +1,37 @@
 #ifndef _DK_VIDEO_BASE_H_
 #define _DK_VIDEO_BASE_H_
 
-#include <cstdlib>
-#include <cstdio>
-#include <cstdint>
-#include <memory>
-
 #if defined(WIN32)
+#include <windows.h>
+#include <d3d9.h>
+#include <d3d10.h>
+#include <d3d11.h>
 #if defined(EXPORT_LIB)
 #define EXP_CLASS __declspec(dllexport)
 #else
 #define EXP_CLASS __declspec(dllimport)
 #endif
 #else
+#include <pthreads.h>
 #define EXP_CLASS
 #endif
 
-typedef struct _dk_video_entity_t
-{
-	uint8_t *	data;
-	size_t		data_size;
-	size_t		data_capacity;
-} dk_video_entity_t;
+#include <cstdlib>
+#include <cstdio>
+#include <cstdint>
+#include <memory>
 
+typedef struct _dk_circular_buffer_t dk_circular_buffer_t;
 class EXP_CLASS dk_video_base
 {
 public:
+	typedef struct _vbuffer_t
+	{
+		size_t amount;
+		_vbuffer_t * prev;
+		_vbuffer_t * next;
+	} vbuffer_t;
+
 	typedef enum _ERR_CODE
 	{
 		ERR_CODE_SUCCESS,
@@ -54,11 +60,54 @@ public:
 		SUBMEDIA_TYPE_NV12,
 	} SUBMEDIA_TYPE;
 
+	typedef enum _MEMORY_TYPE
+	{
+		MEMORY_TYPE_HOST = 0,
+		MEMORY_TYPE_DX9,
+		MEMORY_TYPE_DX11,
+		MEMORY_TYPE_DX12,
+		MEMORY_TYPE_OPENGL,
+		MEMORY_TYPE_OPENCL,
+		MEMORY_TYPE_CUDA,
+	} MEMORY_TYPE;
+
+	typedef enum _PIC_TYPE
+	{
+		PICTURE_TYPE_NONE = 0,
+		PICTURE_TYPE_IDR,
+		PICTURE_TYPE_I,
+		PICTURE_TYPE_P,
+		PICTURE_TYPE_B
+	} PIC_TYPE;
+
+	typedef struct _dk_video_entity_t
+	{
+		MEMORY_TYPE			type;
+		IDirect3DSurface9 * d3d9_surface;
+		ID3D10Texture2D *	d3d10_surface;
+		ID3D11Texture2D *	d3d11_surface;
+		uint8_t *			data;
+		size_t				data_size;
+		size_t				data_capacity;
+		PIC_TYPE			pic_type;
+	} dk_video_entity_t;
+
 	dk_video_base(void);
 	virtual ~dk_video_base(void);
 
-	ERR_CODE put_video(dk_video_entity_t * bitstream);
-	ERR_CODE get_video(dk_video_entity_t * bitstream);
+	ERR_CODE push(uint8_t * bs, size_t size);
+	ERR_CODE pop(uint8_t * bs, size_t & size);
+	ERR_CODE init(vbuffer_t * buffer);
+
+private:
+	vbuffer_t * _root;
+	dk_circular_buffer_t * _vqueue;
+
+#if defined(WIN32)
+	CRITICAL_SECTION _mutex;
+#else
+	pthread_mutex _mutex;
+#endif
 };
 
 class EXP_CLASS dk_video_decoder : public dk_video_base
@@ -72,6 +121,7 @@ public:
 
 	virtual ERR_CODE decode(dk_video_entity_t * bitstream, dk_video_entity_t * decoded);
 	virtual ERR_CODE decode(dk_video_entity_t * bitstream);
+	virtual ERR_CODE get_queued_data(dk_video_entity_t * bitstream);
 };
 
 class EXP_CLASS dk_video_encoder : public dk_video_base
@@ -80,10 +130,13 @@ public:
 	dk_video_encoder(void);
 	virtual ~dk_video_encoder(void);
 
-	virtual ERR_CODE initialize_encoder(void);
+	virtual ERR_CODE initialize_encoder(void * config);
 	virtual ERR_CODE release_encoder(void);
 
-	virtual ERR_CODE encode(dk_video_entity_t * bitstream) = 0;
+	virtual ERR_CODE encode(dk_video_entity_t * rawstream, dk_video_entity_t * bitstream);
+	virtual ERR_CODE encode(dk_video_entity_t * rawstream);
+	virtual ERR_CODE get_queued_data(dk_video_entity_t * bitstream);
+
 };
 
 
