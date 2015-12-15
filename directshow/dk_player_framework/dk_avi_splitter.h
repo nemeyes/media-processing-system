@@ -19,4 +19,5 @@ public:
 
 private:
 	CComPtr<IBaseFilter> _source;
+	CComPtr<IBaseFilter> _parser;
 };

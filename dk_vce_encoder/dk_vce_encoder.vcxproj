@@ -97,6 +97,7 @@
     <ClInclude Include="amf\Thread.h" />
     <ClInclude Include="include\dk_vce_encoder.h" />
     <ClInclude Include="include\vce_encoder.h" />
+    <ClInclude Include="include\vce_surface_observer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp" />
@@ -105,6 +106,7 @@
     <ClCompile Include="amf\Thread.cpp" />
     <ClCompile Include="source\dk_vce_encoder.cpp" />
     <ClCompile Include="source\vce_encoder.cpp" />
+    <ClCompile Include="source\vce_surface_observer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

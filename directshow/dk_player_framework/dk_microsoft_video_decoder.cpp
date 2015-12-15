@@ -48,9 +48,16 @@ HRESULT dk_microsoft_video_decoder::add_to_graph(CComPtr<IGraphBuilder> graph)
 		variant.vt = VT_UI4;
 		variant.uiVal = (UINT32)true;
 		CComQIPtr<ICodecAPI> codec_api = decoder;
-		hr = codec_api->SetValue(&CODECAPI_AVDecVideoAcceleration_H264, &variant);
-		if (FAILED(hr))
-			return hr;
+		if (codec_api)
+		{
+			hr = codec_api->SetValue(&CODECAPI_AVDecVideoAcceleration_H264, &variant);
+			if (FAILED(hr))
+				return hr;
+		}
+		else
+		{
+			return E_FAIL;
+		}
 	}
 	_decoder = decoder;
 	return hr;

@@ -31,41 +31,41 @@ dk_celt_encoder::ERR_CODE celt_encoder::initialize_encoder(dk_celt_encoder::conf
 	int32_t err;
 	_encoder = opus_encoder_create(config->codingrate, config->channels, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &err);
 	if (err != OPUS_OK || _encoder == NULL)
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_EXPERT_FRAME_DURATION(OPUS_FRAMESIZE_ARG));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_VBR(1));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_VBR_CONSTRAINT(1));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_BITRATE(_config.bitrate));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_COMPLEXITY(_config.complexity));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 	}
 
 	_buffer4queue_size = _config.bitrate >> 3;
@@ -214,7 +214,7 @@ dk_celt_encoder::ERR_CODE celt_encoder::get_queued_data(dk_audio_entity_t * enco
 	}
 	else
 	{
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 	}
 }
 
@@ -311,7 +311,7 @@ dk_celt_encoder::ERR_CODE celt_encoder::setup_resampler(int32_t samplerate, int3
 	_resampler->outbuffers = static_cast<int16_t*>(malloc(_resampler->outbuffer_size));
 
 	if (err != OPUS_OK)
-		return dk_celt_encoder::ERR_CODE_FAILED;
+		return dk_celt_encoder::ERR_CODE_FAIL;
 	else
 		return dk_celt_encoder::ERR_CODE_SUCCESS;
 }

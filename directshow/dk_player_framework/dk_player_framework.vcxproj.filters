@@ -87,6 +87,12 @@
     <ClInclude Include="dk_dmo_mpeg4_decoder.h">
       <Filter>Header Files\decoder</Filter>
     </ClInclude>
+    <ClInclude Include="dk_dmo_mpeg43_decoder.h">
+      <Filter>Header Files\decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="dk_dmo_wmvideo_decoder.h">
+      <Filter>Header Files\decoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dshow_player_framework.cpp">
@@ -135,6 +141,12 @@
       <Filter>Source Files\decoder</Filter>
     </ClCompile>
     <ClCompile Include="dk_dmo_mpeg4_decoder.cpp">
+      <Filter>Source Files\decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_dmo_mpeg43_decoder.cpp">
+      <Filter>Source Files\decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_dmo_wmvideo_decoder.cpp">
       <Filter>Source Files\decoder</Filter>
     </ClCompile>
   </ItemGroup>

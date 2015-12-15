@@ -1,5 +1,5 @@
-#ifndef _DK_VCE_H264_ENCODER_H_
-#define _DK_VCE_H264_ENCODER_H_
+#ifndef _DK_VCE_ENCODER_H_
+#define _DK_VCE_ENCODER_H_
 
 #include <dk_video_base.h>
 
@@ -56,11 +56,10 @@ public:
 
 	typedef struct EXP_CLASS _configuration_t
 	{
+		MEMORY_TYPE mem_type;
 		int cs;
 		int width;
 		int height;
-		int max_width;
-		int max_height;
 		int bitrate;
 		int rc_mode;
 		int usage;
@@ -80,8 +79,6 @@ public:
 			: cs(COLOR_SPACE_YV12)
 			, width(1280)
 			, height(1024)
-			, max_width(1920)
-			, max_height(1080)
 			, bitrate(4000000)
 			, rc_mode(RC_MODE_CBR)
 			, usage(USAGE_TRANSCONDING)
@@ -105,8 +102,6 @@ public:
 			cs = clone.cs;
 			width = clone.width;
 			height = clone.height;
-			max_width = clone.max_width;
-			max_height = clone.max_height;
 			bitrate = clone.bitrate;
 			rc_mode = clone.rc_mode;
 			usage = clone.usage;
@@ -129,8 +124,6 @@ public:
 			cs = clone.cs;
 			width = clone.width;
 			height = clone.height;
-			max_width = clone.max_width;
-			max_height = clone.max_height;
 			bitrate = clone.bitrate;
 			rc_mode = clone.rc_mode;
 			usage = clone.usage;

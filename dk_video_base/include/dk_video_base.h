@@ -4,7 +4,10 @@
 #if defined(WIN32)
 #include <windows.h>
 #include <d3d9.h>
+#include <d3d10_1.h>
 #include <d3d10.h>
+#include <d3d11_1.h>
+#include <d3d11_2.h>
 #include <d3d11.h>
 #if defined(EXPORT_LIB)
 #define EXP_CLASS __declspec(dllexport)
@@ -35,7 +38,7 @@ public:
 	typedef enum _ERR_CODE
 	{
 		ERR_CODE_SUCCESS,
-		ERR_CODE_FAILED,
+		ERR_CODE_FAIL,
 		ERR_CODE_NOT_IMPLEMENTED,
 	} ERR_CODE;
 
@@ -52,6 +55,7 @@ public:
 		SUBMEDIA_TYPE_MP4V_SP,
 		SUBMEDIA_TYPE_MP4V_ASP,
 		SUBMEDIA_TYPE_MJPEG,
+		SUBMEDIA_TYPE_HEVC,
 		SUBMEDIA_TYPE_RGB32,
 		SUBMEDIA_TYPE_RGB24,
 		SUBMEDIA_TYPE_YUY2,
@@ -64,7 +68,12 @@ public:
 	{
 		MEMORY_TYPE_HOST = 0,
 		MEMORY_TYPE_DX9,
-		MEMORY_TYPE_DX11,
+		MEMORY_TYPE_DX9EX,
+		MEMORY_TYPE_DX10,
+		MEMORY_TYPE_DX10_1,
+		MEMORY_TYPE_DX11_1,
+		MEMORY_TYPE_DX11_2,
+		MEMORY_TYPE_DX11_3,
 		MEMORY_TYPE_DX12,
 		MEMORY_TYPE_OPENGL,
 		MEMORY_TYPE_OPENCL,
@@ -82,7 +91,7 @@ public:
 
 	typedef struct _dk_video_entity_t
 	{
-		MEMORY_TYPE			type;
+		MEMORY_TYPE			mem_type;
 		IDirect3DSurface9 * d3d9_surface;
 		ID3D10Texture2D *	d3d10_surface;
 		ID3D11Texture2D *	d3d11_surface;

@@ -258,20 +258,37 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 			_video_decoder = new dk_dmo_mpeg4_decoder();
 			break;
 		}
+		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_WVC1))
+		{
+			_video_decoder = new dk_dmo_wmvideo_decoder();
+			break;
+		}
+		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP43))
+		{
+			_video_decoder = new dk_dmo_mpeg43_decoder();
+			break;
+		}
 	}
 	safe_release(&venum);
 
 	_video_renderer = new dk_enhanced_video_renderer();
 
 	hr = _video_decoder->add_to_graph(_graph);
+	if (FAILED(hr))
+		dk_player_framework::ERR_CODE_FAILED;
 	hr = _video_renderer->add_to_graph(_graph, _hwnd, _aspect_ratio);
+	if (FAILED(hr))
+		dk_player_framework::ERR_CODE_FAILED;
 	hr = _graph->Render(_source->get_video_output_pin());
+	if (FAILED(hr))
+		dk_player_framework::ERR_CODE_FAILED;
 
 	if (_enable_audio)
 	{
 		CComPtr<IPin> aopin = _source->get_audio_output_pin();
 		if (aopin)
 		{
+			bool pcm = false;
 			IEnumMediaTypes * aenum = 0;
 			hr = aopin->EnumMediaTypes(&aenum);
 			if (FAILED(hr))
@@ -298,14 +315,28 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 					_audio_decoder = new dk_dmo_wmaudio_decoder();
 					break;
 				}
+				else if (IsEqualGUID(amt->subtype, MEDIASUBTYPE_PCM))
+				{
+					pcm = true;
+					break;
+				}
 			}
 			safe_release(&aenum);
 
 			_audio_renderer = new dk_default_direct_sound_renderer();
 
-			hr = _audio_decoder->add_to_graph(_graph);
+			if (!pcm && _audio_decoder)
+			{
+				hr = _audio_decoder->add_to_graph(_graph);
+				if (FAILED(hr))
+					dk_player_framework::ERR_CODE_FAILED;
+			}
 			hr = _audio_renderer->add_to_graph(_graph);
+			if (FAILED(hr))
+				dk_player_framework::ERR_CODE_FAILED;
 			hr = _graph->Render(_source->get_audio_output_pin());
+			if (FAILED(hr))
+				dk_player_framework::ERR_CODE_FAILED;
 		}
 	}
 

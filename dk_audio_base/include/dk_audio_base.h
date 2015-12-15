@@ -39,7 +39,7 @@ public:
 	typedef enum _ERR_CODE
 	{
 		ERR_CODE_SUCCESS,
-		ERR_CODE_FAILED,
+		ERR_CODE_FAIL,
 		ERR_CODE_NOT_IMPLEMENTED,
 	} ERR_CODE;
 

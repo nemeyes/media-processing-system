@@ -63,7 +63,7 @@ dk_video_base::ERR_CODE dk_video_base::push(uint8_t * bs, size_t size)
 				vbuffer->prev->next = nullptr;
 			free(vbuffer);
 			vbuffer = nullptr;
-			status = dk_video_base::ERR_CODE_FAILED;
+			status = dk_video_base::ERR_CODE_FAIL;
 		}
 		//else
 		//{
@@ -89,7 +89,7 @@ dk_video_base::ERR_CODE dk_video_base::pop(uint8_t * bs, size_t & size)
 
 		int32_t result = dk_circular_buffer_read(_vqueue, bs, vbuffer->amount);
 		if (result == -1)
-			status = dk_video_base::ERR_CODE_FAILED;
+			status = dk_video_base::ERR_CODE_FAIL;
 
 		size = vbuffer->amount;
 

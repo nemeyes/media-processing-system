@@ -67,7 +67,7 @@ dk_audio_base::ERR_CODE dk_audio_base::push(uint8_t * bs, size_t size)
 				abuffer->prev->next = nullptr;
 			free(abuffer);
 			abuffer = nullptr;
-			status = dk_audio_base::ERR_CODE_FAILED;
+			status = dk_audio_base::ERR_CODE_FAIL;
 		}
 		//else
 		//{
@@ -93,7 +93,7 @@ dk_audio_base::ERR_CODE dk_audio_base::pop(uint8_t * bs, size_t & size)
 
 		int32_t result = dk_circular_buffer_read(_aqueue, bs, abuffer->amount);
 		if (result == -1)
-			status = dk_audio_base::ERR_CODE_FAILED;
+			status = dk_audio_base::ERR_CODE_FAIL;
 
 		size = abuffer->amount;
 

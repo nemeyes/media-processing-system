@@ -34,10 +34,10 @@ dk_aac_decoder::ERR_CODE faad2_decoder::initialize_decoder(dk_aac_decoder::confi
 
 	_aac_decoder = faacDecOpen();
 	if (!_aac_decoder)
-		return dk_aac_decoder::ERR_CODE_FAILED;
+		return dk_aac_decoder::ERR_CODE_FAIL;
 	_aac_config = faacDecGetCurrentConfiguration(_aac_decoder);
 	if (!_aac_config)
-		return dk_aac_decoder::ERR_CODE_FAILED;
+		return dk_aac_decoder::ERR_CODE_FAIL;
 
 	switch (_config.output_format)
 	{
@@ -68,7 +68,7 @@ dk_aac_decoder::ERR_CODE faad2_decoder::initialize_decoder(dk_aac_decoder::confi
 	faacDecSetConfiguration(_aac_decoder, _aac_config);
 
 	if (faacDecInit2(_aac_decoder, _config.extradata, _config.extradata_size, &_config.samplerate, &_channels) < 0)
-		return dk_aac_decoder::ERR_CODE_FAILED;
+		return dk_aac_decoder::ERR_CODE_FAIL;
 
 	if (_config.mix_down)
 	{
@@ -110,13 +110,13 @@ dk_aac_decoder::ERR_CODE faad2_decoder::release_decoder(void)
 dk_aac_decoder::ERR_CODE faad2_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
 {
 	if (!_aac_decoder)
-		return dk_aac_decoder::ERR_CODE_FAILED;
+		return dk_aac_decoder::ERR_CODE_FAIL;
 
 	int16_t * out_samples = (int16_t*)faacDecDecode(_aac_decoder, &_aac_frame_info, (uint8_t*)encoded->data, encoded->data_size);
 	if (_aac_frame_info.error)
 	{
 		pcm->data_size = 0;
-		return dk_aac_decoder::ERR_CODE_FAILED;
+		return dk_aac_decoder::ERR_CODE_FAIL;
 	}
 
 	//_calc_frames++;
@@ -152,7 +152,7 @@ dk_aac_decoder::ERR_CODE faad2_decoder::decode(dk_audio_entity_t * encoded, dk_a
 		}
 	}
 	pcm->data_size = 0;
-	return dk_aac_decoder::ERR_CODE_FAILED;
+	return dk_aac_decoder::ERR_CODE_FAIL;
 }
 
 /*dk_aac_decoder::ERR_CODE faad2_decoder::initialize(dk_aac_decoder::configuration_t config, unsigned char * extra_data, int extra_data_size, int & samplerate, int & channels)

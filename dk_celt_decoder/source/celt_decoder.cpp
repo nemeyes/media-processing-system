@@ -27,7 +27,7 @@ dk_celt_decoder::ERR_CODE celt_decoder::initialize_decoder(dk_celt_decoder::conf
 	int32_t err;
 	_decoder = opus_decoder_create(config->samplerate, config->channels, &err);
 	if (err != OPUS_OK || _decoder == NULL)
-		return dk_celt_decoder::ERR_CODE_FAILED;
+		return dk_celt_decoder::ERR_CODE_FAIL;
 	
 	return dk_celt_decoder::ERR_CODE_SUCCESS;
 }

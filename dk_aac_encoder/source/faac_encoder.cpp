@@ -27,7 +27,7 @@ dk_aac_encoder::ERR_CODE faac_encoder::initialize_encoder(dk_aac_encoder::config
 {
 	_faac_encoder = faacEncOpen(config->samplerate, config->channels, &config->framesize, &config->ob);
 	if (!_faac_encoder)
-		return dk_aac_encoder::ERR_CODE_FAILED;
+		return dk_aac_encoder::ERR_CODE_FAIL;
 
 	// set encoder configuration
 	faacEncConfiguration * _faac_encoder_config = faacEncGetCurrentConfiguration(_faac_encoder);
@@ -126,7 +126,7 @@ dk_aac_encoder::ERR_CODE faac_encoder::initialize_encoder(dk_aac_encoder::config
 	{
 		faacEncClose(_faac_encoder);
 		_faac_encoder = 0;
-		return dk_aac_encoder::ERR_CODE_FAILED;
+		return dk_aac_encoder::ERR_CODE_FAIL;
 	}
 
 	_extradata = nullptr;
@@ -175,7 +175,7 @@ dk_aac_encoder::ERR_CODE faac_encoder::encode(dk_audio_entity_t * pcm, dk_audio_
 #else
 	encoded->data_size = 0;
 	if (!_faac_encoder || _config.bitdepth!=16)
-		return dk_aac_encoder::ERR_CODE_FAILED;
+		return dk_aac_encoder::ERR_CODE_FAIL;
 
 	memcpy((int16_t*)_buffer + _buffer_index, pcm->data, pcm->data_size);
 	_buffer_index += (pcm->data_size >> 1);
@@ -205,7 +205,7 @@ dk_aac_encoder::ERR_CODE faac_encoder::encode(dk_audio_entity_t * pcm, dk_audio_
 dk_aac_encoder::ERR_CODE faac_encoder::encode(dk_audio_entity_t * pcm)
 {
 	if (!_faac_encoder || _config.bitdepth!=16)
-		return dk_aac_encoder::ERR_CODE_FAILED;
+		return dk_aac_encoder::ERR_CODE_FAIL;
 
 	memcpy(((uint16_t*)_buffer) + _buffer_index, pcm->data, pcm->data_size);
 	_buffer_index += (pcm->data_size >> 1);
@@ -243,7 +243,7 @@ dk_aac_encoder::ERR_CODE faac_encoder::get_queued_data(dk_audio_entity_t * encod
 	}
 	else
 	{
-		return dk_aac_encoder::ERR_CODE_FAILED;
+		return dk_aac_encoder::ERR_CODE_FAIL;
 	}
 }
 
