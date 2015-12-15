@@ -19,6 +19,9 @@
     <Filter Include="video_base">
       <UniqueIdentifier>{40ec7a28-7e2f-4013-9e8c-fdfe39ccbe2d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="buffering">
+      <UniqueIdentifier>{ce2f6f1a-be83-4f61-b7d7-2a3224950bcd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_ff_video_decoder.h">
@@ -33,6 +36,9 @@
     <ClInclude Include="include\ffmpeg_decoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h">
+      <Filter>buffering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_ff_video_decoder.cpp">
@@ -46,6 +52,9 @@
     </ClCompile>
     <ClCompile Include="source\ffmpeg_decoder.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp">
+      <Filter>buffering</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

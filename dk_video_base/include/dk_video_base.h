@@ -130,7 +130,7 @@ public:
 
 	virtual ERR_CODE decode(dk_video_entity_t * bitstream, dk_video_entity_t * decoded);
 	virtual ERR_CODE decode(dk_video_entity_t * bitstream);
-	virtual ERR_CODE get_queued_data(dk_video_entity_t * bitstream);
+	virtual ERR_CODE get_queued_data(dk_video_entity_t * decoded);
 };
 
 class EXP_CLASS dk_video_encoder : public dk_video_base

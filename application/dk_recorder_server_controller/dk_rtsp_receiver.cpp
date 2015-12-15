@@ -339,8 +339,10 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 
 				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
 				{
-					dk_video_entity_t encoded = { 0, };
-					dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
+					dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, nullptr, 
+																		nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+					dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, nullptr, 
+																		_buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 					encoded.data = (uint8_t*)data;
 					encoded.data_size = data_size;
 					decode_err = _decoder->decode(&encoded, &decoded);
@@ -379,8 +381,14 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 	{
 		if (_is_preview_enabled)
 		{
-			dk_video_entity_t encoded = { 0, };
-			dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
+			//dk_video_entity_t encoded = { 0, };
+			//dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
+
+			dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, nullptr,
+				nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+			dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, nullptr,
+				_buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+
 			encoded.data = (uint8_t*)data;
 			encoded.data_size = data_size;
 			dk_ff_video_decoder::ERR_CODE decode_err = _decoder->decode(&encoded, &decoded);

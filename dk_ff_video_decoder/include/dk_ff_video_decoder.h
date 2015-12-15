@@ -87,7 +87,9 @@ public:
 
 	ERR_CODE initialize_decoder(void * config);
 	ERR_CODE release_decoder(void);
-	ERR_CODE decode(dk_video_entity_t * encoded, dk_video_entity_t * decoded);
+	ERR_CODE decode(dk_ff_video_decoder::dk_video_entity_t * encoded, dk_ff_video_decoder::dk_video_entity_t * decoded);
+	ERR_CODE decode(dk_ff_video_decoder::dk_video_entity_t * encoded);
+	ERR_CODE get_queued_data(dk_ff_video_decoder::dk_video_entity_t * decoded);
 
 private:
 	ffmpeg_decoder * _core;
