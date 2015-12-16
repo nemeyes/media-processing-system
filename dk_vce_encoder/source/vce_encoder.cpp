@@ -275,7 +275,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t *
 	{
 		case dk_vce_encoder::MEMORY_TYPE_DX9:
 		case dk_vce_encoder::MEMORY_TYPE_DX9EX:
-			status = _context->CreateSurfaceFromDX9Native(rawstream->d3d9_surface, &_surface, _surface_observer);
+			status = _context->CreateSurfaceFromDX9Native(rawstream->_surface, &_surface, _surface_observer);
 			break;
 		case dk_vce_encoder::MEMORY_TYPE_DX10:
 		case dk_vce_encoder::MEMORY_TYPE_DX10_1:
@@ -283,7 +283,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t *
 		case dk_vce_encoder::MEMORY_TYPE_DX11_1:
 		case dk_vce_encoder::MEMORY_TYPE_DX11_2:
 		case dk_vce_encoder::MEMORY_TYPE_DX11_3:
-			status = _context->CreateSurfaceFromDX11Native(rawstream->d3d11_surface, &_surface, _surface_observer);
+			status = _context->CreateSurfaceFromDX11Native(rawstream->_surface, &_surface, _surface_observer);
 			break;
 		case dk_vce_encoder::MEMORY_TYPE_DX12:
 			break;

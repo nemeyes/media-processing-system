@@ -92,9 +92,10 @@ public:
 	typedef struct _dk_video_entity_t
 	{
 		MEMORY_TYPE			mem_type;
-		IDirect3DSurface9 * d3d9_surface;
-		ID3D10Texture2D *	d3d10_surface;
-		ID3D11Texture2D *	d3d11_surface;
+		void *				_surface;
+		//IDirect3DSurface9 * d3d9_surface;
+		//ID3D10Texture2D *	d3d10_surface;
+		//ID3D11Texture2D *	d3d11_surface;
 		uint8_t *			data;
 		size_t				data_size;
 		size_t				data_capacity;
