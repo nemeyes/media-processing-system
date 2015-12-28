@@ -45,6 +45,9 @@
     <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h">
       <Filter>buffering</Filter>
     </ClInclude>
+    <ClInclude Include="include\vce_surface_observer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_vce_encoder.cpp">
@@ -64,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp">
       <Filter>buffering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vce_surface_observer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

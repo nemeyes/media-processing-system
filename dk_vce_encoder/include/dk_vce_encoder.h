@@ -57,88 +57,81 @@ public:
 	typedef struct EXP_CLASS _configuration_t
 	{
 		MEMORY_TYPE mem_type;
+		void * d3d_device;
 		int cs;
 		int width;
 		int height;
 		int bitrate;
+		int peak_bitrate;
+		int vbv_max_bitrate;
+		int vbv_size;
 		int rc_mode;
 		int usage;
 		int keyframe_interval;
 		int profile;
 		int fps;
 		int preset;
-		int vbv_max_bitrate;
-		int vbv_size;
-		int invalidate_ref_frames_enable_flag;
-		int intra_refresh_enable_flag;
-		int intra_refresh_period;
-		int intra_refresh_duration;
 		int numb;
-		int bitstream_buffer_size;
+		int slice_per_frame;
+		int enable_4k;
 		_configuration_t(void)
-			: cs(COLOR_SPACE_YV12)
+			: mem_type(MEMORY_TYPE_HOST)
+			, cs(COLOR_SPACE_YV12)
 			, width(1280)
 			, height(1024)
 			, bitrate(4000000)
+			, peak_bitrate(4000000)
+			, vbv_max_bitrate(4000000)
+			, vbv_size(4000000)
 			, rc_mode(RC_MODE_CBR)
 			, usage(USAGE_TRANSCONDING)
 			, keyframe_interval(2)
 			, profile(CODEC_PROFILE_TYPE_HIGH)
 			, fps(60)
 			, preset(PRESET_TYPE_QUALITY)
-			, vbv_max_bitrate(4000000)
-			, vbv_size(4000000)
-			, invalidate_ref_frames_enable_flag(0)
-			, intra_refresh_enable_flag(0)
-			, intra_refresh_period(0)
-			, intra_refresh_duration(0)
 			, numb(0)
-			, bitstream_buffer_size(0)
+			, enable_4k(0)
 		{
 		}
 
 		_configuration_t(const _configuration_t & clone)
 		{
+			mem_type = clone.mem_type;
 			cs = clone.cs;
 			width = clone.width;
 			height = clone.height;
 			bitrate = clone.bitrate;
+			peak_bitrate = clone.peak_bitrate;
+			vbv_max_bitrate = clone.vbv_max_bitrate;
+			vbv_size = clone.vbv_size;
 			rc_mode = clone.rc_mode;
 			usage = clone.usage;
 			keyframe_interval = clone.keyframe_interval;
 			profile = clone.profile;
 			fps = clone.fps;
 			preset = clone.preset;
-			vbv_max_bitrate = clone.vbv_max_bitrate;
-			vbv_size = clone.vbv_size;
-			invalidate_ref_frames_enable_flag = clone.invalidate_ref_frames_enable_flag;
-			intra_refresh_enable_flag = clone.intra_refresh_enable_flag;
-			intra_refresh_period = clone.intra_refresh_period;
-			intra_refresh_duration = clone.intra_refresh_duration;
 			numb = clone.numb;
-			bitstream_buffer_size = clone.bitstream_buffer_size;
+			enable_4k = clone.enable_4k;
 		}
 
 		_configuration_t operator=(const _configuration_t & clone)
 		{
+			mem_type = clone.mem_type;
 			cs = clone.cs;
 			width = clone.width;
 			height = clone.height;
 			bitrate = clone.bitrate;
+			peak_bitrate = clone.peak_bitrate;
+			vbv_max_bitrate = clone.vbv_max_bitrate;
+			vbv_size = clone.vbv_size;
 			rc_mode = clone.rc_mode;
 			usage = clone.usage;
 			keyframe_interval = clone.keyframe_interval;
 			profile = clone.profile;
 			fps = clone.fps;
 			preset = clone.preset;
-			vbv_max_bitrate = clone.vbv_max_bitrate;
-			vbv_size = clone.vbv_size;
-			invalidate_ref_frames_enable_flag = clone.invalidate_ref_frames_enable_flag;
-			intra_refresh_enable_flag = clone.intra_refresh_enable_flag;
-			intra_refresh_period = clone.intra_refresh_period;
-			intra_refresh_duration = clone.intra_refresh_duration;
 			numb = clone.numb;
-			bitstream_buffer_size = clone.bitstream_buffer_size;
+			enable_4k = clone.enable_4k;
 			return (*this);
 		}
 	} configuration_t;
@@ -152,9 +145,6 @@ public:
 	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream, dk_vce_encoder::dk_video_entity_t * bitstream);
 	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream);
 	dk_vce_encoder::ERR_CODE get_queued_data(dk_vce_encoder::dk_video_entity_t * bitstream);
-
-	//dk_vce_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, dk_vce_encoder::PIC_TYPE & pic_type, bool flush = false);
-
 private:
 	vce_encoder * _core;
 
