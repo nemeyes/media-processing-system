@@ -138,7 +138,7 @@ inline HANDLE open_file_write(const char * output_file)
 	HANDLE output = NULL;
 
 #if defined (WIN32)
-	output = CreateFileA(output_file, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	output = CreateFileA(output_file, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_NEW | OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (output == INVALID_HANDLE_VALUE)
 	{
 		fprintf(stderr, "nvOpenFileWrite Failed to open \"%s\"\n", output_file);
