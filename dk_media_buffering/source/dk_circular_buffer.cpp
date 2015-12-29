@@ -67,3 +67,21 @@ int32_t dk_circular_buffer_read(dk_circular_buffer_t * buffer, uint8_t * target,
 //error:
 //	return -1;
 }
+
+/*std::string dk_circular_buffer_gets(dk_circular_buffer_t * buffer, int amount) 
+{
+//	check(amount > 0, "Need more than 0 for gets, you gave: %d ", amount);
+//	check_debug(amount <= RingBuffer_available_data(buffer), "Not enough data in the buffer.");
+//
+//	bstring result = blk2bstr(RingBuffer_starts_at(buffer), amount);
+//
+//	check(result != NULL, "Failed to create gets results.");
+//
+//	check(blength(result) == amount, "Wrong result length.");
+//
+//	RingBuffer_commit_read(buffer, amount);
+//	assert(RingBuffer_available_data(buffer) >= 0 && "Error in read commit");
+//	return result;
+//error:
+	return "";
+}*/
