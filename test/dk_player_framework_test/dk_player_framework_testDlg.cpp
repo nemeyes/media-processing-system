@@ -417,7 +417,13 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonHsl()
 
 void Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp()
 {
-	// TODO: Add your control notification handler code here
+	BOOL ar_checked = IsDlgButtonChecked(IDC_CHECK_ASPECT_RATIO);
+	BOOL uc_checked = FALSE;//IsDlgButtonChecked(IDC_CHECK_USE_CLOCK);
+	BOOL ea_checked = IsDlgButtonChecked(IDC_CHECK_ENABLE_AUDIO);
+
+	_player.initialize(::GetDlgItem(this->m_hWnd, IDC_STATIC_VIDEO_VIEW), ar_checked ? true : false, uc_checked ? true : false, ea_checked ? true : false);
+	_player.open_rtmp((LPWSTR)(LPCWSTR)L"rtmp://192.168.0.107/live/obs", L"", L"");
+	_player.play();
 }
 
 void Cdk_player_framework_testDlg::OnBnClickedButtonPlay()

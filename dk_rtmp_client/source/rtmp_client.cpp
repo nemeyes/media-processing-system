@@ -30,6 +30,11 @@
 #define MAX_AUDIO_SIZE	MAX_CHANNELS*MAX_SAMPLE_RATE*MAX_BIT_DEPTH*sizeof(int16_t) / 8
 
 
+#define AVC_SEQUENCE_HEADER	0
+#define AVC_NALU			1
+#define AVC_ENC_OF_SEQUENCE	2
+
+
 #if defined(WIN32) && defined(_DEBUG)
 FILE *netstackdump = 0;
 FILE *netstackdump_read = 0;
@@ -123,9 +128,9 @@ dk_rtmp_client::ERR_CODE rtmp_client::subscribe_begin(const char * url, const ch
 	memset(_password, 0x00, sizeof(_password));
 	if (strlen(url)>0)
 		strcpy_s(_url, url);
-	if (strlen(username)>0)
+	if (username && strlen(username)>0)
 		strcpy_s(_username, username);
-	if (strlen(password)>0)
+	if (password && strlen(password)>0)
 		strcpy_s(_password, password);
 	_recv_option = recv_option;
 	_repeat = repeat;
@@ -149,11 +154,6 @@ dk_rtmp_client::ERR_CODE rtmp_client::subscribe_end(void)
 #endif
 	return dk_rtmp_client::ERR_CODE_SUCCESS;
 }
-
-//dk_rtmp_client::ERR_CODE rtmp_client::pause(void)
-//{
-//	return dk_rtmp_client::ERR_CODE_SUCCESS;
-//}
 
 dk_rtmp_client::ERR_CODE rtmp_client::publish_begin(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T vsmt, dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password)
 {
@@ -196,40 +196,48 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 	struct timeval presentation_time = { 0, 0 };
 	uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
 
-	char * packet_body = packet->m_body;
-	uint32_t packet_length = packet->m_nBodySize;
+	char * video_data = packet->m_body;
+	uint32_t video_data_length = packet->m_nBodySize;
 
 	bool keyframe = false;
-	if (((packet_body[0] & 0xF0) >> 4) == 0x01)
+	if (((video_data[0] & 0xF0) >> 4) == 0x01) //FrameType Key Frame
+		keyframe = true;
+	if (((video_data[0] & 0xF0) >> 4) == 0x02) //FrameType Inter Frame
+		keyframe = true;
+	if (((video_data[0] & 0xF0) >> 4) == 0x03) //FrameType Disposable Inter Frame
+		keyframe = true;
+	if (((video_data[0] & 0xF0) >> 4) == 0x04) //FrameType Generated Key Frame
+		keyframe = true;
+	if (((video_data[0] & 0xF0) >> 4) == 0x05) //FrameType Generated Video Info/Command Frame
 		keyframe = true;
 
-	if ((packet_body[0] & 0x0F) == 0x07) //AVC
+	if ((video_data[0] & 0x0F) == 0x07) //CodecID
 	{
-		uint8_t avc_packet_type = packet_body[1]; //0:AVC Sequence header, 1:AVC NALU, 2:AVC end of sequence
-		if (avc_packet_type == 0)
+		uint8_t * avc_video_packet = (uint8_t*)&video_data[1];
+		uint8_t avc_packet_type = avc_video_packet[0]; //0:AVC Sequence header, 1:AVC NALU, 2:AVC end of sequence
+		//avc_video_packet[1], avc_video_packet[2], avc_video_packet[3]
+		if (avc_packet_type == AVC_SEQUENCE_HEADER)
 		{
-			//uint8_t configuration_version = packet_body[5];
-			//uint8_t avc_profile_indication = packet_body[6];
-			//uint8_t profile_compatibility = packet_body[7];
-			//uint8_t avc_level_indication = packet_body[8];
-			//uint8_t length_size_minus_one = packet_body[9] & 0x03;
-			uint8_t num_sps = packet_body[10] & 0x1F;
+			//uint8_t configuration_version = avc_video_packet[4];
+			//uint8_t avc_profile_indication = avc_video_packet[5];
+			//uint8_t profile_compatibility = avc_video_packet[6];
+			//uint8_t avc_level_indication = avc_video_packet[7];
+			//uint8_t length_size_minus_one = avc_video_packet[8] & 0x03;
+			uint8_t num_sps = avc_video_packet[9] & 0x1F;
 
 			uint16_t sps_size = 0;
 			uint16_t pps_size = 0;
 			for (uint8_t index = 0; index < num_sps; index++)
 			{
 				size_t saved_sps_size = 0;
-				unsigned char * saved_sps = get_sps(saved_sps_size);
-
-				sps_size = packet_body[11] << 8 | packet_body[12];
-				uint8_t * sps = (uint8_t*)&packet_body[13];
-
+				uint8_t * saved_sps = get_sps(saved_sps_size);
+				sps_size = avc_video_packet[10] << 8 | avc_video_packet[11];
+				uint8_t * sps = (uint8_t*)&avc_video_packet[12];
 				if (saved_sps_size < 1 || !saved_sps)
 				{
 					memcpy(extradata, start_code, sizeof(start_code));
 					memcpy(extradata + sizeof(start_code), sps, sps_size);
-					set_sps(extradata, sps_size + 4);
+					set_sps(extradata, sps_size + sizeof(start_code));
 					_change_sps = true;
 				}
 				else
@@ -238,26 +246,26 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 					{
 						memcpy(extradata, start_code, sizeof(start_code));
 						memcpy(extradata + sizeof(start_code), sps, sps_size);
-						set_sps(extradata, sps_size + 4);
+						set_sps(extradata, sps_size + sizeof(start_code));
 						_change_sps = true;
 					}
 				}
 			}
 
-			uint8_t num_pps = packet_body[13 + sps_size];
+			uint8_t num_pps = avc_video_packet[12 + sps_size];
 			for (uint8_t index = 0; index < num_pps; index++)
 			{
 				size_t saved_pps_size = 0;
 				unsigned char * saved_pps = get_pps(saved_pps_size);
 
-				pps_size = packet_body[14 + sps_size] << 8 | packet_body[15 + sps_size];
-				uint8_t * pps = (uint8_t*)&packet_body[16 + sps_size];
+				pps_size = avc_video_packet[13 + sps_size] << 8 | avc_video_packet[14 + sps_size];
+				uint8_t * pps = (uint8_t*)&avc_video_packet[15 + sps_size];
 
 				if (saved_pps_size < 1 || !saved_pps)
 				{
 					memcpy(extradata, start_code, sizeof(start_code));
 					memcpy(extradata + sizeof(start_code), pps, pps_size);
-					set_pps(extradata, pps_size + 4);
+					set_pps(extradata, pps_size + sizeof(start_code));
 					_change_pps = true;
 				}
 				else
@@ -266,34 +274,36 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 					{
 						memcpy(extradata, start_code, sizeof(start_code));
 						memcpy(extradata + sizeof(start_code), pps, pps_size);
-						set_pps(extradata, pps_size + 4);
+						set_pps(extradata, pps_size + sizeof(start_code));
 						_change_pps = true;
 					}
 				}
 			}
 		}
-		else if (avc_packet_type == 1)
+		else if (avc_packet_type == AVC_NALU)
 		{
-			int32_t remained = packet_length - 5;
-			uint8_t * vpacket = (uint8_t*)&packet_body[5];
+			int32_t remained = video_data_length - 5; //FrameType(UB4)+CodecID(UB4)+AVCPacketType(UI8)+CompositionTime(SI24)
+			uint8_t * data = (uint8_t*)&avc_video_packet[4];//AVCPacketType(UI8)+CompositionTime(SI24)
 			while (remained>0)
 			{
-				uint32_t nalu_size = (vpacket[0] & 0xff) << 24 | (vpacket[1] & 0xff) << 16 | (vpacket[2] & 0xff) << 8 | (vpacket[3] & 0xff);
-				uint8_t * nalu = (uint8_t*)&vpacket[4];
+				uint32_t nalu_size = (data[0] & 0xff) << 24 | (data[1] & 0xff) << 16 | (data[2] & 0xff) << 8 | (data[3] & 0xff);
+				uint8_t * nalu = (uint8_t*)&data[4];
 
+				size_t saved_sps_size = 0;
+				size_t saved_pps_size = 0;
+				uint8_t * saved_sps = nullptr;
+				uint8_t * saved_pps = nullptr;
+				bool is_idr = stream_parser::is_idr(dk_rtmp_client::SUBMEDIA_TYPE_AVC, *nalu & 0x1F);
 				if (!_rcv_first_idr)
 				{
-					bool is_idr = stream_parser::is_idr(dk_rtmp_client::SUBMEDIA_TYPE_AVC, *nalu & 0x1F);
 					if (is_idr && (_change_sps || _change_pps))
 					{
-						size_t saved_sps_size = 0;
-						size_t saved_pps_size = 0;
-						uint8_t * saved_sps = get_sps(saved_sps_size);
-						uint8_t * saved_pps = get_pps(saved_pps_size);
+						saved_sps = get_sps(saved_sps_size);
+						saved_pps = get_pps(saved_pps_size);
 						if ((saved_sps_size > 0) && (saved_pps_size > 0))
 						{
-							memcpy(extradata, saved_sps, saved_sps_size);
-							memcpy(extradata + saved_sps_size, saved_pps, saved_pps_size);
+							memmove(extradata, saved_sps, saved_sps_size);
+							memmove(extradata + saved_sps_size, saved_pps, saved_pps_size);
 							extradata_size = saved_sps_size + saved_pps_size;
 
 							memmove(_buffer, extradata, extradata_size);
@@ -310,23 +320,36 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 				}
 				else
 				{
-					size_t saved_sps_size = 0;
-					size_t saved_pps_size = 0;
-					uint8_t * saved_sps = get_sps(saved_sps_size);
-					uint8_t * saved_pps = get_pps(saved_pps_size);
+					saved_sps = get_sps(saved_sps_size);
+					saved_pps = get_pps(saved_pps_size);
 					if (saved_sps_size > 0 && saved_pps_size > 0)
 					{
-						memcpy(_buffer, start_code, sizeof(start_code));
-						memcpy(_buffer + sizeof(start_code), nalu, nalu_size);
-						if (_front)
-							_front->on_recv_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, sizeof(start_code) + nalu_size, presentation_time);
+						if (is_idr)
+						{
+							memmove(extradata, saved_sps, saved_sps_size);
+							memmove(extradata + saved_sps_size, saved_pps, saved_pps_size);
+							extradata_size = saved_sps_size + saved_pps_size;
+
+							memmove(_buffer, extradata, extradata_size);
+							memmove(_buffer + extradata_size, start_code, sizeof(start_code));
+							memmove(_buffer + extradata_size + sizeof(start_code), nalu, nalu_size);
+							if (_front)
+								_front->on_recv_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
+						}
+						else
+						{
+							memmove(_buffer, start_code, sizeof(start_code));
+							memmove(_buffer + sizeof(start_code), nalu, nalu_size);
+							if (_front)
+								_front->on_recv_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, sizeof(start_code) + nalu_size, presentation_time);
+						}
 					}
 				}
 
 				remained -= 4;//4byte for calcualting nalu_size
 				remained -= nalu_size;//nalu size itself
-				vpacket += 4;
-				vpacket += nalu_size;
+				data += 4;
+				data += nalu_size;
 			}
 		}
 		else //end of sequence
@@ -410,7 +433,7 @@ void rtmp_client::sb_process(void)
 			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
 
 			double duration = RTMP_GetDuration(&rtmp);
-			//Sleep(duration / 1000.f);
+			//Sleep(duration / 1000);
 
 		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
 
@@ -551,7 +574,7 @@ void rtmp_client::pb_process(void)
 			//nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
 
 			double duration = RTMP_GetDuration(&rtmp);
-			Sleep(duration / 1000.f);
+			//Sleep(duration / 1000.f);
 
 		} while (!RTMP_ctrlC /*&& (nb_read>-1)*/ && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
 

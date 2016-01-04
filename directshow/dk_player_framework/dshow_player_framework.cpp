@@ -228,6 +228,8 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 	}
 	hr = _source->add_to_graph(_graph, path);
 
+
+	/*
 	CComPtr<IPin> vopin = _source->get_video_output_pin();
 	IEnumMediaTypes * venum = 0;
 	hr = vopin->EnumMediaTypes(&venum);
@@ -339,7 +341,9 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 				dk_player_framework::ERR_CODE_FAILED;
 		}
 	}
-
+	*/
+	if (SUCCEEDED(hr))
+		hr = arrange();
 	//1 second is equal to 1000 millisecond, or 1000000000 nanosecond
 	//1 millisecond is equal to 1000000 nanosecond
 	//long long _total_duration = 0;
@@ -352,7 +356,20 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 		return dk_player_framework::ERR_CODE_FAILED;
 }
 
-//dk_player_framework::ERR_CODE open_rtsp(wchar_t * url);
+dk_player_framework::ERR_CODE dshow_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password)
+{
+	HRESULT hr = E_FAIL;
+	_source = new dk_rtmp_source();
+	hr = _source->add_to_graph(_graph, url, username, password);
+	if (SUCCEEDED(hr))
+		hr = arrange();
+
+	if (SUCCEEDED(hr))
+		return dk_player_framework::ERR_CODE_SUCCESS;
+	else
+		return dk_player_framework::ERR_CODE_FAILED;
+}
+
 dk_player_framework::ERR_CODE dshow_player_framework::play(void)
 {
 	if (_state != dk_player_framework::STATE_PAUSED && _state != dk_player_framework::STATE_STOPPED)
@@ -563,4 +580,121 @@ HRESULT dshow_player_framework::handle_graphevent(fn_graph_event func)
 		}
 	}
 	return hr;
+}
+
+HRESULT dshow_player_framework::arrange(void)
+{
+	HRESULT hr = NOERROR;
+	CComPtr<IPin> vopin = _source->get_video_output_pin();
+	IEnumMediaTypes * venum = 0;
+	hr = vopin->EnumMediaTypes(&venum);
+	if (FAILED(hr))
+		return dk_player_framework::ERR_CODE_FAILED;
+	AM_MEDIA_TYPE * vmt;
+	while (S_OK == venum->Next(1, &vmt, NULL))
+	{
+		if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_H264) ||
+			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_AVC1) ||
+			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_avc1) ||
+			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_h264) ||
+			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_X264) ||
+			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_x264))
+		{
+			_video_decoder = new dk_microsoft_video_decoder();
+			break;
+		}
+		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP4V) ||
+			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_XVID) ||
+			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_xvid))
+		{
+			_video_decoder = new dk_dmo_mpeg4s_decoder();
+			break;
+		}
+		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP42))
+		{
+			_video_decoder = new dk_dmo_mpeg4_decoder();
+			break;
+		}
+		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_WVC1))
+		{
+			_video_decoder = new dk_dmo_wmvideo_decoder();
+			break;
+		}
+		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP43))
+		{
+			_video_decoder = new dk_dmo_mpeg43_decoder();
+			break;
+		}
+	}
+	safe_release(&venum);
+
+	_video_renderer = new dk_enhanced_video_renderer();
+
+	hr = _video_decoder->add_to_graph(_graph);
+	if (FAILED(hr))
+		dk_player_framework::ERR_CODE_FAILED;
+	hr = _video_renderer->add_to_graph(_graph, _hwnd, _aspect_ratio);
+	if (FAILED(hr))
+		dk_player_framework::ERR_CODE_FAILED;
+	hr = _graph->Render(_source->get_video_output_pin());
+	if (FAILED(hr))
+		dk_player_framework::ERR_CODE_FAILED;
+
+	if (_enable_audio)
+	{
+		CComPtr<IPin> aopin = _source->get_audio_output_pin();
+		if (aopin)
+		{
+			bool pcm = false;
+			IEnumMediaTypes * aenum = 0;
+			hr = aopin->EnumMediaTypes(&aenum);
+			if (FAILED(hr))
+				return dk_player_framework::ERR_CODE_FAILED;
+			AM_MEDIA_TYPE * amt;
+			while (S_OK == aenum->Next(1, &amt, NULL))
+			{
+				if (IsEqualGUID(amt->subtype, MEDIASUBTYPE_AAC) ||
+					IsEqualGUID(amt->subtype, MEDIASUBTYPE_AAC1) ||
+					IsEqualGUID(amt->subtype, MEDIASUBTYPE_AAC2) ||
+					IsEqualGUID(amt->subtype, MEDIASUBTYPE_AAC3) ||
+					IsEqualGUID(amt->subtype, MEDIASUBTYPE_DOLBY_AC3))
+				{
+					_audio_decoder = new dk_microsoft_audio_decoder();
+					break;
+				}
+				else if (IsEqualGUID(amt->subtype, MEDIASUBTYPE_MP3))
+				{
+					_audio_decoder = new dk_dmo_mp3_decoder();
+					break;
+				}
+				else if (IsEqualGUID(amt->subtype, MEDIASUBTYPE_WMAUDIO2))
+				{
+					_audio_decoder = new dk_dmo_wmaudio_decoder();
+					break;
+				}
+				else if (IsEqualGUID(amt->subtype, MEDIASUBTYPE_PCM))
+				{
+					pcm = true;
+					break;
+				}
+			}
+			safe_release(&aenum);
+
+			_audio_renderer = new dk_default_direct_sound_renderer();
+
+			if (!pcm && _audio_decoder)
+			{
+				hr = _audio_decoder->add_to_graph(_graph);
+				if (FAILED(hr))
+					dk_player_framework::ERR_CODE_FAILED;
+			}
+			hr = _audio_renderer->add_to_graph(_graph);
+			if (FAILED(hr))
+				dk_player_framework::ERR_CODE_FAILED;
+			hr = _graph->Render(_source->get_audio_output_pin());
+			if (FAILED(hr))
+				dk_player_framework::ERR_CODE_FAILED;
+		}
+	}
+	return NOERROR;
 }

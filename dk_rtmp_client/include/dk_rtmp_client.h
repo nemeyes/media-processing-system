@@ -67,7 +67,7 @@ public:
 	} RECV_OPTION_T;
 
 	dk_rtmp_client(void);
-	~dk_rtmp_client(void);
+	virtual ~dk_rtmp_client(void);
 
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);

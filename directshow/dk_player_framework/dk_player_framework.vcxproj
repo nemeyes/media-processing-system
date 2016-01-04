@@ -107,6 +107,7 @@
     <ClInclude Include="dk_microsoft_audio_decoder.h" />
     <ClInclude Include="dk_microsoft_video_decoder.h" />
     <ClInclude Include="dk_player_framework.h" />
+    <ClInclude Include="dk_rtmp_source.h" />
     <ClInclude Include="dk_wmv_splitter.h" />
     <ClInclude Include="dshow_player_framework.h" />
   </ItemGroup>
@@ -127,6 +128,7 @@
     <ClCompile Include="dk_microsoft_audio_decoder.cpp" />
     <ClCompile Include="dk_microsoft_video_decoder.cpp" />
     <ClCompile Include="dk_player_framework.cpp" />
+    <ClCompile Include="dk_rtmp_source.cpp" />
     <ClCompile Include="dk_wmv_splitter.cpp" />
     <ClCompile Include="dshow_player_framework.cpp" />
   </ItemGroup>

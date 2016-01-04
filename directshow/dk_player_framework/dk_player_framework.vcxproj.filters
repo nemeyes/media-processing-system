@@ -93,6 +93,9 @@
     <ClInclude Include="dk_dmo_wmvideo_decoder.h">
       <Filter>Header Files\decoder</Filter>
     </ClInclude>
+    <ClInclude Include="dk_rtmp_source.h">
+      <Filter>Header Files\source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dshow_player_framework.cpp">
@@ -148,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="dk_dmo_wmvideo_decoder.cpp">
       <Filter>Source Files\decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="dk_rtmp_source.cpp">
+      <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

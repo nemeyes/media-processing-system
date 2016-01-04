@@ -55,13 +55,6 @@ dk_rtmp_client::ERR_CODE dk_rtmp_client::subscribe_end(void)
 	return _core->subscribe_end();
 }
 
-/*
-dk_rtmp_client::ERR_CODE dk_rtmp_client::pause(void)
-{
-	return _core->pause();
-}
-*/
-
 dk_rtmp_client::ERR_CODE dk_rtmp_client::publish_begin(VIDEO_SUBMEDIA_TYPE_T vsmt, AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password)
 {
 	return _core->publish_begin(vsmt, asmt, url, username, password);

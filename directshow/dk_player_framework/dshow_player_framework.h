@@ -10,6 +10,7 @@
 #include "dk_avi_splitter.h"
 #include "dk_gdcl_mpeg4_demuxer.h"
 #include "dk_wmv_splitter.h"
+#include "dk_rtmp_source.h"
 
 #include "dk_microsoft_video_decoder.h"
 #include "dk_dmo_mpeg4_decoder.h"
@@ -47,6 +48,7 @@ public:
 	dk_player_framework::ERR_CODE fastforward_rate(double rate);
 
 	dk_player_framework::ERR_CODE open_file(wchar_t * file);
+	dk_player_framework::ERR_CODE open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password);
 	dk_player_framework::ERR_CODE play(void);
 	dk_player_framework::ERR_CODE pause(void);
 	dk_player_framework::ERR_CODE stop(void);
@@ -59,6 +61,9 @@ public:
 	HRESULT repaint(HDC hdc);
 	HRESULT on_change_displaymode(void);
 	HRESULT handle_graphevent(fn_graph_event func);
+
+private:
+	HRESULT arrange(void);
 
 private:
 	HWND _hwnd;

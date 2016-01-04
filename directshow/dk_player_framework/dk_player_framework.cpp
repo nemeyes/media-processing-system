@@ -77,7 +77,11 @@ dk_player_framework::ERR_CODE dk_player_framework::open_file(wchar_t * file)
 	return _core->open_file(file);
 }
 
-//dk_player_framework::ERR_CODE open_rtsp(wchar_t * url);
+dk_player_framework::ERR_CODE dk_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password)
+{
+	return _core->open_rtmp(url, username, password);
+}
+
 dk_player_framework::ERR_CODE dk_player_framework::play(void)
 {
 	return _core->play();
