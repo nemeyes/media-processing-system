@@ -5,10 +5,10 @@
 #include <cstdint>
 #define MAX_VIDEO_FRAME_SIZE 1024*1024*2
 
-#include "eap_media_buffering.h"
+#include "dk_media_buffering.h"
 
-typedef struct _eap_circular_buffer_t eap_circular_buffer_t;
-class eap_video_buffer
+typedef struct _dk_circular_buffer_t dk_circular_buffer_t;
+class dk_video_buffer
 {
 public:
 	typedef struct _vbuffer_t
@@ -19,24 +19,24 @@ public:
 	} vbuffer_t;
 
 
-	eap_video_buffer(size_t buffer_size = MAX_VIDEO_FRAME_SIZE);
-	~eap_video_buffer(void);
+	dk_video_buffer(size_t buffer_size = MAX_VIDEO_FRAME_SIZE);
+	~dk_video_buffer(void);
 
-	eap_media_buffering::ERR_CODE push_bitstream(uint8_t * bs, size_t size);
-	eap_media_buffering::ERR_CODE pop_bitstream(uint8_t * bs, size_t & size);
+	dk_media_buffering::ERR_CODE push_bitstream(uint8_t * bs, size_t size);
+	dk_media_buffering::ERR_CODE pop_bitstream(uint8_t * bs, size_t & size);
 
-	eap_media_buffering::ERR_CODE set_vps(uint8_t * vps, size_t size);
-	eap_media_buffering::ERR_CODE set_sps(uint8_t * sps, size_t size);
-	eap_media_buffering::ERR_CODE set_pps(uint8_t * pps, size_t size);
-	eap_media_buffering::ERR_CODE get_vps(uint8_t * sps, size_t & size);
-	eap_media_buffering::ERR_CODE get_sps(uint8_t * sps, size_t & size);
-	eap_media_buffering::ERR_CODE get_pps(uint8_t * pps, size_t & size);
+	dk_media_buffering::ERR_CODE set_vps(uint8_t * vps, size_t size);
+	dk_media_buffering::ERR_CODE set_sps(uint8_t * sps, size_t size);
+	dk_media_buffering::ERR_CODE set_pps(uint8_t * pps, size_t size);
+	dk_media_buffering::ERR_CODE get_vps(uint8_t * sps, size_t & size);
+	dk_media_buffering::ERR_CODE get_sps(uint8_t * sps, size_t & size);
+	dk_media_buffering::ERR_CODE get_pps(uint8_t * pps, size_t & size);
 
 
 private:
-	eap_media_buffering::ERR_CODE push(uint8_t * bs, size_t size);
-	eap_media_buffering::ERR_CODE pop(uint8_t * bs, size_t & size);
-	eap_media_buffering::ERR_CODE init(vbuffer_t *  buffer);
+	dk_media_buffering::ERR_CODE push(uint8_t * bs, size_t size);
+	dk_media_buffering::ERR_CODE pop(uint8_t * bs, size_t & size);
+	dk_media_buffering::ERR_CODE init(vbuffer_t *  buffer);
 
 private:
 	uint8_t _vps[200];
@@ -57,5 +57,5 @@ private:
 
 	CRITICAL_SECTION _mutex;
 
-	eap_circular_buffer_t * _cbuffer;
+	dk_circular_buffer_t * _cbuffer;
 };
