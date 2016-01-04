@@ -425,25 +425,17 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t *
 	_surface->SetProperty(AMF_VIDEO_ENCODER_INSERT_PPS, false);
 	_surface->SetProperty(AMF_VIDEO_ENCODER_PICTURE_STRUCTURE, AMF_VIDEO_ENCODER_PICTURE_STRUCTURE_FRAME);
 
-	//OutputDebugStringW(L"Before SubmitInput\n");
 	status = _encoder->SubmitInput(_surface);
+#if defined(WITH_PRESERVE_INPUT_FRAME)
 	while (status == AMF_INPUT_FULL)
 	{
-		//OutputDebugStringW(L"After SubmitInput : AMF_INPUT_FULL\n");
 		amf_sleep(1);
 		status = _encoder->SubmitInput(_surface);
 	}
-	if (status == AMF_OK)
-	{
-		//OutputDebugStringW(L"After SubmitInput : AMF_OK\n");
+#else
+	if(status!=AMF_OK)
 		_prev_surface = nullptr;
-	}
-	/*else
-	{
-	wchar_t debug[100] = { 0 };
-	_snwprintf(debug, sizeof(debug) / sizeof(wchar_t), L"After SubmitInput : %d\n", status);
-	OutputDebugStringW(debug);
-	}*/
+#endif
 
 #if !defined(WITH_AMF_THREAD)
 	amf::AMFDataPtr data;
@@ -458,7 +450,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t *
 		{
 			uint8_t * bs = (uint8_t*)buffer->GetNative();
 			size_t bs_size = buffer->GetSize();
-
+			//buffer->Convert(amf::AMF_MEMORY_DX9);
 #if defined(WITH_DEBUG_ES)
 			DWORD nbytes = 0;
 			if (_file != INVALID_HANDLE_VALUE)
