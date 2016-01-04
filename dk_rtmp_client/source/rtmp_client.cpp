@@ -73,6 +73,9 @@ rtmp_client::rtmp_client(dk_rtmp_client * front)
 
 rtmp_client::~rtmp_client(void)
 {
+	if (!RTMP_ctrlC)
+		subscribe_end();
+
 	::DeleteCriticalSection(&_video_mutex);
 	::DeleteCriticalSection(&_audio_mutex);
 
