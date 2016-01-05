@@ -14,7 +14,6 @@ dk_rtmp_client::~dk_rtmp_client(void)
 	_core = nullptr;
 }
 
-
 uint8_t * dk_rtmp_client::get_sps(size_t & sps_size)
 {
 	return _core->get_sps(sps_size);
@@ -43,6 +42,11 @@ void dk_rtmp_client::clear_sps(void)
 void dk_rtmp_client::clear_pps(void)
 {
 	return _core->clear_pps();
+}
+
+dk_rtmp_client::STATE_T dk_rtmp_client::state(void)
+{
+	return _core->state();
 }
 
 dk_rtmp_client::ERR_CODE dk_rtmp_client::subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat)

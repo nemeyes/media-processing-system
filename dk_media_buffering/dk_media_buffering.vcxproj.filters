@@ -24,6 +24,9 @@
     <ClInclude Include="include\dk_media_buffering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\dk_audio_buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_circular_buffer.cpp">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\dk_media_buffering.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dk_audio_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

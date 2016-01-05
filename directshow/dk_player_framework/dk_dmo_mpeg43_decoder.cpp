@@ -14,7 +14,7 @@ dk_dmo_mpeg43_decoder::dk_dmo_mpeg43_decoder(void)
 
 dk_dmo_mpeg43_decoder::~dk_dmo_mpeg43_decoder(void)
 {
-	safe_release(&_decoder);
+	//safe_release(&_decoder);
 }
 
 CComPtr<IBaseFilter> dk_dmo_mpeg43_decoder::get_filter(void)

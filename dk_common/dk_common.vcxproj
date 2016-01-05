@@ -76,6 +76,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\dk_auto_lock.h" />
     <ClInclude Include="include\dk_basic_type.h" />
     <ClInclude Include="include\dk_fileio.h" />
     <ClInclude Include="include\dk_image_creator.h" />

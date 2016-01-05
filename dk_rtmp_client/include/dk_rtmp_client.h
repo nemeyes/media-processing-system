@@ -18,6 +18,15 @@ class rtmp_client;
 class EXP_CLASS dk_rtmp_client
 {
 public:
+	typedef enum _STATE_T
+	{
+		STATE_STOPPED = 0,
+		STATUE_PAUSED,
+		STATE_SUBSCRIBING,
+		STATE_PUBLISHING,
+	} STATE_T;
+
+
 	typedef enum _MEDIA_TYPE_T
 	{
 		MEDIA_TYPE_VIDEO = 0,
@@ -27,7 +36,7 @@ public:
 	typedef enum _VIDEO_SUBMEDIA_TYPE_T
 	{
 		UNKNOWN_VIDEO_TYPE = -1,
-		SUBMEDIA_TYPE_JPEG = 0,
+		SUBMEDIA_TYPE_JPEG = 1,
 		SUBMEDIA_TYPE_SORENSON_H263,
 		SUBMEDIA_TYPE_SCREEN_VIDEO,
 		SUBMEDIA_TYPE_VP6,
@@ -76,16 +85,15 @@ public:
 	void clear_sps(void);
 	void clear_pps(void);
 
+	dk_rtmp_client::STATE_T state(void);
+
 	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
 	dk_rtmp_client::ERR_CODE subscribe_end(void);
-	//dk_rtmp_client::ERROR_CODE pause(void);
-	virtual void on_begin_media(VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
-	virtual void on_recv_media(VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
 
-	//virtual void on_begin_media(AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configsize, struct timeval presentation_time) = 0;
-	//virtual void on_recv_media(AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
-
-
+	virtual void on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	virtual void on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	virtual void on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, struct timeval presentation_time) = 0;
+	virtual void on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
 
 	dk_rtmp_client::ERR_CODE publish_begin(VIDEO_SUBMEDIA_TYPE_T vsmt, AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password);
 	dk_rtmp_client::ERR_CODE publish_video(uint8_t * bitstream, size_t nb);

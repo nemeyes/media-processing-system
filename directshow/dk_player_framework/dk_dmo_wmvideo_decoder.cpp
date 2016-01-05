@@ -14,7 +14,7 @@ dk_dmo_wmvideo_decoder::dk_dmo_wmvideo_decoder(void)
 
 dk_dmo_wmvideo_decoder::~dk_dmo_wmvideo_decoder(void)
 {
-	safe_release(&_decoder);
+	//safe_release(&_decoder);
 }
 
 CComPtr<IBaseFilter> dk_dmo_wmvideo_decoder::get_filter(void)

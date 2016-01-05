@@ -11,7 +11,7 @@ dk_default_direct_sound_renderer::dk_default_direct_sound_renderer(void)
 
 dk_default_direct_sound_renderer::~dk_default_direct_sound_renderer(void)
 {
-	safe_release(&_renderer);
+	//safe_release(&_renderer);
 }
 
 CComPtr<IBaseFilter> dk_default_direct_sound_renderer::get_filter(void)

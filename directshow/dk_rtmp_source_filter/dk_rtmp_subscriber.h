@@ -31,8 +31,10 @@ public:
 	dk_rtmp_subscriber::ERR_CODE get_connection_timeout(uint64_t & timeout);
 	dk_rtmp_subscriber::ERR_CODE get_repeat(bool & repeat);
 
-	void on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
-	void on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
+	void on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, struct timeval presentation_time);
+	void on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
 
 private:
 	void parse_vui(dk_bit_vector & bv, unsigned & num_units_in_tick, unsigned & time_scale, unsigned & fixed_frame_rate_flag, int * sar_width, int * sar_height);
@@ -55,7 +57,7 @@ private:
 	int32_t _sar_width;
 	int32_t _sar_height;
 
-#if defined(WITH_DEBUG_ES)
-	HANDLE _file;
+#if defined(WITH_DEBUG_VIDEO_ES)
+	HANDLE _video_file;
 #endif
 };

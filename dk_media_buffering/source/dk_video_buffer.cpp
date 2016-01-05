@@ -1,22 +1,6 @@
 #include "dk_video_buffer.h"
 #include "dk_circular_buffer.h"
-
-class dk_video_auto_lock
-{
-public:
-	dk_video_auto_lock(CRITICAL_SECTION * lock)
-		: _lock(lock)
-	{
-		::EnterCriticalSection(_lock);
-	}
-
-	~dk_video_auto_lock(void)
-	{
-		::LeaveCriticalSection(_lock);
-	}
-private:
-	CRITICAL_SECTION * _lock;
-};
+#include <dk_auto_lock.h>
 
 dk_video_buffer::dk_video_buffer(size_t buffer_size)
 	: _root(0)
@@ -28,7 +12,7 @@ dk_video_buffer::dk_video_buffer(size_t buffer_size)
 	
 	_cbuffer = dk_circular_buffer_create(buffer_size);
 
-	_root = static_cast<vbuffer_t*>(malloc(sizeof(vbuffer_t)));
+	_root = static_cast<buffer_t*>(malloc(sizeof(buffer_t)));
 	init(_root);
 }
 
@@ -36,9 +20,9 @@ dk_video_buffer::~dk_video_buffer(void)
 {
 	while (_root->next)
 	{
-		vbuffer_t * vbuffer = _root->next;
-		_root->next = vbuffer->next;
-		free(vbuffer);
+		buffer_t * buffer = _root->next;
+		_root->next = buffer->next;
+		free(buffer);
 	}
 
 	if(_root)
@@ -53,31 +37,31 @@ dk_media_buffering::ERR_CODE dk_video_buffer::push(uint8_t * data, size_t size)
 	dk_media_buffering::ERR_CODE status = dk_media_buffering::ERR_CODE_SUCCESS;
 	if (data && size > 0)
 	{
-		dk_video_auto_lock lock(&_mutex);
-		vbuffer_t * vbuffer = _root;
-		vbuffer->amount = MAX_VIDEO_FRAME_SIZE;
+		dk_auto_lock lock(&_mutex);
+		buffer_t * buffer = _root;
+		buffer->amount = MAX_VIDEO_FRAME_SIZE;
 
 		//move to tail
 		do
 		{
-			if (!vbuffer->next)
+			if (!buffer->next)
 				break;
-			vbuffer = vbuffer->next;
+			buffer = buffer->next;
 		} while (1);
 
-		vbuffer->next = static_cast<vbuffer_t*>(malloc(sizeof(vbuffer_t)));
-		init(vbuffer->next);
-		vbuffer->next->prev = vbuffer;
-		vbuffer = vbuffer->next;
+		buffer->next = static_cast<buffer_t*>(malloc(sizeof(buffer_t)));
+		init(buffer->next);
+		buffer->next->prev = buffer;
+		buffer = buffer->next;
 
-		vbuffer->amount = size;
-		int32_t result = dk_circular_buffer_write(_cbuffer, data, vbuffer->amount);
+		buffer->amount = size;
+		int32_t result = dk_circular_buffer_write(_cbuffer, data, buffer->amount);
 		if (result == -1)
 		{
-			if (vbuffer->prev)
-				vbuffer->prev->next = nullptr;
-			free(vbuffer);
-			vbuffer = nullptr;
+			if (buffer->prev)
+				buffer->prev->next = nullptr;
+			free(buffer);
+			buffer = nullptr;
 			status = dk_media_buffering::ERR_CODE_FAILED;
 		}
 		//else
@@ -94,23 +78,23 @@ dk_media_buffering::ERR_CODE dk_video_buffer::pop(uint8_t * data, size_t & size)
 {
 	dk_media_buffering::ERR_CODE status = dk_media_buffering::ERR_CODE_SUCCESS;
 	size = 0;
-	dk_video_auto_lock lock(&_mutex);
-	vbuffer_t * vbuffer = _root->next;
-	if (vbuffer)
+	dk_auto_lock lock(&_mutex);
+	buffer_t * buffer = _root->next;
+	if (buffer)
 	{
-		_root->next = vbuffer->next;
+		_root->next = buffer->next;
 		if (_root->next)
 			_root->next->prev = _root;
 
-		int32_t result = dk_circular_buffer_read(_cbuffer, data, vbuffer->amount);
+		int32_t result = dk_circular_buffer_read(_cbuffer, data, buffer->amount);
 		if (result == -1)
 			status = dk_media_buffering::ERR_CODE_FAILED;
 
-		size = vbuffer->amount;
+		size = buffer->amount;
 		//wchar_t debug[500];
 		//_snwprintf_s(debug, sizeof(debug), L"<<pop video data[%zu]\n", vbuffer->amount);
 		//OutputDebugString(debug);
-		free(vbuffer);
+		free(buffer);
 	}
 	return status;
 }
@@ -157,7 +141,7 @@ dk_media_buffering::ERR_CODE dk_video_buffer::get_pps(uint8_t * pps, size_t & si
 	return dk_media_buffering::ERR_CODE_SUCCESS;
 }
 
-dk_media_buffering::ERR_CODE dk_video_buffer::init(vbuffer_t * buffer)
+dk_media_buffering::ERR_CODE dk_video_buffer::init(buffer_t * buffer)
 {
 	buffer->amount = 0;
 	buffer->next = nullptr;	

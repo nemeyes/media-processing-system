@@ -22,7 +22,7 @@
 
 #define DEFAULT_METADATA_BUFFER_SIZE 2048
 
-#define MAX_VIDEO_SIZE 1024*1024*2
+#define MAX_VIDEO_SIZE 1024*1024/*2*/
 
 #define MAX_CHANNELS	8
 #define MAX_SAMPLE_RATE	48000
@@ -33,6 +33,9 @@
 #define AVC_SEQUENCE_HEADER	0
 #define AVC_NALU			1
 #define AVC_ENC_OF_SEQUENCE	2
+
+#define AAC_SEQUENCE_HEADER	0
+#define AAC_RAW				1
 
 
 #if defined(WIN32) && defined(_DEBUG)
@@ -60,6 +63,7 @@ private:
 
 rtmp_client::rtmp_client(dk_rtmp_client * front)
 	: _front(front)
+	, _state(dk_rtmp_client::STATE_STOPPED)
 {
 	WSADATA wsd;
 	WSAStartup(MAKEWORD(2, 2), &wsd);
@@ -121,8 +125,16 @@ void rtmp_client::clear_pps(void)
 	_pps_size = 0;
 }
 
+dk_rtmp_client::STATE_T rtmp_client::state(void)
+{
+	return _state;
+}
+
 dk_rtmp_client::ERR_CODE rtmp_client::subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat)
 {
+	if ((_state == dk_rtmp_client::STATE_SUBSCRIBING) || (_state == dk_rtmp_client::STATE_PUBLISHING))
+		return dk_rtmp_client::ERR_CODE_SUCCESS;
+
 	if (!url || strlen(url)<1)
 		return dk_rtmp_client::ERR_CODE_FAIL;
 
@@ -144,22 +156,32 @@ dk_rtmp_client::ERR_CODE rtmp_client::subscribe_begin(const char * url, const ch
 #else
 	pthread_create(&_sb_worker, 0, &rtmp_client::sb_process_cb, this);
 #endif
+
+	_state = dk_rtmp_client::STATE_SUBSCRIBING;
 	return dk_rtmp_client::ERR_CODE_SUCCESS;
 }
 
 dk_rtmp_client::ERR_CODE rtmp_client::subscribe_end(void)
 {
+	if (_state == dk_rtmp_client::STATE_STOPPED)
+		return dk_rtmp_client::ERR_CODE_SUCCESS;
+
+	_repeat = false;
 	RTMP_ctrlC = true;
 #if defined(WIN32)
 	::WaitForSingleObject(_sb_worker, INFINITE);
 #else
 	pthread_join(_worker, 0);
 #endif
+	_state = dk_rtmp_client::STATE_STOPPED;
 	return dk_rtmp_client::ERR_CODE_SUCCESS;
 }
 
 dk_rtmp_client::ERR_CODE rtmp_client::publish_begin(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T vsmt, dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password)
 {
+	if ((_state == dk_rtmp_client::STATE_SUBSCRIBING) || (_state == dk_rtmp_client::STATE_PUBLISHING))
+		return dk_rtmp_client::ERR_CODE_SUCCESS;
+
 	_vsmt = vsmt;
 	_asmt = asmt;
 #if defined(WIN32)
@@ -168,6 +190,7 @@ dk_rtmp_client::ERR_CODE rtmp_client::publish_begin(dk_rtmp_client::VIDEO_SUBMED
 #else
 	pthread_create(&_pb_worker, 0, &rtmp_client::pb_process_cb, this);
 #endif
+	_state = dk_rtmp_client::STATE_PUBLISHING;
 	return dk_rtmp_client::ERR_CODE_SUCCESS;
 }
 
@@ -183,18 +206,22 @@ dk_rtmp_client::ERR_CODE rtmp_client::publish_audio(uint8_t * bitstream, size_t 
 
 dk_rtmp_client::ERR_CODE rtmp_client::publish_end(void)
 {
+	if (_state == dk_rtmp_client::STATE_STOPPED)
+		return dk_rtmp_client::ERR_CODE_SUCCESS;
+
 	RTMP_ctrlC = true;
 #if defined(WIN32)
 	::WaitForSingleObject(_pb_worker, INFINITE);
 #else
 	pthread_join(_worker, 0);
 #endif
+	_state = dk_rtmp_client::STATE_STOPPED;
 	return dk_rtmp_client::ERR_CODE_SUCCESS;
 }
 
 void rtmp_client::sb_process_video(const RTMPPacket * packet)
 {
-	uint8_t extradata[200] = { 0 };
+	uint8_t extradata[100] = { 0 };
 	size_t extradata_size = 0;
 	struct timeval presentation_time = { 0, 0 };
 	uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
@@ -202,19 +229,19 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 	char * video_data = packet->m_body;
 	uint32_t video_data_length = packet->m_nBodySize;
 
-	bool keyframe = false;
-	if (((video_data[0] & 0xF0) >> 4) == 0x01) //FrameType Key Frame
-		keyframe = true;
-	if (((video_data[0] & 0xF0) >> 4) == 0x02) //FrameType Inter Frame
-		keyframe = true;
-	if (((video_data[0] & 0xF0) >> 4) == 0x03) //FrameType Disposable Inter Frame
-		keyframe = true;
-	if (((video_data[0] & 0xF0) >> 4) == 0x04) //FrameType Generated Key Frame
-		keyframe = true;
-	if (((video_data[0] & 0xF0) >> 4) == 0x05) //FrameType Generated Video Info/Command Frame
-		keyframe = true;
+	//bool keyframe = false;
+	//if (((video_data[0] & 0xF0) >> 4) == 0x01) //FrameType Key Frame
+	//	keyframe = true;
+	//if (((video_data[0] & 0xF0) >> 4) == 0x02) //FrameType Inter Frame
+	//	keyframe = true;
+	//if (((video_data[0] & 0xF0) >> 4) == 0x03) //FrameType Disposable Inter Frame
+	//	keyframe = true;
+	//if (((video_data[0] & 0xF0) >> 4) == 0x04) //FrameType Generated Key Frame
+	//	keyframe = true;
+	//if (((video_data[0] & 0xF0) >> 4) == 0x05) //FrameType Generated Video Info/Command Frame
+	//	keyframe = true;
 
-	if ((video_data[0] & 0x0F) == 0x07) //CodecID
+	if ((video_data[0] & 0x0F) == dk_rtmp_client::SUBMEDIA_TYPE_AVC) //CodecID
 	{
 		uint8_t * avc_video_packet = (uint8_t*)&video_data[1];
 		uint8_t avc_packet_type = avc_video_packet[0]; //0:AVC Sequence header, 1:AVC NALU, 2:AVC end of sequence
@@ -315,7 +342,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 
 							_rcv_first_idr = true;
 							if (_front)
-								_front->on_begin_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, saved_sps, saved_sps_size, saved_pps, saved_pps_size, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
+								_front->on_begin_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, saved_sps, saved_sps_size, saved_pps, saved_pps_size, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
 							_change_sps = false;
 							_change_pps = false;
 						}
@@ -337,14 +364,14 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 							memmove(_buffer + extradata_size, start_code, sizeof(start_code));
 							memmove(_buffer + extradata_size + sizeof(start_code), nalu, nalu_size);
 							if (_front)
-								_front->on_recv_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
+								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
 						}
 						else
 						{
 							memmove(_buffer, start_code, sizeof(start_code));
 							memmove(_buffer + sizeof(start_code), nalu, nalu_size);
 							if (_front)
-								_front->on_recv_media(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, sizeof(start_code) + nalu_size, presentation_time);
+								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, sizeof(start_code) + nalu_size, presentation_time);
 						}
 					}
 				}
@@ -357,14 +384,44 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 		}
 		else //end of sequence
 		{
-
+			_repeat = false;
+			RTMP_ctrlC = true;
 		}
 	}
 }
 
 void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 {
+	uint8_t extradata[50] = { 0 };
+	size_t extradata_size = 0;
 
+	struct timeval presentation_time = { 0, 0 };
+	char * audio_data = packet->m_body;
+	uint32_t audio_data_length = packet->m_nBodySize;
+
+	if (((audio_data[0] & 0xF0) >> 4) == dk_rtmp_client::SUBMEDIA_TYPE_AAC) //CodecID
+	{
+		int32_t samplerate = 44100; //AAC always 44.1kHz in video_file_format_spec_v10.pdf
+		int32_t bitdepth = (audio_data[0] & 0x02) ? 16 : 8;
+		int32_t channels = (audio_data[0] & 0x01) ? 1 : 2;
+		
+		uint8_t * aac_packet = (uint8_t*)&audio_data[1];
+		uint8_t aac_packet_type = aac_packet[0]; //0:AVC Sequence header, 1:AVC NALU, 2:AVC end of sequence
+		if (aac_packet_type == AAC_SEQUENCE_HEADER)
+		{
+			size_t data_size = audio_data_length - 2; //SoundFormat(UB4)+SoundRate(UB2)+SoundSize(UB1)+SoundType(UB1)+AACPacketType(UI8)
+			uint8_t * data = (uint8_t*)&aac_packet[1];
+			if (_front)
+				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, presentation_time);
+		}
+		else if (aac_packet_type == AAC_RAW)
+		{
+			size_t data_size = audio_data_length - 2; //SoundFormat(UB4)+SoundRate(UB2)+SoundSize(UB1)+SoundType(UB1)+AACPacketType(UI8)
+			uint8_t * data = (uint8_t*)&aac_packet[1];
+			if (_front)
+				_front->on_recv_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, presentation_time);
+		}
+	}
 }
 
 void rtmp_client::sb_process(void)
@@ -376,7 +433,7 @@ void rtmp_client::sb_process(void)
 		netstackdump_read = fopen("netstackdump_read", "wb");
 #endif
 
-		int read_buffer_size = 64 * 1024;
+		int read_buffer_size = MAX_VIDEO_SIZE;// 1024 * 1024;
 		char * read_buffer = (char *)malloc(read_buffer_size);
 
 		int32_t protocol = RTMP_PROTOCOL_UNDEFINED;
@@ -436,7 +493,7 @@ void rtmp_client::sb_process(void)
 			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
 
 			double duration = RTMP_GetDuration(&rtmp);
-			Sleep(duration / 1000);
+			//Sleep(duration / 1000);
 
 		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
 
@@ -445,8 +502,29 @@ void rtmp_client::sb_process(void)
 		if (read_buffer)
 			free(read_buffer);
 
+
+	/*	if (host.av_len > 0)
+			free(host.av_val);
+		if (playpath.av_len > 0)
+			free(playpath.av_val);
+		if (app.av_len > 0)
+			free(app.av_val);*/
 		if (tc_url.av_len > 0)
 			free(tc_url.av_val);
+		//if (swf_url.av_len > 0)
+		//	free(swf_url.av_val);
+		//if (page_url.av_len > 0)
+		//	free(page_url.av_val);
+		//if (auth.av_len > 0)
+		//	free(auth.av_val);
+		//if (swf_hash.av_len > 0)
+		//	free(swf_hash.av_val);
+		//if (flash_version.av_len > 0)
+		//	free(flash_version.av_val);
+		//if (sock_host.av_len > 0)
+		//	free(sock_host.av_val);
+		//if (subscribe_path.av_len > 0)
+		//	free(subscribe_path.av_val);
 
 #ifdef _DEBUG
 		if (netstackdump != 0)
@@ -455,7 +533,9 @@ void rtmp_client::sb_process(void)
 			fclose(netstackdump_read);
 #endif
 
-	} while (0/*_repeat*/);
+	} while (_repeat);
+
+	_state = dk_rtmp_client::STATE_STOPPED;
 }
 
 void rtmp_client::pb_process(void)
@@ -598,6 +678,7 @@ void rtmp_client::pb_process(void)
 #endif
 
 	} while (_repeat);
+	_state = dk_rtmp_client::STATE_STOPPED;
 }
 
 #if defined(WIN32)

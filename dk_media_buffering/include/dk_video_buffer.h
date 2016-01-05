@@ -11,12 +11,12 @@ typedef struct _dk_circular_buffer_t dk_circular_buffer_t;
 class dk_video_buffer
 {
 public:
-	typedef struct _vbuffer_t
+	typedef struct _buffer_t
 	{
 		size_t amount;
-		_vbuffer_t * prev;
-		_vbuffer_t * next;
-	} vbuffer_t;
+		_buffer_t * prev;
+		_buffer_t * next;
+	} buffer_t;
 
 
 	dk_video_buffer(size_t buffer_size = MAX_VIDEO_FRAME_SIZE);
@@ -33,7 +33,7 @@ public:
 	dk_media_buffering::ERR_CODE get_pps(uint8_t * pps, size_t & size);
 
 private:
-	dk_media_buffering::ERR_CODE init(vbuffer_t *  buffer);
+	dk_media_buffering::ERR_CODE init(buffer_t *  buffer);
 
 private:
 	uint8_t _vps[200];
@@ -43,7 +43,7 @@ private:
 	size_t _sps_size;
 	size_t _pps_size;
 
-	vbuffer_t * _root;
+	buffer_t * _root;
 
 
 	int32_t _begin;

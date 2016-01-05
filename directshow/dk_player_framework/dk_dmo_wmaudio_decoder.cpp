@@ -15,7 +15,7 @@ dk_dmo_wmaudio_decoder::dk_dmo_wmaudio_decoder(void)
 
 dk_dmo_wmaudio_decoder::~dk_dmo_wmaudio_decoder(void)
 {
-	safe_release(&_decoder);
+	//safe_release(&_decoder);
 }
 
 CComPtr<IBaseFilter> dk_dmo_wmaudio_decoder::get_filter(void)

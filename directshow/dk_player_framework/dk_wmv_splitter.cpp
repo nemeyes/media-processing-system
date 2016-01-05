@@ -12,7 +12,7 @@ dk_wmv_splitter::dk_wmv_splitter(void)
 
 dk_wmv_splitter::~dk_wmv_splitter(void)
 {
-	safe_release(&_source);
+	//safe_release(&_source);
 }
 
 

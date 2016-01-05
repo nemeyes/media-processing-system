@@ -25,6 +25,8 @@ public:
 	void clear_sps(void);
 	void clear_pps(void);
 
+	dk_rtmp_client::STATE_T state(void);
+
 	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
 	dk_rtmp_client::ERR_CODE subscribe_end(void);
 	//dk_rtmp_client::ERROR_CODE pause(void);
@@ -73,6 +75,7 @@ private:
 
 private:
 	dk_rtmp_client * _front;
+	dk_rtmp_client::STATE_T _state;
 
 	char _url[260];
 	char _username[260];

@@ -15,7 +15,7 @@ dk_dmo_mpeg4_decoder::dk_dmo_mpeg4_decoder(void)
 
 dk_dmo_mpeg4_decoder::~dk_dmo_mpeg4_decoder(void)
 {
-	safe_release(&_decoder);
+	//safe_release(&_decoder);
 }
 
 CComPtr<IBaseFilter> dk_dmo_mpeg4_decoder::get_filter(void)

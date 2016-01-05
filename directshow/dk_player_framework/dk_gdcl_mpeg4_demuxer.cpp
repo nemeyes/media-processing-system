@@ -14,8 +14,8 @@ dk_gdcl_mpeg4_demuxer::dk_gdcl_mpeg4_demuxer(void)
 
 dk_gdcl_mpeg4_demuxer::~dk_gdcl_mpeg4_demuxer(void)
 {
-	safe_release(&_source);
-	safe_release(&_parser);
+	//safe_release(&_source);
+	//safe_release(&_parser);
 }
 
 

@@ -56,13 +56,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WITH_DEBUG_ES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\baseclasses;..\..\dk_common\include;..\..\dk_rtmp_client\include;..\..\dk_media_buffering\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\baseclasses;..\..\dk_common\include;..\..\dk_rtmp_client\include;..\..\dk_media_buffering\include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;ws2_32.lib;dk_media_buffering.lib;dk_rtmp_client.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;ws2_32.lib;dk_media_buffering.lib;dk_rtmp_client.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>dk_rtmp_source_filter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>

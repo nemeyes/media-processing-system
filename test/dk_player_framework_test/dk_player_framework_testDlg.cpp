@@ -422,7 +422,7 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp()
 	BOOL ea_checked = IsDlgButtonChecked(IDC_CHECK_ENABLE_AUDIO);
 
 	_player.initialize(::GetDlgItem(this->m_hWnd, IDC_STATIC_VIDEO_VIEW), ar_checked ? true : false, uc_checked ? true : false, ea_checked ? true : false);
-	_player.open_rtmp((LPWSTR)(LPCWSTR)L"rtmp://192.168.0.107/live/obs", L"", L"");
+	_player.open_rtmp((LPWSTR)(LPCWSTR)L"rtmp://192.168.0.107/vod/00", L"", L"");
 	_player.play();
 }
 

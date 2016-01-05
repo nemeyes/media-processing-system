@@ -55,7 +55,7 @@ void dk_rtmp_receiver::stop_recording(void)
 	}
 }
 
-void dk_rtmp_receiver::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
 	if (_is_preview_enabled)
 	{
@@ -77,8 +77,6 @@ void dk_rtmp_receiver::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 
 				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
 				{
-					//dk_video_entity_t encoded = { 0, };
-					//dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
 					dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 					dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 					encoded.data = (uint8_t*)data;
@@ -113,13 +111,10 @@ void dk_rtmp_receiver::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
 
-void dk_rtmp_receiver::on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
 	if (_is_preview_enabled)
 	{
-		//dk_video_entity_t encoded = { 0, };
-		//dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
-
 		dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 		dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 
@@ -153,6 +148,16 @@ void dk_rtmp_receiver::on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 		else
 			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
 	}
+}
+
+void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, struct timeval presentation_time)
+{
+
+}
+
+void dk_rtmp_receiver::on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+{
+
 }
 
 // Local Functions

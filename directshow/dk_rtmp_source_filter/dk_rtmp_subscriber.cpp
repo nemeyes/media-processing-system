@@ -14,15 +14,15 @@ dk_rtmp_subscriber::dk_rtmp_subscriber(void)
 	, _sar_width(-1)
 	, _sar_height(-1)
 {
-#if defined(WITH_DEBUG_ES)
-	_file = ::open_file_write("rtmp_video.h264");
+#if defined(WITH_DEBUG_VIDEO_ES)
+	_video_file = ::open_file_write("rtmp_video.h264");
 #endif
 }
 
 dk_rtmp_subscriber::~dk_rtmp_subscriber(void)
 {
-#if defined(WITH_DEBUG_ES)
-	::close_file(_file);
+#if defined(WITH_DEBUG_VIDEO_ES)
+	::close_file(_video_file);
 #endif
 }
 
@@ -158,7 +158,7 @@ dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_repeat(bool & repeat)
 }
 
 
-void dk_rtmp_subscriber::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_subscriber::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
 	if (parse_sps((BYTE*)(sps), spssize, &_width, &_height, &_sar_width, &_sar_height) < 1)
 	{
@@ -167,16 +167,16 @@ void dk_rtmp_subscriber::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T sm
 	}
 	else
 	{
-#if defined(WITH_DEBUG_ES)
+#if defined(WITH_DEBUG_VIDEO_ES)
 		DWORD nbytes = 0;
-		if (_file != INVALID_HANDLE_VALUE)
+		if (_video_file != INVALID_HANDLE_VALUE)
 		{
 			uint32_t bytes2write = data_size;
 			uint32_t bytes_written = 0;
 			do
 			{
 				uint32_t nb_write = 0;
-				write_file(_file, (uint8_t*)data, bytes2write, &nb_write, NULL);
+				write_file(_video_file, (uint8_t*)data, bytes2write, &nb_write, NULL);
 				bytes_written += nb_write;
 				if (bytes2write == bytes_written)
 					break;
@@ -187,18 +187,18 @@ void dk_rtmp_subscriber::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T sm
 	}
 }
 
-void dk_rtmp_subscriber::on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_subscriber::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
-#if defined(WITH_DEBUG_ES)
+#if defined(WITH_DEBUG_VIDEO_ES)
 	DWORD nbytes = 0;
-	if (_file != INVALID_HANDLE_VALUE)
+	if (_video_file != INVALID_HANDLE_VALUE)
 	{
 		uint32_t bytes2write = data_size;
 		uint32_t bytes_written = 0;
 		do
 		{
 			uint32_t nb_write = 0;
-			write_file(_file, (uint8_t*)data, bytes2write, &nb_write, NULL);
+			write_file(_video_file, (uint8_t*)data, bytes2write, &nb_write, NULL);
 			bytes_written += nb_write;
 			if (bytes2write == bytes_written)
 				break;
@@ -206,6 +206,16 @@ void dk_rtmp_subscriber::on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt
 	}
 #endif
 	dk_media_buffering::instance().push_video((uint8_t*)data, data_size);
+}
+
+void dk_rtmp_subscriber::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, struct timeval presentation_time)
+{
+
+}
+
+void dk_rtmp_subscriber::on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+{
+
 }
 
 void dk_rtmp_subscriber::parse_vui(dk_bit_vector & bv, unsigned & num_units_in_tick, unsigned & time_scale, unsigned & fixed_frame_rate_flag, int * sar_width, int * sar_height)

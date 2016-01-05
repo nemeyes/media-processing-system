@@ -27,7 +27,6 @@ dk_rtmp_video_source_stream::dk_rtmp_video_source_stream(HRESULT *hr, CSource *m
 dk_rtmp_video_source_stream::~dk_rtmp_video_source_stream(VOID)
 {
 
-
 }
 
 /// override this to publicise our interfaces
@@ -126,13 +125,13 @@ HRESULT dk_rtmp_video_source_stream::FillBuffer(IMediaSample *ms)
 	size_t size_of_recvd = 0;
 	ms->GetPointer(&buffer);
 
-#if 0
+#if 1
 	for (int i = 0; i < 1000; i++)
 	{
 		dk_media_buffering::instance().pop_video(buffer, size_of_recvd);
 		if (size_of_recvd > 0)
 			break;
-		Sleep(1);
+		::Sleep(1);
 	}
 #else
 	dk_media_buffering::instance().pop_video(buffer, size_of_recvd);

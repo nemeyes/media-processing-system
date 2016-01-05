@@ -14,7 +14,7 @@ dk_microsoft_video_decoder::dk_microsoft_video_decoder(void)
 
 dk_microsoft_video_decoder::~dk_microsoft_video_decoder(void)
 {
-	safe_release(&_decoder);
+	//safe_release(&_decoder);
 }
 
 CComPtr<IBaseFilter> dk_microsoft_video_decoder::get_filter(void)
