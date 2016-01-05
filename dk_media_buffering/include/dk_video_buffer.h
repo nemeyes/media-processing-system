@@ -22,8 +22,8 @@ public:
 	dk_video_buffer(size_t buffer_size = MAX_VIDEO_FRAME_SIZE);
 	~dk_video_buffer(void);
 
-	dk_media_buffering::ERR_CODE push_bitstream(uint8_t * bs, size_t size);
-	dk_media_buffering::ERR_CODE pop_bitstream(uint8_t * bs, size_t & size);
+	dk_media_buffering::ERR_CODE push(uint8_t * data, size_t size);
+	dk_media_buffering::ERR_CODE pop(uint8_t * data, size_t & size);
 
 	dk_media_buffering::ERR_CODE set_vps(uint8_t * vps, size_t size);
 	dk_media_buffering::ERR_CODE set_sps(uint8_t * sps, size_t size);
@@ -32,10 +32,7 @@ public:
 	dk_media_buffering::ERR_CODE get_sps(uint8_t * sps, size_t & size);
 	dk_media_buffering::ERR_CODE get_pps(uint8_t * pps, size_t & size);
 
-
 private:
-	dk_media_buffering::ERR_CODE push(uint8_t * bs, size_t size);
-	dk_media_buffering::ERR_CODE pop(uint8_t * bs, size_t & size);
 	dk_media_buffering::ERR_CODE init(vbuffer_t *  buffer);
 
 private:

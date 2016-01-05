@@ -17,7 +17,7 @@
 
 
 #define DEFAULT_TIMEOUT	30	/* seconds */
-#define DEFAULT_BUFTIME	(10 * 60 * 60 * 1000)	/* 10 hours default */
+#define DEFAULT_BUFTIME	500//(10 * 60 * 60 * 1000)	/* 10 hours default */
 #define DEFAULT_SKIPFRM	0
 
 #define DEFAULT_METADATA_BUFFER_SIZE 2048
@@ -296,7 +296,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 				size_t saved_pps_size = 0;
 				uint8_t * saved_sps = nullptr;
 				uint8_t * saved_pps = nullptr;
-				bool is_idr = stream_parser::is_idr(dk_rtmp_client::SUBMEDIA_TYPE_AVC, *nalu & 0x1F);
+				bool is_idr = stream_parser::is_idr(dk_rtmp_client::SUBMEDIA_TYPE_AVC, nalu[0] & 0x1F);
 				if (!_rcv_first_idr)
 				{
 					if (is_idr && (_change_sps || _change_pps))
@@ -436,7 +436,7 @@ void rtmp_client::sb_process(void)
 			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
 
 			double duration = RTMP_GetDuration(&rtmp);
-			//Sleep(duration / 1000);
+			Sleep(duration / 1000);
 
 		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
 

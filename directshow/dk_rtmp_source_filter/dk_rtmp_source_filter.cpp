@@ -156,9 +156,9 @@ STDMETHODIMP dk_rtmp_source_filter::Pause(void)
 	// notify all pins of the change to active state
 	if (m_State == State_Stopped)
 	{
-		dk_rtmp_subscriber::ERR_CODE code = _subscriber.play();
-		if (code != dk_rtmp_subscriber::ERR_CODE_SUCCESS)
-			return E_FAIL;
+		//dk_rtmp_subscriber::ERR_CODE code = _subscriber.play();
+		//if (code != dk_rtmp_subscriber::ERR_CODE_SUCCESS)
+		//	return E_FAIL;
 
 		int cPins = GetPinCount();
 		for (int c = 0; c<cPins; c++)
@@ -204,7 +204,7 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 	//for (int32_t i = 0; i < 600; i++)
 	while (true)
 	{
-		if (_subscriber.get_width()>0 && _subscriber.get_height() > 0)
+		if (_subscriber.get_width() > 0 && _subscriber.get_height() > 0)
 			break;
 		::Sleep(10);
 	}

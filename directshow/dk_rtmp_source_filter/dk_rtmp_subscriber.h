@@ -54,4 +54,8 @@ private:
 	int32_t _height;
 	int32_t _sar_width;
 	int32_t _sar_height;
+
+#if defined(WITH_DEBUG_ES)
+	HANDLE _file;
+#endif
 };

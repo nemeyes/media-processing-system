@@ -21,10 +21,6 @@ dk_rtmp_video_source_stream::dk_rtmp_video_source_stream(HRESULT *hr, CSource *m
 	, _is_first_sample_delivered(FALSE)
 	, _sample_media_time_start(0)
 {
-	m_mt.InitMediaType();
-	m_mt.SetType(&MEDIATYPE_Video);
-	m_mt.SetSubtype(&MEDIASUBTYPE_H264);
-	m_mt.SetSampleSize(0);
 
 }
 
@@ -130,6 +126,7 @@ HRESULT dk_rtmp_video_source_stream::FillBuffer(IMediaSample *ms)
 	size_t size_of_recvd = 0;
 	ms->GetPointer(&buffer);
 
+#if 0
 	for (int i = 0; i < 1000; i++)
 	{
 		dk_media_buffering::instance().pop_video(buffer, size_of_recvd);
@@ -137,9 +134,14 @@ HRESULT dk_rtmp_video_source_stream::FillBuffer(IMediaSample *ms)
 			break;
 		Sleep(1);
 	}
+#else
+	dk_media_buffering::instance().pop_video(buffer, size_of_recvd);
+#endif
 
-	if (size_of_recvd>0)
+	if (size_of_recvd > 0)
+	{
 		ms->SetActualDataLength(size_of_recvd);
+	}
 	else
 		ms->SetActualDataLength(0);
 

@@ -24,8 +24,8 @@ public:
 
 	static dk_media_buffering & instance(void);
 
-	dk_media_buffering::ERR_CODE push_video(uint8_t * es, size_t size);
-	dk_media_buffering::ERR_CODE pop_video(uint8_t * es, size_t & size);
+	dk_media_buffering::ERR_CODE push_video(uint8_t * data, size_t size);
+	dk_media_buffering::ERR_CODE pop_video(uint8_t * data, size_t & size);
 
 	dk_media_buffering::ERR_CODE set_vps(uint8_t * vps, size_t size);
 	dk_media_buffering::ERR_CODE set_sps(uint8_t * sps, size_t size);

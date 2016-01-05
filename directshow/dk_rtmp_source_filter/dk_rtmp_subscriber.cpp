@@ -1,6 +1,7 @@
 #include "dk_rtmp_subscriber.h"
 #include <dk_string_helper.h>
 #include <dk_media_buffering.h>
+#include <dk_fileio.h>
 
 dk_rtmp_subscriber::dk_rtmp_subscriber(void)
 	: dk_rtmp_client()
@@ -13,12 +14,16 @@ dk_rtmp_subscriber::dk_rtmp_subscriber(void)
 	, _sar_width(-1)
 	, _sar_height(-1)
 {
-
+#if defined(WITH_DEBUG_ES)
+	_file = ::open_file_write("rtmp_video.h264");
+#endif
 }
 
 dk_rtmp_subscriber::~dk_rtmp_subscriber(void)
 {
-
+#if defined(WITH_DEBUG_ES)
+	::close_file(_file);
+#endif
 }
 
 dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::play(void)
@@ -162,12 +167,44 @@ void dk_rtmp_subscriber::on_begin_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T sm
 	}
 	else
 	{
+#if defined(WITH_DEBUG_ES)
+		DWORD nbytes = 0;
+		if (_file != INVALID_HANDLE_VALUE)
+		{
+			uint32_t bytes2write = data_size;
+			uint32_t bytes_written = 0;
+			do
+			{
+				uint32_t nb_write = 0;
+				write_file(_file, (uint8_t*)data, bytes2write, &nb_write, NULL);
+				bytes_written += nb_write;
+				if (bytes2write == bytes_written)
+					break;
+			} while (1);
+		}
+#endif
 		dk_media_buffering::instance().push_video((uint8_t*)data, data_size);
 	}
 }
 
 void dk_rtmp_subscriber::on_recv_media(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
+#if defined(WITH_DEBUG_ES)
+	DWORD nbytes = 0;
+	if (_file != INVALID_HANDLE_VALUE)
+	{
+		uint32_t bytes2write = data_size;
+		uint32_t bytes_written = 0;
+		do
+		{
+			uint32_t nb_write = 0;
+			write_file(_file, (uint8_t*)data, bytes2write, &nb_write, NULL);
+			bytes_written += nb_write;
+			if (bytes2write == bytes_written)
+				break;
+		} while (1);
+	}
+#endif
 	dk_media_buffering::instance().push_video((uint8_t*)data, data_size);
 }
 

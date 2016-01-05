@@ -17,15 +17,15 @@ dk_media_buffering & dk_media_buffering::instance(void)
 	return _instance;
 }
 
-dk_media_buffering::ERR_CODE dk_media_buffering::push_video(uint8_t * es, size_t size)
+dk_media_buffering::ERR_CODE dk_media_buffering::push_video(uint8_t * data, size_t size)
 {
-	_vbuffer->push_bitstream(es, size);
+	_vbuffer->push(data, size);
 	return dk_media_buffering::ERR_CODE_SUCCESS;
 }
 
-dk_media_buffering::ERR_CODE dk_media_buffering::pop_video(uint8_t * es, size_t & size)
+dk_media_buffering::ERR_CODE dk_media_buffering::pop_video(uint8_t * data, size_t & size)
 {
-	return _vbuffer->pop_bitstream(es, size);
+	return _vbuffer->pop(data, size);
 }
 
 dk_media_buffering::ERR_CODE dk_media_buffering::set_vps(uint8_t * vps, size_t size)
