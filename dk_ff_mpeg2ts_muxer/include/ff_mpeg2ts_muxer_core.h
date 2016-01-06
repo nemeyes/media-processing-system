@@ -38,18 +38,12 @@ private:
 
 
 	dk_ff_mpeg2ts_muxer::configuration_t _config;
-
-	//ts_buffered_output_t _buffered_output;
-
 	uint8_t * _avio_buffer;
 	int32_t _avio_buffer_size;
-
 
 	uint8_t * _buffered_ts_output;
 	int32_t _buffered_ts_output_pos;
 	int32_t _buffered_ts_output_size;
-
-
 
 	AVOutputFormat * _ofmt;
 	

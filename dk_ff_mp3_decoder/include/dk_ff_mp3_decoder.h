@@ -1,12 +1,12 @@
-#ifndef _DK_MP3_DECODER_H_
-#define _DK_MP3_DECODER_H_
+#ifndef _DK_FF_MP3_DECODER_H_
+#define _DK_FF_MP3_DECODER_H_
 
 #include <cstdint>
 
 #include <dk_audio_base.h>
 
 class mp3_decoder;
-class EXP_CLASS dk_mp3_decoder : public dk_audio_decoder
+class EXP_CLASS dk_ff_mp3_decoder : public dk_audio_decoder
 {
 public:
 	typedef struct EXP_CLASS _configuration_t
@@ -20,13 +20,13 @@ public:
 		_configuration_t operator=(const _configuration_t & clone);
 	} configuration_t;
 
-	dk_mp3_decoder(void);
-	virtual ~dk_mp3_decoder(void);
+	dk_ff_mp3_decoder(void);
+	virtual ~dk_ff_mp3_decoder(void);
 
-	dk_mp3_decoder::ERR_CODE initialize_decoder(void* config);
-	dk_mp3_decoder::ERR_CODE release_decoder(void);
+	dk_ff_mp3_decoder::ERR_CODE initialize_decoder(void* config);
+	dk_ff_mp3_decoder::ERR_CODE release_decoder(void);
 
-	dk_mp3_decoder::ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm);
+	dk_ff_mp3_decoder::ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm);
 
 
 private:

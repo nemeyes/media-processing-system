@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <dk_rtmp_client.h>
 #include <dk_ff_video_decoder.h>
+#include <dk_ff_mp3_decoder.h>
 #include <dk_ddraw_video_renderer.h>
 #include "dk_mpeg2ts_saver.h"
 #include "dk_bit_vector.h"
@@ -41,21 +42,19 @@ private:
 	bool _is_preview_enabled;
 	bool _is_recording_enabled;
 
-	dk_ff_video_decoder * _decoder;
-	dk_ff_video_decoder::configuration_t _decoder_config;
+	dk_ff_video_decoder * _video_decoder;
+	dk_ff_video_decoder::configuration_t _video_decoder_config;
 
-	//dk_ff_mpeg2ts_muxer * _mpeg2ts_muxer;
+	dk_ff_mp3_decoder * _audio_decoder;
+	dk_ff_mp3_decoder::configuration_t _audio_decoder_config;
+
 	dk_mpeg2ts_saver * _mpeg2ts_saver;
 
 	HWND _normal_hwnd;
-	dk_ddraw_video_renderer * _renderer;
+	dk_ddraw_video_renderer * _video_renderer;
 	dk_ddraw_video_renderer::configuration_t _renderer_config;
 
-
 	uint8_t * _buffer;
-
 	int64_t _frame_count;
-	//dk_image_creator * _image_creator;
-
 };
 

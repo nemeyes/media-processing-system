@@ -24,9 +24,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dk_mp3_decoder.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="include\mp3_decoder.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -39,11 +36,11 @@
     <ClInclude Include="..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
       <Filter>ffmpeg_base</Filter>
     </ClInclude>
+    <ClInclude Include="include\dk_ff_mp3_decoder.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\dk_mp3_decoder.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="source\mp3_decoder.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -55,6 +52,9 @@
     </ClCompile>
     <ClCompile Include="..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
       <Filter>ffmpeg_base</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dk_ff_mp3_decoder.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

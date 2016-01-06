@@ -60,7 +60,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>$(SolutionDir)x64\debug\lib\$(ProjectName).lib</ImportLibrary>
+      <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\3rdparty\ffmpeg\win32\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>avcodec.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -87,14 +87,14 @@
     <ClInclude Include="..\dk_audio_base\include\dk_audio_base.h" />
     <ClInclude Include="..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h" />
     <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h" />
-    <ClInclude Include="include\dk_mp3_decoder.h" />
+    <ClInclude Include="include\dk_ff_mp3_decoder.h" />
     <ClInclude Include="include\mp3_decoder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dk_audio_base\source\dk_audio_base.cpp" />
     <ClCompile Include="..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp" />
     <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp" />
-    <ClCompile Include="source\dk_mp3_decoder.cpp" />
+    <ClCompile Include="source\dk_ff_mp3_decoder.cpp" />
     <ClCompile Include="source\mp3_decoder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

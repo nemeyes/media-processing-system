@@ -60,12 +60,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\dk_common\include;..\..\dk_rtsp_client\include;..\..\dk_rtmp_client\include;..\..\dk_ff_mpeg2ts_muxer\include;..\..\dk_video_base\include;..\..\dk_ff_video_decoder\include;..\..\dk_ddraw_video_renderer\include;..\..\dk_mpeg2ts_segmenter\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dk_common\include;..\..\dk_rtsp_client\include;..\..\dk_rtmp_client\include;..\..\dk_ff_mpeg2ts_muxer\include;..\..\dk_video_base\include;..\..\dk_audio_base\include;..\..\dk_ff_video_decoder\include;..\..\dk_ff_mp3_decoder\include;..\..\dk_ddraw_video_renderer\include;..\..\dk_mpeg2ts_segmenter\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dk_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_ff_mpeg2ts_muxer.lib;dk_ddraw_video_renderer.lib;dk_mpeg2ts_segmenter.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dk_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_ff_mp3_decoder.lib;dk_ff_mpeg2ts_muxer.lib;dk_ddraw_video_renderer.lib;dk_mpeg2ts_segmenter.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

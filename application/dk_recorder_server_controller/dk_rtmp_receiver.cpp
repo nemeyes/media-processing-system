@@ -17,8 +17,8 @@ dk_rtmp_receiver::~dk_rtmp_receiver(void)
 
 void dk_rtmp_receiver::start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle)
 {
-	_decoder = new dk_ff_video_decoder();
-	_renderer = new dk_ddraw_video_renderer();
+	_video_decoder = new dk_ff_video_decoder();
+	_video_renderer = new dk_ddraw_video_renderer();
 	_is_preview_enabled = true;
 	_normal_hwnd = handle;
 	dk_rtmp_client::subscribe_begin(url, username, password, recv_option, true);
@@ -27,11 +27,11 @@ void dk_rtmp_receiver::start_preview(const char * url, const char * username, co
 void dk_rtmp_receiver::stop_preview(void)
 {
 	dk_rtmp_client::subscribe_end();
-	if (_decoder)
+	if (_video_decoder)
 	{
-		_decoder->release_decoder();
-		delete _decoder;
-		_decoder = nullptr;
+		_video_decoder->release_decoder();
+		delete _video_decoder;
+		_video_decoder = nullptr;
 	}
 
 	_is_preview_enabled = false;
@@ -61,19 +61,19 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 	{
 		do
 		{
-			if (parse_sps((BYTE*)(sps), spssize, &_decoder_config.iwidth, &_decoder_config.iheight, &_decoder_config.sarw, &_decoder_config.sarh) > 0)
+			if (parse_sps((BYTE*)(sps), spssize, &_video_decoder_config.iwidth, &_video_decoder_config.iheight, &_video_decoder_config.sarw, &_video_decoder_config.sarh) > 0)
 			{
-				_decoder_config.owidth = _decoder_config.iwidth;
-				_decoder_config.oheight = _decoder_config.iheight;
-				_decoder_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
-				_decoder_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
+				_video_decoder_config.owidth = _video_decoder_config.iwidth;
+				_video_decoder_config.oheight = _video_decoder_config.iheight;
+				_video_decoder_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
+				_video_decoder_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
 
 				_renderer_config.normal_hwnd = _normal_hwnd;
-				_renderer_config.width = _decoder_config.owidth;
-				_renderer_config.height = _decoder_config.oheight;
+				_renderer_config.width = _video_decoder_config.owidth;
+				_renderer_config.height = _video_decoder_config.oheight;
 
-				dk_ff_video_decoder::ERR_CODE decode_err = _decoder->initialize_decoder(&_decoder_config);
-				dk_ddraw_video_renderer::ERR_CODE render_err = _renderer->initialize_renderer(&_renderer_config);
+				dk_ff_video_decoder::ERR_CODE decode_err = _video_decoder->initialize_decoder(&_video_decoder_config);
+				dk_ddraw_video_renderer::ERR_CODE render_err = _video_renderer->initialize_renderer(&_renderer_config);
 
 				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
 				{
@@ -81,7 +81,7 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 					dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 					encoded.data = (uint8_t*)data;
 					encoded.data_size = data_size;
-					decode_err = _decoder->decode(&encoded, &decoded);
+					decode_err = _video_decoder->decode(&encoded, &decoded);
 					if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 					{
 						if (render_err == dk_ddraw_video_renderer::ERR_CODE_SUCCESS)
@@ -89,7 +89,7 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 							dk_render_entity_t render = { 0, };
 							render.data = decoded.data;
 							render.data_size = decoded.data_size;
-							_renderer->render(&render);
+							_video_renderer->render(&render);
 						}
 					}
 				}
@@ -120,7 +120,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 
 		encoded.data = (uint8_t*)data;
 		encoded.data_size = data_size;
-		dk_ff_video_decoder::ERR_CODE decode_err = _decoder->decode(&encoded, &decoded);
+		dk_ff_video_decoder::ERR_CODE decode_err = _video_decoder->decode(&encoded, &decoded);
 		if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 		{
 			/*
@@ -138,7 +138,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 			dk_render_entity_t render = { 0, };
 			render.data = decoded.data;
 			render.data_size = decoded.data_size;
-			_renderer->render(&render);
+			_video_renderer->render(&render);
 		}
 	}
 	else if (_is_recording_enabled)
