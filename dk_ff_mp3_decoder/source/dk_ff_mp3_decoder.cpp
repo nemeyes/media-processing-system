@@ -45,7 +45,7 @@ dk_ff_mp3_decoder::ERR_CODE dk_ff_mp3_decoder::initialize_decoder(void * config)
 	return _core->initialize_decoder(static_cast<dk_ff_mp3_decoder::configuration_t*>(config));
 }
 
-dk_ff_mp3_decoder::ERR_CODE dk_ff_mp3_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
+dk_ff_mp3_decoder::ERR_CODE dk_ff_mp3_decoder::decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm)
 {
 	return _core->decode(encoded, pcm);
 }

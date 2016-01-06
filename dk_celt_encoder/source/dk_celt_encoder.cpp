@@ -52,17 +52,17 @@ dk_celt_encoder::ERR_CODE dk_celt_encoder::initialize_encoder(void * config)
 	return _core->initialize_encoder(static_cast<dk_celt_encoder::configuration_t*>(config));
 }
 
-dk_celt_encoder::ERR_CODE dk_celt_encoder::encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded)
+dk_celt_encoder::ERR_CODE dk_celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm, dk_celt_encoder::dk_audio_entity_t * encoded)
 {
 	return _core->encode(pcm, encoded);
 }
 
-dk_celt_encoder::ERR_CODE dk_celt_encoder::encode(dk_audio_entity_t * pcm)
+dk_celt_encoder::ERR_CODE dk_celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm)
 {
 	return _core->encode(pcm);
 }
 
-dk_celt_encoder::ERR_CODE dk_celt_encoder::get_queued_data(dk_audio_entity_t * encoded)
+dk_celt_encoder::ERR_CODE dk_celt_encoder::get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded)
 {
 	return _core->get_queued_data(encoded);
 }

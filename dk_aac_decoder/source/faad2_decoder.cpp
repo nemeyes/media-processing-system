@@ -107,7 +107,7 @@ dk_aac_decoder::ERR_CODE faad2_decoder::release_decoder(void)
 	return dk_aac_decoder::ERR_CODE_SUCCESS;
 }
 
-dk_aac_decoder::ERR_CODE faad2_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
+dk_aac_decoder::ERR_CODE faad2_decoder::decode(dk_aac_decoder::dk_audio_entity_t * encoded, dk_aac_decoder::dk_audio_entity_t * pcm)
 {
 	if (!_aac_decoder)
 		return dk_aac_decoder::ERR_CODE_FAIL;

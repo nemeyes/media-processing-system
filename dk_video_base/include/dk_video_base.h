@@ -126,12 +126,12 @@ public:
 	dk_video_decoder(void);
 	virtual ~dk_video_decoder(void);
 
-	virtual ERR_CODE initialize_decoder(void * config);
-	virtual ERR_CODE release_decoder(void);
+	virtual dk_video_decoder::ERR_CODE initialize_decoder(void * config);
+	virtual dk_video_decoder::ERR_CODE release_decoder(void);
 
-	virtual ERR_CODE decode(dk_video_entity_t * bitstream, dk_video_entity_t * decoded);
-	virtual ERR_CODE decode(dk_video_entity_t * bitstream);
-	virtual ERR_CODE get_queued_data(dk_video_entity_t * decoded);
+	virtual dk_video_decoder::ERR_CODE decode(dk_video_decoder::dk_video_entity_t * bitstream, dk_video_decoder::dk_video_entity_t * decoded);
+	virtual dk_video_decoder::ERR_CODE decode(dk_video_decoder::dk_video_entity_t * bitstream);
+	virtual dk_video_decoder::ERR_CODE get_queued_data(dk_video_decoder::dk_video_entity_t * decoded);
 };
 
 class EXP_CLASS dk_video_encoder : public dk_video_base
@@ -140,12 +140,12 @@ public:
 	dk_video_encoder(void);
 	virtual ~dk_video_encoder(void);
 
-	virtual ERR_CODE initialize_encoder(void * config);
-	virtual ERR_CODE release_encoder(void);
+	virtual dk_video_encoder::ERR_CODE initialize_encoder(void * config);
+	virtual dk_video_encoder::ERR_CODE release_encoder(void);
 
-	virtual ERR_CODE encode(dk_video_entity_t * rawstream, dk_video_entity_t * bitstream);
-	virtual ERR_CODE encode(dk_video_entity_t * rawstream);
-	virtual ERR_CODE get_queued_data(dk_video_entity_t * bitstream);
+	virtual dk_video_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * rawstream, dk_video_encoder::dk_video_entity_t * bitstream);
+	virtual dk_video_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * rawstream);
+	virtual dk_video_encoder::ERR_CODE get_queued_data(dk_video_encoder::dk_video_entity_t * bitstream);
 };
 
 class EXP_CLASS dk_video_renderer : public dk_video_base
@@ -154,9 +154,9 @@ public:
 	dk_video_renderer(void);
 	virtual ~dk_video_renderer(void);
 
-	virtual ERR_CODE initialize_renderer(void * config);
-	virtual ERR_CODE release_renderer(void);
-	virtual ERR_CODE render(dk_video_entity_t * decoded);
+	virtual dk_video_renderer::ERR_CODE initialize_renderer(void * config);
+	virtual dk_video_renderer::ERR_CODE release_renderer(void);
+	virtual dk_video_renderer::ERR_CODE render(dk_video_renderer::dk_video_entity_t * decoded);
 };
 
 

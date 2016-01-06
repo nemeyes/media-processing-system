@@ -24,7 +24,7 @@ public:
 	dk_ff_mp3_decoder::ERR_CODE initialize_decoder(dk_ff_mp3_decoder::configuration_t * config);
 	dk_ff_mp3_decoder::ERR_CODE release_decoder(void);
 
-	dk_ff_mp3_decoder::ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm);
+	dk_ff_mp3_decoder::ERR_CODE decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm);
 private:
 	dk_ff_mp3_decoder::configuration_t _config;
 

@@ -29,9 +29,9 @@ public:
 	dk_celt_encoder::ERR_CODE initialize_encoder(void * config);
 	dk_celt_encoder::ERR_CODE release_encoder(void);
 
-	dk_celt_encoder::ERR_CODE encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded);
-	dk_celt_encoder::ERR_CODE encode(dk_audio_entity_t * pcm);
-	dk_celt_encoder::ERR_CODE get_queued_data(dk_audio_entity_t * encoded);
+	dk_celt_encoder::ERR_CODE encode(dk_celt_encoder::dk_audio_entity_t * pcm, dk_celt_encoder::dk_audio_entity_t * encoded);
+	dk_celt_encoder::ERR_CODE encode(dk_celt_encoder::dk_audio_entity_t * pcm);
+	dk_celt_encoder::ERR_CODE get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded);
 private:
 	celt_encoder * _core;
 };

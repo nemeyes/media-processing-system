@@ -100,9 +100,9 @@ public:
 	dk_aac_encoder::ERR_CODE initialize_encoder(void * config);
 	dk_aac_encoder::ERR_CODE release_encoder(void);
 
-	dk_aac_encoder::ERR_CODE encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded);
-	dk_aac_encoder::ERR_CODE encode(dk_audio_entity_t * pcm);
-	dk_aac_encoder::ERR_CODE get_queued_data(dk_audio_entity_t * encoded);
+	dk_aac_encoder::ERR_CODE encode(dk_aac_encoder::dk_audio_entity_t * pcm, dk_aac_encoder::dk_audio_entity_t * encoded);
+	dk_aac_encoder::ERR_CODE encode(dk_aac_encoder::dk_audio_entity_t * pcm);
+	dk_aac_encoder::ERR_CODE get_queued_data(dk_aac_encoder::dk_audio_entity_t * encoded);
 
 	virtual uint8_t * extradata(void);
 	virtual size_t extradata_size(void);

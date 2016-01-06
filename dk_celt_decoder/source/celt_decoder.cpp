@@ -32,7 +32,7 @@ dk_celt_decoder::ERR_CODE celt_decoder::initialize_decoder(dk_celt_decoder::conf
 	return dk_celt_decoder::ERR_CODE_SUCCESS;
 }
 
-dk_celt_decoder::ERR_CODE celt_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
+dk_celt_decoder::ERR_CODE celt_decoder::decode(dk_celt_decoder::dk_audio_entity_t * encoded, dk_celt_decoder::dk_audio_entity_t * pcm)
 {
 	pcm->data_capacity = pcm->data_capacity / (_config.channels * sizeof(int16_t));
 	int32_t bytes_written = opus_decode(_decoder, (uint8_t*)encoded->data, (opus_int32)encoded->data_size, (opus_int16*)pcm->data, (int)pcm->data_capacity, 0);

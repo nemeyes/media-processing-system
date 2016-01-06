@@ -43,7 +43,7 @@ dk_ff_mp3_decoder::ERR_CODE mp3_decoder::initialize_decoder(dk_ff_mp3_decoder::c
 	return dk_ff_mp3_decoder::ERR_CODE_SUCCESS;
 }
 
-dk_ff_mp3_decoder::ERR_CODE mp3_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
+dk_ff_mp3_decoder::ERR_CODE mp3_decoder::decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm)
 {
 	pcm->data_size = 0;
 	_pkt.data = static_cast<uint8_t*>(encoded->data);

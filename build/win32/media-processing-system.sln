@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -190,6 +190,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_directsound_renderer", "..\..\dk_directsound_renderer\dk_directsound_renderer.vcxproj", "{6E25F919-53E5-4C8B-A04A-2D362D2F323C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_directdraw_renderer", "..\..\dk_directdraw_renderer\dk_directdraw_renderer.vcxproj", "{56DEEF91-F8CE-4480-8E7B-BBE692379718}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_mmwave_renderer", "..\..\dk_mmwave_renderer\dk_mmwave_renderer.vcxproj", "{97756925-2165-47AD-AEB6-9F5713ED494A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -545,6 +547,12 @@ Global
 		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Release|Win32.ActiveCfg = Release|Win32
 		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Release|Win32.Build.0 = Release|Win32
 		{56DEEF91-F8CE-4480-8E7B-BBE692379718}.Release|x64.ActiveCfg = Release|Win32
+		{97756925-2165-47AD-AEB6-9F5713ED494A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{97756925-2165-47AD-AEB6-9F5713ED494A}.Debug|Win32.Build.0 = Debug|Win32
+		{97756925-2165-47AD-AEB6-9F5713ED494A}.Debug|x64.ActiveCfg = Debug|Win32
+		{97756925-2165-47AD-AEB6-9F5713ED494A}.Release|Win32.ActiveCfg = Release|Win32
+		{97756925-2165-47AD-AEB6-9F5713ED494A}.Release|Win32.Build.0 = Release|Win32
+		{97756925-2165-47AD-AEB6-9F5713ED494A}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -637,5 +645,6 @@ Global
 		{1BE41755-2D1F-45F6-B835-3A76D644435E} = {98EE9B37-B563-49D4-AFCC-A14BA4FF3D59}
 		{6E25F919-53E5-4C8B-A04A-2D362D2F323C} = {1F95D1D5-DF2C-42B3-8D17-980BFC586540}
 		{56DEEF91-F8CE-4480-8E7B-BBE692379718} = {1F95D1D5-DF2C-42B3-8D17-980BFC586540}
+		{97756925-2165-47AD-AEB6-9F5713ED494A} = {1F95D1D5-DF2C-42B3-8D17-980BFC586540}
 	EndGlobalSection
 EndGlobal

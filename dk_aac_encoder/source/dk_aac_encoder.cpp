@@ -86,17 +86,17 @@ dk_aac_encoder::ERR_CODE dk_aac_encoder::release_encoder(void)
 	return _core->release_encoder();
 }
 
-dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded)
+dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(dk_aac_encoder::dk_audio_entity_t * pcm, dk_aac_encoder::dk_audio_entity_t * encoded)
 {
 	return _core->encode(pcm, encoded);
 }
 
-dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(dk_audio_entity_t * pcm)
+dk_aac_encoder::ERR_CODE dk_aac_encoder::encode(dk_aac_encoder::dk_audio_entity_t * pcm)
 {
 	return _core->encode(pcm);
 }
 
-dk_aac_encoder::ERR_CODE dk_aac_encoder::get_queued_data(dk_audio_entity_t * encoded)
+dk_aac_encoder::ERR_CODE dk_aac_encoder::get_queued_data(dk_aac_encoder::dk_audio_entity_t * encoded)
 {
 	return _core->get_queued_data(encoded);
 }

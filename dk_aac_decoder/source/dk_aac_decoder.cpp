@@ -65,7 +65,7 @@ dk_aac_decoder::ERR_CODE dk_aac_decoder::release_decoder(void)
 	return _core->release_decoder();
 }
 
-dk_aac_decoder::ERR_CODE dk_aac_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
+dk_aac_decoder::ERR_CODE dk_aac_decoder::decode(dk_aac_decoder::dk_audio_entity_t * encoded, dk_aac_decoder::dk_audio_entity_t * pcm)
 {
 	return _core->decode(encoded, pcm);
 }

@@ -18,13 +18,6 @@
 #include <cstdint>
 #include <memory>
 
-typedef struct _dk_audio_entity_t
-{
-	void * data;
-	size_t data_size;
-	size_t data_capacity;
-} dk_audio_entity_t;
-
 typedef struct _dk_circular_buffer_t dk_circular_buffer_t;
 class EXP_CLASS dk_audio_base
 {
@@ -63,6 +56,13 @@ public:
 		SUBMEDIA_TYPE_NV12,
 	} SUBMEDIA_TYPE;
 
+	typedef struct _dk_audio_entity_t
+	{
+		void * data;
+		size_t data_size;
+		size_t data_capacity;
+	} dk_audio_entity_t;
+
 	dk_audio_base(void);
 	virtual ~dk_audio_base(void);
 
@@ -87,10 +87,10 @@ public:
 	dk_audio_decoder(void);
 	virtual ~dk_audio_decoder(void);
 
-	virtual ERR_CODE initialize_decoder(void * config);
-	virtual ERR_CODE release_decoder(void);
+	virtual dk_audio_decoder::ERR_CODE initialize_decoder(void * config);
+	virtual dk_audio_decoder::ERR_CODE release_decoder(void);
 
-	virtual ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm);
+	virtual dk_audio_decoder::ERR_CODE decode(dk_audio_decoder::dk_audio_entity_t * encoded, dk_audio_decoder::dk_audio_entity_t * pcm);
 };
 
 class EXP_CLASS dk_audio_encoder : public dk_audio_base
@@ -99,18 +99,27 @@ public:
 	dk_audio_encoder(void);
 	virtual ~dk_audio_encoder(void);
 
-	virtual ERR_CODE initialize_encoder(void * config);
-	virtual ERR_CODE release_encoder(void);
+	virtual dk_audio_encoder::ERR_CODE initialize_encoder(void * config);
+	virtual dk_audio_encoder::ERR_CODE release_encoder(void);
 
-	virtual ERR_CODE encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded);
-	virtual ERR_CODE encode(dk_audio_entity_t * pcm);
-	virtual ERR_CODE get_queued_data(dk_audio_entity_t * encoded);
+	virtual dk_audio_encoder::ERR_CODE encode(dk_audio_encoder::dk_audio_entity_t * pcm, dk_audio_encoder::dk_audio_entity_t * encoded);
+	virtual dk_audio_encoder::ERR_CODE encode(dk_audio_encoder::dk_audio_entity_t * pcm);
+	virtual dk_audio_encoder::ERR_CODE get_queued_data(dk_audio_encoder::dk_audio_entity_t * encoded);
 
 	virtual uint8_t * extradata(void);
 	virtual size_t extradata_size(void);
 };
 
+class EXP_CLASS dk_audio_renderer : public dk_audio_base
+{
+public:
+	dk_audio_renderer(void);
+	virtual ~dk_audio_renderer(void);
 
+	virtual dk_audio_renderer::ERR_CODE initialize_renderer(void * config);
+	virtual dk_audio_renderer::ERR_CODE release_renderer(void);
+	virtual dk_audio_renderer::ERR_CODE render(dk_audio_renderer::dk_audio_entity_t * decoded);
+};
 
 
 

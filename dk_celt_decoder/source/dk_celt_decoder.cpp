@@ -45,7 +45,7 @@ dk_celt_decoder::ERR_CODE dk_celt_decoder::initialize_decoder(void * config)
 	return _core->initialize_decoder(static_cast<dk_celt_decoder::configuration_t*>(config));
 }
 
-dk_celt_decoder::ERR_CODE dk_celt_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
+dk_celt_decoder::ERR_CODE dk_celt_decoder::decode(dk_celt_decoder::dk_audio_entity_t * encoded, dk_celt_decoder::dk_audio_entity_t * pcm)
 {
 	return _core->decode(encoded, pcm);
 }

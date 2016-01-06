@@ -101,7 +101,7 @@ dk_celt_encoder::ERR_CODE celt_encoder::release_encoder(void)
 	return dk_celt_encoder::ERR_CODE_SUCCESS;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded)
+dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm, dk_celt_encoder::dk_audio_entity_t * encoded)
 {
 	int16_t * intermediate = (int16_t*)pcm->data;
 	size_t isamples = pcm->data_size / (sizeof(int16_t)*_config.channels);
@@ -138,7 +138,7 @@ dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_audio_entity_t * pcm, dk_audio
 	return dk_celt_encoder::ERR_CODE_SUCCESS;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_audio_entity_t * pcm)
+dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm)
 {
 	int16_t * intermediate = (int16_t*)pcm->data;
 	size_t isamples = pcm->data_size >> 1;
@@ -206,7 +206,7 @@ dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_audio_entity_t * pcm)
 	return dk_celt_encoder::ERR_CODE_SUCCESS;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::get_queued_data(dk_audio_entity_t * encoded)
+dk_celt_encoder::ERR_CODE celt_encoder::get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded)
 {
 	if (_front)
 	{

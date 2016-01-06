@@ -26,7 +26,7 @@ public:
 	dk_celt_decoder::ERR_CODE initialize_decoder(void* config);
 	dk_celt_decoder::ERR_CODE release_decoder(void);
 
-	dk_celt_decoder::ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm);
+	dk_celt_decoder::ERR_CODE decode(dk_celt_decoder::dk_audio_entity_t * encoded, dk_celt_decoder::dk_audio_entity_t * pcm);
 
 
 private:

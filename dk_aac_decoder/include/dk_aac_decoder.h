@@ -73,7 +73,7 @@ public:
 	dk_aac_decoder::ERR_CODE initialize_decoder(void* config);
 	dk_aac_decoder::ERR_CODE release_decoder(void);
 
-	dk_aac_decoder::ERR_CODE decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm);
+	dk_aac_decoder::ERR_CODE decode(dk_aac_decoder::dk_audio_entity_t * encoded, dk_aac_decoder::dk_audio_entity_t * pcm);
 
 	/*dk_aac_decoder::ERR_CODE initialize(dk_aac_decoder::configuration_t config, unsigned char * extra_data, int extra_data_size, int & samplerate, int & channels);
 	dk_aac_decoder::ERR_CODE release(void);
