@@ -3,12 +3,12 @@
 
 #if defined(WIN32)
 #include <windows.h>
-#include <d3d9.h>
-#include <d3d10_1.h>
-#include <d3d10.h>
-#include <d3d11_1.h>
-#include <d3d11_2.h>
-#include <d3d11.h>
+//#include <d3d9.h>
+//#include <d3d10_1.h>
+//#include <d3d10.h>
+//#include <d3d11_1.h>
+//#include <d3d11_2.h>
+//#include <d3d11.h>
 #if defined(EXPORT_LIB)
 #define EXP_CLASS __declspec(dllexport)
 #else
@@ -146,7 +146,17 @@ public:
 	virtual ERR_CODE encode(dk_video_entity_t * rawstream, dk_video_entity_t * bitstream);
 	virtual ERR_CODE encode(dk_video_entity_t * rawstream);
 	virtual ERR_CODE get_queued_data(dk_video_entity_t * bitstream);
+};
 
+class EXP_CLASS dk_video_renderer : public dk_video_base
+{
+public:
+	dk_video_renderer(void);
+	virtual ~dk_video_renderer(void);
+
+	virtual ERR_CODE initialize_renderer(void * config);
+	virtual ERR_CODE release_renderer(void);
+	virtual ERR_CODE render(dk_video_entity_t * decoded);
 };
 
 

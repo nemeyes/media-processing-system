@@ -18,7 +18,7 @@ dk_rtmp_receiver::~dk_rtmp_receiver(void)
 void dk_rtmp_receiver::start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle)
 {
 	_video_decoder = new dk_ff_video_decoder();
-	_video_renderer = new dk_ddraw_video_renderer();
+	_video_renderer = new dk_directdraw_renderer();
 	_is_preview_enabled = true;
 	_normal_hwnd = handle;
 	dk_rtmp_client::subscribe_begin(url, username, password, recv_option, true);
@@ -73,7 +73,7 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 				_renderer_config.height = _video_decoder_config.oheight;
 
 				dk_ff_video_decoder::ERR_CODE decode_err = _video_decoder->initialize_decoder(&_video_decoder_config);
-				dk_ddraw_video_renderer::ERR_CODE render_err = _video_renderer->initialize_renderer(&_renderer_config);
+				dk_directdraw_renderer::ERR_CODE render_err = _video_renderer->initialize_renderer(&_renderer_config);
 
 				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
 				{
@@ -84,9 +84,9 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 					decode_err = _video_decoder->decode(&encoded, &decoded);
 					if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 					{
-						if (render_err == dk_ddraw_video_renderer::ERR_CODE_SUCCESS)
+						if (render_err == dk_directdraw_renderer::ERR_CODE_SUCCESS)
 						{
-							dk_render_entity_t render = { 0, };
+							dk_directdraw_renderer::dk_video_entity_t render = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 							render.data = decoded.data;
 							render.data_size = decoded.data_size;
 							_video_renderer->render(&render);
@@ -123,19 +123,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 		dk_ff_video_decoder::ERR_CODE decode_err = _video_decoder->decode(&encoded, &decoded);
 		if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 		{
-			/*
-			if (_frame_count>1000 && _frame_count<1100)
-			{
-			dk_image_creator bmp_creator(_decoder_config.owidth, _decoder_config.oheight);
-			memcpy(bmp_creator.pixel_buffer, _buffer, _decoder_config.owidth*_decoder_config.oheight * 4);
-			wchar_t filename[100] = { 0, };
-			_snwprintf_s(filename, sizeof(filename), L"%d.bmp", _frame_count);
-			bmp_creator.save(filename);
-			}
-			_frame_count++;
-			*/
-
-			dk_render_entity_t render = { 0, };
+			dk_directdraw_renderer::dk_video_entity_t render = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 			render.data = decoded.data;
 			render.data_size = decoded.data_size;
 			_video_renderer->render(&render);

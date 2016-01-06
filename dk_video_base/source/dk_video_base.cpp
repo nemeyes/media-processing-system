@@ -179,3 +179,28 @@ dk_video_encoder::ERR_CODE dk_video_encoder::get_queued_data(dk_video_entity_t *
 {
 	return ERR_CODE_NOT_IMPLEMENTED;
 }
+
+dk_video_renderer::dk_video_renderer(void)
+{
+
+}
+
+dk_video_renderer::~dk_video_renderer(void)
+{
+
+}
+
+dk_video_renderer::ERR_CODE dk_video_renderer::initialize_renderer(void * config)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_video_renderer::ERR_CODE dk_video_renderer::release_renderer(void)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_video_renderer::ERR_CODE dk_video_renderer::render(dk_video_entity_t * decoded)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}

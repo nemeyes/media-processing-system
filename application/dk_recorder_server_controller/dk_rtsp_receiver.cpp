@@ -225,7 +225,7 @@ dk_rtsp_receiver::~dk_rtsp_receiver(void)
 void dk_rtsp_receiver::start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle)
 {
 	_decoder = new dk_ff_video_decoder();
-	_renderer = new dk_ddraw_video_renderer();
+	_renderer = new dk_directdraw_renderer();
 	_is_preview_enabled = true;
 	_normal_hwnd = handle;
 	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
@@ -335,7 +335,7 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 				_renderer_config.height = _decoder_config.oheight;
 
 				dk_ff_video_decoder::ERR_CODE decode_err = _decoder->initialize_decoder(&_decoder_config);
-				dk_ddraw_video_renderer::ERR_CODE render_err = _renderer->initialize_renderer(&_renderer_config);
+				dk_directdraw_renderer::ERR_CODE render_err = _renderer->initialize_renderer(&_renderer_config);
 
 				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
 				{
@@ -346,9 +346,9 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 					decode_err = _decoder->decode(&encoded, &decoded);
 					if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 					{
-						if (render_err == dk_ddraw_video_renderer::ERR_CODE_SUCCESS)
+						if (render_err == dk_directdraw_renderer::ERR_CODE_SUCCESS)
 						{
-							dk_render_entity_t render = { 0, };
+							dk_directdraw_renderer::dk_video_entity_t render = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 							render.data = decoded.data;
 							render.data_size = decoded.data_size;
 							_renderer->render(&render);
@@ -402,7 +402,7 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 				_frame_count++;
 				*/
 
-				dk_render_entity_t render = { 0, };
+				dk_directdraw_renderer::dk_video_entity_t render = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 				render.data = decoded.data;
 				render.data_size = decoded.data_size;
 				_renderer->render(&render);
