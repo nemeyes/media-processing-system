@@ -150,7 +150,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	}
 }
 
-void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, struct timeval presentation_time)
 {
 
 }

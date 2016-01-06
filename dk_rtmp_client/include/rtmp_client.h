@@ -91,12 +91,11 @@ private:
 	char * _buffer;
 	int32_t _buffer_size;
 
-	//bool _first;
 	bool _rcv_first_idr;
 	bool _change_sps;
 	bool _change_pps;
 
-
+	bool _rcv_first_audio;
 
 	dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T _vsmt;
 	dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T _asmt;

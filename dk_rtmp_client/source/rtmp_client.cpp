@@ -38,6 +38,12 @@
 #define AAC_RAW				1
 
 
+#define SR_5_kHz	0
+#define SR_11_kHZ	1
+#define SR_22_kHz	2
+#define SR_44_kHz	3
+
+
 #if defined(WIN32) && defined(_DEBUG)
 FILE *netstackdump = 0;
 FILE *netstackdump_read = 0;
@@ -399,11 +405,41 @@ void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 	char * audio_data = packet->m_body;
 	uint32_t audio_data_length = packet->m_nBodySize;
 
-	if (((audio_data[0] & 0xF0) >> 4) == dk_rtmp_client::SUBMEDIA_TYPE_AAC) //CodecID
+	if (((audio_data[0] & 0xF0) >> 4) == dk_rtmp_client::SUBMEDIA_TYPE_MP3)
+	{
+		int32_t samplerate = 44100;
+		int32_t samplerate_index = (audio_data[0] & 0x0C);
+		if (samplerate_index == SR_5_kHz)
+			samplerate = 5500;
+		else if (samplerate_index == SR_11_kHZ)
+			samplerate = 11000;
+		else if (samplerate_index == SR_22_kHz)
+			samplerate = 22000;
+		else if (samplerate_index == SR_44_kHz)
+			samplerate = 44100;
+
+		int32_t bitdepth = (audio_data[0] & 0x02) ? 16 : 8;
+		int32_t channels = (audio_data[0] & 0x01) ? 1 : 2;
+
+		uint8_t * mp3_packet = (uint8_t*)&audio_data[1];
+		size_t mp3_packet_size = audio_data_length - 1;
+		if (!_rcv_first_audio)
+		{
+			if (_front)
+				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_MP3, mp3_packet, mp3_packet_size, samplerate, bitdepth, channels, presentation_time);
+			_rcv_first_audio = true;
+		}
+		else
+		{
+			if (_front)
+				_front->on_recv_audio(dk_rtmp_client::SUBMEDIA_TYPE_MP3, mp3_packet, mp3_packet_size, presentation_time);
+		}
+	}
+	else if (((audio_data[0] & 0xF0) >> 4) == dk_rtmp_client::SUBMEDIA_TYPE_AAC) //CodecID
 	{
 		int32_t samplerate = 44100; //AAC always 44.1kHz in video_file_format_spec_v10.pdf
 		int32_t bitdepth = (audio_data[0] & 0x02) ? 16 : 8;
-		int32_t channels = (audio_data[0] & 0x01) ? 1 : 2;
+		int32_t channels = 2; //AAC always 2 channels : audio_data[0] & 0x01) ? 1 : 2;
 		
 		uint8_t * aac_packet = (uint8_t*)&audio_data[1];
 		uint8_t aac_packet_type = aac_packet[0]; //0:AVC Sequence header, 1:AVC NALU, 2:AVC end of sequence
@@ -412,7 +448,7 @@ void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 			size_t data_size = audio_data_length - 2; //SoundFormat(UB4)+SoundRate(UB2)+SoundSize(UB1)+SoundType(UB1)+AACPacketType(UI8)
 			uint8_t * data = (uint8_t*)&aac_packet[1];
 			if (_front)
-				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, presentation_time);
+				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, samplerate, bitdepth, channels, presentation_time);
 		}
 		else if (aac_packet_type == AAC_RAW)
 		{
@@ -478,6 +514,8 @@ void rtmp_client::sb_process(void)
 		_rcv_first_idr = false;
 		_change_sps = false;
 		_change_pps = false;
+
+		_rcv_first_audio = false;
 
 		RTMP_SetBufferMS(&rtmp, buffer_time);
 		if (!RTMP_Connect(&rtmp, NULL))
