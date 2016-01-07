@@ -160,6 +160,12 @@ dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_repeat(bool & repeat)
 
 void dk_rtmp_subscriber::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
+	if (_width > 0 && _height > 0)
+	{
+		dk_media_buffering::instance().push_video((uint8_t*)data, data_size);
+		return;
+	}
+
 	if (parse_sps((BYTE*)(sps), spssize, &_width, &_height, &_sar_width, &_sar_height) < 1)
 	{
 		_width = -1;

@@ -75,7 +75,7 @@ public:
 		RECV_AUDIO
 	} RECV_OPTION_T;
 
-	dk_rtmp_client(void);
+	dk_rtmp_client(bool split_thread=false);
 	virtual ~dk_rtmp_client(void);
 
 	uint8_t * get_sps(size_t & sps_size);
@@ -102,6 +102,7 @@ public:
 	dk_rtmp_client::ERR_CODE publish_end(void);
 
 private:
+	bool _split_thread = false;
 	rtmp_client * _core;
 };
 
