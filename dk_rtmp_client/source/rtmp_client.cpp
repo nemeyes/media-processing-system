@@ -131,6 +131,19 @@ void rtmp_client::clear_pps(void)
 	_pps_size = 0;
 }
 
+uint8_t * rtmp_client::get_configstr(size_t & configstr_size)
+{
+	configstr_size = _configstr_size;
+	return _configstr;
+}
+
+void rtmp_client::set_configstr(uint8_t * configstr, size_t configstr_size)
+{
+	memset(_configstr, 0x00, sizeof(_configstr));
+	memcpy(_configstr, configstr, configstr_size);
+	_configstr_size = configstr_size;
+}
+
 dk_rtmp_client::STATE_T rtmp_client::state(void)
 {
 	return _state;
@@ -408,7 +421,7 @@ void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 	if (((audio_data[0] & 0xF0) >> 4) == dk_rtmp_client::SUBMEDIA_TYPE_MP3)
 	{
 		int32_t samplerate = 44100;
-		int32_t samplerate_index = (audio_data[0] & 0x0C);
+		int32_t samplerate_index = ((audio_data[0] & 0x0C)>>2);
 		if (samplerate_index == SR_5_kHz)
 			samplerate = 5500;
 		else if (samplerate_index == SR_11_kHZ)
@@ -426,7 +439,7 @@ void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 		if (!_rcv_first_audio)
 		{
 			if (_front)
-				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_MP3, mp3_packet, mp3_packet_size, samplerate, bitdepth, channels, presentation_time);
+				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_MP3, nullptr, 0, samplerate, bitdepth, channels, mp3_packet, mp3_packet_size, presentation_time);
 			_rcv_first_audio = true;
 		}
 		else
@@ -447,15 +460,28 @@ void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 		{
 			size_t data_size = audio_data_length - 2; //SoundFormat(UB4)+SoundRate(UB2)+SoundSize(UB1)+SoundType(UB1)+AACPacketType(UI8)
 			uint8_t * data = (uint8_t*)&aac_packet[1];
-			if (_front)
-				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, samplerate, bitdepth, channels, presentation_time);
+			set_configstr(data, data_size);
+			/*if (_front)
+				_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, samplerate, bitdepth, channels, presentation_time);*/
 		}
 		else if (aac_packet_type == AAC_RAW)
 		{
 			size_t data_size = audio_data_length - 2; //SoundFormat(UB4)+SoundRate(UB2)+SoundSize(UB1)+SoundType(UB1)+AACPacketType(UI8)
 			uint8_t * data = (uint8_t*)&aac_packet[1];
-			if (_front)
-				_front->on_recv_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, presentation_time);
+
+			if (!_rcv_first_audio)
+			{
+				size_t configstr_size = 0;
+				uint8_t * configstr = get_configstr(configstr_size);
+				if (_front)
+					_front->on_begin_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, configstr, configstr_size, samplerate, bitdepth, channels, data, data_size, presentation_time);
+				_rcv_first_audio = true;
+			}
+			else
+			{
+				if (_front)
+					_front->on_recv_audio(dk_rtmp_client::SUBMEDIA_TYPE_AAC, data, data_size, presentation_time);
+			}
 		}
 	}
 }
@@ -531,6 +557,7 @@ void rtmp_client::sb_process(void)
 			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
 
 			double duration = RTMP_GetDuration(&rtmp);
+			::Sleep(1);
 			//Sleep(duration / 1000);
 
 		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));

@@ -46,42 +46,35 @@ private:
 	dk_directdraw_renderer::ERR_CODE set_enable(bool enable);
 	bool get_enable(void);
 
-	/*
-	HWND			get_parent_window( LPVMS_SUBMEDIA_ELEMENT_T subpe );
-	HWND			get_parent_full_screen_window( LPVMS_SUBMEDIA_ELEMENT_T subpe );
-	*/
-
 	dk_directdraw_renderer::ERR_CODE make_normal_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y);
 	dk_directdraw_renderer::ERR_CODE make_full_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y);
 
-
-
 	dk_directdraw_renderer::configuration_t * _config;
 
-	bool					_enable;
-	bool					_is_initialized;
-	HINSTANCE				_library;
-	HWND					_draw;
+	bool _enable;
+	bool _is_initialized;
+	HINSTANCE _library;
+	HWND _draw;
 
-	LPDIRECTDRAW7			_pdd;
-	LPDIRECTDRAWSURFACE7	_pdd_primary;
-	LPDIRECTDRAWSURFACE7	_pdd_video;
-	LPDIRECTDRAWSURFACE7	_pdd_rgb;
-	LPDIRECTDRAWSURFACE7	_copy_video;
+	LPDIRECTDRAW7 _pdd;
+	LPDIRECTDRAWSURFACE7 _pdd_primary;
+	LPDIRECTDRAWSURFACE7 _pdd_video;
+	LPDIRECTDRAWSURFACE7 _pdd_rgb;
+	LPDIRECTDRAWSURFACE7 _copy_video;
 
-	LPDIRECTDRAWCLIPPER		_pdd_cliper;
+	LPDIRECTDRAWCLIPPER _pdd_cliper;
 
-	DWORD					_rgb_bitcount;
-	DWORD					_out_rgb_bitcount;
+	DWORD _rgb_bitcount;
+	DWORD _out_rgb_bitcount;
 
-	DWORD					_display_width;
-	DWORD					_display_height;
+	DWORD _display_width;
+	DWORD _display_height;
 
-	bool					_is_video_stretch;
-	bool					_is_video_fullscreen;
+	bool _is_video_stretch;
+	bool _is_video_fullscreen;
 
-	HWND					_noraml_screen_hwnd;
-	HWND					_full_screen_hwnd;
+	HWND _noraml_screen_hwnd;
+	HWND _full_screen_hwnd;
 
 	bool _enable_time_text;
 	wchar_t _time[100];

@@ -118,7 +118,7 @@ public:
 
 	virtual dk_audio_renderer::ERR_CODE initialize_renderer(void * config);
 	virtual dk_audio_renderer::ERR_CODE release_renderer(void);
-	virtual dk_audio_renderer::ERR_CODE render(dk_audio_renderer::dk_audio_entity_t * decoded);
+	virtual dk_audio_renderer::ERR_CODE render(dk_audio_renderer::dk_audio_entity_t * pcm);
 };
 
 

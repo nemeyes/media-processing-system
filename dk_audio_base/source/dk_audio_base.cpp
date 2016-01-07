@@ -191,3 +191,28 @@ size_t dk_audio_encoder::extradata_size(void)
 {
 	return 0;
 }
+
+dk_audio_renderer::dk_audio_renderer(void)
+{
+
+}
+
+dk_audio_renderer::~dk_audio_renderer(void)
+{
+
+}
+
+dk_audio_renderer::ERR_CODE dk_audio_renderer::initialize_renderer(void * config)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_audio_renderer::ERR_CODE dk_audio_renderer::release_renderer(void)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_audio_renderer::ERR_CODE dk_audio_renderer::render(dk_audio_renderer::dk_audio_entity_t * pcm)
+{
+	return ERR_CODE_NOT_IMPLEMENTED;
+}

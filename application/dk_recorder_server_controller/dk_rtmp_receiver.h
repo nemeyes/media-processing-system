@@ -3,8 +3,10 @@
 #include <cstdint>
 #include <dk_rtmp_client.h>
 #include <dk_ff_video_decoder.h>
-#include <dk_ff_mp3_decoder.h>
 #include <dk_directdraw_renderer.h>
+#include <dk_ff_mp3_decoder.h>
+#include <dk_aac_decoder.h>
+#include <dk_mmwave_renderer.h>
 #include "dk_mpeg2ts_saver.h"
 #include "dk_bit_vector.h"
 
@@ -22,11 +24,10 @@ public:
 
 	void on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time);
 	void on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
-	void on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, struct timeval presentation_time);
+	void on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configstr_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, struct timeval presentation_time);
 	void on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time);
 
 private:
-	// A general bit copy operation:
 	void parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height);
 	int parse_pps(uint8_t* data, int sizeOfSPS);
 	int parse_sps(uint8_t* data, int sizeOfSPS, int *width, int *height, int* sar_width, int* sar_height);
@@ -34,27 +35,27 @@ private:
 	int parse_jpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height);
 	void make_adts_header(uint8_t* data, int size, char audioObjectType, char samplingFreqIndex, char channelConfig);
 
-	/*void shift_bits(unsigned char* toBasePtr, unsigned toBitOffset, unsigned char const* fromBasePtr, unsigned fromBitOffset, unsigned numBits);
-	uint32_t __inline Log2Bin(uint32_t value);
-	void remove_emulation_bytes(uint8_t *dst, uint8_t *src, uint32_t max_size, uint32_t num_bytes_in_nal_unit, uint32_t *copy_size);*/
-
 private:
 	bool _is_preview_enabled;
 	bool _is_recording_enabled;
+	HWND _normal_hwnd;
 
 	dk_ff_video_decoder * _video_decoder;
 	dk_ff_video_decoder::configuration_t _video_decoder_config;
+	dk_directdraw_renderer * _video_renderer;
+	dk_directdraw_renderer::configuration_t _video_renderer_config;
 
-	dk_ff_mp3_decoder * _audio_decoder;
-	dk_ff_mp3_decoder::configuration_t _audio_decoder_config;
+
+	dk_audio_decoder * _audio_decoder;
+	void * _audio_decoder_config;
+
+	dk_mmwave_renderer * _audio_renderer;
+	dk_mmwave_renderer::configuration_t _audio_renderer_config;
 
 	dk_mpeg2ts_saver * _mpeg2ts_saver;
 
-	HWND _normal_hwnd;
-	dk_directdraw_renderer * _video_renderer;
-	dk_directdraw_renderer::configuration_t _renderer_config;
-
-	uint8_t * _buffer;
+	uint8_t * _video_buffer;
+	uint8_t * _audio_buffer;
 	int64_t _frame_count;
 };
 

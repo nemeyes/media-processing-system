@@ -13,7 +13,6 @@ public:
 	{
 		int32_t samplerate;
 		int32_t channels;
-		int32_t framesize;
 		int32_t bitdepth;
 		_configuration_t(void);
 		_configuration_t(const _configuration_t & clone);

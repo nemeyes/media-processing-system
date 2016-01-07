@@ -2,23 +2,28 @@
 #include "dk_rtmp_receiver.h"
 #include "dk_image_creator.h"
 
+#define VIDEO_BUFFER_SIZE 1920 * 1080 * 4
+#define AUDIO_BUFFER_SIZE 48000 * 2 * 8 //48000hz * 16bitdetph * 8 channels
+
 dk_rtmp_receiver::dk_rtmp_receiver(void)
 	: _is_preview_enabled(false)
 	, _is_recording_enabled(false)
 	, _frame_count(0)
 {
-	_buffer = static_cast<uint8_t*>(malloc(1920 * 1080 * 4));
+	_video_buffer = static_cast<uint8_t*>(malloc(VIDEO_BUFFER_SIZE));
+	_audio_buffer = static_cast<uint8_t*>(malloc(AUDIO_BUFFER_SIZE)); //48000hz * 16bitdetph * 8 channels
 }
 
 dk_rtmp_receiver::~dk_rtmp_receiver(void)
 {
-	free(_buffer);
+	if (_video_buffer)
+		free(_video_buffer);
+	if (_audio_buffer)
+		free(_audio_buffer);
 }
 
 void dk_rtmp_receiver::start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND handle)
 {
-	_video_decoder = new dk_ff_video_decoder();
-	_video_renderer = new dk_directdraw_renderer();
 	_is_preview_enabled = true;
 	_normal_hwnd = handle;
 	dk_rtmp_client::subscribe_begin(url, username, password, recv_option, true);
@@ -27,11 +32,31 @@ void dk_rtmp_receiver::start_preview(const char * url, const char * username, co
 void dk_rtmp_receiver::stop_preview(void)
 {
 	dk_rtmp_client::subscribe_end();
+
 	if (_video_decoder)
 	{
 		_video_decoder->release_decoder();
 		delete _video_decoder;
 		_video_decoder = nullptr;
+	}
+	if (_video_renderer)
+	{
+		_video_renderer->release_renderer();
+		delete _video_renderer;
+		_video_renderer = nullptr;
+	}
+
+	if (_audio_decoder)
+	{
+		_audio_decoder->release_decoder();
+		delete _audio_decoder;
+		_audio_decoder = nullptr;
+	}
+	if (_audio_renderer)
+	{
+		_audio_renderer->release_renderer();
+		delete _audio_renderer;
+		_audio_renderer = nullptr;
 	}
 
 	_is_preview_enabled = false;
@@ -57,6 +82,22 @@ void dk_rtmp_receiver::stop_recording(void)
 
 void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
+	if (_video_decoder)
+	{
+		_video_decoder->release_decoder();
+		delete _video_decoder;
+		_video_decoder = nullptr;
+	}
+	if (_video_renderer)
+	{
+		_video_renderer->release_renderer();
+		delete _video_renderer;
+		_video_renderer = nullptr;
+	}
+
+	_video_decoder = new dk_ff_video_decoder();
+	_video_renderer = new dk_directdraw_renderer();
+
 	if (_is_preview_enabled)
 	{
 		do
@@ -68,17 +109,17 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 				_video_decoder_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
 				_video_decoder_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
 
-				_renderer_config.normal_hwnd = _normal_hwnd;
-				_renderer_config.width = _video_decoder_config.owidth;
-				_renderer_config.height = _video_decoder_config.oheight;
+				_video_renderer_config.normal_hwnd = _normal_hwnd;
+				_video_renderer_config.width = _video_decoder_config.owidth;
+				_video_renderer_config.height = _video_decoder_config.oheight;
 
 				dk_ff_video_decoder::ERR_CODE decode_err = _video_decoder->initialize_decoder(&_video_decoder_config);
-				dk_directdraw_renderer::ERR_CODE render_err = _video_renderer->initialize_renderer(&_renderer_config);
+				dk_directdraw_renderer::ERR_CODE render_err = _video_renderer->initialize_renderer(&_video_renderer_config);
 
 				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
 				{
 					dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-					dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+					dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _video_buffer, 0, VIDEO_BUFFER_SIZE, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 					encoded.data = (uint8_t*)data;
 					encoded.data_size = data_size;
 					decode_err = _video_decoder->decode(&encoded, &decoded);
@@ -108,7 +149,6 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 		config.vconfig.bitrate = 4000000;
 		_mpeg2ts_saver->initialize(&config);
 	}
-	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
 
 void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
@@ -116,7 +156,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	if (_is_preview_enabled)
 	{
 		dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-		dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+		dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _video_buffer, 0, VIDEO_BUFFER_SIZE, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 
 		encoded.data = (uint8_t*)data;
 		encoded.data_size = data_size;
@@ -129,7 +169,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 			_video_renderer->render(&render);
 		}
 	}
-	else if (_is_recording_enabled)
+	if (_is_recording_enabled)
 	{
 		if ((data[3] & 0x1F) == 0x05)
 			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
@@ -138,14 +178,173 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	}
 }
 
-void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, struct timeval presentation_time)
+void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configstr_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
+	if (_audio_decoder)
+	{
+		_audio_decoder->release_decoder();
+		delete _audio_decoder;
+		_audio_decoder = nullptr;
+	}
+	if (_audio_renderer)
+	{
+		_audio_renderer->release_renderer();
+		delete _audio_renderer;
+		_audio_renderer = nullptr;
+	}
+
+	if (smt == dk_rtmp_client::SUBMEDIA_TYPE_MP3)
+	{
+		_audio_decoder = new dk_ff_mp3_decoder();
+		_audio_decoder_config = new dk_ff_mp3_decoder::configuration_t();
+	}
+	else if (smt == dk_rtmp_client::SUBMEDIA_TYPE_AAC)
+	{
+		_audio_decoder = new dk_aac_decoder();
+		_audio_decoder_config = new dk_aac_decoder::configuration_t();
+	}
+
+	_audio_renderer = new dk_mmwave_renderer();
+
+	if (_is_preview_enabled)
+	{
+		do
+		{
+			if (smt == dk_rtmp_client::SUBMEDIA_TYPE_MP3)
+			{
+				dk_ff_mp3_decoder * mp3_audio_decoder = static_cast<dk_ff_mp3_decoder*>(_audio_decoder);
+				dk_ff_mp3_decoder::configuration_t * mp3_audio_decoder_config = static_cast<dk_ff_mp3_decoder::configuration_t*>(_audio_decoder_config);
+				mp3_audio_decoder_config->samplerate = samplerate;
+				mp3_audio_decoder_config->bitdepth = bitdepth;
+				mp3_audio_decoder_config->channels = channels;
+
+				_audio_renderer_config.samplerate = samplerate;
+				_audio_renderer_config.bitdepth = bitdepth;
+				_audio_renderer_config.channels = 2;
+
+				dk_ff_mp3_decoder::ERR_CODE decode_err = mp3_audio_decoder->initialize_decoder(mp3_audio_decoder_config);
+				dk_mmwave_renderer::ERR_CODE render_err = _audio_renderer->initialize_renderer(&_audio_renderer_config);
+
+				if (decode_err == dk_ff_mp3_decoder::ERR_CODE_SUCCESS)
+				{
+					dk_ff_mp3_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
+					dk_ff_mp3_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+					encoded.data = (uint8_t*)data;
+					encoded.data_size = data_size;
+					decode_err = mp3_audio_decoder->decode(&encoded, &pcm);
+					if ((decode_err == dk_ff_mp3_decoder::ERR_CODE_SUCCESS) && (pcm.data_size > 0))
+					{
+						if (render_err == dk_mmwave_renderer::ERR_CODE_SUCCESS)
+						{
+							dk_mmwave_renderer::dk_audio_entity_t render = { 0, 0, 0 };
+							render.data = pcm.data;
+							render.data_size = pcm.data_size;
+							_audio_renderer->render(&render);
+						}
+					}
+				}
+			}
+			else if (smt == dk_rtmp_client::SUBMEDIA_TYPE_AAC)
+			{
+				dk_aac_decoder * aac_audio_decoder = static_cast<dk_aac_decoder*>(_audio_decoder);
+				dk_aac_decoder::configuration_t * aac_audio_decoder_config = static_cast<dk_aac_decoder::configuration_t*>(_audio_decoder_config);
+				aac_audio_decoder_config->extradata_size = configstr_size;
+				memcpy(aac_audio_decoder_config->extradata, configstr, aac_audio_decoder_config->extradata_size);
+				aac_audio_decoder_config->samplerate = samplerate;
+				aac_audio_decoder_config->bitdepth = bitdepth;
+				aac_audio_decoder_config->channels = channels;
+
+				_audio_renderer_config.samplerate = samplerate;
+				_audio_renderer_config.bitdepth = bitdepth;
+				_audio_renderer_config.channels = 2;
+
+				dk_aac_decoder::ERR_CODE decode_err = aac_audio_decoder->initialize_decoder(aac_audio_decoder_config);
+				dk_mmwave_renderer::ERR_CODE render_err = _audio_renderer->initialize_renderer(&_audio_renderer_config);
+
+				if (decode_err == dk_ff_mp3_decoder::ERR_CODE_SUCCESS)
+				{
+					dk_aac_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
+					dk_aac_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+					encoded.data = (uint8_t*)data;
+					encoded.data_size = data_size;
+					decode_err = aac_audio_decoder->decode(&encoded, &pcm);
+					if ((decode_err == dk_aac_decoder::ERR_CODE_SUCCESS) && (pcm.data_size > 0))
+					{
+						if (render_err == dk_mmwave_renderer::ERR_CODE_SUCCESS)
+						{
+							dk_mmwave_renderer::dk_audio_entity_t render = { 0, 0, 0 };
+							render.data = pcm.data;
+							render.data_size = pcm.data_size;
+							_audio_renderer->render(&render);
+						}
+					}
+				}
+			}
+		} while (0);
+	}
+	if (_is_recording_enabled)
+	{
+		//dk_ff_mpeg2ts_muxer::configuration_t config;
+		//config.vconfig.extradata_size = data_size;
+		//memcpy(config.vconfig.extradata, data, data_size);
+		//config.vconfig.width = 1280;
+		//config.vconfig.height = 720;
+		//config.vconfig.fps = 30;
+		//config.vconfig.stream_index = 0;
+		//config.vconfig.bitrate = 4000000;
+		//_mpeg2ts_saver->initialize(&config);
+	}
 
 }
 
 void dk_rtmp_receiver::on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
+	if (_is_preview_enabled)
+	{
+		if (smt == dk_rtmp_client::SUBMEDIA_TYPE_MP3)
+		{
+			dk_ff_mp3_decoder * mp3_audio_decoder = static_cast<dk_ff_mp3_decoder*>(_audio_decoder);
 
+			dk_ff_mp3_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
+			dk_ff_mp3_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+			encoded.data = (uint8_t*)data;
+			encoded.data_size = data_size;
+
+			dk_ff_mp3_decoder::ERR_CODE decode_err = mp3_audio_decoder->decode(&encoded, &pcm);
+			if ((decode_err == dk_ff_mp3_decoder::ERR_CODE_SUCCESS) && (pcm.data_size > 0))
+			{
+				dk_mmwave_renderer::dk_audio_entity_t render = { 0, 0, 0 };
+				render.data = pcm.data;
+				render.data_size = pcm.data_size;
+				_audio_renderer->render(&render);
+			}
+		}
+		else if (smt == dk_rtmp_client::SUBMEDIA_TYPE_AAC)
+		{
+			dk_aac_decoder * aac_audio_decoder = static_cast<dk_aac_decoder*>(_audio_decoder);
+
+			dk_aac_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
+			dk_aac_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+			encoded.data = (uint8_t*)data;
+			encoded.data_size = data_size;
+
+			dk_aac_decoder::ERR_CODE decode_err = aac_audio_decoder->decode(&encoded, &pcm);
+			if ((decode_err == dk_aac_decoder::ERR_CODE_SUCCESS) && (pcm.data_size > 0))
+			{
+				dk_mmwave_renderer::dk_audio_entity_t render = { 0, 0, 0 };
+				render.data = pcm.data;
+				render.data_size = pcm.data_size;
+				_audio_renderer->render(&render);
+			}
+		}
+	}
+	if (_is_recording_enabled)
+	{
+		//if ((data[3] & 0x1F) == 0x05)
+		//	_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
+		//else
+		//	_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
+	}
 }
 
 // Local Functions

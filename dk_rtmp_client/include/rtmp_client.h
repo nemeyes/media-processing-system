@@ -25,6 +25,9 @@ public:
 	void clear_sps(void);
 	void clear_pps(void);
 
+	uint8_t * get_configstr(size_t & configstr_size);
+	void set_configstr(uint8_t * configstr, size_t configstr_size);
+
 	dk_rtmp_client::STATE_T state(void);
 
 	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
@@ -95,6 +98,9 @@ private:
 	bool _change_sps;
 	bool _change_pps;
 
+
+	uint8_t _configstr[100];
+	int32_t _configstr_size;
 	bool _rcv_first_audio;
 
 	dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T _vsmt;

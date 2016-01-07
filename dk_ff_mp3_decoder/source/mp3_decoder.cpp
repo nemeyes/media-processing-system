@@ -24,7 +24,7 @@ dk_ff_mp3_decoder::ERR_CODE mp3_decoder::initialize_decoder(dk_ff_mp3_decoder::c
 		return dk_ff_mp3_decoder::ERR_CODE_FAIL;
 
 	_context = avcodec_alloc_context3(_codec);
-	if (_context)
+	if (!_context)
 		return dk_ff_mp3_decoder::ERR_CODE_FAIL;
 	_context->channels = config->channels;
 	_context->sample_rate = config->samplerate;
@@ -74,7 +74,7 @@ dk_ff_mp3_decoder::ERR_CODE mp3_decoder::decode(dk_ff_mp3_decoder::dk_audio_enti
 			{
 				for (int32_t ch = 0; ch < _context->channels; ch++)
 				{
-					memcpy((uint8_t*)pcm->data + pcm->data_size, _decoded_frame->data[ch] + data_size*i, data_size);
+					memcpy(((uint8_t*)pcm->data) + pcm->data_size, _decoded_frame->data[ch] + data_size*i, data_size);
 					pcm->data_size += data_size;
 				}
 			}

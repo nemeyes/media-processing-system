@@ -4,7 +4,6 @@
 dk_ff_mp3_decoder::_configuration_t::_configuration_t(void)
 	: samplerate(48000)
 	, channels(2)
-	, framesize(20)
 	, bitdepth(16)
 {
 }
@@ -13,7 +12,6 @@ dk_ff_mp3_decoder::_configuration_t::_configuration_t(const _configuration_t & c
 {
 	samplerate = clone.samplerate;
 	channels = clone.channels;
-	framesize = clone.framesize;
 	bitdepth = clone.bitdepth;
 }
 
@@ -21,7 +19,6 @@ dk_ff_mp3_decoder::_configuration_t dk_ff_mp3_decoder::_configuration_t::operato
 {
 	samplerate = clone.samplerate;
 	channels = clone.channels;
-	framesize = clone.framesize;
 	bitdepth = clone.bitdepth;
 	return (*this);
 }
