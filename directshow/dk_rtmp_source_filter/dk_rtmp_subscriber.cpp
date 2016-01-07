@@ -9,10 +9,13 @@ dk_rtmp_subscriber::dk_rtmp_subscriber(void)
 	, _recv_timeout(0)
 	, _conn_timeout(0)
 	, _repeat(true)
-	, _width(-1)
-	, _height(-1)
-	, _sar_width(-1)
-	, _sar_height(-1)
+	, _video_width(-1)
+	, _video_height(-1)
+	, _video_sar_width(-1)
+	, _video_sar_height(-1)
+	, _audio_samplerate(0)
+	, _audio_bitdepth(0)
+	, _audio_channels(0)
 {
 #if defined(WITH_DEBUG_VIDEO_ES)
 	_video_file = ::open_file_write("rtmp_video.h264");
@@ -57,16 +60,6 @@ dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::stop(void)
 	return subscribe_end();
 }
 
-int32_t dk_rtmp_subscriber::get_width(void)
-{
-	return _width;
-}
-
-int32_t dk_rtmp_subscriber::get_height(void)
-{
-	return _height;
-}
-
 dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_url(wchar_t * url)
 {
 	wcscpy_s(_url, url);
@@ -106,6 +99,36 @@ dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_connection_timeout(uint64_t
 dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_repeat(bool repeat)
 {
 	_repeat = repeat;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_video_width(int32_t width)
+{
+	_video_width = width;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_video_height(int32_t height)
+{
+	_video_height = height;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_audio_samplerate(int32_t samplerate)
+{
+	_audio_samplerate = samplerate;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_audio_bitdepth(int32_t bitdepth)
+{
+	_audio_bitdepth = bitdepth;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::set_audio_channels(int32_t channels)
+{
+	_audio_channels = channels;
 	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
 }
 
@@ -157,19 +180,49 @@ dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_repeat(bool & repeat)
 	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
 }
 
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_video_width(int32_t & width)
+{
+	width = _video_width;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_video_height(int32_t & height)
+{
+	height = _video_height;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_audio_samplerate(int32_t & samplerate)
+{
+	samplerate = _audio_samplerate;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_audio_bitdepth(int32_t & bitdepth)
+{
+	bitdepth = _audio_bitdepth;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
+dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_audio_channels(int32_t & channels)
+{
+	channels = _audio_channels;
+	return dk_rtmp_subscriber::ERR_CODE_SUCCESS;
+}
+
 
 void dk_rtmp_subscriber::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
 {
-	if (_width > 0 && _height > 0)
+	if (_video_width > 0 && _video_height > 0)
 	{
 		dk_media_buffering::instance().push_video((uint8_t*)data, data_size);
 		return;
 	}
 
-	if (parse_sps((BYTE*)(sps), spssize, &_width, &_height, &_sar_width, &_sar_height) < 1)
+	if (parse_sps((BYTE*)(sps), spssize, &_video_width, &_video_height, &_video_sar_width, &_video_sar_height) < 1)
 	{
-		_width = -1;
-		_height = -1;
+		_video_width = -1;
+		_video_height = -1;
 	}
 	else
 	{

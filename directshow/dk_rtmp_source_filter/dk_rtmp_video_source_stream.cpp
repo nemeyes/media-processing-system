@@ -14,8 +14,6 @@
 #include "dk_rtmp_source_filter.h"
 #include "dk_rtmp_video_source_stream.h"
 
-#define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
-
 dk_rtmp_video_source_stream::dk_rtmp_video_source_stream(HRESULT *hr, CSource *ms, LPCWSTR name)
 	: CSourceStream(NAME("dk_rtmp_video_source_stream"), hr, ms, name)
 	, _is_first_sample_delivered(FALSE)
@@ -41,7 +39,12 @@ STDMETHODIMP dk_rtmp_video_source_stream::NonDelegatingQueryInterface(REFIID rii
 HRESULT dk_rtmp_video_source_stream::GetMediaType(CMediaType * type)
 {
 	dk_rtmp_source_filter * parent = static_cast<dk_rtmp_source_filter*>(m_pFilter);
-	if (!parent || (parent->_subscriber.get_width()<1 || parent->_subscriber.get_height()<1))
+	if (!parent)
+		return E_UNEXPECTED;
+	int32_t video_width = 0, video_height = 0;
+	parent->_subscriber.get_video_width(video_width);
+	parent->_subscriber.get_video_height(video_height);
+	if (video_width<1 || video_height<1)
 		return E_UNEXPECTED;
 
 	type->InitMediaType();
@@ -58,8 +61,8 @@ HRESULT dk_rtmp_video_source_stream::GetMediaType(CMediaType * type)
 	ZeroMemory(vid, sizeof(VIDEOINFOHEADER2));
 	vid->rcSource.left = 0;
 	vid->rcSource.top = 0;
-	vid->rcSource.right = parent->_subscriber.get_width();
-	vid->rcSource.bottom = parent->_subscriber.get_height();
+	vid->rcSource.right = video_width;
+	vid->rcSource.bottom = video_height;
 	vid->rcTarget = vid->rcSource;
 	//pvid->dwBitRate				= _media_buffer->media_header()->videofmt.bitrate;
 	//pvid->dwBitRate				= m_videoMediaInfo.video.bitrate>0?m_videoMediaInfo.video.bitrate:304018;
@@ -95,7 +98,7 @@ HRESULT dk_rtmp_video_source_stream::DecideBufferSize(IMemAllocator *alloc, ALLO
 	if (properties->cBuffers == 0)
 		properties->cBuffers = 2;
 
-	properties->cbBuffer = (parent->_subscriber.get_height()*parent->_subscriber.get_width()) << 1;
+	properties->cbBuffer = (1024*1024*2);
 	ASSERT(properties->cbBuffer);
 
 	// Ask the allocator to reserve us some sample memory, NOTE the function

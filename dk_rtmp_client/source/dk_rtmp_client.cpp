@@ -1,7 +1,8 @@
 #include "dk_rtmp_client.h"
 #include "rtmp_client.h"
 
-dk_rtmp_client::dk_rtmp_client(void)
+dk_rtmp_client::dk_rtmp_client(bool split_thread)
+	: _split_thread(split_thread)
 {
 	_core = new rtmp_client(this);
 }

@@ -356,11 +356,11 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 		return dk_player_framework::ERR_CODE_FAILED;
 }
 
-dk_player_framework::ERR_CODE dshow_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password)
+dk_player_framework::ERR_CODE dshow_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password, int32_t video_width, int32_t video_height)
 {
 	HRESULT hr = E_FAIL;
 	_source = new dk_rtmp_source();
-	hr = _source->add_to_graph(_graph, url, username, password);
+	hr = _source->add_to_graph(_graph, url, username, password, video_width, video_height);
 	if (SUCCEEDED(hr))
 		hr = arrange();
 
@@ -636,9 +636,20 @@ HRESULT dshow_player_framework::arrange(void)
 	hr = _video_renderer->add_to_graph(_graph, _hwnd, _aspect_ratio);
 	if (FAILED(hr))
 		dk_player_framework::ERR_CODE_FAILED;
+
+
+#if 1
+	hr = _graph->ConnectDirect(_source->get_video_output_pin(), _video_decoder->get_input_pin(), NULL);
+	if (FAILED(hr))
+		return dk_player_framework::ERR_CODE_FAILED;
+	hr = _graph->ConnectDirect(_video_decoder->get_output_pin(), _video_renderer->get_input_pin(), NULL);
+	if (FAILED(hr))
+		return dk_player_framework::ERR_CODE_FAILED;
+#else
 	hr = _graph->Render(_source->get_video_output_pin());
 	if (FAILED(hr))
 		dk_player_framework::ERR_CODE_FAILED;
+#endif
 
 	if (_enable_audio)
 	{

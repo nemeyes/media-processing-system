@@ -1,4 +1,6 @@
 #pragma once
+
+#include <cstdint>
 #include <vector>
 
 class dk_base_filter
@@ -15,7 +17,7 @@ public:
 	dk_base_source_filter(void) {};
 	virtual ~dk_base_source_filter(void) {};
 	virtual HRESULT add_to_graph(CComPtr<IGraphBuilder> graph, wchar_t * file) { return E_NOTIMPL; }
-	virtual HRESULT add_to_graph(CComPtr<IGraphBuilder> graph, wchar_t * url, wchar_t * id, wchar_t * pwd) { return E_NOTIMPL; }
+	virtual HRESULT add_to_graph(CComPtr<IGraphBuilder> graph, wchar_t * url, wchar_t * id, wchar_t * pwd, int32_t video_width=0, int32_t video_height=0) { return E_NOTIMPL; }
 
 
 	CComPtr<IPin> get_output_pin(void) { return NULL; };

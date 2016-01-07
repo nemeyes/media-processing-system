@@ -48,7 +48,7 @@ public:
 	dk_player_framework::ERR_CODE fastforward_rate(double rate);
 
 	dk_player_framework::ERR_CODE open_file(wchar_t * file);
-	dk_player_framework::ERR_CODE open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password);
+	dk_player_framework::ERR_CODE open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password, int32_t video_width=0, int32_t video_height=0);
 	dk_player_framework::ERR_CODE play(void);
 	dk_player_framework::ERR_CODE pause(void);
 	dk_player_framework::ERR_CODE stop(void);

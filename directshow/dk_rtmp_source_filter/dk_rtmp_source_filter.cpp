@@ -204,9 +204,12 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 	//for (int32_t i = 0; i < 600; i++)
 	while (true)
 	{
-		if (_subscriber.get_width() > 0 && _subscriber.get_height() > 0)
+		int32_t video_width, video_height;
+		_subscriber.get_video_width(video_width);
+		_subscriber.get_video_height(video_height);
+		if (video_width > 0 && video_height > 0)
 			break;
-		::Sleep(10);
+		::Sleep(1);
 	}
 	return S_OK;
 }
@@ -270,6 +273,18 @@ STDMETHODIMP dk_rtmp_source_filter::SetRepeat(BOOL repeat)
 	return S_OK;
 }
 
+STDMETHODIMP dk_rtmp_source_filter::SetVideoWidth(INT width)
+{
+	_subscriber.set_video_width(width);
+	return S_OK;
+}
+
+STDMETHODIMP dk_rtmp_source_filter::SetVideoHeight(INT height)
+{
+	_subscriber.set_video_height(height);
+	return S_OK;
+}
+
 STDMETHODIMP dk_rtmp_source_filter::GetUrl(BSTR * url)
 {
 	wchar_t * tmp_url = 0;
@@ -329,5 +344,17 @@ STDMETHODIMP dk_rtmp_source_filter::GetRepeat(BOOL & repeat)
 	bool tmp_repeat = false;
 	_subscriber.get_repeat(tmp_repeat);
 	repeat = tmp_repeat == TRUE ? true : false;
+	return S_OK;
+}
+
+STDMETHODIMP dk_rtmp_source_filter::GetVideoWidth(INT & width)
+{
+	_subscriber.get_video_width(width);
+	return S_OK;
+}
+
+STDMETHODIMP dk_rtmp_source_filter::GetVideoHeight(INT & height)
+{
+	_subscriber.get_video_height(height);
 	return S_OK;
 }

@@ -54,8 +54,8 @@ extern "C" {
 		STDMETHOD(SetRecvTimeout)(ULONGLONG timeout) PURE;
 		STDMETHOD(SetConnectionTimeout)(ULONGLONG timeout) PURE;
 		STDMETHOD(SetRepeat)(BOOL repeat) PURE;
-		STDMETHOD(SetWidth)(INT width) PURE;
-		STDMETHOD(SetHeight)(INT height) PURE;
+		STDMETHOD(SetVideoWidth)(INT width) PURE;
+		STDMETHOD(SetVideoHeight)(INT height) PURE;
 		STDMETHOD(GetUrl)(BSTR * url) PURE;
 		STDMETHOD(GetUsername)(BSTR * username) PURE;
 		STDMETHOD(GetPassword)(BSTR * password) PURE;
@@ -63,8 +63,8 @@ extern "C" {
 		STDMETHOD(GetRecvTimeout)(ULONGLONG & timeout) PURE;
 		STDMETHOD(GetConnectionTimeout)(ULONGLONG & timeout) PURE;
 		STDMETHOD(GetRepeat)(BOOL & repeat) PURE;
-		STDMETHOD(GetWidth)(INT & width) PURE;
-		STDMETHOD(GetHeight)(INT & height) PURE;
+		STDMETHOD(GetVideoWidth)(INT & width) PURE;
+		STDMETHOD(GetVideoHeight)(INT & height) PURE;
 	};
 
 #ifdef __cplusplus
