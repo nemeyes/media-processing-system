@@ -42,6 +42,6 @@ protected:
 	//int _repeat_time; // Time in msec between frames
 
 	//BOOL _is_first_sample_delivered;
-	//CRefTime _rt_sample_time; // The time to be stamped on each sample
+	CRefTime _rt_sample_time; // The time to be stamped on each sample
 	//LONGLONG _sample_media_time_start;
 };

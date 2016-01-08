@@ -24,7 +24,7 @@ void dk_circular_buffer_destroy(dk_circular_buffer_t * buffer)
 	}
 }
 
-int32_t dk_circular_buffer_write(dk_circular_buffer_t * buffer, uint8_t * data, int32_t length)
+int32_t dk_circular_buffer_write(dk_circular_buffer_t * buffer, const uint8_t * data, int32_t length)
 {
 	if (dk_circular_buffer_available_data(buffer) == 0)
 	{

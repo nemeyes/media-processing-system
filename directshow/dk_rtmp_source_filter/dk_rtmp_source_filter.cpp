@@ -24,6 +24,7 @@
 #include <comutil.h>
 
 #include <dk_string_helper.h>
+#include <dk_media_buffering.h>
 #include "dk_rtmp_source_filter.h"
 #include "dk_rtmp_video_source_stream.h"
 #include "dk_rtmp_audio_source_stream.h"
@@ -33,7 +34,7 @@ dk_rtmp_source_filter::dk_rtmp_source_filter(LPUNKNOWN unk, HRESULT *hr)
 {
 	CAutoLock cAutoLock(&m_cStateLock);
 	new dk_rtmp_video_source_stream(hr, this, L"Video");
-	//new dk_rtmp_audio_source_stream(hr, this, L"Audio");
+	new dk_rtmp_audio_source_stream(hr, this, L"Audio");
 }
 
 dk_rtmp_source_filter::~dk_rtmp_source_filter(void)
@@ -204,10 +205,17 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 	//for (int32_t i = 0; i < 600; i++)
 	while (true)
 	{
-		int32_t video_width, video_height;
-		_subscriber.get_video_width(video_width);
-		_subscriber.get_video_height(video_height);
-		if (video_width > 0 && video_height > 0)
+		dk_media_buffering::VIDEO_SUBMEDIA_TYPE vmt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
+		dk_media_buffering::instance().get_video_submedia_type(vmt);
+
+		dk_media_buffering::AUDIO_SUBMEDIA_TYPE amt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
+		dk_media_buffering::instance().get_audio_submedia_type(amt);
+
+		int32_t video_width = 0, video_height = 0;
+		dk_media_buffering::instance().get_video_width(video_width);
+		dk_media_buffering::instance().get_video_height(video_height);
+
+		if ((vmt != dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN) && (amt != dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN) && (video_width > 0) && (video_height > 0))
 			break;
 		::Sleep(1);
 	}
@@ -275,13 +283,13 @@ STDMETHODIMP dk_rtmp_source_filter::SetRepeat(BOOL repeat)
 
 STDMETHODIMP dk_rtmp_source_filter::SetVideoWidth(INT width)
 {
-	_subscriber.set_video_width(width);
+	dk_media_buffering::instance().set_video_width(width);
 	return S_OK;
 }
 
 STDMETHODIMP dk_rtmp_source_filter::SetVideoHeight(INT height)
 {
-	_subscriber.set_video_height(height);
+	dk_media_buffering::instance().set_video_height(height);
 	return S_OK;
 }
 
@@ -349,12 +357,12 @@ STDMETHODIMP dk_rtmp_source_filter::GetRepeat(BOOL & repeat)
 
 STDMETHODIMP dk_rtmp_source_filter::GetVideoWidth(INT & width)
 {
-	_subscriber.get_video_width(width);
+	dk_media_buffering::instance().get_video_width(width);
 	return S_OK;
 }
 
 STDMETHODIMP dk_rtmp_source_filter::GetVideoHeight(INT & height)
 {
-	_subscriber.get_video_height(height);
+	dk_media_buffering::instance().get_video_height(height);
 	return S_OK;
 }

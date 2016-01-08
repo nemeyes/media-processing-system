@@ -38,52 +38,60 @@ STDMETHODIMP dk_rtmp_video_source_stream::NonDelegatingQueryInterface(REFIID rii
 
 HRESULT dk_rtmp_video_source_stream::GetMediaType(CMediaType * type)
 {
-	dk_rtmp_source_filter * parent = static_cast<dk_rtmp_source_filter*>(m_pFilter);
-	if (!parent)
-		return E_UNEXPECTED;
-	int32_t video_width = 0, video_height = 0;
-	parent->_subscriber.get_video_width(video_width);
-	parent->_subscriber.get_video_height(video_height);
-	if (video_width<1 || video_height<1)
+	dk_media_buffering::VIDEO_SUBMEDIA_TYPE mt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
+	dk_media_buffering::instance().get_video_submedia_type(mt);
+	if (mt == dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN)
 		return E_UNEXPECTED;
 
-	type->InitMediaType();
-	type->SetType(&MEDIATYPE_Video);
-	type->SetSubtype(&MEDIASUBTYPE_H264);
-	type->SetSampleSize(0);
+	int32_t width = 0, height = 0;
+	dk_media_buffering::instance().get_video_width(width);
+	dk_media_buffering::instance().get_video_height(height);
+	if (width<1 || height<1)
+		return E_UNEXPECTED;
+	
+	if (mt == dk_media_buffering::VIDEO_SUBMEDIA_TYPE_AVC)
+	{
+		type->InitMediaType();
+		type->SetType(&MEDIATYPE_Video);
+		type->SetSubtype(&MEDIASUBTYPE_H264);
+		type->SetSampleSize(0);
 
-	VIDEOINFOHEADER2 * vid;
-	PBYTE buffer = type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER2));
-	if (NULL == buffer) 
-		return E_OUTOFMEMORY;
-	type->SetFormatType(&FORMAT_VideoInfo2);
-	vid = (VIDEOINFOHEADER2 *)buffer;
-	ZeroMemory(vid, sizeof(VIDEOINFOHEADER2));
-	vid->rcSource.left = 0;
-	vid->rcSource.top = 0;
-	vid->rcSource.right = video_width;
-	vid->rcSource.bottom = video_height;
-	vid->rcTarget = vid->rcSource;
-	//pvid->dwBitRate				= _media_buffer->media_header()->videofmt.bitrate;
-	//pvid->dwBitRate				= m_videoMediaInfo.video.bitrate>0?m_videoMediaInfo.video.bitrate:304018;
-	//pvid->AvgTimePerFrame			= 400000;
-	//pvid->dwPictAspectRatioX		= 4;
-	//pvid->dwPictAspectRatioY		= 3;
-	vid->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	vid->bmiHeader.biWidth = vid->rcSource.right;
-	vid->bmiHeader.biHeight = vid->rcSource.bottom;
-	vid->bmiHeader.biPlanes = 1;
-	vid->bmiHeader.biBitCount = 24;
-	vid->bmiHeader.biCompression = MAKEFOURCC('H', '2', '6', '4');
-	//pvid->bmiHeader.biCompression	= MAKEFOURCC( 'A', 'V', 'C', '1' );
-	vid->bmiHeader.biSizeImage = vid->bmiHeader.biWidth*vid->bmiHeader.biHeight<<1;
-	buffer = buffer + sizeof(VIDEOINFOHEADER2);
-	//type->SetType(&MEDIATYPE_Video);
-	//type->SetSubtype(&MEDIASUBTYPE_H264);
-	//type->SetSampleSize(0);
-	return S_OK;
+		VIDEOINFOHEADER2 * vid;
+		PBYTE buffer = type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER2));
+		if (NULL == buffer)
+			return E_OUTOFMEMORY;
+		type->SetFormatType(&FORMAT_VideoInfo2);
+		vid = (VIDEOINFOHEADER2 *)buffer;
+		ZeroMemory(vid, sizeof(VIDEOINFOHEADER2));
+		vid->rcSource.left = 0;
+		vid->rcSource.top = 0;
+		vid->rcSource.right = width;
+		vid->rcSource.bottom = height;
+		vid->rcTarget = vid->rcSource;
+		//pvid->dwBitRate				= _media_buffer->media_header()->videofmt.bitrate;
+		//pvid->dwBitRate				= m_videoMediaInfo.video.bitrate>0?m_videoMediaInfo.video.bitrate:304018;
+		//pvid->AvgTimePerFrame			= 400000;
+		//pvid->dwPictAspectRatioX		= 4;
+		//pvid->dwPictAspectRatioY		= 3;
+		vid->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		vid->bmiHeader.biWidth = vid->rcSource.right;
+		vid->bmiHeader.biHeight = vid->rcSource.bottom;
+		vid->bmiHeader.biPlanes = 1;
+		vid->bmiHeader.biBitCount = 24;
+		vid->bmiHeader.biCompression = MAKEFOURCC('H', '2', '6', '4');
+		//pvid->bmiHeader.biCompression	= MAKEFOURCC( 'A', 'V', 'C', '1' );
+		vid->bmiHeader.biSizeImage = vid->bmiHeader.biWidth*vid->bmiHeader.biHeight << 1;
+		buffer = buffer + sizeof(VIDEOINFOHEADER2);
+		//type->SetType(&MEDIATYPE_Video);
+		//type->SetSubtype(&MEDIASUBTYPE_H264);
+		//type->SetSampleSize(0);
+		return S_OK;
+	}
+	else
+	{
+		return E_UNEXPECTED;
+	}
 }
-
 
 HRESULT dk_rtmp_video_source_stream::DecideBufferSize(IMemAllocator *alloc, ALLOCATOR_PROPERTIES *properties)
 {
@@ -92,8 +100,6 @@ HRESULT dk_rtmp_video_source_stream::DecideBufferSize(IMemAllocator *alloc, ALLO
 
 	CheckPointer(alloc, E_POINTER);
 	CheckPointer(properties, E_POINTER);
-
-	dk_rtmp_source_filter * parent = static_cast<dk_rtmp_source_filter*>(m_pFilter);
 
 	if (properties->cBuffers == 0)
 		properties->cBuffers = 2;
@@ -126,12 +132,13 @@ HRESULT dk_rtmp_video_source_stream::FillBuffer(IMediaSample *ms)
 
 	BYTE * buffer = NULL;
 	size_t size_of_recvd = 0;
+	long long timestamp = 0;
 	ms->GetPointer(&buffer);
 
 #if 1
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 1000 && parent->m_State!=State_Stopped; i++)
 	{
-		dk_media_buffering::instance().pop_video(buffer, size_of_recvd);
+		dk_media_buffering::instance().pop_video(buffer, size_of_recvd, timestamp);
 		if (size_of_recvd > 0)
 			break;
 		::Sleep(1);

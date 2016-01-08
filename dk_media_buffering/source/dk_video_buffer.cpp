@@ -7,6 +7,7 @@ dk_video_buffer::dk_video_buffer(size_t buffer_size)
 	, _begin(0)
 	, _end(0)
 	, _buffer_size(buffer_size)
+	, _mt(dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN)
 {
 	::InitializeCriticalSection(&_mutex);
 	
@@ -32,7 +33,7 @@ dk_video_buffer::~dk_video_buffer(void)
 	::DeleteCriticalSection(&_mutex);
 }
 
-dk_media_buffering::ERR_CODE dk_video_buffer::push(uint8_t * data, size_t size)
+dk_media_buffering::ERR_CODE dk_video_buffer::push(const uint8_t * data, size_t size, long long timestamp)
 {
 	dk_media_buffering::ERR_CODE status = dk_media_buffering::ERR_CODE_SUCCESS;
 	if (data && size > 0)
@@ -54,6 +55,7 @@ dk_media_buffering::ERR_CODE dk_video_buffer::push(uint8_t * data, size_t size)
 		buffer->next->prev = buffer;
 		buffer = buffer->next;
 
+		buffer->timestamp = timestamp;
 		buffer->amount = size;
 		int32_t result = dk_circular_buffer_write(_cbuffer, data, buffer->amount);
 		if (result == -1)
@@ -74,7 +76,7 @@ dk_media_buffering::ERR_CODE dk_video_buffer::push(uint8_t * data, size_t size)
 	return status;
 }
 
-dk_media_buffering::ERR_CODE dk_video_buffer::pop(uint8_t * data, size_t & size)
+dk_media_buffering::ERR_CODE dk_video_buffer::pop(uint8_t * data, size_t & size, long long & timestamp)
 {
 	dk_media_buffering::ERR_CODE status = dk_media_buffering::ERR_CODE_SUCCESS;
 	size = 0;
@@ -91,12 +93,19 @@ dk_media_buffering::ERR_CODE dk_video_buffer::pop(uint8_t * data, size_t & size)
 			status = dk_media_buffering::ERR_CODE_FAILED;
 
 		size = buffer->amount;
+		timestamp = buffer->timestamp;
 		//wchar_t debug[500];
 		//_snwprintf_s(debug, sizeof(debug), L"<<pop video data[%zu]\n", vbuffer->amount);
 		//OutputDebugString(debug);
 		free(buffer);
 	}
 	return status;
+}
+
+dk_media_buffering::ERR_CODE dk_video_buffer::set_submedia_type(dk_media_buffering::VIDEO_SUBMEDIA_TYPE mt)
+{
+	_mt = mt;
+	return dk_media_buffering::ERR_CODE_SUCCESS;
 }
 
 dk_media_buffering::ERR_CODE dk_video_buffer::set_vps(uint8_t * vps, size_t size)
@@ -120,6 +129,24 @@ dk_media_buffering::ERR_CODE dk_video_buffer::set_pps(uint8_t * pps, size_t size
 	return dk_media_buffering::ERR_CODE_SUCCESS;
 }
 
+dk_media_buffering::ERR_CODE dk_video_buffer::set_width(int32_t width)
+{
+	_width = width;
+	return dk_media_buffering::ERR_CODE_SUCCESS;
+}
+
+dk_media_buffering::ERR_CODE dk_video_buffer::set_height(int32_t height)
+{
+	_height = height;
+	return dk_media_buffering::ERR_CODE_SUCCESS;
+}
+
+dk_media_buffering::ERR_CODE dk_video_buffer::get_submedia_type(dk_media_buffering::VIDEO_SUBMEDIA_TYPE & mt)
+{
+	mt = _mt;
+	return dk_media_buffering::ERR_CODE_SUCCESS;
+}
+
 dk_media_buffering::ERR_CODE dk_video_buffer::get_vps(uint8_t * vps, size_t & size)
 {
 	size = _vps_size;
@@ -138,6 +165,18 @@ dk_media_buffering::ERR_CODE dk_video_buffer::get_pps(uint8_t * pps, size_t & si
 {
 	size = _pps_size;
 	memcpy(pps, _pps, _pps_size);
+	return dk_media_buffering::ERR_CODE_SUCCESS;
+}
+
+dk_media_buffering::ERR_CODE dk_video_buffer::get_width(int32_t & width)
+{
+	width = _width;
+	return dk_media_buffering::ERR_CODE_SUCCESS;
+}
+
+dk_media_buffering::ERR_CODE dk_video_buffer::get_height(int32_t & height)
+{
+	height = _height;
 	return dk_media_buffering::ERR_CODE_SUCCESS;
 }
 

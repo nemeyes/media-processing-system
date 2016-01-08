@@ -242,7 +242,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 {
 	uint8_t extradata[100] = { 0 };
 	size_t extradata_size = 0;
-	struct timeval presentation_time = { 0, 0 };
+	long long  presentation_time = 0;
 	uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
 
 	char * video_data = packet->m_body;
@@ -414,7 +414,7 @@ void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 	uint8_t extradata[50] = { 0 };
 	size_t extradata_size = 0;
 
-	struct timeval presentation_time = { 0, 0 };
+	long long presentation_time = 0;
 	char * audio_data = packet->m_body;
 	uint32_t audio_data_length = packet->m_nBodySize;
 

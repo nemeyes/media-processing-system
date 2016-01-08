@@ -3,7 +3,7 @@
 #include "dk_image_creator.h"
 
 #define VIDEO_BUFFER_SIZE 1920 * 1080 * 4
-#define AUDIO_BUFFER_SIZE 48000 * 2 * 8 //48000hz * 16bitdetph * 8 channels
+#define AUDIO_BUFFER_SIZE 48000 * 2 * 8 //48000hz * 16bitdetph * 8 channels ex) for 2channel 192000
 
 dk_rtmp_receiver::dk_rtmp_receiver(void)
 	: _is_preview_enabled(false)
@@ -80,7 +80,7 @@ void dk_rtmp_receiver::stop_recording(void)
 	}
 }
 
-void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	if (_video_decoder)
 	{
@@ -151,7 +151,7 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 	}
 }
 
-void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	if (_is_preview_enabled)
 	{
@@ -178,7 +178,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	}
 }
 
-void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configstr_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * configstr, size_t configstr_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	if (_audio_decoder)
 	{
@@ -297,7 +297,7 @@ void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt,
 
 }
 
-void dk_rtmp_receiver::on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time)
+void dk_rtmp_receiver::on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	if (_is_preview_enabled)
 	{

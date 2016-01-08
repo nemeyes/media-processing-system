@@ -16,6 +16,8 @@ DEFINE_GUID(CLSID_DK_RTMP_SOURCE_FILTER,
 DEFINE_GUID(CLSID_DK_RTMP_SOURCE_FILTER_PROPERTIES,
 	0xf5f16f5f, 0xdc3d, 0x4e2b, 0xa3, 0x14, 0x4f, 0xea, 0xaa, 0xa0, 0x90, 0xe2);
 
+
+
 class dk_rtmp_source_filter : public CSource,
 							  public IFileSourceFilter,
 							  public IAMFilterMiscFlags,

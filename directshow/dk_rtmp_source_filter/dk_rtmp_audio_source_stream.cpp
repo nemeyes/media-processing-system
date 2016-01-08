@@ -1,6 +1,7 @@
 #include <tchar.h>
 #include <time.h>
 #include <dshow.h>
+#include <initguid.h> 
 #include <atlstr.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,12 +9,21 @@
 #include <dvdmedia.h>
 #include <source.h>
 #include <mmreg.h>
+#include <wmcodecdsp.h>
 
 #include <dk_media_buffering.h>
-#include <dk_submedia_type.h>
-
 #include "dk_rtmp_source_filter.h"
 #include "dk_rtmp_audio_source_stream.h"
+
+#pragma comment(lib, "wmcodecdspuuid.lib")
+
+//DEFINE_GUID(MEDIASUBTYPE_AAC,
+//	0x000000FF, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
+DEFINE_GUID(MEDIASUBTYPE_MP3,
+	0x00000055, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
+#define WAVE_FORMAT_AAC	    0x00FF
 
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 
@@ -39,63 +49,98 @@ STDMETHODIMP dk_rtmp_audio_source_stream::NonDelegatingQueryInterface(REFIID rii
 
 HRESULT dk_rtmp_audio_source_stream::GetMediaType(CMediaType * type)
 {
-	dk_rtmp_source_filter * parent = static_cast<dk_rtmp_source_filter*>(m_pFilter);
-	//if (!parent || (parent->_subscriber.get_width()<1 || parent->_subscriber.get_height()<1))
+	dk_media_buffering::AUDIO_SUBMEDIA_TYPE mt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
+	dk_media_buffering::instance().get_audio_submedia_type(mt);
+	if (mt == dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN)
 		return E_UNEXPECTED;
 
-	type->InitMediaType();
-	type->SetType(&MEDIATYPE_Audio);
-//	type->SetSubtype(&MEDIASUBTYPE_AAC);
-	type->bFixedSizeSamples = FALSE;
-	type->SetTemporalCompression(TRUE);
-	//type->SetSampleSize(wave_hdr->nBlockAlign);
+	int32_t samplerate = 0, channels = 0, bitdepth = 0;
+	dk_media_buffering::instance().get_audio_samplerate(samplerate);
+	dk_media_buffering::instance().get_audio_channels(channels);
+	dk_media_buffering::instance().get_audio_bitdepth(bitdepth);
+	if (samplerate<1 || channels<1 || bitdepth<1)
+		return E_UNEXPECTED;
 
-	WAVEFORMATEX * wave_hdr = reinterpret_cast<WAVEFORMATEX*>(type->AllocFormatBuffer(sizeof(WAVEFORMATEX)));
-	if (!wave_hdr) 
-		return E_OUTOFMEMORY;
-	ZeroMemory(wave_hdr, type->cbFormat);
+	uint8_t configstr[50] = { 0 };
+	size_t configstr_size = 0;
+	dk_media_buffering::instance().get_configstr(configstr, configstr_size);
 
-	/*wave_hdr->nSamplesPerSec = parent->_audio_format.sample_rate;
-	wave_hdr->nChannels = parent->_audio_format.channels;
-	wave_hdr->wBitsPerSample = parent->_audio_format.bit_per_sample;
-	wave_hdr->cbSize = 0;
-	wave_hdr->nBlockAlign = (wave_hdr->nChannels*wave_hdr->wBitsPerSample / 8);
-	wave_hdr->nAvgBytesPerSec = wave_hdr->nSamplesPerSec*wave_hdr->nBlockAlign;
-	wave_hdr->wFormatTag = WAVE_FORMAT_AAC;*/
+	if (mt == dk_media_buffering::AUDIO_SUBMEDIA_TYPE_AAC)
+	{
+		type->InitMediaType();
+		type->SetType(&MEDIATYPE_Audio);
+		type->SetSubtype(&MEDIASUBTYPE_RAW_AAC1);
+		type->SetFormatType(&FORMAT_WaveFormatEx);
+		type->bFixedSizeSamples = FALSE;
+		type->SetTemporalCompression(TRUE);
 
+#if 1
+		WAVEFORMATEX * wfx = reinterpret_cast<WAVEFORMATEX*>(type->AllocFormatBuffer(sizeof(WAVEFORMATEX) + configstr_size));
+		if (!wfx)
+			return E_OUTOFMEMORY;
+		ZeroMemory(wfx, type->cbFormat);
 
-	VIDEOINFOHEADER2 * vid;
-	PBYTE buffer = type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER2));
-	if (NULL == buffer)
-		return E_OUTOFMEMORY;
-	type->SetFormatType(&FORMAT_VideoInfo2);
-	vid = (VIDEOINFOHEADER2 *)buffer;
-	ZeroMemory(vid, sizeof(VIDEOINFOHEADER2));
-	vid->rcSource.left = 0;
-	vid->rcSource.top = 0;
-	//vid->rcSource.right = parent->_subscriber.get_width();
-	//vid->rcSource.bottom = parent->_subscriber.get_height();
-	vid->rcTarget = vid->rcSource;
-	//pvid->dwBitRate				= _media_buffer->media_header()->videofmt.bitrate;
-	//pvid->dwBitRate				= m_videoMediaInfo.video.bitrate>0?m_videoMediaInfo.video.bitrate:304018;
-	//pvid->AvgTimePerFrame			= 400000;
-	//pvid->dwPictAspectRatioX		= 4;
-	//pvid->dwPictAspectRatioY		= 3;
-	vid->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	vid->bmiHeader.biWidth = vid->rcSource.right;
-	vid->bmiHeader.biHeight = vid->rcSource.bottom;
-	vid->bmiHeader.biPlanes = 1;
-	vid->bmiHeader.biBitCount = 24;
-	vid->bmiHeader.biCompression = MAKEFOURCC('H', '2', '6', '4');
-	//pvid->bmiHeader.biCompression	= MAKEFOURCC( 'A', 'V', 'C', '1' );
-	vid->bmiHeader.biSizeImage = vid->bmiHeader.biWidth*vid->bmiHeader.biHeight << 1;
-	buffer = buffer + sizeof(VIDEOINFOHEADER2);
-	//type->SetType(&MEDIATYPE_Video);
-	//type->SetSubtype(&MEDIASUBTYPE_H264);
-	//type->SetSampleSize(0);
-	return S_OK;
+		wfx->wFormatTag = WAVE_FORMAT_AAC;
+		wfx->nChannels = channels;
+		wfx->nSamplesPerSec = samplerate;
+		wfx->wBitsPerSample = bitdepth;
+		wfx->nBlockAlign = (wfx->nChannels*wfx->wBitsPerSample / 8);
+		wfx->nAvgBytesPerSec = wfx->nSamplesPerSec*wfx->nBlockAlign;
+		wfx->cbSize = configstr_size;
+		if (configstr_size > 0)
+		{
+			uint8_t * wfxex = ((uint8_t*)(wfx)) + sizeof(*wfx);
+			memcpy(wfxex, configstr, configstr_size);
+		}
+		type->SetSampleSize(wfx->nBlockAlign);
+#else
+		WAVEFORMATEX * wfx = reinterpret_cast<WAVEFORMATEX*>(type->AllocFormatBuffer(sizeof(WAVEFORMATEX)));
+		if (!wfx)
+			return E_OUTOFMEMORY;
+		ZeroMemory(wfx, type->cbFormat);
+
+		wfx->wFormatTag = WAVE_FORMAT_AAC;
+		wfx->nChannels = channels;
+		wfx->nSamplesPerSec = samplerate;
+		wfx->wBitsPerSample = bitdepth;
+		wfx->nBlockAlign = (wfx->nChannels*wfx->wBitsPerSample / 8);
+		wfx->nAvgBytesPerSec = wfx->nSamplesPerSec*wfx->nBlockAlign;
+		wfx->cbSize = 0;
+		type->SetSampleSize(wfx->nBlockAlign);
+#endif
+
+		return S_OK;
+	}
+	else if (mt == dk_media_buffering::AUDIO_SUBMEDIA_TYPE_MP3)
+	{
+		type->InitMediaType();
+		type->SetType(&MEDIATYPE_Audio);
+		type->SetSubtype(&MEDIASUBTYPE_MP3);
+		type->SetFormatType(&FORMAT_WaveFormatEx);
+		type->bFixedSizeSamples = FALSE;
+		type->SetTemporalCompression(TRUE);
+
+		WAVEFORMATEX * wfx = reinterpret_cast<WAVEFORMATEX*>(type->AllocFormatBuffer(sizeof(WAVEFORMATEX)));
+		if (!wfx)
+			return E_OUTOFMEMORY;
+		ZeroMemory(wfx, type->cbFormat);
+
+		//wfx->wFormatTag = WAVE_FORMAT_AAC;
+		wfx->nChannels = channels;
+		wfx->nSamplesPerSec = samplerate;
+		wfx->wBitsPerSample = bitdepth;
+		wfx->nBlockAlign = (wfx->nChannels*wfx->wBitsPerSample / 8);
+		wfx->nAvgBytesPerSec = wfx->nSamplesPerSec*wfx->nBlockAlign;
+		wfx->cbSize = 0;
+		type->SetSampleSize(wfx->nBlockAlign);
+		return S_OK;
+	}
+	else
+	{
+		return E_UNEXPECTED;
+	}
+	
 }
-
 
 HRESULT dk_rtmp_audio_source_stream::DecideBufferSize(IMemAllocator *alloc, ALLOCATOR_PROPERTIES *properties)
 {
@@ -107,15 +152,21 @@ HRESULT dk_rtmp_audio_source_stream::DecideBufferSize(IMemAllocator *alloc, ALLO
 
 	dk_rtmp_source_filter * parent = static_cast<dk_rtmp_source_filter*>(m_pFilter);
 
-	if (properties->cBuffers == 0)
-		properties->cBuffers = 2;
+	int32_t samplerate = 0, channels = 0, bitdepth = 0;
+	dk_media_buffering::instance().get_audio_samplerate(samplerate);
+	dk_media_buffering::instance().get_audio_channels(channels);
+	dk_media_buffering::instance().get_audio_bitdepth(bitdepth);
 
-	//properties->cbBuffer = (parent->_subscriber.get_height()*parent->_subscriber.get_width()) << 1;
+	if (properties->cBuffers < 1)
+		properties->cBuffers = 1;
+
+	properties->cbBuffer = AVCODEC_MAX_AUDIO_FRAME_SIZE;// (channels*samplerate*bitdepth / 8);
+	//properties->cBuffers /= 2;
+
+
+
 	ASSERT(properties->cbBuffer);
 
-	// Ask the allocator to reserve us some sample memory, NOTE the function
-	// can succeed (that is return NOERROR) but still not have allocated the
-	// memory that we requested, so we must check we got whatever we wanted
 	ALLOCATOR_PROPERTIES Actual;
 	hr = alloc->SetProperties(properties, &Actual);
 	if (FAILED(hr))
@@ -138,24 +189,27 @@ HRESULT dk_rtmp_audio_source_stream::FillBuffer(IMediaSample *ms)
 
 	BYTE * buffer = NULL;
 	size_t size_of_recvd = 0;
+	long long timestamp = 0;
 	ms->GetPointer(&buffer);
 
 #if 1
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 1000 && parent->m_State != State_Stopped; i++)
 	{
-		dk_media_buffering::instance().pop_video(buffer, size_of_recvd);
+		dk_media_buffering::instance().pop_audio(buffer, size_of_recvd, timestamp);
 		if (size_of_recvd > 0)
 			break;
 		::Sleep(1);
 	}
 #else
-	dk_media_buffering::instance().pop_video(buffer, size_of_recvd);
+	dk_media_buffering::instance().pop_audio(buffer, size_of_recvd);
 #endif
+	WAVEFORMATEX * wfx = (WAVEFORMATEX*)m_mt.Format();
+	CRefTime rt_start = _rt_sample_time;
+	_rt_sample_time = rt_start + (REFERENCE_TIME)(UNITS * ms->GetActualDataLength()) / (REFERENCE_TIME)wfx->nAvgBytesPerSec;
+	ms->SetTime((REFERENCE_TIME*)&rt_start, (REFERENCE_TIME*)&_rt_sample_time);
 
 	if (size_of_recvd > 0)
-	{
 		ms->SetActualDataLength(size_of_recvd);
-	}
 	else
 		ms->SetActualDataLength(0);
 

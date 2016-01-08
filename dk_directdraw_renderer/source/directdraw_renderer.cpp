@@ -459,7 +459,7 @@ dk_directdraw_renderer::ERR_CODE directdraw_renderer::render(dk_directdraw_rende
 					}
 				}*/
 
-				if (_enable_osd_text)
+				/*if (_enable_osd_text)
 				{
 					HDC hdc;
 					RECT rtRGB = { _osd_text_position_x, _osd_text_position_y, display_width, display_height };
@@ -484,7 +484,7 @@ dk_directdraw_renderer::ERR_CODE directdraw_renderer::render(dk_directdraw_rende
 
 						_pdd_rgb->ReleaseDC(hdc);
 					}
-				}
+				}*/
 
 				do
 				{

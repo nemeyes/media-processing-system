@@ -19,7 +19,7 @@ extern "C" {
 dk_circular_buffer_t * dk_circular_buffer_create(int32_t capacity);
 void	dk_circular_buffer_destroy(dk_circular_buffer_t * buffer);
 int32_t dk_circular_buffer_read(dk_circular_buffer_t * buffer, uint8_t * target, int32_t amount);
-int32_t dk_circular_buffer_write(dk_circular_buffer_t * buffer, uint8_t * data, int32_t length);
+int32_t dk_circular_buffer_write(dk_circular_buffer_t * buffer, const uint8_t * data, int32_t length);
 int32_t dk_circular_buffer_empty(dk_circular_buffer_t * buffer);
 int32_t dk_circular_buffer_full(dk_circular_buffer_t * buffer);
 int32_t dk_circular_buffer_available_data(dk_circular_buffer_t * buffer);

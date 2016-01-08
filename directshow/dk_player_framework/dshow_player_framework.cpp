@@ -586,70 +586,72 @@ HRESULT dshow_player_framework::arrange(void)
 {
 	HRESULT hr = NOERROR;
 	CComPtr<IPin> vopin = _source->get_video_output_pin();
-	IEnumMediaTypes * venum = 0;
-	hr = vopin->EnumMediaTypes(&venum);
-	if (FAILED(hr))
-		return dk_player_framework::ERR_CODE_FAILED;
-	AM_MEDIA_TYPE * vmt;
-	while (S_OK == venum->Next(1, &vmt, NULL))
+	if (vopin)
 	{
-		if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_H264) ||
-			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_AVC1) ||
-			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_avc1) ||
-			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_h264) ||
-			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_X264) ||
-			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_x264))
+		IEnumMediaTypes * venum = 0;
+		hr = vopin->EnumMediaTypes(&venum);
+		if (FAILED(hr))
+			return dk_player_framework::ERR_CODE_FAILED;
+		AM_MEDIA_TYPE * vmt;
+		while (S_OK == venum->Next(1, &vmt, NULL))
 		{
-			_video_decoder = new dk_microsoft_video_decoder();
-			break;
+			if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_H264) ||
+				IsEqualGUID(vmt->subtype, MEDIASUBTYPE_AVC1) ||
+				IsEqualGUID(vmt->subtype, MEDIASUBTYPE_avc1) ||
+				IsEqualGUID(vmt->subtype, MEDIASUBTYPE_h264) ||
+				IsEqualGUID(vmt->subtype, MEDIASUBTYPE_X264) ||
+				IsEqualGUID(vmt->subtype, MEDIASUBTYPE_x264))
+			{
+				_video_decoder = new dk_microsoft_video_decoder();
+				break;
+			}
+			else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP4V) ||
+				IsEqualGUID(vmt->subtype, MEDIASUBTYPE_XVID) ||
+				IsEqualGUID(vmt->subtype, MEDIASUBTYPE_xvid))
+			{
+				_video_decoder = new dk_dmo_mpeg4s_decoder();
+				break;
+			}
+			else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP42))
+			{
+				_video_decoder = new dk_dmo_mpeg4_decoder();
+				break;
+			}
+			else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_WVC1))
+			{
+				_video_decoder = new dk_dmo_wmvideo_decoder();
+				break;
+			}
+			else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP43))
+			{
+				_video_decoder = new dk_dmo_mpeg43_decoder();
+				break;
+			}
 		}
-		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP4V) ||
-			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_XVID) ||
-			IsEqualGUID(vmt->subtype, MEDIASUBTYPE_xvid))
-		{
-			_video_decoder = new dk_dmo_mpeg4s_decoder();
-			break;
-		}
-		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP42))
-		{
-			_video_decoder = new dk_dmo_mpeg4_decoder();
-			break;
-		}
-		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_WVC1))
-		{
-			_video_decoder = new dk_dmo_wmvideo_decoder();
-			break;
-		}
-		else if (IsEqualGUID(vmt->subtype, MEDIASUBTYPE_MP43))
-		{
-			_video_decoder = new dk_dmo_mpeg43_decoder();
-			break;
-		}
-	}
-	safe_release(&venum);
+		safe_release(&venum);
 
-	_video_renderer = new dk_enhanced_video_renderer();
+		_video_renderer = new dk_enhanced_video_renderer();
 
-	hr = _video_decoder->add_to_graph(_graph);
-	if (FAILED(hr))
-		dk_player_framework::ERR_CODE_FAILED;
-	hr = _video_renderer->add_to_graph(_graph, _hwnd, _aspect_ratio);
-	if (FAILED(hr))
-		dk_player_framework::ERR_CODE_FAILED;
-
+		hr = _video_decoder->add_to_graph(_graph);
+		if (FAILED(hr))
+			dk_player_framework::ERR_CODE_FAILED;
+		hr = _video_renderer->add_to_graph(_graph, _hwnd, _aspect_ratio);
+		if (FAILED(hr))
+			dk_player_framework::ERR_CODE_FAILED;
 
 #if 1
-	hr = _graph->ConnectDirect(_source->get_video_output_pin(), _video_decoder->get_input_pin(), NULL);
-	if (FAILED(hr))
-		return dk_player_framework::ERR_CODE_FAILED;
-	hr = _graph->ConnectDirect(_video_decoder->get_output_pin(), _video_renderer->get_input_pin(), NULL);
-	if (FAILED(hr))
-		return dk_player_framework::ERR_CODE_FAILED;
+		hr = _graph->ConnectDirect(_source->get_video_output_pin(), _video_decoder->get_input_pin(), NULL);
+		if (FAILED(hr))
+			return dk_player_framework::ERR_CODE_FAILED;
+		hr = _graph->ConnectDirect(_video_decoder->get_output_pin(), _video_renderer->get_input_pin(), NULL);
+		if (FAILED(hr))
+			return dk_player_framework::ERR_CODE_FAILED;
 #else
-	hr = _graph->Render(_source->get_video_output_pin());
-	if (FAILED(hr))
-		dk_player_framework::ERR_CODE_FAILED;
+		hr = _graph->Render(_source->get_video_output_pin());
+		if (FAILED(hr))
+			dk_player_framework::ERR_CODE_FAILED;
 #endif
+	}
 
 	if (_enable_audio)
 	{
