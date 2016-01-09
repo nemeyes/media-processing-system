@@ -1,0 +1,37 @@
+2015/12/02 11:25:27 [error] 3044#4720: *1 CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/html/favicon.ico" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "127.0.0.1", referrer: "http://127.0.0.1/"
+2015/12/02 11:26:30 [notice] 2836#1540: signal process started
+2015/12/02 11:42:14 [emerg] 672#1368: "rtmp" directive is not allowed here in C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/conf/nginx.conf:118
+2015/12/02 11:42:57 [notice] 2800#5820: signal process started
+2015/12/02 11:42:57 [error] 2800#5820: CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2015/12/02 11:43:08 [notice] 3932#4988: signal process started
+2015/12/02 11:43:08 [error] 3932#4988: CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2015/12/02 11:43:31 [notice] 2812#5712: signal process started
+2015/12/02 11:43:31 [error] 2812#5712: CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2015/12/02 11:49:32 [notice] 6220#4744: signal process started
+2015/12/02 11:55:45 [notice] 3632#6740: signal process started
+2015/12/02 11:55:45 [error] 3632#6740: CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2015/12/02 11:55:48 [notice] 3860#6216: signal process started
+2015/12/02 11:55:48 [error] 3860#6216: CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/logs/nginx.pid" failed (2: The system cannot find the file specified)
+2015/12/02 12:00:50 [error] 1356#6880: *5 mp4: mmap failed at offset=2529738338, size=3791794 (1132: The base address or the file offset specified does not have the proper alignment), client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/02 12:02:31 [notice] 732#3652: signal process started
+2015/12/02 12:03:00 [notice] 5576#6712: signal process started
+2015/12/02 13:21:50 [error] 4740#6900: *3 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/02 14:22:58 [error] 4740#6900: *7 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/02 15:14:44 [error] 4740#6900: *6 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/02 17:14:19 [notice] 672#7560: signal process started
+2015/12/02 17:51:47 [notice] 5808#7992: signal process started
+2015/12/02 18:20:01 [error] 6376#7676: *3 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/02 19:13:48 [error] 6376#7676: *5 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/02 20:58:12 [error] 6376#7676: *26 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/02 21:04:26 [notice] 7716#4668: signal process started
+2015/12/03 15:54:30 [error] 7728#5740: *9 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/03 16:48:35 [error] 7728#5740: *30 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/03 17:53:38 [error] 7728#5740: *35 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/03 18:57:18 [error] 7728#5740: *33 flv: could not read flv tag header, client: 127.0.0.1, server: 0.0.0.0:1935
+2015/12/29 12:03:06 [notice] 10004#11808: signal process started
+2015/12/29 15:16:03 [error] 10828#10052: *3 CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/html/Wiz.php" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /Wiz.php HTTP/1.1", host: "dlcjsvlf.cafe24.com", referrer: "http://www.betagam.net/bbs/board.php?bo_table=needfor&wr_id=444177&sca=%C1%A4%BA%B8%2F%C8%F9%C6%AE&page=8"
+2015/12/29 15:16:03 [error] 10828#10052: *4 CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/html/Mics.php" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /Mics.php HTTP/1.1", host: "rnjsdudwh.cafe24.com", referrer: "http://www.betagam.net/bbs/board.php?bo_table=needfor&wr_id=444177&sca=%C1%A4%BA%B8%2F%C8%F9%C6%AE&page=8"
+2015/12/29 15:16:19 [error] 10828#10052: *4 CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/html/Mics.php" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /Mics.php HTTP/1.1", host: "rnjsdudwh.cafe24.com", referrer: "http://betagam.net/bbs/board.php?bo_table=fear&wr_id=674122&page=189"
+2015/12/29 15:16:19 [error] 10828#10052: *3 CreateFile() "C:\workspace\01.reference\media-processing-system\3rdparty\nginx\nginx-1.9.7/html/Wiz.php" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /Wiz.php HTTP/1.1", host: "dlcjsvlf.cafe24.com", referrer: "http://betagam.net/bbs/board.php?bo_table=fear&wr_id=674122&page=189"
+2015/12/29 20:17:45 [emerg] 5388#660: bind() to 0.0.0.0:80 failed (10013: An attempt was made to access a socket in a way forbidden by its access permissions)
+2015/12/29 20:19:03 [emerg] 2480#11300: bind() to 0.0.0.0:80 failed (10013: An attempt was made to access a socket in a way forbidden by its access permissions)
