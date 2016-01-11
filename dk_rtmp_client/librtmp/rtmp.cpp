@@ -316,11 +316,9 @@ RTMP_UpdateBufferMS(RTMP *r)
 #endif
 #define DEF_VERSTR	OSS " 10,0,32,18"
 static const char DEFAULT_FLASH_VER[] = DEF_VERSTR;
-const AVal RTMP_DefaultFlashVer =
-  { (char *)DEFAULT_FLASH_VER, sizeof(DEFAULT_FLASH_VER) - 1 };
+const AVal RTMP_DefaultFlashVer = { (char *)DEFAULT_FLASH_VER, sizeof(DEFAULT_FLASH_VER) - 1 };
 
-void
-RTMP_SetupStream(RTMP *r,
+void RTMP_SetupStream(RTMP *r,
 		 int protocol,
 		 AVal *host,
 		 unsigned int port,
@@ -513,8 +511,7 @@ static void RTMP_OptUsage()
   }
 }
 
-static int
-parseAMF(AMFObject *obj, AVal *av, int *depth)
+static int parseAMF(AMFObject *obj, AVal *av, int *depth)
 {
   AMFObjectProperty prop = {{0,0}};
   int i;
@@ -760,8 +757,7 @@ int RTMP_SetupURL(RTMP *r, char *url)
   return TRUE;
 }
 
-static int
-add_addr_info(struct sockaddr_in *service, AVal *host, int port)
+static int add_addr_info(struct sockaddr_in *service, AVal *host, int port)
 {
   char *hostname;
   int ret = TRUE;
@@ -796,8 +792,7 @@ finish:
   return ret;
 }
 
-int
-RTMP_Connect0(RTMP *r, struct sockaddr * service)
+int RTMP_Connect0(RTMP *r, struct sockaddr * service)
 {
   int on = 1;
   r->m_sb.sb_timedout = FALSE;

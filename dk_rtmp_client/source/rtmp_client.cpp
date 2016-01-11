@@ -612,137 +612,51 @@ void rtmp_client::pb_process(void)
 		netstackdump_read = fopen("netstackdump_read", "wb");
 #endif
 
-		//char * pb_metadata_buffer = static_cast<char*>(malloc(DEFAULT_METADATA_BUFFER_SIZE));
-		//char * pb_meta_begin = pb_metadata_buffer + RTMP_MAX_HEADER_SIZE;
-		//char * pb_meta_end = pb_metadata_buffer + DEFAULT_METADATA_BUFFER_SIZE;
-		//pb_meta_begin = AMF_EncodeString(pb_meta_begin, pb_meta_end, &av_setDataFrame);
-		char * pb_video_buffer = static_cast<char*>(malloc(MAX_VIDEO_SIZE));
-		char * pb_audio_buffer = static_cast<char*>(malloc(MAX_AUDIO_SIZE));
-
-		int32_t protocol = RTMP_PROTOCOL_UNDEFINED;
-		AVal host = { 0, 0 };
-		uint32_t port = 1935;
-		AVal playpath = { 0, 0 };
-		AVal app = { 0, 0 };
-		AVal tc_url = { 0, 0 };
-		AVal swf_url = { 0, 0 };
-		AVal page_url = { 0, 0 };
-		AVal auth = { 0, 0 };
-		AVal swf_hash = { 0, 0 };
-		int32_t swf_size = 0;
-		AVal flash_version = { 0, 0 };
-		AVal sock_host = { 0, 0 };
-		AVal subscribe_path = { 0, 0 };
-
-		long int timeout = DEFAULT_TIMEOUT;
-		//int32_t seek = 0;	 // seek position in resume mode, 0 otherwise
-		//double duration = 0.0;
-		//uint32_t buffer_time = DEFAULT_BUFTIME; // 10 hours as default
+		int read_buffer_size = MAX_VIDEO_SIZE;// 1024 * 1024;
+		char * read_buffer = (char *)malloc(read_buffer_size);
 
 		RTMP rtmp = { 0 };
-		RTMP_debuglevel = RTMP_LOGINFO;
 		RTMP_Init(&rtmp);
-		rtmp.rtmp_client_wrapper = this;
-		RTMP_EnableWrite(&rtmp);
+		if (!RTMP_SetupURL(&rtmp, (char*)_url))
+			break;
 
-		if (RTMP_ParseURL((char*)_url, &protocol, &host, &port, &playpath, &app))
-		{
-			if (tc_url.av_len == 0)
-			{
-				char str[512] = { 0 };
-				tc_url.av_len = snprintf(str, 511, "%s://%.*s:%d/%.*s", RTMPProtocolStringsLower[protocol], host.av_len, host.av_val, port, app.av_len, app.av_val);
-				tc_url.av_val = (char *)malloc(tc_url.av_len + 1);
-				strcpy(tc_url.av_val, str);
-			}
-			RTMP_SetupStream(&rtmp, protocol, &host, port, &sock_host, &playpath, &tc_url, &swf_url, &page_url, &app, &auth, &swf_hash, swf_size, &flash_version, &subscribe_path, 0, 0, true, timeout);
+		RTMP_EnableWrite(&rtmp);
+		rtmp.Link.swfUrl.av_len = rtmp.Link.tcUrl.av_len;
+		rtmp.Link.swfUrl.av_val = rtmp.Link.tcUrl.av_val;
+		/*rtmp->Link.pageUrl.av_len = rtmp->Link.tcUrl.av_len;
+		rtmp->Link.pageUrl.av_val = rtmp->Link.tcUrl.av_val;*/
+		rtmp.Link.flashVer.av_val = "FMLE/3.0 (compatible; FMSc/1.0)";
+		rtmp.Link.flashVer.av_len = (int)strlen(rtmp.Link.flashVer.av_val);
+		rtmp.m_outChunkSize = RTMP_DEFAULT_CHUNKSIZE;//4096
+		if (!RTMP_Connect(&rtmp, NULL))
+		{	
+			break;
 		}
 
-		//RTMP_SetBufferMS(&rtmp, buffer_time);
-		if (!RTMP_Connect(&rtmp, NULL))
+		if (!RTMP_ConnectStream(&rtmp, 0))
+		{
 			break;
-
-		if (!RTMP_ConnectStream(&rtmp, NULL))
-			break;
+		}
 
 		RTMP_ctrlC = false;
-		
-
-
-		RTMPPacket packet;
-		//packet.m_nChannel = 0x03;     // control channel (invoke)
-		//packet.m_headerType = RTMP_PACKET_SIZE_LARGE;
-		//packet.m_packetType = RTMP_PACKET_TYPE_INFO;
-		//packet.m_nTimeStamp = 0;
-		//packet.m_nInfoField2 = rtmp.m_stream_id;
-		//packet.m_hasAbsTimestamp = TRUE;
-		//packet.m_body = metaDataPacketBuffer.data() + RTMP_MAX_HEADER_SIZE;
-
-		//packet.m_nBodySize = metaDataPacketBuffer.size() - RTMP_MAX_HEADER_SIZE;
-		//if (!RTMP_SendPacket(rtmp, &packet, FALSE))
-		//{
-		//	App->PostStopMessage();
-		//	return;
-		//}
-
-
-		if (_vsmt!=dk_rtmp_client::UNKNOWN_VIDEO_TYPE)
-		{
-			packet.m_nChannel = 0x04; //source channel
-			packet.m_headerType = RTMP_PACKET_SIZE_LARGE;
-			packet.m_packetType = RTMP_PACKET_TYPE_VIDEO;
-			packet.m_body = pb_video_buffer + RTMP_MAX_HEADER_SIZE;
-
-			if (_vsmt == dk_rtmp_client::SUBMEDIA_TYPE_AVC)
-			{
-				size_t saved_sps_size = 0;
-				size_t saved_pps_size = 0;
-				uint8_t * saved_sps = get_sps(saved_sps_size);
-				uint8_t * saved_pps = get_sps(saved_pps_size);
-				if (saved_sps_size > 0 && saved_pps_size > 0)
-				{
-					memcpy(packet.m_body, saved_sps, saved_sps_size);
-					memcpy(packet.m_body + saved_sps_size, saved_pps, saved_pps_size);
-					packet.m_nBodySize = saved_sps_size + saved_pps_size;
-					if (!RTMP_SendPacket(&rtmp, &packet, FALSE))
-					{
-						RTMP_Close(&rtmp);
-						continue;
-					}
-				}
-				else
-				{
-					RTMP_Close(&rtmp);
-					continue;
-				}
-			}
-		}
-
+		int32_t nb_read = 0;
 		do
 		{
-			//nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
+			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
 
 			double duration = RTMP_GetDuration(&rtmp);
-			//Sleep(duration / 1000.f);
+			::Sleep(1);
+			//Sleep(duration / 1000);
 
-		} while (!RTMP_ctrlC /*&& (nb_read>-1)*/ && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
+		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
+
 
 		RTMP_Close(&rtmp);
 
-		if (tc_url.av_len > 0)
-			free(tc_url.av_val);
+		if (read_buffer)
+			free(read_buffer);
 
-		if (pb_video_buffer)
-			free(pb_video_buffer);
-		if (pb_audio_buffer)
-			free(pb_audio_buffer);
-#ifdef _DEBUG
-		if (netstackdump != 0)
-			fclose(netstackdump);
-		if (netstackdump_read != 0)
-			fclose(netstackdump_read);
-#endif
-
-	} while (_repeat);
+	} while (0);
 	_state = dk_rtmp_client::STATE_STOPPED;
 }
 
