@@ -369,7 +369,7 @@ HandShake(RTMP * r, int FP9HandShake)
   RC4_handle keyIn = 0;
   RC4_handle keyOut = 0;
 
-  //int32_t *ip;
+  int32_t *ip;
   uint32_t uptime;
 
   uint8_t clientbuf[RTMP_SIG_SIZE + 4], *clientsig=clientbuf+4;
@@ -748,7 +748,7 @@ SHandShake(RTMP * r)
   RC4_handle keyOut = 0;
   int FP9HandShake = FALSE;
   int encrypted;
-  //int32_t *ip;
+  int32_t *ip;
 
   uint8_t clientsig[RTMP_SIG_SIZE];
   uint8_t serverbuf[RTMP_SIG_SIZE + 4], *serversig = serverbuf+4;

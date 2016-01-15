@@ -32,14 +32,15 @@ public:
 
 	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
 	dk_rtmp_client::ERR_CODE subscribe_end(void);
-	//dk_rtmp_client::ERROR_CODE pause(void);
 	void sb_process_video(const RTMPPacket * packet);
 	void sb_process_audio(const RTMPPacket * packet);
 
 	dk_rtmp_client::ERR_CODE publish_begin(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T vsmt, dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password);
+	dk_rtmp_client::ERR_CODE publish_end(void);
 	dk_rtmp_client::ERR_CODE publish_video(uint8_t * bitstream, size_t nb);
 	dk_rtmp_client::ERR_CODE publish_audio(uint8_t * bitstream, size_t nb);
-	dk_rtmp_client::ERR_CODE publish_end(void);
+
+
 
 private:
 
@@ -80,6 +81,8 @@ private:
 	dk_rtmp_client * _front;
 	dk_rtmp_client::STATE_T _state;
 
+	struct RTMP * _rtmp;
+
 	char _url[260];
 	char _username[260];
 	char _password[260];
@@ -91,8 +94,13 @@ private:
 	int32_t _sps_size;
 	int32_t _pps_size;
 
-	char * _buffer;
-	int32_t _buffer_size;
+	char * _recv_buffer;
+	int32_t _recv_buffer_size;
+
+	char * _video_send_buffer;
+	char * _audio_send_buffer;
+	int32_t _video_send_buffer_size;
+	int32_t _audio_send_buffer_size;
 
 	bool _rcv_first_idr;
 	bool _change_sps;

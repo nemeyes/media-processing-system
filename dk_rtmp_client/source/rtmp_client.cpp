@@ -3,10 +3,11 @@
 #include <windows.h>
 #include <process.h>
 #endif
-#include "rtmp_client.h"
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+
+#include <dk_auto_lock.h>
 
 #include "rtmp_sys.h"
 #include "log.h"
@@ -49,33 +50,22 @@ FILE *netstackdump = 0;
 FILE *netstackdump_read = 0;
 #endif
 
-class dk_rtmp_client_auto_lock
-{
-public:
-	dk_rtmp_client_auto_lock(CRITICAL_SECTION * lock)
-		: _lock(lock)
-	{
-		::EnterCriticalSection(_lock);
-	}
-
-	~dk_rtmp_client_auto_lock(void)
-	{
-		::LeaveCriticalSection(_lock);
-	}
-private:
-	CRITICAL_SECTION * _lock;
-};
-
-
 rtmp_client::rtmp_client(dk_rtmp_client * front)
 	: _front(front)
 	, _state(dk_rtmp_client::STATE_STOPPED)
+	, _rtmp(nullptr)
 {
 	WSADATA wsd;
 	WSAStartup(MAKEWORD(2, 2), &wsd);
 
-	_buffer_size = 1024 * 1024 * 2;//2MB
-	_buffer = (char*)malloc(_buffer_size);
+	_recv_buffer_size = 1024 * 1024 * 2;//2MB
+	_recv_buffer = (char*)malloc(_recv_buffer_size);
+
+	_video_send_buffer_size = 1024 * 1024 * 2;//2MB
+	_video_send_buffer = (char*)malloc(_video_send_buffer_size);
+
+	_audio_send_buffer_size = 44100 * 2 * 8;//samplerate * bitdepth * channels
+	_audio_send_buffer = (char*)malloc(_audio_send_buffer_size);
 
 	::InitializeCriticalSection(&_video_mutex);
 	::InitializeCriticalSection(&_audio_mutex);
@@ -89,7 +79,18 @@ rtmp_client::~rtmp_client(void)
 	::DeleteCriticalSection(&_video_mutex);
 	::DeleteCriticalSection(&_audio_mutex);
 
-	free(_buffer);
+	free(_audio_send_buffer);
+	_audio_send_buffer = nullptr;
+	_audio_send_buffer_size = 0;
+
+	free(_video_send_buffer);
+	_video_send_buffer = nullptr;
+	_video_send_buffer_size = 0;
+
+	free(_recv_buffer);
+	_recv_buffer = nullptr;
+	_recv_buffer_size = 0;
+
 	WSACleanup();
 }
 
@@ -213,16 +214,6 @@ dk_rtmp_client::ERR_CODE rtmp_client::publish_begin(dk_rtmp_client::VIDEO_SUBMED
 	return dk_rtmp_client::ERR_CODE_SUCCESS;
 }
 
-dk_rtmp_client::ERR_CODE rtmp_client::publish_video(uint8_t * bitstream, size_t nb)
-{
-	return push_video_send_packet(bitstream, nb);
-}
-
-dk_rtmp_client::ERR_CODE rtmp_client::publish_audio(uint8_t * bitstream, size_t nb)
-{
-	return push_audio_send_packet(bitstream, nb);
-}
-
 dk_rtmp_client::ERR_CODE rtmp_client::publish_end(void)
 {
 	if (_state == dk_rtmp_client::STATE_STOPPED)
@@ -238,8 +229,51 @@ dk_rtmp_client::ERR_CODE rtmp_client::publish_end(void)
 	return dk_rtmp_client::ERR_CODE_SUCCESS;
 }
 
+dk_rtmp_client::ERR_CODE rtmp_client::publish_video(uint8_t * bitstream, size_t nb)
+{
+	if (!_rtmp)
+		return dk_rtmp_client::ERR_CODE_FAIL;
+#if 0
+	return push_video_send_packet(bitstream, nb);
+#else
+	RTMPPacket packet;
+	packet.m_nChannel = 0x4;
+	packet.m_headerType = RTMP_PACKET_SIZE_MEDIUM;
+	packet.m_packetType = RTMP_PACKET_TYPE_VIDEO;
+	packet.m_nTimeStamp = 0;
+	packet.m_nInfoField2 = _rtmp->m_stream_id;
+	packet.m_hasAbsTimestamp = FALSE;
+
+	memmove(_video_send_buffer + RTMP_MAX_HEADER_SIZE, bitstream, nb);
+
+	packet.m_nBodySize = nb;
+	packet.m_body = (char*)_video_send_buffer + RTMP_MAX_HEADER_SIZE;
+
+	if (!RTMP_SendPacket(_rtmp, &packet, FALSE))
+		return dk_rtmp_client::ERR_CODE_FAIL;
+	else
+		return dk_rtmp_client::ERR_CODE_SUCCESS;
+#endif
+}
+
+dk_rtmp_client::ERR_CODE rtmp_client::publish_audio(uint8_t * bitstream, size_t nb)
+{
+	if (!_rtmp)
+		return dk_rtmp_client::ERR_CODE_FAIL;
+#if 0
+	return push_audio_send_packet(bitstream, nb);
+#else
+
+
+	return dk_rtmp_client::ERR_CODE_SUCCESS;
+#endif
+}
+
 void rtmp_client::sb_process_video(const RTMPPacket * packet)
 {
+	if (!(_recv_option & dk_rtmp_client::RECV_OPTION_VIDEO))
+		return;
+
 	uint8_t extradata[100] = { 0 };
 	size_t extradata_size = 0;
 	long long  presentation_time = 0;
@@ -355,13 +389,13 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 							memmove(extradata + saved_sps_size, saved_pps, saved_pps_size);
 							extradata_size = saved_sps_size + saved_pps_size;
 
-							memmove(_buffer, extradata, extradata_size);
-							memmove(_buffer + extradata_size, start_code, sizeof(start_code));
-							memmove(_buffer + extradata_size + sizeof(start_code), nalu, nalu_size);
+							memmove(_recv_buffer, extradata, extradata_size);
+							memmove(_recv_buffer + extradata_size, start_code, sizeof(start_code));
+							memmove(_recv_buffer + extradata_size + sizeof(start_code), nalu, nalu_size);
 
 							_rcv_first_idr = true;
 							if (_front)
-								_front->on_begin_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, saved_sps, saved_sps_size, saved_pps, saved_pps_size, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
+								_front->on_begin_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, saved_sps, saved_sps_size, saved_pps, saved_pps_size, (uint8_t*)_recv_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
 							_change_sps = false;
 							_change_pps = false;
 						}
@@ -379,18 +413,18 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 							memmove(extradata + saved_sps_size, saved_pps, saved_pps_size);
 							extradata_size = saved_sps_size + saved_pps_size;
 
-							memmove(_buffer, extradata, extradata_size);
-							memmove(_buffer + extradata_size, start_code, sizeof(start_code));
-							memmove(_buffer + extradata_size + sizeof(start_code), nalu, nalu_size);
+							memmove(_recv_buffer, extradata, extradata_size);
+							memmove(_recv_buffer + extradata_size, start_code, sizeof(start_code));
+							memmove(_recv_buffer + extradata_size + sizeof(start_code), nalu, nalu_size);
 							if (_front)
-								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
+								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_recv_buffer, extradata_size + sizeof(start_code) + nalu_size, presentation_time);
 						}
 						else
 						{
-							memmove(_buffer, start_code, sizeof(start_code));
-							memmove(_buffer + sizeof(start_code), nalu, nalu_size);
+							memmove(_recv_buffer, start_code, sizeof(start_code));
+							memmove(_recv_buffer + sizeof(start_code), nalu, nalu_size);
 							if (_front)
-								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_buffer, sizeof(start_code) + nalu_size, presentation_time);
+								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, (uint8_t*)_recv_buffer, sizeof(start_code) + nalu_size, presentation_time);
 						}
 					}
 				}
@@ -411,6 +445,9 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 
 void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 {
+	if (!(_recv_option & dk_rtmp_client::RECV_OPTION_AUDIO))
+		return;
+
 	uint8_t extradata[50] = { 0 };
 	size_t extradata_size = 0;
 
@@ -488,6 +525,7 @@ void rtmp_client::sb_process_audio(const RTMPPacket * packet)
 
 void rtmp_client::sb_process(void)
 {
+	_state = dk_rtmp_client::STATE_START_SUBSCRIBING;
 	do
 	{
 #ifdef _DEBUG
@@ -518,10 +556,10 @@ void rtmp_client::sb_process(void)
 		double duration = 0.0;
 		uint32_t buffer_time = DEFAULT_BUFTIME; // 10 hours as default
 
-		RTMP rtmp = { 0 };
+		_rtmp = RTMP_Alloc();
 		RTMP_debuglevel = RTMP_LOGINFO;
-		RTMP_Init(&rtmp);
-		rtmp.rtmp_client_wrapper = this;
+		RTMP_Init(_rtmp);
+		_rtmp->rtmp_client_wrapper = this;
 
 		if (RTMP_ParseURL((char*)_url, &protocol, &host, &port, &playpath, &app))
 		{
@@ -532,7 +570,7 @@ void rtmp_client::sb_process(void)
 				tc_url.av_val = (char *)malloc(tc_url.av_len + 1);
 				strcpy(tc_url.av_val, str);
 			}
-			RTMP_SetupStream(&rtmp, protocol, &host, port, &sock_host, &playpath, &tc_url, &swf_url, &page_url, &app, &auth, &swf_hash, swf_size, &flash_version, &subscribe_path, 0, 0, true, timeout);
+			RTMP_SetupStream(_rtmp, protocol, &host, port, &sock_host, &playpath, &tc_url, &swf_url, &page_url, &app, &auth, &swf_hash, swf_size, &flash_version, &subscribe_path, 0, 0, true, timeout);
 		}
 
 		clear_sps();
@@ -543,26 +581,28 @@ void rtmp_client::sb_process(void)
 
 		_rcv_first_audio = false;
 
-		RTMP_SetBufferMS(&rtmp, buffer_time);
-		if (!RTMP_Connect(&rtmp, NULL))
+		RTMP_SetBufferMS(_rtmp, buffer_time);
+		if (!RTMP_Connect(_rtmp, NULL))
 			break;
 
-		if (!RTMP_ConnectStream(&rtmp, seek))
+		if (!RTMP_ConnectStream(_rtmp, seek))
 			break;
 
 		RTMP_ctrlC = false;
 		int32_t nb_read = 0;
 		do
 		{
-			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
+			nb_read = RTMP_Read(_rtmp, read_buffer, read_buffer_size);
 
-			double duration = RTMP_GetDuration(&rtmp);
+			double duration = RTMP_GetDuration(_rtmp);
 			::Sleep(1);
 			//Sleep(duration / 1000);
 
-		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
+		} while (!RTMP_ctrlC && /*(nb_read>-1) &&*/ RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
 
-		RTMP_Close(&rtmp);
+		RTMP_Close(_rtmp);
+		RTMP_Free(_rtmp);
+		_rtmp = nullptr;
 
 		if (read_buffer)
 			free(read_buffer);
@@ -615,25 +655,25 @@ void rtmp_client::pb_process(void)
 		int read_buffer_size = MAX_VIDEO_SIZE;// 1024 * 1024;
 		char * read_buffer = (char *)malloc(read_buffer_size);
 
-		RTMP rtmp = { 0 };
-		RTMP_Init(&rtmp);
-		if (!RTMP_SetupURL(&rtmp, (char*)_url))
+		_rtmp = RTMP_Alloc();
+		RTMP_Init(_rtmp);
+		if (!RTMP_SetupURL(_rtmp, (char*)_url))
 			break;
 
-		RTMP_EnableWrite(&rtmp);
-		rtmp.Link.swfUrl.av_len = rtmp.Link.tcUrl.av_len;
-		rtmp.Link.swfUrl.av_val = rtmp.Link.tcUrl.av_val;
+		RTMP_EnableWrite(_rtmp);
+		_rtmp->Link.swfUrl.av_len = _rtmp->Link.tcUrl.av_len;
+		_rtmp->Link.swfUrl.av_val = _rtmp->Link.tcUrl.av_val;
 		/*rtmp->Link.pageUrl.av_len = rtmp->Link.tcUrl.av_len;
 		rtmp->Link.pageUrl.av_val = rtmp->Link.tcUrl.av_val;*/
-		rtmp.Link.flashVer.av_val = "FMLE/3.0 (compatible; FMSc/1.0)";
-		rtmp.Link.flashVer.av_len = (int)strlen(rtmp.Link.flashVer.av_val);
-		rtmp.m_outChunkSize = RTMP_DEFAULT_CHUNKSIZE;//4096
-		if (!RTMP_Connect(&rtmp, NULL))
+		_rtmp->Link.flashVer.av_val = "FMLE/3.0 (compatible; FMSc/1.0)";
+		_rtmp->Link.flashVer.av_len = (int)strlen(_rtmp->Link.flashVer.av_val);
+		_rtmp->m_outChunkSize = RTMP_DEFAULT_CHUNKSIZE;//4096
+		if (!RTMP_Connect(_rtmp, NULL))
 		{	
 			break;
 		}
 
-		if (!RTMP_ConnectStream(&rtmp, 0))
+		if (!RTMP_ConnectStream(_rtmp, 0))
 		{
 			break;
 		}
@@ -642,16 +682,17 @@ void rtmp_client::pb_process(void)
 		int32_t nb_read = 0;
 		do
 		{
-			nb_read = RTMP_Read(&rtmp, read_buffer, read_buffer_size);
-
-			double duration = RTMP_GetDuration(&rtmp);
+			//dk_rtmp_client::ERR_CODE rtmp_client::pop_video_send_packet(uint8_t * bs, size_t & size)
+			//dk_rtmp_client::ERR_CODE rtmp_client::pop_audio_send_packet(uint8_t * bs, size_t & size)
+			nb_read = RTMP_Read(_rtmp, read_buffer, read_buffer_size);
+			double duration = RTMP_GetDuration(_rtmp);
 			::Sleep(1);
-			//Sleep(duration / 1000);
-
-		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(&rtmp) && !RTMP_IsTimedout(&rtmp));
+		} while (!RTMP_ctrlC && (nb_read>-1) && RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
 
 
-		RTMP_Close(&rtmp);
+		RTMP_Close(_rtmp);
+		RTMP_Free(_rtmp);
+		_rtmp = nullptr;
 
 		if (read_buffer)
 			free(read_buffer);
@@ -695,7 +736,7 @@ void* rtmp_client::pb_process_cb(void * param)
 dk_rtmp_client::ERR_CODE rtmp_client::push_video_send_packet(uint8_t * bs, size_t size)
 {
 	dk_rtmp_client::ERR_CODE status = dk_rtmp_client::ERR_CODE_SUCCESS;
-	dk_rtmp_client_auto_lock lock(&_video_mutex);
+	dk_auto_lock lock(&_video_mutex);
 	if (bs && size > 0)
 	{
 		pb_buffer_t * vbuffer = _video_root;
@@ -731,7 +772,7 @@ dk_rtmp_client::ERR_CODE rtmp_client::pop_video_send_packet(uint8_t * bs, size_t
 {
 	dk_rtmp_client::ERR_CODE status = dk_rtmp_client::ERR_CODE_SUCCESS;
 	size = 0;
-	dk_rtmp_client_auto_lock lock(&_video_mutex);
+	dk_auto_lock lock(&_video_mutex);
 	pb_buffer_t * vbuffer = _video_root->next;
 	if (vbuffer)
 	{
@@ -752,7 +793,7 @@ dk_rtmp_client::ERR_CODE rtmp_client::pop_video_send_packet(uint8_t * bs, size_t
 dk_rtmp_client::ERR_CODE rtmp_client::push_audio_send_packet(uint8_t * bs, size_t size)
 {
 	dk_rtmp_client::ERR_CODE status = dk_rtmp_client::ERR_CODE_SUCCESS;
-	dk_rtmp_client_auto_lock lock(&_audio_mutex);
+	dk_auto_lock lock(&_audio_mutex);
 	if (bs && size > 0)
 	{
 		pb_buffer_t * abuffer = _audio_root;
@@ -788,7 +829,7 @@ dk_rtmp_client::ERR_CODE rtmp_client::pop_audio_send_packet(uint8_t * bs, size_t
 {
 	dk_rtmp_client::ERR_CODE status = dk_rtmp_client::ERR_CODE_SUCCESS;
 	size = 0;
-	dk_rtmp_client_auto_lock lock(&_audio_mutex);
+	dk_auto_lock lock(&_audio_mutex);
 	pb_buffer_t * abuffer = _audio_root->next;
 	if (abuffer)
 	{

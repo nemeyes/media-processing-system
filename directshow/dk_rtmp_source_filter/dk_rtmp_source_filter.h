@@ -59,8 +59,6 @@ public:
 	STDMETHODIMP SetRecvTimeout(ULONGLONG timeout);
 	STDMETHODIMP SetConnectionTimeout(ULONGLONG timeout);
 	STDMETHODIMP SetRepeat(BOOL repeat);
-	STDMETHODIMP SetVideoWidth(INT width);
-	STDMETHODIMP SetVideoHeight(INT height);
 	STDMETHODIMP GetUrl(BSTR * url);
 	STDMETHODIMP GetUsername(BSTR * username);
 	STDMETHODIMP GetPassword(BSTR * password);
@@ -68,8 +66,6 @@ public:
 	STDMETHODIMP GetRecvTimeout(ULONGLONG & timeout);
 	STDMETHODIMP GetConnectionTimeout(ULONGLONG & timeout);
 	STDMETHODIMP GetRepeat(BOOL & repeat);
-	STDMETHODIMP GetVideoWidth(INT & width);
-	STDMETHODIMP GetVideoHeight(INT & height);
 
 private:
 	dk_rtmp_subscriber _subscriber;

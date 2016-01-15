@@ -228,9 +228,7 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 	}
 	hr = _source->add_to_graph(_graph, path);
 
-
-	/*
-	CComPtr<IPin> vopin = _source->get_video_output_pin();
+	/*CComPtr<IPin> vopin = _source->get_video_output_pin();
 	IEnumMediaTypes * venum = 0;
 	hr = vopin->EnumMediaTypes(&venum);
 	if (FAILED(hr))
@@ -356,13 +354,15 @@ dk_player_framework::ERR_CODE dshow_player_framework::open_file(wchar_t * path)
 		return dk_player_framework::ERR_CODE_FAILED;
 }
 
-dk_player_framework::ERR_CODE dshow_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password, int32_t video_width, int32_t video_height)
+dk_player_framework::ERR_CODE dshow_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password)
 {
 	HRESULT hr = E_FAIL;
 	_source = new dk_rtmp_source();
-	hr = _source->add_to_graph(_graph, url, username, password, video_width, video_height);
+	hr = _source->add_to_graph(_graph, url, username, password, true, _enable_audio);
 	if (SUCCEEDED(hr))
 		hr = arrange();
+	else
+		return dk_player_framework::ERR_CODE_FAILED;
 
 	if (SUCCEEDED(hr))
 		return dk_player_framework::ERR_CODE_SUCCESS;
@@ -430,38 +430,41 @@ dk_player_framework::ERR_CODE dshow_player_framework::stop(void)
 			_seeking->SetPositions(&rt, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning);
 		}
 
-		CComPtr<IBaseFilter> sf = _source->get_filter();
-		CComPtr<IBaseFilter> tf = _video_decoder->get_filter();
-		CComPtr<IBaseFilter> rf = _video_renderer->get_filter();
-
-		hr = dk_dshow_helper::remove_filter_chain(_graph, sf, rf);
-		if (SUCCEEDED(hr))
+		if (_source && _video_decoder && _video_renderer)
 		{
-			if (_source)
-			{
-				delete _source;
-				_source = nullptr;
-			}
-			if (_video_decoder)
-			{
-				delete _video_decoder;
-				_video_decoder = nullptr;
-			}
-			if (_video_renderer)
-			{
-				delete _video_renderer;
-				_video_renderer = nullptr;
-			}
+			CComPtr<IBaseFilter> sf = _source->get_filter();
+			CComPtr<IBaseFilter> tf = _video_decoder->get_filter();
+			CComPtr<IBaseFilter> rf = _video_renderer->get_filter();
 
-			if (_audio_decoder)
+			hr = dk_dshow_helper::remove_filter_chain(_graph, sf, rf);
+			if (SUCCEEDED(hr))
 			{
-				delete _audio_decoder;
-				_audio_decoder = nullptr;
-			}
-			if (_audio_renderer)
-			{
-				delete _audio_renderer;
-				_audio_renderer = nullptr;
+				if (_source)
+				{
+					delete _source;
+					_source = nullptr;
+				}
+				if (_video_decoder)
+				{
+					delete _video_decoder;
+					_video_decoder = nullptr;
+				}
+				if (_video_renderer)
+				{
+					delete _video_renderer;
+					_video_renderer = nullptr;
+				}
+
+				if (_audio_decoder)
+				{
+					delete _audio_decoder;
+					_audio_decoder = nullptr;
+				}
+				if (_audio_renderer)
+				{
+					delete _audio_renderer;
+					_audio_renderer = nullptr;
+				}
 			}
 		}
 

@@ -421,9 +421,15 @@ void Cdk_player_framework_testDlg::OnBnClickedButtonOpenRtmp()
 	BOOL uc_checked = FALSE;//IsDlgButtonChecked(IDC_CHECK_USE_CLOCK);
 	BOOL ea_checked = IsDlgButtonChecked(IDC_CHECK_ENABLE_AUDIO);
 
-	_player.initialize(::GetDlgItem(this->m_hWnd, IDC_STATIC_VIDEO_VIEW), ar_checked ? true : false, uc_checked ? true : false, ea_checked ? true : false);
-	_player.open_rtmp((LPWSTR)(LPCWSTR)L"rtmp://192.168.0.107/vod/00.flv", L"", L"", 1280, 720);
-	_player.play();
+	dk_player_framework::ERR_CODE code = _player.initialize(::GetDlgItem(this->m_hWnd, IDC_STATIC_VIDEO_VIEW), ar_checked ? true : false, uc_checked ? true : false, ea_checked ? true : false);
+	if (code != dk_player_framework::ERR_CODE_SUCCESS)
+		return;
+	code = _player.open_rtmp((LPWSTR)(LPCWSTR)L"rtmp://192.168.0.107/vod/00.flv", L"", L"");
+	if (code != dk_player_framework::ERR_CODE_SUCCESS)
+		return;
+	code = _player.play();
+	if (code != dk_player_framework::ERR_CODE_SUCCESS)
+		return;
 }
 
 void Cdk_player_framework_testDlg::OnBnClickedButtonPlay()
