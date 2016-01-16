@@ -1,5 +1,27 @@
 #pragma once
 
+typedef enum _DK_VIDEO_MEDIA_TYPE
+{
+	DK_VIDEO_TYPE_UNKNOWN = -1,
+	DK_VIDEO_TYPE_AVC = 0,
+	DK_VIDEO_TYPE_HEVC = 1,
+} DK_VIDEO_MEDIA_TYPE;
+
+typedef enum _DK_AUDIO_MEDIA_TYPE
+{
+	DK_AUDIO_TYPE_UNKNOWN = -1,
+	DK_AUDIO_TYPE_CELT = 0,
+	DK_AUDIO_TYPE_AAC = 1,
+	DK_AUDIO_TYPE_MP3 = 2
+} DK_AUDIO_MEDIA_TYPE;
+
+typedef enum _DK_RECV_OPTION
+{
+	DK_RECV_NONE = 0x00,
+	DK_RECV_AUDIO = 0x01,
+	DK_RECV_VIDEO = 0x02,
+} DK_RECV_OPTION;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,8 +76,6 @@ extern "C" {
 		STDMETHOD(SetRecvTimeout)(ULONGLONG timeout) PURE;
 		STDMETHOD(SetConnectionTimeout)(ULONGLONG timeout) PURE;
 		STDMETHOD(SetRepeat)(BOOL repeat) PURE;
-		STDMETHOD(SetVideoWidth)(INT width) PURE;
-		STDMETHOD(SetVideoHeight)(INT height) PURE;
 		STDMETHOD(GetUrl)(BSTR * url) PURE;
 		STDMETHOD(GetUsername)(BSTR * username) PURE;
 		STDMETHOD(GetPassword)(BSTR * password) PURE;
@@ -63,8 +83,6 @@ extern "C" {
 		STDMETHOD(GetRecvTimeout)(ULONGLONG & timeout) PURE;
 		STDMETHOD(GetConnectionTimeout)(ULONGLONG & timeout) PURE;
 		STDMETHOD(GetRepeat)(BOOL & repeat) PURE;
-		STDMETHOD(GetVideoWidth)(INT & width) PURE;
-		STDMETHOD(GetVideoHeight)(INT & height) PURE;
 	};
 
 #ifdef __cplusplus

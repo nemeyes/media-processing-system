@@ -77,9 +77,9 @@ dk_player_framework::ERR_CODE dk_player_framework::open_file(wchar_t * file)
 	return _core->open_file(file);
 }
 
-dk_player_framework::ERR_CODE dk_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password, int32_t video_width, int32_t video_height)
+dk_player_framework::ERR_CODE dk_player_framework::open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password)
 {
-	return _core->open_rtmp(url, username, password, video_width, video_height);
+	return _core->open_rtmp(url, username, password);
 }
 
 dk_player_framework::ERR_CODE dk_player_framework::play(void)

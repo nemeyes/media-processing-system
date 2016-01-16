@@ -1,11 +1,12 @@
 #include "dk_rtmp_subscriber.h"
+#include <dk_media_source.h>
 #include <dk_string_helper.h>
 #include <dk_media_buffering.h>
 #include <dk_fileio.h>
 
 dk_rtmp_subscriber::dk_rtmp_subscriber(void)
 	: dk_rtmp_client()
-	, _recv_option(dk_rtmp_subscriber::RECV_AUDIO_VIDEO)
+	, _recv_option(dk_rtmp_subscriber::RECV_OPTION_NONE)
 	, _recv_timeout(0)
 	, _conn_timeout(0)
 	, _repeat(true)

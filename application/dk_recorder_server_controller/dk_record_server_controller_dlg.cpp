@@ -205,7 +205,23 @@ void dk_record_server_controller_dlg::OnBnClickedButtonStartPreview()
 	}
 	else if (protocol == RTMP)
 	{
-		_rtmp_receiver.start_preview(url, username, password, _cmb_transport_type.GetCurSel(), _cmb_recv_option.GetCurSel(), ::GetDlgItem(this->m_hWnd, IDC_VIDEO_VIEW));
+		int32_t recv_option = _cmb_recv_option.GetCurSel();
+		int32_t rtmp_recv_option = dk_rtmp_receiver::RECV_OPTION_NONE;
+		if (recv_option == 0)
+		{
+			rtmp_recv_option |= dk_rtmp_receiver::RECV_OPTION_AUDIO;
+			rtmp_recv_option |= dk_rtmp_receiver::RECV_OPTION_VIDEO;
+		}
+		else if (recv_option==1)
+		{
+			rtmp_recv_option |= dk_rtmp_receiver::RECV_OPTION_VIDEO;
+		}
+		else
+		{
+			rtmp_recv_option |= dk_rtmp_receiver::RECV_OPTION_AUDIO;
+		}
+
+		_rtmp_receiver.start_preview(url, username, password, _cmb_transport_type.GetCurSel(), rtmp_recv_option, ::GetDlgItem(this->m_hWnd, IDC_VIDEO_VIEW));
 	}
 
 	_cmb_streaming_protocol.EnableWindow(FALSE);
@@ -324,7 +340,7 @@ void dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol()
 		_cmb_retry_connection.SetCurSel(0);
 
 		//_url.SetWindowTextW(_T("rtmp://192.168.0.107/vod/00.flv"));
-		_url.SetWindowTextW(_T("rtmp://192.168.0.107/live/obs"));
+		_url.SetWindowTextW(_T("rtmp://192.168.0.107/live/game"));
 	}
 }
 

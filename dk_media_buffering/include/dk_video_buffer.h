@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <cstdlib>
 #include <cstdint>
-#define MAX_VIDEO_FRAME_SIZE 1024*1024*2
+#define MAX_VIDEO_FRAME_SIZE 1024*1024*4
 
 #include "dk_media_buffering.h"
 

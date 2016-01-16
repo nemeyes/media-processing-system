@@ -22,6 +22,7 @@ public:
 	{
 		STATE_STOPPED = 0,
 		STATUE_PAUSED,
+		STATE_START_SUBSCRIBING,
 		STATE_SUBSCRIBING,
 		STATE_PUBLISHING,
 	} STATE_T;
@@ -70,9 +71,9 @@ public:
 
 	typedef enum _RECV_OPTION_T
 	{
-		RECV_AUDIO_VIDEO = 0,
-		RECV_VIDEO,
-		RECV_AUDIO
+		RECV_OPTION_NONE = 0x00,
+		RECV_OPTION_AUDIO = 0x01,
+		RECV_OPTION_VIDEO = 0x02,
 	} RECV_OPTION_T;
 
 	dk_rtmp_client(bool split_thread=false);
@@ -89,17 +90,15 @@ public:
 
 	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
 	dk_rtmp_client::ERR_CODE subscribe_end(void);
-
 	virtual void on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
 	virtual void on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
-	
 	virtual void on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
 	virtual void on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
 
 	dk_rtmp_client::ERR_CODE publish_begin(VIDEO_SUBMEDIA_TYPE_T vsmt, AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password);
+	dk_rtmp_client::ERR_CODE publish_end(void);
 	dk_rtmp_client::ERR_CODE publish_video(uint8_t * bitstream, size_t nb);
 	dk_rtmp_client::ERR_CODE publish_audio(uint8_t * bitstream, size_t nb);
-	dk_rtmp_client::ERR_CODE publish_end(void);
 
 private:
 	bool _split_thread = false;

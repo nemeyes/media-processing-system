@@ -157,11 +157,11 @@ HRESULT dk_rtmp_audio_source_stream::DecideBufferSize(IMemAllocator *alloc, ALLO
 	dk_media_buffering::instance().get_audio_channels(channels);
 	dk_media_buffering::instance().get_audio_bitdepth(bitdepth);
 
-	if (properties->cBuffers < 1)
-		properties->cBuffers = 1;
+	//if (properties->cBuffers < 1)
+	//	properties->cBuffers = 1;
 
-	properties->cbBuffer = AVCODEC_MAX_AUDIO_FRAME_SIZE;// (channels*samplerate*bitdepth / 8);
-	//properties->cBuffers /= 2;
+	properties->cbBuffer = channels*samplerate*bitdepth / 8;//AVCODEC_MAX_AUDIO_FRAME_SIZE;
+	properties->cBuffers = 1;
 
 
 
@@ -203,13 +203,18 @@ HRESULT dk_rtmp_audio_source_stream::FillBuffer(IMediaSample *ms)
 #else
 	dk_media_buffering::instance().pop_audio(buffer, size_of_recvd);
 #endif
+
+#if 0
 	WAVEFORMATEX * wfx = (WAVEFORMATEX*)m_mt.Format();
 	CRefTime rt_start = _rt_sample_time;
 	_rt_sample_time = rt_start + (REFERENCE_TIME)(UNITS * ms->GetActualDataLength()) / (REFERENCE_TIME)wfx->nAvgBytesPerSec;
 	ms->SetTime((REFERENCE_TIME*)&rt_start, (REFERENCE_TIME*)&_rt_sample_time);
-
+#endif
 	if (size_of_recvd > 0)
+	{
+		ms->SetSyncPoint(TRUE);
 		ms->SetActualDataLength(size_of_recvd);
+	}
 	else
 		ms->SetActualDataLength(0);
 

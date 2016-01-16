@@ -205,18 +205,71 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 	//for (int32_t i = 0; i < 600; i++)
 	while (true)
 	{
-		dk_media_buffering::VIDEO_SUBMEDIA_TYPE vmt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
-		dk_media_buffering::instance().get_video_submedia_type(vmt);
+		if (_subscriber.state() == dk_rtmp_client::STATE_STOPPED)
+			return E_UNEXPECTED;
 
-		dk_media_buffering::AUDIO_SUBMEDIA_TYPE amt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
-		dk_media_buffering::instance().get_audio_submedia_type(amt);
+		uint16_t recv_option = 0;
+		_subscriber.get_recv_option(recv_option);
+		if ((recv_option & DK_RECV_VIDEO) && (recv_option & DK_RECV_AUDIO))
+		{
+			dk_media_buffering::VIDEO_SUBMEDIA_TYPE vmt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
+			dk_media_buffering::instance().get_video_submedia_type(vmt);
 
-		int32_t video_width = 0, video_height = 0;
-		dk_media_buffering::instance().get_video_width(video_width);
-		dk_media_buffering::instance().get_video_height(video_height);
+			dk_media_buffering::AUDIO_SUBMEDIA_TYPE amt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
+			dk_media_buffering::instance().get_audio_submedia_type(amt);
 
-		if ((vmt != dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN) && (amt != dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN) && (video_width > 0) && (video_height > 0))
-			break;
+			int32_t video_width = 0, video_height = 0;
+			dk_media_buffering::instance().get_video_width(video_width);
+			dk_media_buffering::instance().get_video_height(video_height);
+
+			int32_t audio_samplerate = 0, audio_bitdepth = 0, audio_channels = 0;
+			dk_media_buffering::instance().get_audio_samplerate(audio_samplerate);
+			dk_media_buffering::instance().get_audio_bitdepth(audio_bitdepth);
+			dk_media_buffering::instance().get_audio_channels(audio_channels);
+
+			if ((vmt != dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN) &&
+				(amt != dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN) &&
+				(video_width > 0) && (video_height > 0) &&
+				(audio_samplerate>0) &&
+				(audio_bitdepth>0) &&
+				(audio_channels>0))
+			{
+				break;
+			}
+		}
+		else if (recv_option & DK_RECV_VIDEO)
+		{
+			dk_media_buffering::VIDEO_SUBMEDIA_TYPE vmt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
+			dk_media_buffering::instance().get_video_submedia_type(vmt);
+
+			int32_t video_width = 0, video_height = 0;
+			dk_media_buffering::instance().get_video_width(video_width);
+			dk_media_buffering::instance().get_video_height(video_height);
+
+			if ((vmt != dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN) && (video_width > 0) && (video_height > 0))
+			{
+				break;
+			}
+		}
+		else if (recv_option & DK_RECV_AUDIO)
+		{
+			dk_media_buffering::AUDIO_SUBMEDIA_TYPE amt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
+			dk_media_buffering::instance().get_audio_submedia_type(amt);
+
+			int32_t audio_samplerate = 0, audio_bitdepth = 0, audio_channels = 0;
+			dk_media_buffering::instance().get_audio_samplerate(audio_samplerate);
+			dk_media_buffering::instance().get_audio_bitdepth(audio_bitdepth);
+			dk_media_buffering::instance().get_audio_channels(audio_channels);
+
+			if ((amt != dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN) &&
+				(audio_samplerate>0) &&
+				(audio_bitdepth>0) &&
+				(audio_channels>0))
+			{
+				break;
+			}
+		}
+
 		::Sleep(1);
 	}
 	return S_OK;
@@ -259,6 +312,12 @@ STDMETHODIMP dk_rtmp_source_filter::SetPassword(BSTR password)
 
 STDMETHODIMP dk_rtmp_source_filter::SetRecvOption(USHORT option)
 {
+	uint16_t recv_option = dk_rtmp_client::RECV_OPTION_NONE;
+	if (option & DK_RECV_VIDEO)
+		recv_option |= dk_rtmp_client::RECV_OPTION_VIDEO;
+	if (option & DK_RECV_AUDIO)
+		recv_option |= dk_rtmp_client::RECV_OPTION_AUDIO;
+
 	_subscriber.set_recv_option(option);
 	return S_OK;
 }
@@ -278,18 +337,6 @@ STDMETHODIMP dk_rtmp_source_filter::SetConnectionTimeout(ULONGLONG timeout)
 STDMETHODIMP dk_rtmp_source_filter::SetRepeat(BOOL repeat)
 {
 	_subscriber.set_repeat(repeat==TRUE?true:false);
-	return S_OK;
-}
-
-STDMETHODIMP dk_rtmp_source_filter::SetVideoWidth(INT width)
-{
-	dk_media_buffering::instance().set_video_width(width);
-	return S_OK;
-}
-
-STDMETHODIMP dk_rtmp_source_filter::SetVideoHeight(INT height)
-{
-	dk_media_buffering::instance().set_video_height(height);
 	return S_OK;
 }
 
@@ -352,17 +399,5 @@ STDMETHODIMP dk_rtmp_source_filter::GetRepeat(BOOL & repeat)
 	bool tmp_repeat = false;
 	_subscriber.get_repeat(tmp_repeat);
 	repeat = tmp_repeat == TRUE ? true : false;
-	return S_OK;
-}
-
-STDMETHODIMP dk_rtmp_source_filter::GetVideoWidth(INT & width)
-{
-	dk_media_buffering::instance().get_video_width(width);
-	return S_OK;
-}
-
-STDMETHODIMP dk_rtmp_source_filter::GetVideoHeight(INT & height)
-{
-	dk_media_buffering::instance().get_video_height(height);
 	return S_OK;
 }

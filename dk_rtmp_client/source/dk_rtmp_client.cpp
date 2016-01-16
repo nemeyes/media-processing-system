@@ -65,6 +65,11 @@ dk_rtmp_client::ERR_CODE dk_rtmp_client::publish_begin(VIDEO_SUBMEDIA_TYPE_T vsm
 	return _core->publish_begin(vsmt, asmt, url, username, password);
 }
 
+dk_rtmp_client::ERR_CODE dk_rtmp_client::publish_end(void)
+{
+	return _core->publish_end();
+}
+
 dk_rtmp_client::ERR_CODE dk_rtmp_client::publish_video(uint8_t * bitstream, size_t nb)
 {
 	return _core->publish_video(bitstream, nb);
@@ -73,9 +78,4 @@ dk_rtmp_client::ERR_CODE dk_rtmp_client::publish_video(uint8_t * bitstream, size
 dk_rtmp_client::ERR_CODE dk_rtmp_client::publish_audio(uint8_t * bitstream, size_t nb)
 {
 	return _core->publish_audio(bitstream, nb);
-}
-
-dk_rtmp_client::ERR_CODE dk_rtmp_client::publish_end(void)
-{
-	return _core->publish_end();
 }

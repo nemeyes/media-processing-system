@@ -20,6 +20,9 @@
 dk_ff_video_decode_filter::dk_ff_video_decode_filter(LPUNKNOWN unk, HRESULT *hr)
 	: CTransformFilter(g_szFilterName, unk, CLSID_DK_FFMPEG_VIDEO_DECODE_FILTER)
 {
+	m_pInput = new CTransformInputPin(NAME("Input"), this, hr, L"In");
+	m_pOutput = new CTransformOutputPin(NAME("Output"), this, hr, L"Out");
+
 	_decoder = new dk_ff_video_decoder();
 }
 
@@ -426,8 +429,8 @@ HRESULT  dk_ff_video_decode_filter::DecideBufferSize(IMemAllocator *allocator, A
 HRESULT dk_ff_video_decode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 {
 	HRESULT hr = S_OK;
-	dk_video_entity_t encoded = { 0, };
-	dk_video_entity_t decoded = { 0, };
+	dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+	dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 
 	/*BYTE *input_buffer = NULL;
 	UINT input_data_size = 0;
