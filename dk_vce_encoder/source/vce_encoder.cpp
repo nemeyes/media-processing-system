@@ -91,15 +91,15 @@ vce_encoder::vce_encoder(dk_vce_encoder * front)
 
 vce_encoder::~vce_encoder(void)
 {
-	release();
+	release_encoder();
 #if defined(WITH_DEBUG_ES)
 	::close_file(_file);
 #endif
 }
 
-dk_vce_encoder::ERR_CODE vce_encoder::initialize(dk_vce_encoder::configuration_t * config)
+dk_vce_encoder::ERR_CODE vce_encoder::initialize_encoder(dk_vce_encoder::configuration_t * config)
 {
-	release();
+	release_encoder();
 	_config = config;
 	AMF_RESULT status = AMF_OK;
 
@@ -294,7 +294,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::initialize(dk_vce_encoder::configuration_t
 	return dk_vce_encoder::ERR_CODE_SUCCESS;
 }
 
-dk_vce_encoder::ERR_CODE vce_encoder::release(void)
+dk_vce_encoder::ERR_CODE vce_encoder::release_encoder(void)
 {
 	AMF_RESULT status = AMF_OK;
 	if (_encoder)
