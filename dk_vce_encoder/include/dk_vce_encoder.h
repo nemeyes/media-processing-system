@@ -139,8 +139,8 @@ public:
 	dk_vce_encoder(void);
 	~dk_vce_encoder(void);
 
-	dk_vce_encoder::ERR_CODE initialize(void * config);
-	dk_vce_encoder::ERR_CODE release(void);
+	dk_vce_encoder::ERR_CODE initialize_encoder(void * config);
+	dk_vce_encoder::ERR_CODE release_encoder(void);
 
 	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream, dk_vce_encoder::dk_video_entity_t * bitstream);
 	dk_vce_encoder::ERR_CODE encode(dk_vce_encoder::dk_video_entity_t * rawstream);

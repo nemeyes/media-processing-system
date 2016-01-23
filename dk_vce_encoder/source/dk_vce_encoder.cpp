@@ -15,14 +15,14 @@ dk_vce_encoder::~dk_vce_encoder(void)
 	}
 }
 
-dk_vce_encoder::ERR_CODE dk_vce_encoder::initialize(void * config)
+dk_vce_encoder::ERR_CODE dk_vce_encoder::initialize_encoder(void * config)
 {
-	return _core->initialize(static_cast<dk_vce_encoder::configuration_t*>(config));
+	return _core->initialize_encoder(static_cast<dk_vce_encoder::configuration_t*>(config));
 }
 
-dk_vce_encoder::ERR_CODE dk_vce_encoder::release(void)
+dk_vce_encoder::ERR_CODE dk_vce_encoder::release_encoder(void)
 {
-	return _core->release();
+	return _core->release_encoder();
 }
 
 dk_vce_encoder::ERR_CODE dk_vce_encoder::encode(dk_vce_encoder::dk_video_entity_t * rawstream, dk_vce_encoder::dk_video_entity_t * bitstream)
