@@ -32,7 +32,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -61,7 +61,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;CHOOSE_AUTOMATIC;WITH_CUDA_BUFFER_MAPPED_TO_NVENC;WITH_DYNAMIC_CUDA_LOAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\dk_cuda_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\dk_common\include;..\dk_video_base\include;..\dk_media_buffering\include;..\dk_cuda_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -112,26 +112,30 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\dk_cuda_base\source\dk_cuda_driver_api.cpp" />
-    <ClCompile Include="source\cu_device.cpp" />
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp" />
+    <ClCompile Include="..\dk_video_base\source\dk_video_base.cpp" />
+    <ClCompile Include="source\cuda_device.cpp" />
     <ClCompile Include="source\dk_nvenc_encoder.cpp" />
-    <ClCompile Include="source\cu_enc_core.cpp" />
+    <ClCompile Include="source\nvenc_encoder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dk_cuda_base\include\dk_cuda_driver_api.h" />
     <ClInclude Include="..\dk_cuda_base\include\dk_cuda_utils.h" />
-    <ClInclude Include="include\cu_device.h" />
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h" />
+    <ClInclude Include="..\dk_video_base\include\dk_video_base.h" />
+    <ClInclude Include="include\cuda_device.h" />
     <ClInclude Include="include\dk_nvenc_encoder.h" />
     <ClInclude Include="include\nvEncodeAPI.h" />
-    <ClInclude Include="include\cu_enc_core.h" />
+    <ClInclude Include="include\nvenc_encoder.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="cu_h264_encoder2.cu">
+    <CudaCompile Include="nvenc_encoder.cu">
       <Keep Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</Keep>
       <Keep Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Keep>
     </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.targets" />
   </ImportGroup>
 </Project>

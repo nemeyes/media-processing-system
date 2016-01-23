@@ -1,9 +1,8 @@
 #include <windows.h>
 #include <tchar.h>
-#include "cu_enc_core.h"
+#include "nvenc_encoder.h"
 #include "dk_nvenc_encoder.h"
 #include "nvEncodeAPI.h"
-#include "cu_enc_core.h"
 #include <cstdio>
 #include <cstdlib>
 #include <stdio.h>
@@ -12,13 +11,7 @@ typedef NVENCSTATUS(NVENCAPI *MYPROC)(NV_ENCODE_API_FUNCTION_LIST*);
 
 dk_nvenc_encoder::dk_nvenc_encoder(void)
 {
-	_core = new cu_enc_core();
-	//_cu_device = NULL;
-
-	//_enc_buffer_count = 0;
-	//memset(&_enc_config, 0, sizeof(_enc_config));
-	//memset(&_enc_buffer, 0, sizeof(_enc_buffer));
-	//memset(&_enc_eos_output_buffer, 0, sizeof(_enc_eos_output_buffer));
+	_core = new nvenc_encoder();
 }
 
 dk_nvenc_encoder::~dk_nvenc_encoder(void)
@@ -26,8 +19,33 @@ dk_nvenc_encoder::~dk_nvenc_encoder(void)
 	if (_core)
 	{
 		delete _core;
-		_core = NULL;
+		_core = nullptr;
 	}
+}
+
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::initialize_encoder(void * config)
+{
+	return _core->initialize(static_cast<dk_nvenc_encoder::configuration_t*>(config));
+}
+
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::release_encoder(void)
+{
+	return _core->release();
+}
+
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * rawstream, dk_nvenc_encoder::dk_video_entity_t * bitstream)
+{
+	return _core->encode(rawstream, bitstream);
+}
+
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * rawstream)
+{
+	return _core->encode(rawstream);
+}
+
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream)
+{
+	return _core->get_queued_data(bitstream);
 }
 
 dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::initialize(dk_nvenc_encoder::configuration_t config, unsigned int * pitch)

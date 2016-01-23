@@ -1,22 +1,14 @@
-#ifndef _CU_H264_ENCODER2_H_
-#define _CU_H264_ENCODER2_H_
+#ifndef _DK_NVENC_ENCODER_H_
+#define _DK_NVENC_ENCODER_H_
 
-#if defined(_WIN32)
-# include <windows.h>
-# if defined(EXPORT_LIB)
-#  define EXP_DLL __declspec(dllexport)
-# else
-#  define EXP_DLL __declspec(dllimport)
-# endif
-#else
-# define EXP_DLL
-#endif
+#include <dk_video_base.h>
 
 #include <vector>
-class cu_enc_core;
-class EXP_DLL dk_nvenc_encoder
+class nvenc_encoder;
+class EXP_CLASS dk_nvenc_encoder : public dk_video_encoder
 {
 public:
+
 	enum _COLOR_PRIMARIES
 	{
 		COLOR_PRIMARIES_BT709 = 1,
@@ -61,41 +53,17 @@ public:
 		COLOR_MATRIX_BT2020CL
 	} COLOR_MATRIX;
 
-
-	typedef enum _ERR_CODE
+	/*typedef enum _PIC_TYPE
 	{
-		ERR_CODE_SUCCESS,
-		ERR_CODE_FAILED,
-		ERR_CODE_UNSUPPORTED_FUNCTION,
-		ERR_CODE_INVALID_CUDA_ENCODING_DEVICE,
-	} ERR_CODE;
-
-	typedef enum _CODEC_TYPE
-	{
-		CODEC_TYPE_H264,
-		CODEC_TYPE_HEVC
-	} CODEC_TYPE;
-
-	typedef enum _COLOR_SPACE
-	{
-		COLOR_SPACE_YUY2,
-		COLOR_SPACE_YV12,
-		COLOR_SPACE_NV12,
-		COLOR_SPACE_RGB24,
-		COLOR_SPACE_RGB32
-	} COLOR_SPACE;
-
-	typedef enum _PIC_TYPE
-	{
-		PIC_TYPE_P = 0x0,     /**< Forward predicted */
-		PIC_TYPE_B = 0x01,    /**< Bi-directionally predicted picture */
-		PIC_TYPE_I = 0x02,    /**< Intra predicted picture */
-		PIC_TYPE_IDR = 0x03,    /**< IDR picture */
-		PIC_TYPE_BI = 0x04,    /**< Bi-directionally predicted with only Intra MBs */
-		PIC_TYPE_SKIPPED = 0x05,    /**< Picture is skipped */
-		PIC_TYPE_INTRA_REFRESH = 0x06,    /**< First picture in intra refresh cycle */
-		PIC_TYPE_UNKNOWN = 0xFF     /**< Picture type unknown */
-	} PIC_TYPE;
+		PIC_TYPE_P = 0x0,     //< Forward predicted
+		PIC_TYPE_B = 0x01,    //< Bi-directionally predicted picture
+		PIC_TYPE_I = 0x02,    //< Intra predicted picture
+		PIC_TYPE_IDR = 0x03,    //< IDR picture
+		PIC_TYPE_BI = 0x04,    //< Bi-directionally predicted with only Intra MBs
+		PIC_TYPE_SKIPPED = 0x05,    //< Picture is skipped
+		PIC_TYPE_INTRA_REFRESH = 0x06,    //< First picture in intra refresh cycle
+		PIC_TYPE_UNKNOWN = 0xFF     //< Picture type unknown 
+	} PIC_TYPE;*/
 
 	typedef enum _CODEC_PROFILE_TYPE
 	{
@@ -104,7 +72,6 @@ public:
 		CODEC_PROFILE_TYPE_MAIN,
 		CODEC_PROFILE_TYPE_HIGH
 	} CODEC_PROFILE_TYPE;
-
 
 	typedef enum _RC_MODE
 	{
@@ -137,7 +104,7 @@ public:
 		PIC_STRUCT_FIELD_BOTTOM_TOP = 0x03                  /**< Field encoding bottom field first */
 	} PIC_STRUCT;
 
-	typedef struct EXP_DLL _configuration_t
+	typedef struct EXP_CLASS _configuration_t
 	{
 		int cs;
 		int width;
@@ -150,6 +117,7 @@ public:
 		int profile;
 		int fps;
 		//int qp;
+		int codec;
 		int preset;
 		int vbv_max_bitrate;
 		int vbv_size;
@@ -160,7 +128,7 @@ public:
 		int numb;
 		int bitstream_buffer_size;
 		_configuration_t(void)
-			: cs(COLOR_SPACE_YV12)
+			: cs(dk_nvenc_encoder::SUBMEDIA_TYPE_YV12)
 			, width(1280)
 			, height(1024)
 			, max_width(1920)
@@ -171,9 +139,10 @@ public:
 			, vbv_size(4000000)
 			, rc_mode(RC_MODE_CBR)
 			, keyframe_interval(2)
-			, profile(CODEC_PROFILE_TYPE_HIGH)
+			, profile(dk_nvenc_encoder::CODEC_PROFILE_TYPE_HIGH)
 			//, qp(28)
-			, preset(PRESET_TYPE_HQ)
+			, codec(dk_nvenc_encoder::SUBMEDIA_TYPE_H264)
+			, preset(dk_nvenc_encoder::PRESET_TYPE_HQ)
 			, invalidate_ref_frames_enable_flag(0)
 			, intra_refresh_enable_flag(0)
 			, intra_refresh_period(0)
@@ -236,6 +205,13 @@ public:
 	dk_nvenc_encoder(void);
 	~dk_nvenc_encoder(void);
 
+	dk_nvenc_encoder::ERR_CODE initialize_encoder(void * config);
+	dk_nvenc_encoder::ERR_CODE release_encoder(void);
+
+	dk_nvenc_encoder::ERR_CODE encode(dk_nvenc_encoder::dk_video_entity_t * rawstream, dk_nvenc_encoder::dk_video_entity_t * bitstream);
+	dk_nvenc_encoder::ERR_CODE encode(dk_nvenc_encoder::dk_video_entity_t * rawstream);
+	dk_nvenc_encoder::ERR_CODE get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream);
+
 public:
 	//cuda check
 	dk_nvenc_encoder::ERR_CODE initialize(dk_nvenc_encoder::configuration_t config, unsigned int * pitch);
@@ -243,7 +219,7 @@ public:
 	dk_nvenc_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, PIC_TYPE & pic_type, bool flush = false);
 
 private:
-	cu_enc_core * _core;
+	nvenc_encoder * _core;
 };
 
 
@@ -258,4 +234,4 @@ private:
 
 
 
-#endif _CU_H264_ENCODER2_H_
+#endif 

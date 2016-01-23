@@ -16,15 +16,15 @@
     <Filter Include="cuda">
       <UniqueIdentifier>{92954222-b046-4eaf-b946-37abcf8499fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="buffering">
+      <UniqueIdentifier>{50b420cc-3c3c-450d-a1f9-d0e8a8958bd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="video_base">
+      <UniqueIdentifier>{72887920-c346-41bc-b889-9f61a01492e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\nvEncodeAPI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\cu_enc_core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\cu_device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\dk_cuda_base\include\dk_cuda_driver_api.h">
@@ -36,23 +36,41 @@
     <ClInclude Include="include\dk_nvenc_encoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\nvenc_encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda_device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h">
+      <Filter>buffering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dk_video_base\include\dk_video_base.h">
+      <Filter>video_base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\cu_enc_core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\cu_device.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\dk_cuda_base\source\dk_cuda_driver_api.cpp">
       <Filter>cuda</Filter>
     </ClCompile>
     <ClCompile Include="source\dk_nvenc_encoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\nvenc_encoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cuda_device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp">
+      <Filter>buffering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_video_base\source\dk_video_base.cpp">
+      <Filter>video_base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="cu_h264_encoder2.cu">
+    <CudaCompile Include="nvenc_encoder.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>

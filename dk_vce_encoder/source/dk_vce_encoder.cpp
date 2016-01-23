@@ -11,7 +11,7 @@ dk_vce_encoder::~dk_vce_encoder(void)
 	if (_core)
 	{
 		delete _core;
-		_core = 0;
+		_core = nullptr;
 	}
 }
 
