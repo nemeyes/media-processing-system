@@ -1,0 +1,1 @@
+lib /MACHINE:X64 /def:libmpg123-0.dll.def /OUT:libmpeg123-0.lib
