@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -192,6 +192,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_directdraw_renderer", "..\..\dk_directdraw_renderer\dk_directdraw_renderer.vcxproj", "{56DEEF91-F8CE-4480-8E7B-BBE692379718}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_mmwave_renderer", "..\..\dk_mmwave_renderer\dk_mmwave_renderer.vcxproj", "{97756925-2165-47AD-AEB6-9F5713ED494A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fft", "fft", "{78FDD14C-B3C4-4F08-AB24-A16F2CFDF589}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_fft", "..\..\library\dk_fft\dk_fft.vcxproj", "{41432CB8-1142-46BE-A659-B65E8AE16749}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_fft_test", "..\..\test\dk_fft_test\dk_fft_test.vcxproj", "{F3954309-7BC7-496C-A6B0-2DCB0698463C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -553,6 +559,18 @@ Global
 		{97756925-2165-47AD-AEB6-9F5713ED494A}.Release|Win32.ActiveCfg = Release|Win32
 		{97756925-2165-47AD-AEB6-9F5713ED494A}.Release|Win32.Build.0 = Release|Win32
 		{97756925-2165-47AD-AEB6-9F5713ED494A}.Release|x64.ActiveCfg = Release|Win32
+		{41432CB8-1142-46BE-A659-B65E8AE16749}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41432CB8-1142-46BE-A659-B65E8AE16749}.Debug|Win32.Build.0 = Debug|Win32
+		{41432CB8-1142-46BE-A659-B65E8AE16749}.Debug|x64.ActiveCfg = Debug|Win32
+		{41432CB8-1142-46BE-A659-B65E8AE16749}.Release|Win32.ActiveCfg = Release|Win32
+		{41432CB8-1142-46BE-A659-B65E8AE16749}.Release|Win32.Build.0 = Release|Win32
+		{41432CB8-1142-46BE-A659-B65E8AE16749}.Release|x64.ActiveCfg = Release|Win32
+		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Debug|Win32.Build.0 = Debug|Win32
+		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Debug|x64.ActiveCfg = Debug|Win32
+		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Release|Win32.ActiveCfg = Release|Win32
+		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Release|Win32.Build.0 = Release|Win32
+		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -646,5 +664,8 @@ Global
 		{6E25F919-53E5-4C8B-A04A-2D362D2F323C} = {1F95D1D5-DF2C-42B3-8D17-980BFC586540}
 		{56DEEF91-F8CE-4480-8E7B-BBE692379718} = {1F95D1D5-DF2C-42B3-8D17-980BFC586540}
 		{97756925-2165-47AD-AEB6-9F5713ED494A} = {1F95D1D5-DF2C-42B3-8D17-980BFC586540}
+		{78FDD14C-B3C4-4F08-AB24-A16F2CFDF589} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
+		{41432CB8-1142-46BE-A659-B65E8AE16749} = {78FDD14C-B3C4-4F08-AB24-A16F2CFDF589}
+		{F3954309-7BC7-496C-A6B0-2DCB0698463C} = {20A20008-298C-4904-A58B-A23BA1F883E1}
 	EndGlobalSection
 EndGlobal

@@ -1,1 +1,1 @@
-lib /MACHINE:X86 /def:libmpg123-0.dll.def /OUT:libmpeg123-0.lib
+lib /MACHINE:X86 /def:libmpg123-0.def /OUT:libmpeg123-0.lib
