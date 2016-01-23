@@ -205,6 +205,8 @@ public:
 	dk_nvenc_encoder(void);
 	~dk_nvenc_encoder(void);
 
+	dk_nvenc_encoder::ENCODER_STATE state(void);
+
 	dk_nvenc_encoder::ERR_CODE initialize_encoder(void * config);
 	dk_nvenc_encoder::ERR_CODE release_encoder(void);
 
@@ -212,6 +214,8 @@ public:
 	dk_nvenc_encoder::ERR_CODE encode(dk_nvenc_encoder::dk_video_entity_t * rawstream);
 	dk_nvenc_encoder::ERR_CODE get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream);
 
+	dk_nvenc_encoder::ERR_CODE encode_async(dk_nvenc_encoder::dk_video_entity_t * input);
+	dk_nvenc_encoder::ERR_CODE check_encoding_flnish(void);
 public:
 	//cuda check
 	dk_nvenc_encoder::ERR_CODE initialize(dk_nvenc_encoder::configuration_t config, unsigned int * pitch);

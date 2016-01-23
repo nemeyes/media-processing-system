@@ -1,43 +1,37 @@
 #include "dk_video_base.h"
 #include <dk_circular_buffer.h>
+#include <dk_auto_lock.h>
 
 #define MAX_VIDEO_SIZE	1024*1024*2
 
-class dk_video_base_auto_lock
+dk_video_base::dk_video_base(bool use_builtin_queue)
+	: _use_builtin_queue(use_builtin_queue)
 {
-public:
-	dk_video_base_auto_lock(CRITICAL_SECTION * lock)
-		: _lock(lock)
+	if (_use_builtin_queue)
 	{
-		::EnterCriticalSection(_lock);
+		::InitializeCriticalSection(&_mutex);
+		_vqueue = dk_circular_buffer_create(MAX_VIDEO_SIZE);
+		_root = static_cast<vbuffer_t*>(malloc(sizeof(vbuffer_t)));
+		init(_root);
 	}
-
-	~dk_video_base_auto_lock(void)
-	{
-		::LeaveCriticalSection(_lock);
-	}
-private:
-	CRITICAL_SECTION * _lock;
-};
-
-dk_video_base::dk_video_base(void)
-{
-	::InitializeCriticalSection(&_mutex);
-	_vqueue = dk_circular_buffer_create(MAX_VIDEO_SIZE);
-	_root = static_cast<vbuffer_t*>(malloc(sizeof(vbuffer_t)));
-	init(_root);
 }
 
 dk_video_base::~dk_video_base(void)
 {
-	dk_circular_buffer_destroy(_vqueue);
-	::DeleteCriticalSection(&_mutex);
+	if (_use_builtin_queue)
+	{
+		dk_circular_buffer_destroy(_vqueue);
+		::DeleteCriticalSection(&_mutex);
+	}
 }
 
 dk_video_base::ERR_CODE dk_video_base::push(uint8_t * bs, size_t size)
 {
+	if (!_use_builtin_queue)
+		return dk_video_base::ERR_CODE_UNSUPPORTED_FUNCTION;
+
 	dk_video_base::ERR_CODE status = dk_video_base::ERR_CODE_SUCCESS;
-	dk_video_base_auto_lock lock(&_mutex);
+	dk_auto_lock lock(&_mutex);
 	if (bs && size > 0)
 	{
 		vbuffer_t * vbuffer = _root;
@@ -77,9 +71,12 @@ dk_video_base::ERR_CODE dk_video_base::push(uint8_t * bs, size_t size)
 
 dk_video_base::ERR_CODE dk_video_base::pop(uint8_t * bs, size_t & size)
 {
+	if (!_use_builtin_queue)
+		return dk_video_base::ERR_CODE_UNSUPPORTED_FUNCTION;
+
 	dk_video_base::ERR_CODE status = dk_video_base::ERR_CODE_SUCCESS;
 	size = 0;
-	dk_video_base_auto_lock lock(&_mutex);
+	dk_auto_lock lock(&_mutex);
 	vbuffer_t * vbuffer = _root->next;
 	if (vbuffer)
 	{
@@ -145,7 +142,8 @@ dk_video_decoder::ERR_CODE dk_video_decoder::get_queued_data(dk_video_entity_t *
 	return ERR_CODE_NOT_IMPLEMENTED;
 }
 
-dk_video_encoder::dk_video_encoder(void)
+dk_video_encoder::dk_video_encoder(bool use_builtin_queue)
+	: dk_video_base(use_builtin_queue)
 {
 
 }
@@ -153,6 +151,11 @@ dk_video_encoder::dk_video_encoder(void)
 dk_video_encoder::~dk_video_encoder(void)
 {
 
+}
+
+dk_video_encoder::ENCODER_STATE dk_video_encoder::state(void)
+{
+	return dk_video_encoder::ENCODER_STATE_NONE;
 }
 
 dk_video_encoder::ERR_CODE dk_video_encoder::initialize_encoder(void * config)
@@ -165,12 +168,12 @@ dk_video_encoder::ERR_CODE dk_video_encoder::release_encoder(void)
 	return ERR_CODE_SUCCESS;
 }
 
-dk_video_encoder::ERR_CODE dk_video_encoder::encode(dk_video_entity_t * rawstream, dk_video_entity_t * bitstream)
+dk_video_encoder::ERR_CODE dk_video_encoder::encode(dk_video_entity_t * input, dk_video_entity_t * bitstream)
 {
 	return ERR_CODE_NOT_IMPLEMENTED;
 }
 
-dk_video_encoder::ERR_CODE dk_video_encoder::encode(dk_video_entity_t * rawstream)
+dk_video_encoder::ERR_CODE dk_video_encoder::encode(dk_video_entity_t * input)
 {
 	return ERR_CODE_NOT_IMPLEMENTED;
 }
@@ -178,6 +181,16 @@ dk_video_encoder::ERR_CODE dk_video_encoder::encode(dk_video_entity_t * rawstrea
 dk_video_encoder::ERR_CODE dk_video_encoder::get_queued_data(dk_video_entity_t * bitstream)
 {
 	return ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_video_encoder::ERR_CODE dk_video_encoder::encode_async(dk_video_encoder::dk_video_entity_t * input)
+{
+	return dk_video_encoder::ERR_CODE_NOT_IMPLEMENTED;
+}
+
+dk_video_encoder::ERR_CODE dk_video_encoder::check_encoding_flnish(void)
+{
+	return dk_video_encoder::ERR_CODE_ENCODING_UNDER_PROCESSING;
 }
 
 dk_video_renderer::dk_video_renderer(void)

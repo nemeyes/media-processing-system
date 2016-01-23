@@ -161,13 +161,25 @@ public:
 	} cu_enc_buffer_t;
 
 
-	nvenc_encoder(void);
+	nvenc_encoder(dk_nvenc_encoder * front);
 	virtual ~nvenc_encoder(void);
 
+	dk_nvenc_encoder::ENCODER_STATE state(void);
 
-	dk_nvenc_encoder::ERR_CODE initialize(dk_nvenc_encoder::configuration_t config, unsigned int * pitch);
-	dk_nvenc_encoder::ERR_CODE release(void);
-	dk_nvenc_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, NV_ENC_PIC_TYPE & bs_pic_type, bool flush = false);
+	dk_nvenc_encoder::ERR_CODE initialize_encoder(dk_nvenc_encoder::configuration_t * config);
+	dk_nvenc_encoder::ERR_CODE release_encoder(void);
+
+	dk_nvenc_encoder::ERR_CODE encode(dk_nvenc_encoder::dk_video_entity_t * rawstream, dk_nvenc_encoder::dk_video_entity_t * bitstream);
+	dk_nvenc_encoder::ERR_CODE encode(dk_nvenc_encoder::dk_video_entity_t * rawstream);
+	dk_nvenc_encoder::ERR_CODE get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream);
+
+	dk_nvenc_encoder::ERR_CODE encode_async(dk_nvenc_encoder::dk_video_entity_t * input);
+	dk_nvenc_encoder::ERR_CODE check_encoding_flnish(void);
+
+
+	//dk_nvenc_encoder::ERR_CODE initialize(dk_nvenc_encoder::configuration_t config, unsigned int * pitch);
+	//dk_nvenc_encoder::ERR_CODE release(void);
+	//dk_nvenc_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, NV_ENC_PIC_TYPE & bs_pic_type, bool flush = false);
 
 	//codec support
 	dk_nvenc_encoder::ERR_CODE is_h264_supported(void);
@@ -221,9 +233,6 @@ private:
 	dk_nvenc_encoder::ERR_CODE process(const nvenc_encoder::cu_enc_buffer_t * enc_buffer, unsigned char * encoded, unsigned int & encoded_size, NV_ENC_PIC_TYPE & bs_pic_type);
 
 
-	
-	
-
 #if !defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)	
 	dk_nvenc_encoder::ERR_CODE convert_yv12pitch_to_nv12(unsigned char * yv12_luma, unsigned char * yv12_cb, unsigned char * yv12_cr,
 		unsigned char * nv12_luma, unsigned char * nv12_chroma, int width, int height, int src_stride, int dst_stride);
@@ -232,8 +241,8 @@ private:
 #endif
 
 
-	NVENCSTATUS initialize_encoder(NV_ENC_DEVICE_TYPE device_type);
-	NVENCSTATUS release_encoder(void);
+	NVENCSTATUS initialize_nvenc_encoder(NV_ENC_DEVICE_TYPE device_type);
+	NVENCSTATUS release_nvenc_encoder(void);
 
     NVENCSTATUS NvEncOpenEncodeSession(void * device, unsigned int device_type);
 	NVENCSTATUS NvEncOpenEncodeSessionEx(void * device, NV_ENC_DEVICE_TYPE device_type);
@@ -288,6 +297,10 @@ private:
 	NVENCSTATUS NvEncEncodeFrame(nvenc_encoder::cu_enc_buffer_t * buffer, uint32_t width, uint32_t height);
 
 private:
+	dk_nvenc_encoder::ENCODER_STATE _state;
+	dk_nvenc_encoder::configuration_t * _config;
+	dk_nvenc_encoder * _front;
+
 	void *_encoder;
 	unsigned int _enc_buffer_count;
 	void * _cu_context;
@@ -303,7 +316,6 @@ private:
 	void * _cu_encoder_inst;
 #endif
 
-	bool _binit;
 	unsigned long long _encode_index;
 	
 #if defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)	
@@ -316,7 +328,7 @@ private:
 	int _input_format;
 #endif
 
-	dk_nvenc_encoder::configuration_t _enc_config;
+	//dk_nvenc_encoder::configuration_t _enc_config;
 	nvenc_encoder::cu_enc_buffer_t _enc_buffer[MAX_ENCODE_QUEUE];
 	nvenc_encoder::cu_enc_queue<nvenc_encoder::cu_enc_buffer_t> _enc_buffer_queue;
 	nvenc_encoder::enc_output_buffer_t _enc_eos_output_buffer;

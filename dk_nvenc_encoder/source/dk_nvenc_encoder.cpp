@@ -33,19 +33,29 @@ dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::release_encoder(void)
 	return _core->release();
 }
 
-dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * rawstream, dk_nvenc_encoder::dk_video_entity_t * bitstream)
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * input, dk_nvenc_encoder::dk_video_entity_t * bitstream)
 {
-	return _core->encode(rawstream, bitstream);
+	return _core->encode(input, bitstream);
 }
 
-dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * rawstream)
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * input)
 {
-	return _core->encode(rawstream);
+	return _core->encode(input);
 }
 
 dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream)
 {
 	return _core->get_queued_data(bitstream);
+}
+
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::encode_async(dk_nvenc_encoder::dk_video_entity_t * input)
+{
+	return _core->encode_async(input);
+}
+
+dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::check_encoding_flnish(void)
+{
+	return _core->check_encoding_flnish();
 }
 
 dk_nvenc_encoder::ERR_CODE dk_nvenc_encoder::initialize(dk_nvenc_encoder::configuration_t config, unsigned int * pitch)

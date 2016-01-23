@@ -3,12 +3,6 @@
 
 #if defined(WIN32)
 #include <windows.h>
-//#include <d3d9.h>
-//#include <d3d10_1.h>
-//#include <d3d10.h>
-//#include <d3d11_1.h>
-//#include <d3d11_2.h>
-//#include <d3d11.h>
 #if defined(EXPORT_LIB)
 #define EXP_CLASS __declspec(dllexport)
 #else
@@ -31,6 +25,7 @@ public:
 	typedef struct _vbuffer_t
 	{
 		size_t amount;
+		long long pts;
 		_vbuffer_t * prev;
 		_vbuffer_t * next;
 	} vbuffer_t;
@@ -42,6 +37,7 @@ public:
 		ERR_CODE_NOT_IMPLEMENTED,
 		ERR_CODE_UNSUPPORTED_FUNCTION,
 		ERR_CODE_INVALID_ENCODING_DEVICE,
+		ERR_CODE_ENCODING_UNDER_PROCESSING,
 	} ERR_CODE;
 
 	typedef enum _SUBMEDIA_TYPE
@@ -93,18 +89,58 @@ public:
 
 	typedef struct _dk_video_entity_t
 	{
-		MEMORY_TYPE			mem_type;
-		void *				surface;
-		//IDirect3DSurface9 * d3d9_surface;
-		//ID3D10Texture2D *	d3d10_surface;
-		//ID3D11Texture2D *	d3d11_surface;
-		uint8_t *			data;
-		size_t				data_size;
-		size_t				data_capacity;
-		PIC_TYPE			pic_type;
+		MEMORY_TYPE	mem_type;
+		void *		surface;
+		uint8_t *	data;
+		size_t		data_size;
+		size_t		data_capacity;
+		PIC_TYPE	pic_type;
+		bool		gen_spspps;
+		bool		gen_idr;
+		_dk_video_entity_t(void)
+			: mem_type(dk_video_base::MEMORY_TYPE_HOST)
+			, surface(nullptr)
+			, data(nullptr)
+			, data_size(0)
+			, data_capacity(0)
+			, pic_type(dk_video_base::PICTURE_TYPE_NONE)
+			, gen_spspps(false)
+			, gen_idr(false)
+		{
+		}
+
+		_dk_video_entity_t(const _dk_video_entity_t & clone)
+		{
+			mem_type = clone.mem_type;
+			surface = clone.surface;
+			data = clone.data;
+			data_size = clone.data_size;
+			data_capacity = clone.data_capacity;
+			pic_type = clone.pic_type;
+			gen_spspps = clone.gen_spspps;
+			gen_idr = clone.gen_idr;
+		}
+
+		_dk_video_entity_t operator=(const _dk_video_entity_t & clone)
+		{
+			mem_type = clone.mem_type;
+			surface = clone.surface;
+			data = clone.data;
+			data_size = clone.data_size;
+			data_capacity = clone.data_capacity;
+			pic_type = clone.pic_type;
+			gen_spspps = clone.gen_spspps;
+			gen_idr = clone.gen_idr;
+			return (*this);
+		}
+
+		~_dk_video_entity_t(void)
+		{
+
+		}
 	} dk_video_entity_t;
 
-	dk_video_base(void);
+	dk_video_base(bool use_builtin_queue = true);
 	virtual ~dk_video_base(void);
 
 	ERR_CODE push(uint8_t * bs, size_t size);
@@ -112,6 +148,7 @@ public:
 	ERR_CODE init(vbuffer_t * buffer);
 
 private:
+	bool _use_builtin_queue;
 	vbuffer_t * _root;
 	dk_circular_buffer_t * _vqueue;
 
@@ -139,15 +176,34 @@ public:
 class EXP_CLASS dk_video_encoder : public dk_video_base
 {
 public:
-	dk_video_encoder(void);
+	typedef enum _ENCODER_STATE
+	{
+		ENCODER_STATE_NONE,
+		ENCODER_STATE_INITIALIZING,
+		ENCODER_STATE_INITIALIZED,
+		ENCODER_STATE_ENCODING,
+		ENCODER_STATE_ENCODED,
+		ENCODER_STATE_RELEASING,
+		ENCODER_STATE_RELEASED
+	} ENCODER_STATE;
+
+	dk_video_encoder(bool use_builtin_queue = true);
 	virtual ~dk_video_encoder(void);
+
+	virtual dk_video_encoder::ENCODER_STATE state(void);
 
 	virtual dk_video_encoder::ERR_CODE initialize_encoder(void * config);
 	virtual dk_video_encoder::ERR_CODE release_encoder(void);
 
-	virtual dk_video_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * rawstream, dk_video_encoder::dk_video_entity_t * bitstream);
-	virtual dk_video_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * rawstream);
-	virtual dk_video_encoder::ERR_CODE get_queued_data(dk_video_encoder::dk_video_entity_t * bitstream);
+	virtual dk_video_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * input, dk_video_encoder::dk_video_entity_t * bitstream);
+	virtual dk_video_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * input);
+	virtual dk_video_encoder::ERR_CODE get_queued_data(dk_video_encoder::dk_video_entity_t * input);
+
+	virtual dk_video_encoder::ERR_CODE encode_async(dk_video_encoder::dk_video_entity_t * input);
+	virtual dk_video_encoder::ERR_CODE check_encoding_flnish(void);
+
+	virtual void on_acquire_bitstream(uint8_t * bistream, size_t size) = 0;
+
 };
 
 class EXP_CLASS dk_video_renderer : public dk_video_base
