@@ -141,8 +141,6 @@ public:
 #else
 		NV_ENC_INPUT_PTR input_buffer;
 #endif
-		
-		
 	} enc_input_buffer_t;
 
 	typedef struct _enc_output_buffer_t
@@ -176,14 +174,9 @@ public:
 	dk_nvenc_encoder::ERR_CODE encode_async(dk_nvenc_encoder::dk_video_entity_t * input);
 	dk_nvenc_encoder::ERR_CODE check_encoding_flnish(void);
 
-
-	//dk_nvenc_encoder::ERR_CODE initialize(dk_nvenc_encoder::configuration_t config, unsigned int * pitch);
-	//dk_nvenc_encoder::ERR_CODE release(void);
-	//dk_nvenc_encoder::ERR_CODE encode(unsigned char * input, unsigned int & isize, unsigned char * output, unsigned int & osize, NV_ENC_PIC_TYPE & bs_pic_type, bool flush = false);
-
 	//codec support
 	dk_nvenc_encoder::ERR_CODE is_h264_supported(void);
-	dk_nvenc_encoder::ERR_CODE get_supported_codecs(std::vector<int> * const codec);
+	//dk_nvenc_encoder::ERR_CODE get_supported_codecs(std::vector<int> * const codec);
 	//codec profile support
 	dk_nvenc_encoder::ERR_CODE get_supported_codec_profiles(std::vector<int> * const codec_profiles);
 	//encoder preset support
@@ -301,19 +294,19 @@ private:
 	dk_nvenc_encoder::configuration_t * _config;
 	dk_nvenc_encoder * _front;
 
-	void *_encoder;
+	void * _encoder;
 	unsigned int _enc_buffer_count;
-	void * _cu_context;
-	NV_ENCODE_API_FUNCTION_LIST * _encoder_api;
+	void * _cuda_context;
+	NV_ENCODE_API_FUNCTION_LIST * _nvenc_api;
 
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	dk_cuda_driver_api * _cu_driver_api;
+	dk_cuda_driver_api * _cuda_driver_api;
 #endif
 
 #if defined(WIN32)
-	HINSTANCE _cu_encoder_inst;
+	HINSTANCE _nvenc_instance;
 #else
-	void * _cu_encoder_inst;
+	void * _nvenc_instance;
 #endif
 
 	unsigned long long _encode_index;
@@ -328,7 +321,6 @@ private:
 	int _input_format;
 #endif
 
-	//dk_nvenc_encoder::configuration_t _enc_config;
 	nvenc_encoder::cu_enc_buffer_t _enc_buffer[MAX_ENCODE_QUEUE];
 	nvenc_encoder::cu_enc_queue<nvenc_encoder::cu_enc_buffer_t> _enc_buffer_queue;
 	nvenc_encoder::enc_output_buffer_t _enc_eos_output_buffer;

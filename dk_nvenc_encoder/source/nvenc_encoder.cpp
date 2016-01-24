@@ -14,10 +14,10 @@ extern void interleave_uv(unsigned int width, unsigned int height, unsigned char
 nvenc_encoder::nvenc_encoder(dk_nvenc_encoder * front)
 	: _front(front)
 	, _config(nullptr)
-	, _encoder(NULL)
-	, _encoder_api(NULL)
-	, _cu_encoder_inst(NULL)
-	, _cu_context(NULL)
+	, _encoder(nullptr)
+	, _nvenc_api(nullptr)
+	, _nvenc_instance(nullptr)
+	, _cuda_context(nullptr)
 	, _enc_buffer_count(0)
 	, _state(dk_nvenc_encoder::ENCODER_STATE_NONE)
 {
@@ -115,7 +115,6 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 
 	_config->max_width = max_width;
 	_config->max_height = max_height;
-
 	_config->width = (_config->width > _config->max_width ? _config->max_width : _config->width);
 	_config->height = (_config->height > _config->max_height ? _config->max_height : _config->height);
 	_config->bitstream_buffer_size = (_config->bitrate / 8)*(/*_enc_config.gop* / _enc_config.fps*/_config->keyframe_interval) * 2;
@@ -251,11 +250,11 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::encode(dk_nvenc_encoder::dk_video_enti
 	NVENCSTATUS status = NV_ENC_SUCCESS;
 	unsigned int locked_pitch = 0;
 
-	//if (flush)
-	//{
-	//	flush_encoder();
-	//	return dk_nvenc_encoder::ERR_CODE_SUCCESS;
-	//}
+	if (input->flush)
+	{
+		flush_encoder();
+		return dk_nvenc_encoder::ERR_CODE_SUCCESS;
+	}
 
 	nvenc_encoder::cu_enc_buffer_t * buffer = _enc_buffer_queue.get_available();
 	if (!buffer)
@@ -273,11 +272,10 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::encode(dk_nvenc_encoder::dk_video_enti
 	}
 
 #if defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)
-
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	cu_auto_lock lock(_cu_driver_api, (CUcontext)_cu_context);  //sometimes auto_lock doesn't return
+	cu_auto_lock lock(_cuda_driver_api, (CUcontext)_cuda_context);  //sometimes auto_lock doesn't return
 #else
-	cu_auto_lock lock((CUcontext)_cu_context);  //sometimes auto_lock doesn't return
+	cu_auto_lock lock((CUcontext)_cuda_context);  //sometimes auto_lock doesn't return
 #endif
 
 #if defined(WITH_CUDA_PTX) && !defined(WITH_DYNAMIC_CUDA_LOAD)
@@ -318,9 +316,9 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::encode(dk_nvenc_encoder::dk_video_enti
 		return AFCCudaEncoder::ERR_CODE_FAIL;
 #else
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	interleave_uv((void*)_cu_driver_api, _enc_config.width, _enc_config.height, input, _enc_config.width, buffer->in.device_ptr, buffer->in.stride, _ptr_cu_chroma[0], _ptr_cu_chroma[1]);
+	interleave_uv((void*)_cuda_driver_api, _config->width, _config->height, input->data, _config->width, buffer->in.device_ptr, buffer->in.stride, _ptr_cu_chroma[0], _ptr_cu_chroma[1]);
 #else
-	interleave_uv(_enc_config.width, _enc_config.height, input, _enc_config.width, buffer->in.device_ptr, buffer->in.stride, _ptr_cu_chroma[0], _ptr_cu_chroma[1]);
+	interleave_uv(_config->width, _config->height, input->data, _config->width, buffer->in.device_ptr, buffer->in.stride, _ptr_cu_chroma[0], _ptr_cu_chroma[1]);
 #endif
 #endif
 	status = NvEncMapInputResource(buffer->in.registered_resource, &buffer->in.input_buffer);
@@ -346,28 +344,26 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::encode(dk_nvenc_encoder::dk_video_enti
 #if 0
 	NvEncEncodeFrame(buffer, _enc_config.width, _enc_config.height);
 #else
+	NV_ENC_PIC_PARAMS nvenc_pic_params;
+	memset(&nvenc_pic_params, 0x00, sizeof(nvenc_pic_params));
+	SET_VER(nvenc_pic_params, NV_ENC_PIC_PARAMS);
 
-	NV_ENC_PIC_PARAMS enc_pic_params;
-	memset(&enc_pic_params, 0x00, sizeof(enc_pic_params));
-	SET_VER(enc_pic_params, NV_ENC_PIC_PARAMS);
-
-	enc_pic_params.inputBuffer = buffer->in.input_buffer;
+	nvenc_pic_params.inputBuffer = buffer->in.input_buffer;
 #if defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)
-	enc_pic_params.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12_PL;
+	nvenc_pic_params.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12_PL;
 #else
-	enc_pic_params.bufferFmt = (NV_ENC_BUFFER_FORMAT)_input_format;
+	nvenc_pic_params.bufferFmt = (NV_ENC_BUFFER_FORMAT)_input_format;
 #endif
-	enc_pic_params.inputWidth = _enc_config.width;
-	enc_pic_params.inputHeight = _enc_config.height;
-	enc_pic_params.outputBitstream = buffer->out.bitstream_buffer;
-	enc_pic_params.completionEvent = buffer->out.output_evt;
-	enc_pic_params.inputTimeStamp = _encode_index;
-	enc_pic_params.pictureStruct = NV_ENC_PIC_STRUCT_FRAME;
-	enc_pic_params.qpDeltaMap = 0;
-	enc_pic_params.qpDeltaMapSize = 0;
+	nvenc_pic_params.inputWidth = _config->width;
+	nvenc_pic_params.inputHeight = _config->height;
+	nvenc_pic_params.outputBitstream = buffer->out.bitstream_buffer;
+	nvenc_pic_params.completionEvent = buffer->out.output_evt;
+	nvenc_pic_params.inputTimeStamp = _encode_index;
+	nvenc_pic_params.pictureStruct = NV_ENC_PIC_STRUCT_FRAME;
+	nvenc_pic_params.qpDeltaMap = 0;
+	nvenc_pic_params.qpDeltaMapSize = 0;
 
-	status = NvEncEncodePicture(&enc_pic_params);
-	//status = _encoder_api->nvEncEncodePicture(_encoder, &enc_pic_params);
+	status = NvEncEncodePicture(&nvenc_pic_params);
 	if (status != NV_ENC_SUCCESS && status != NV_ENC_ERR_NEED_MORE_INPUT)
 	{
 		return dk_nvenc_encoder::ERR_CODE_FAIL;
@@ -648,9 +644,9 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::encode(unsigned char * input, unsigned
 #if defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)
 
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	cu_auto_lock lock(_cu_driver_api, (CUcontext)_cu_context);  //sometimes auto_lock doesn't return
+	cu_auto_lock lock(_cuda_driver_api, (CUcontext)_cuda_context);  //sometimes auto_lock doesn't return
 #else
-	cu_auto_lock lock((CUcontext)_cu_context);  //sometimes auto_lock doesn't return
+	cu_auto_lock lock((CUcontext)_cuda_context);  //sometimes auto_lock doesn't return
 #endif
 
 #if defined(WITH_CUDA_PTX) && !defined(WITH_DYNAMIC_CUDA_LOAD)
@@ -691,7 +687,7 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::encode(unsigned char * input, unsigned
 		return AFCCudaEncoder::ERR_CODE_FAIL;
 #else
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	interleave_uv((void*)_cu_driver_api, _enc_config.width, _enc_config.height, input, _enc_config.width, buffer->in.device_ptr, buffer->in.stride, _ptr_cu_chroma[0], _ptr_cu_chroma[1]);
+	interleave_uv((void*)_cuda_driver_api, _enc_config.width, _enc_config.height, input, _enc_config.width, buffer->in.device_ptr, buffer->in.stride, _ptr_cu_chroma[0], _ptr_cu_chroma[1]);
 #else
 	interleave_uv(_enc_config.width, _enc_config.height, input, _enc_config.width, buffer->in.device_ptr, buffer->in.stride, _ptr_cu_chroma[0], _ptr_cu_chroma[1]);
 #endif
@@ -740,7 +736,7 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::encode(unsigned char * input, unsigned
 	enc_pic_params.qpDeltaMapSize = 0;
 
 	status = NvEncEncodePicture(&enc_pic_params);
-	//status = _encoder_api->nvEncEncodePicture(_encoder, &enc_pic_params);
+	//status = _nvenc_api->nvEncEncodePicture(_encoder, &enc_pic_params);
 	if (status != NV_ENC_SUCCESS && status != NV_ENC_ERR_NEED_MORE_INPUT)
 	{
 		return dk_nvenc_encoder::ERR_CODE_FAIL;
@@ -783,7 +779,7 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::is_h264_supported(void)
 	return result;
 }
 
-dk_nvenc_encoder::ERR_CODE nvenc_encoder::get_supported_codecs(std::vector<int> * const codec)
+/*dk_nvenc_encoder::ERR_CODE nvenc_encoder::get_supported_codecs(std::vector<int> * const codec)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
 	unsigned int codec_guid_count = 0;
@@ -807,7 +803,7 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::get_supported_codecs(std::vector<int> 
 			codec->push_back(dk_nvenc_encoder::CODEC_TYPE_HEVC);
 	}
 	return dk_nvenc_encoder::ERR_CODE_SUCCESS;
-}
+}*/
 
 dk_nvenc_encoder::ERR_CODE nvenc_encoder::get_supported_codec_profiles(std::vector<int> * const codec_profiles)
 {
@@ -1102,15 +1098,15 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_cuda(void)
 	int  SMminor = 0, SMmajor = 0;
 
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	_cu_driver_api = new dk_cuda_driver_api();
-	if (!_cu_driver_api || !_cu_driver_api->load())
+	_cuda_driver_api = new dk_cuda_driver_api();
+	if (!_cuda_driver_api || !_cuda_driver_api->load())
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 
-	result = _cu_driver_api->init(0);
+	result = _cuda_driver_api->init(0);
 	if (result != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 
-	result = _cu_driver_api->device_get_count(&device_count);
+	result = _cuda_driver_api->device_get_count(&device_count);
 	if (result != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 
@@ -1123,15 +1119,15 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_cuda(void)
 	{
 		CUdevice tmp_device;
 		size_t tmp_available_device_memory = 0;
-		result = _cu_driver_api->device_get(&tmp_device, index);
+		result = _cuda_driver_api->device_get(&tmp_device, index);
 		if (result != CUDA_SUCCESS)
 			continue;
-		result = _cu_driver_api->device_compute_capability(&SMmajor, &SMminor, tmp_device);
+		result = _cuda_driver_api->device_compute_capability(&SMmajor, &SMminor, tmp_device);
 		if (result != CUDA_SUCCESS)
 			continue;
 		if (((SMmajor << 4) + SMminor) < 0x30)
 			continue;
-		result = _cu_driver_api->device_total_memory(&tmp_available_device_memory, tmp_device);
+		result = _cuda_driver_api->device_total_memory(&tmp_available_device_memory, tmp_device);
 		if (result != CUDA_SUCCESS)
 			continue;
 
@@ -1141,11 +1137,11 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_cuda(void)
 
 	if (device_id<0)
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
-	result = _cu_driver_api->device_get(&device, device_id);
+	result = _cuda_driver_api->device_get(&device, device_id);
 	if (result != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 
-	result = _cu_driver_api->ctx_create((CUcontext*)(&_cu_context), 0, device);
+	result = _cuda_driver_api->ctx_create((CUcontext*)(&_cuda_context), 0, device);
 	if (result != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 #else
@@ -1185,7 +1181,7 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_cuda(void)
 	if (result != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 
-	result = cuCtxCreate((CUcontext*)(&_cu_context), 0, device);
+	result = cuCtxCreate((CUcontext*)(&_cuda_context), 0, device);
 	if (result != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 #endif
@@ -1241,7 +1237,7 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_cuda(void)
 #endif
 #endif
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	result = _cu_driver_api->ctx_pop_current(&cu_current_context);
+	result = _cuda_driver_api->ctx_pop_current(&cu_current_context);
 #else
 	result = cuCtxPopCurrent(&cu_current_context);
 #endif
@@ -1253,17 +1249,17 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_cuda(void)
 dk_nvenc_encoder::ERR_CODE nvenc_encoder::release_cuda(void)
 {
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	if (!_cu_driver_api)
+	if (!_cuda_driver_api)
 		return dk_nvenc_encoder::ERR_CODE_FAIL;
 
-	CUresult status = _cu_driver_api->ctx_destroy((CUcontext)_cu_context);
+	CUresult status = _cuda_driver_api->ctx_destroy((CUcontext)_cuda_context);
 	if (status != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_FAIL;
 
-	if (!_cu_driver_api->free())
+	if (!_cuda_driver_api->free())
 		return dk_nvenc_encoder::ERR_CODE_FAIL;
 #else
-	CUresult status = cuCtxDestroy((CUcontext)_cu_context);
+	CUresult status = cuCtxDestroy((CUcontext)_cuda_context);
 	if (status != CUDA_SUCCESS)
 		return dk_nvenc_encoder::ERR_CODE_FAIL;
 #endif
@@ -1277,15 +1273,15 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::allocate_io_buffers(unsigned int input
 	_enc_buffer_queue.initialize(_enc_buffer, _enc_buffer_count);
 	
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	cu_auto_lock lock(_cu_driver_api, (CUcontext)_cu_context);  //sometimes auto_lock doesn't return
+	cu_auto_lock lock(_cuda_driver_api, (CUcontext)_cuda_context);  //sometimes auto_lock doesn't return
 #else
-	cu_auto_lock lock((CUcontext)_cu_context);  //sometimes auto_lock doesn't return
+	cu_auto_lock lock((CUcontext)_cuda_context);  //sometimes auto_lock doesn't return
 #endif
 
 #if defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)	
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	_cu_driver_api->mem_alloc(&_ptr_cu_chroma[0], input_width*input_height / 4);
-	_cu_driver_api->mem_alloc(&_ptr_cu_chroma[1], input_width*input_height / 4);
+	_cuda_driver_api->mem_alloc(&_ptr_cu_chroma[0], input_width*input_height / 4);
+	_cuda_driver_api->mem_alloc(&_ptr_cu_chroma[1], input_width*input_height / 4);
 #else
 	cuMemAlloc(&_ptr_cu_chroma[0], input_width*input_height / 4);
 	cuMemAlloc(&_ptr_cu_chroma[1], input_width*input_height / 4);
@@ -1296,7 +1292,7 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::allocate_io_buffers(unsigned int input
 	{
 #if defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)	
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-		_cu_driver_api->mem_alloc_pitch(&_enc_buffer[i].in.device_ptr, (size_t *)&_enc_buffer[i].in.stride, input_width, input_height * 1.5, 16);
+		_cuda_driver_api->mem_alloc_pitch(&_enc_buffer[i].in.device_ptr, (size_t *)&_enc_buffer[i].in.stride, input_width, input_height * 1.5, 16);
 #else
 		cuMemAllocPitch(&_enc_buffer[i].in.device_ptr, (size_t *)&_enc_buffer[i].in.stride, input_width, input_height * 1.5, 16);
 #endif
@@ -1340,16 +1336,16 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::allocate_io_buffers(unsigned int input
 dk_nvenc_encoder::ERR_CODE nvenc_encoder::release_io_buffers(void)
 {
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	cu_auto_lock lock(_cu_driver_api, (CUcontext)_cu_context); //sometimes auto_lock doesn't return
+	cu_auto_lock lock(_cuda_driver_api, (CUcontext)_cuda_context); //sometimes auto_lock doesn't return
 #else
-	cu_auto_lock lock((CUcontext)_cu_context); //sometimes auto_lock doesn't return
+	cu_auto_lock lock((CUcontext)_cuda_context); //sometimes auto_lock doesn't return
 #endif
 	for (uint32_t i = 0; i < _enc_buffer_count; i++)
 	{
 #if defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)
 		NvEncUnregisterResource(_enc_buffer[i].in.registered_resource);
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-		_cu_driver_api->mem_free(_enc_buffer[i].in.device_ptr);
+		_cuda_driver_api->mem_free(_enc_buffer[i].in.device_ptr);
 #else
 		cuMemFree(_enc_buffer[i].in.device_ptr);
 #endif
@@ -1369,8 +1365,8 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::release_io_buffers(void)
 	}
 
 #if defined(WITH_DYNAMIC_CUDA_LOAD)
-	_cu_driver_api->mem_free(_ptr_cu_chroma[0]);
-	_cu_driver_api->mem_free(_ptr_cu_chroma[1]);
+	_cuda_driver_api->mem_free(_ptr_cu_chroma[0]);
+	_cuda_driver_api->mem_free(_ptr_cu_chroma[1]);
 #else
 	cuMemFree(_ptr_cu_chroma[0]);
 	cuMemFree(_ptr_cu_chroma[1]);
@@ -1516,39 +1512,39 @@ NVENCSTATUS nvenc_encoder::initialize_nvenc_encoder(NV_ENC_DEVICE_TYPE device_ty
 
 #if defined(_WIN32)
 #if defined (_WIN64)
-	_cu_encoder_inst = LoadLibrary(TEXT("nvEncodeAPI64.dll"));
+	_nvenc_instance = LoadLibrary(TEXT("nvEncodeAPI64.dll"));
 #else
-	_cu_encoder_inst = LoadLibrary(TEXT("nvEncodeAPI.dll"));
+	_nvenc_instance = LoadLibrary(TEXT("nvEncodeAPI.dll"));
 #endif
 #else
-	_cu_encoder_inst = dlopen("libnvidia-encode.so.1", RTLD_LAZY);
+	_nvenc_instance = dlopen("libnvidia-encode.so.1", RTLD_LAZY);
 #endif
-	if (_cu_encoder_inst == 0)
+	if (_nvenc_instance == 0)
 		return NV_ENC_ERR_OUT_OF_MEMORY;
 
 #if defined(_WIN32)
-	nvEncodeAPICreateInstance = (MYPROC)GetProcAddress(_cu_encoder_inst, "NvEncodeAPICreateInstance");
+	nvEncodeAPICreateInstance = (MYPROC)GetProcAddress(_nvenc_instance, "NvEncodeAPICreateInstance");
 #else
-	nvEncodeAPICreateInstance = (MYPROC)dlsym(_cu_encoder_inst, "NvEncodeAPICreateInstance");
+	nvEncodeAPICreateInstance = (MYPROC)dlsym(_nvenc_instance, "NvEncodeAPICreateInstance");
 #endif
 
 	if (nvEncodeAPICreateInstance == NULL)
 		return NV_ENC_ERR_OUT_OF_MEMORY;
 
-	_encoder_api = new NV_ENCODE_API_FUNCTION_LIST;
-	if (_encoder_api == NULL)
+	_nvenc_api = new NV_ENCODE_API_FUNCTION_LIST;
+	if (_nvenc_api == NULL)
 		return NV_ENC_ERR_OUT_OF_MEMORY;
 
-	memset(_encoder_api, 0, sizeof(NV_ENCODE_API_FUNCTION_LIST));
-	_encoder_api->version = NV_ENCODE_API_FUNCTION_LIST_VER;
-	status = nvEncodeAPICreateInstance(_encoder_api);
+	memset(_nvenc_api, 0, sizeof(NV_ENCODE_API_FUNCTION_LIST));
+	_nvenc_api->version = NV_ENCODE_API_FUNCTION_LIST_VER;
+	status = nvEncodeAPICreateInstance(_nvenc_api);
 	if (status != NV_ENC_SUCCESS)
 		return status;
 
 	__try
 	{
 		_encoder = 0;
-		status = NvEncOpenEncodeSessionEx(_cu_context, device_type);
+		status = NvEncOpenEncodeSessionEx(_cuda_context, device_type);
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
@@ -1569,20 +1565,20 @@ NVENCSTATUS nvenc_encoder::release_nvenc_encoder(void)
 	}__except (EXCEPTION_EXECUTE_HANDLER) {}
 	_encoder = 0;
 
-	if (_encoder_api)
+	if (_nvenc_api)
 	{
-		delete _encoder_api;
-		_encoder_api = 0;
+		delete _nvenc_api;
+		_nvenc_api = nullptr;
 	}
 
-	if (_cu_encoder_inst)
+	if (_nvenc_instance)
 	{
 #if defined (_WIN32)
-		FreeLibrary(_cu_encoder_inst);
+		FreeLibrary(_nvenc_instance);
 #else
-		dlclose(_cu_encoder_inst);
+		dlclose(_nvenc_instance);
 #endif
-		_cu_encoder_inst = 0;
+		_nvenc_instance = nullptr;
 	}
 	return status;
 }
@@ -1590,7 +1586,7 @@ NVENCSTATUS nvenc_encoder::release_nvenc_encoder(void)
 NVENCSTATUS nvenc_encoder::NvEncOpenEncodeSession(void * device, unsigned int device_type)
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
-	status = _encoder_api->nvEncOpenEncodeSession(device, device_type, &_encoder);
+	status = _nvenc_api->nvEncOpenEncodeSession(device, device_type, &_encoder);
     return status;
 }
 
@@ -1607,14 +1603,14 @@ NVENCSTATUS nvenc_encoder::NvEncOpenEncodeSessionEx(void * device, NV_ENC_DEVICE
 	open_sessionex_params.reserved = NULL;
 	open_sessionex_params.apiVersion = NVENCAPI_VERSION;
 
-	status = _encoder_api->nvEncOpenEncodeSessionEx(&open_sessionex_params, &_encoder);
+	status = _nvenc_api->nvEncOpenEncodeSessionEx(&open_sessionex_params, &_encoder);
 	return status;
 }
 
 NVENCSTATUS nvenc_encoder::NvEncInitializeEncoder(NV_ENC_INITIALIZE_PARAMS * params)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
-	status = _encoder_api->nvEncInitializeEncoder(_encoder, params);
+	status = _nvenc_api->nvEncInitializeEncoder(_encoder, params);
 	return status;
 
 }
@@ -1622,21 +1618,21 @@ NVENCSTATUS nvenc_encoder::NvEncInitializeEncoder(NV_ENC_INITIALIZE_PARAMS * par
 NVENCSTATUS nvenc_encoder::NvEncGetEncodeGUIDCount(unsigned int * encode_guid_count)
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
-	status = _encoder_api->nvEncGetEncodeGUIDCount(_encoder, encode_guid_count);
+	status = _nvenc_api->nvEncGetEncodeGUIDCount(_encoder, encode_guid_count);
     return status;
 }
 
 NVENCSTATUS nvenc_encoder::NvEncGetEncodeGUIDs(GUID * encode_guids, unsigned int encode_guids_size, unsigned int * encode_guids_count)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
-	status = _encoder_api->nvEncGetEncodeGUIDs(_encoder, encode_guids, encode_guids_size, encode_guids_count);
+	status = _nvenc_api->nvEncGetEncodeGUIDs(_encoder, encode_guids, encode_guids_size, encode_guids_count);
 	return status;
 }
 
 NVENCSTATUS nvenc_encoder::NvEncGetEncodeProfileGUIDCount(GUID encode_guid, unsigned int * encode_profile_guid_count)
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
-	status = _encoder_api->nvEncGetEncodeProfileGUIDCount(_encoder, encode_guid, encode_profile_guid_count);
+	status = _nvenc_api->nvEncGetEncodeProfileGUIDCount(_encoder, encode_guid, encode_profile_guid_count);
     return status;
 }
 
@@ -1644,7 +1640,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetEncodeProfileGUIDs(GUID encode_guid, GUID * e
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetEncodeProfileGUIDs(_encoder, encode_guid, encode_profiles_guid, encode_profiles_guid_size, encode_profiles_count);
+	status = _nvenc_api->nvEncGetEncodeProfileGUIDs(_encoder, encode_guid, encode_profiles_guid, encode_profiles_guid_size, encode_profiles_count);
     return status;
 }
 
@@ -1653,7 +1649,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetInputFormatCount(GUID encode_guid, unsigned i
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetInputFormatCount(_encoder, encode_guid, input_fmt_count);
+	status = _nvenc_api->nvEncGetInputFormatCount(_encoder, encode_guid, input_fmt_count);
     return status;
 }
 
@@ -1661,7 +1657,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetInputFormats(GUID encode_guid, NV_ENC_BUFFER_
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetInputFormats(_encoder, encode_guid, input_fmts, input_fmts_size, input_fmt_count);
+	status = _nvenc_api->nvEncGetInputFormats(_encoder, encode_guid, input_fmts, input_fmts_size, input_fmt_count);
     return status;
 }
 
@@ -1669,7 +1665,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetEncodeCaps(GUID encode_guid, NV_ENC_CAPS_PARA
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetEncodeCaps(_encoder, encode_guid, caps_param, caps_val);
+	status = _nvenc_api->nvEncGetEncodeCaps(_encoder, encode_guid, caps_param, caps_val);
     return status;
 }
 
@@ -1677,7 +1673,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetEncodePresetCount(GUID encode_guid, unsigned 
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetEncodePresetCount(_encoder, encode_guid, encode_presets_guid_count);
+	status = _nvenc_api->nvEncGetEncodePresetCount(_encoder, encode_guid, encode_presets_guid_count);
     return status;
 }
 
@@ -1685,7 +1681,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetEncodePresetGUIDs(GUID encode_guid, GUID * en
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetEncodePresetGUIDs(_encoder, encode_guid, encode_presets_guid, encode_presets_size, encode_presets_count);
+	status = _nvenc_api->nvEncGetEncodePresetGUIDs(_encoder, encode_guid, encode_presets_guid, encode_presets_size, encode_presets_count);
     return status;
 }
 
@@ -1693,7 +1689,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetEncodePresetConfig(GUID encode_guid, GUID enc
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetEncodePresetConfig(_encoder, encode_guid, encode_preset_guid, encode_preset_config);
+	status = _nvenc_api->nvEncGetEncodePresetConfig(_encoder, encode_guid, encode_preset_guid, encode_preset_config);
     return status;
 }
 
@@ -1710,7 +1706,7 @@ NVENCSTATUS nvenc_encoder::NvEncCreateInputBuffer(unsigned int width, unsigned i
 	ct_input_buffer_params.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
 	ct_input_buffer_params.bufferFmt = intput_buffer_fmt;
 
-	status = _encoder_api->nvEncCreateInputBuffer(_encoder, &ct_input_buffer_params);
+	status = _nvenc_api->nvEncCreateInputBuffer(_encoder, &ct_input_buffer_params);
 	*input_buffer = ct_input_buffer_params.inputBuffer;
     return status;
 }
@@ -1721,7 +1717,7 @@ NVENCSTATUS nvenc_encoder::NvEncDestroyInputBuffer(NV_ENC_INPUT_PTR input_buffer
 
 	if (input_buffer)
     {
-		status = _encoder_api->nvEncDestroyInputBuffer(_encoder, input_buffer);
+		status = _nvenc_api->nvEncDestroyInputBuffer(_encoder, input_buffer);
     }
 
     return status;
@@ -1737,7 +1733,7 @@ NVENCSTATUS nvenc_encoder::NvEncLockInputBuffer(void * input_buffer, void ** buf
 	SET_VER(lock_input_buffer_params, NV_ENC_LOCK_INPUT_BUFFER);
 
 	lock_input_buffer_params.inputBuffer = input_buffer;
-	status = _encoder_api->nvEncLockInputBuffer(_encoder, &lock_input_buffer_params);
+	status = _nvenc_api->nvEncLockInputBuffer(_encoder, &lock_input_buffer_params);
 	*buffer_data = lock_input_buffer_params.bufferDataPtr;
 	*pitch = lock_input_buffer_params.pitch;
 
@@ -1748,7 +1744,7 @@ NVENCSTATUS nvenc_encoder::NvEncUnlockInputBuffer(NV_ENC_INPUT_PTR input_buffer)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncUnlockInputBuffer(_encoder, input_buffer);
+	status = _nvenc_api->nvEncUnlockInputBuffer(_encoder, input_buffer);
 	return status;
 }
 
@@ -1763,7 +1759,7 @@ NVENCSTATUS nvenc_encoder::NvEncCreateBitstreamBuffer(unsigned int size, void **
 	ct_bitstream_buffer_params.size = size;
 	ct_bitstream_buffer_params.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
 
-	status = _encoder_api->nvEncCreateBitstreamBuffer(_encoder, &ct_bitstream_buffer_params);
+	status = _nvenc_api->nvEncCreateBitstreamBuffer(_encoder, &ct_bitstream_buffer_params);
 	*bitstream_buffer = ct_bitstream_buffer_params.bitstreamBuffer;
     return status;
 }
@@ -1774,7 +1770,7 @@ NVENCSTATUS nvenc_encoder::NvEncDestroyBitstreamBuffer(NV_ENC_OUTPUT_PTR bitstre
 
 	if (bitstream_buffer)
     {
-		status = _encoder_api->nvEncDestroyBitstreamBuffer(_encoder, bitstream_buffer);
+		status = _nvenc_api->nvEncDestroyBitstreamBuffer(_encoder, bitstream_buffer);
     }
     return status;
 }
@@ -1783,7 +1779,7 @@ NVENCSTATUS nvenc_encoder::NvEncLockBitstream(NV_ENC_LOCK_BITSTREAM * lock_bitst
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncLockBitstream(_encoder, lock_bitstream_buffer_params);
+	status = _nvenc_api->nvEncLockBitstream(_encoder, lock_bitstream_buffer_params);
     return status;
 }
 
@@ -1791,7 +1787,7 @@ NVENCSTATUS nvenc_encoder::NvEncUnlockBitstream(NV_ENC_OUTPUT_PTR bitstream_buff
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncUnlockBitstream(_encoder, bitstream_buffer);
+	status = _nvenc_api->nvEncUnlockBitstream(_encoder, bitstream_buffer);
     return status;
 }
 
@@ -1799,7 +1795,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetEncodeStats(NV_ENC_STAT* encode_stats)
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetEncodeStats(_encoder, encode_stats);
+	status = _nvenc_api->nvEncGetEncodeStats(_encoder, encode_stats);
     return status;
 }
 
@@ -1807,7 +1803,7 @@ NVENCSTATUS nvenc_encoder::NvEncGetSequenceParams(NV_ENC_SEQUENCE_PARAM_PAYLOAD 
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncGetSequenceParams(_encoder, sequence_param_payload);
+	status = _nvenc_api->nvEncGetSequenceParams(_encoder, sequence_param_payload);
     return status;
 }
 
@@ -1824,7 +1820,7 @@ NVENCSTATUS nvenc_encoder::NvEncRegisterAsyncEvent(void ** completion_event)
 #else
     eventParams.completionEvent = NULL;
 #endif
-    status = _encoder_api->nvEncRegisterAsyncEvent(_encoder, &eventParams);
+	status = _nvenc_api->nvEncRegisterAsyncEvent(_encoder, &eventParams);
 	*completion_event = eventParams.completionEvent;
 
     return status;
@@ -1842,7 +1838,7 @@ NVENCSTATUS nvenc_encoder::NvEncUnregisterAsyncEvent(void * completion_event)
 
 		event_params.completionEvent = completion_event;
 
-		status = _encoder_api->nvEncUnregisterAsyncEvent(_encoder, &event_params);
+		status = _nvenc_api->nvEncUnregisterAsyncEvent(_encoder, &event_params);
     }
 
     return status;
@@ -1858,7 +1854,7 @@ NVENCSTATUS nvenc_encoder::NvEncMapInputResource(void * registered_resource, voi
 
 	map_input_resource_params.registeredResource = registered_resource;
 
-	status = _encoder_api->nvEncMapInputResource(_encoder, &map_input_resource_params);
+	status = _nvenc_api->nvEncMapInputResource(_encoder, &map_input_resource_params);
 	*mapped_resource = map_input_resource_params.mappedResource;
 
     return status;
@@ -1870,7 +1866,7 @@ NVENCSTATUS nvenc_encoder::NvEncUnmapInputResource(NV_ENC_INPUT_PTR mapped_input
     
 	if (mapped_input_buffer)
     {
-		status = _encoder_api->nvEncUnmapInputResource(_encoder, mapped_input_buffer);
+		status = _nvenc_api->nvEncUnmapInputResource(_encoder, mapped_input_buffer);
     }
 
     return status;
@@ -1880,7 +1876,7 @@ NVENCSTATUS nvenc_encoder::NvEncDestroyEncoder(void)
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 	if (_encoder)
-		status = _encoder_api->nvEncDestroyEncoder(_encoder);
+		status = _nvenc_api->nvEncDestroyEncoder(_encoder);
     return status;
 }
 
@@ -1891,7 +1887,7 @@ NVENCSTATUS nvenc_encoder::NvEncInvalidateRefFrames(const NvEncPictureCommand * 
 
 	for (unsigned int i = 0; i < picture_command->numRefFramesToInvalidate; i++)
     {
-		status = _encoder_api->nvEncInvalidateRefFrames(_encoder, picture_command->refFrameNumbers[i]);
+		status = _nvenc_api->nvEncInvalidateRefFrames(_encoder, picture_command->refFrameNumbers[i]);
     }
 
     return status;
@@ -1912,7 +1908,7 @@ NVENCSTATUS nvenc_encoder::NvEncRegisterResource(NV_ENC_INPUT_RESOURCE_TYPE reso
     registerResParams.height = height;
     registerResParams.pitch = pitch;
 
-    status = _encoder_api->nvEncRegisterResource(_encoder, &registerResParams);
+	status = _nvenc_api->nvEncRegisterResource(_encoder, &registerResParams);
 	*registered_resource = registerResParams.registeredResource;
 
     return status;
@@ -1922,7 +1918,7 @@ NVENCSTATUS nvenc_encoder::NvEncUnregisterResource(NV_ENC_REGISTERED_PTR registe
 {
     NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _encoder_api->nvEncUnregisterResource(_encoder, registered_resource);
+	status = _nvenc_api->nvEncUnregisterResource(_encoder, registered_resource);
     return status;
 }
 
@@ -1934,14 +1930,14 @@ NVENCSTATUS nvenc_encoder::NvEncFlushEncoderQueue(void * eos_event)
 	SET_VER(enc_pic_params, NV_ENC_PIC_PARAMS);
 	enc_pic_params.encodePicFlags = NV_ENC_PIC_FLAG_EOS;
 	enc_pic_params.completionEvent = eos_event;
-	status = _encoder_api->nvEncEncodePicture(_encoder, &enc_pic_params);
+	status = _nvenc_api->nvEncEncodePicture(_encoder, &enc_pic_params);
 	return status;
 }
 
 NVENCSTATUS nvenc_encoder::NvEncEncodePicture(NV_ENC_PIC_PARAMS * pic_params)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
-	status = _encoder_api->nvEncEncodePicture(_encoder, pic_params);
+	status = _nvenc_api->nvEncEncodePicture(_encoder, pic_params);
 	return status;
 }
 

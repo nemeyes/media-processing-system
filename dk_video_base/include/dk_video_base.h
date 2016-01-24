@@ -97,6 +97,7 @@ public:
 		PIC_TYPE	pic_type;
 		bool		gen_spspps;
 		bool		gen_idr;
+		bool		flush;
 		_dk_video_entity_t(void)
 			: mem_type(dk_video_base::MEMORY_TYPE_HOST)
 			, surface(nullptr)
@@ -106,6 +107,7 @@ public:
 			, pic_type(dk_video_base::PICTURE_TYPE_NONE)
 			, gen_spspps(false)
 			, gen_idr(false)
+			, flush(false)
 		{
 		}
 
@@ -119,6 +121,7 @@ public:
 			pic_type = clone.pic_type;
 			gen_spspps = clone.gen_spspps;
 			gen_idr = clone.gen_idr;
+			flush = clone.flush;
 		}
 
 		_dk_video_entity_t operator=(const _dk_video_entity_t & clone)
@@ -131,6 +134,7 @@ public:
 			pic_type = clone.pic_type;
 			gen_spspps = clone.gen_spspps;
 			gen_idr = clone.gen_idr;
+			flush = clone.flush;
 			return (*this);
 		}
 
