@@ -78,6 +78,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\byte_stream_shared_memory_source.h" />
+    <ClInclude Include="include\dk_rtsp_server.h" />
+    <ClInclude Include="include\framed_shared_memory_source.h" />
+    <ClInclude Include="include\h264_video_shared_memory_sms.h" />
+    <ClInclude Include="include\rtsp_server.h" />
+    <ClInclude Include="include\session_queue_manager.h" />
+    <ClInclude Include="include\shared_memory_queue_manager.h" />
+    <ClInclude Include="include\shared_memory_sms.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\byte_stream_shared_memory_source.cpp" />
+    <ClCompile Include="source\dk_rtsp_server.cpp" />
+    <ClCompile Include="source\framed_shared_memory_source.cpp" />
+    <ClCompile Include="source\h264_video_shared_memory_sms.cpp" />
+    <ClCompile Include="source\rtsp_server.cpp" />
+    <ClCompile Include="source\session_queue_manager.cpp" />
+    <ClCompile Include="source\shared_memory_queue_manager.cpp" />
+    <ClCompile Include="source\shared_memory_sms.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

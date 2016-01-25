@@ -199,6 +199,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_fft", "..\..\library\dk_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_fft_test", "..\..\test\dk_fft_test\dk_fft_test.vcxproj", "{F3954309-7BC7-496C-A6B0-2DCB0698463C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_rtsp_server", "..\..\dk_rtsp_server\dk_rtsp_server.vcxproj", "{44703039-95AC-4AA2-AE82-37695724C420}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -571,6 +573,12 @@ Global
 		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Release|Win32.ActiveCfg = Release|Win32
 		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Release|Win32.Build.0 = Release|Win32
 		{F3954309-7BC7-496C-A6B0-2DCB0698463C}.Release|x64.ActiveCfg = Release|Win32
+		{44703039-95AC-4AA2-AE82-37695724C420}.Debug|Win32.ActiveCfg = Debug|Win32
+		{44703039-95AC-4AA2-AE82-37695724C420}.Debug|Win32.Build.0 = Debug|Win32
+		{44703039-95AC-4AA2-AE82-37695724C420}.Debug|x64.ActiveCfg = Debug|Win32
+		{44703039-95AC-4AA2-AE82-37695724C420}.Release|Win32.ActiveCfg = Release|Win32
+		{44703039-95AC-4AA2-AE82-37695724C420}.Release|Win32.Build.0 = Release|Win32
+		{44703039-95AC-4AA2-AE82-37695724C420}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -667,5 +675,6 @@ Global
 		{78FDD14C-B3C4-4F08-AB24-A16F2CFDF589} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 		{41432CB8-1142-46BE-A659-B65E8AE16749} = {78FDD14C-B3C4-4F08-AB24-A16F2CFDF589}
 		{F3954309-7BC7-496C-A6B0-2DCB0698463C} = {20A20008-298C-4904-A58B-A23BA1F883E1}
+		{44703039-95AC-4AA2-AE82-37695724C420} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 	EndGlobalSection
 EndGlobal
