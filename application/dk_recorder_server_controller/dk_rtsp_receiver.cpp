@@ -339,8 +339,29 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 
 				if (decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS)
 				{
-					dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-					dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+
+					dk_ff_video_decoder::dk_video_entity_t encoded;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE, false, false, false };
+					encoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
+					encoded.surface = nullptr;
+					encoded.data = nullptr;
+					encoded.data_size = 0;
+					encoded.data_capacity = 0;
+					encoded.pic_type = dk_ff_video_decoder::PICTURE_TYPE_NONE;
+					encoded.gen_spspps = false;
+					encoded.gen_idr = false;
+					encoded.flush = false;
+
+					dk_ff_video_decoder::dk_video_entity_t decoded;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE, false, false, false };
+					encoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
+					encoded.surface = nullptr;
+					encoded.data = _buffer;
+					encoded.data_size = 0;
+					encoded.data_capacity = 1920 * 1080 * 4;
+					encoded.pic_type = dk_ff_video_decoder::PICTURE_TYPE_NONE;
+					encoded.gen_spspps = false;
+					encoded.gen_idr = false;
+					encoded.flush = false;
+
 					encoded.data = (uint8_t*)data;
 					encoded.data_size = data_size;
 					decode_err = _decoder->decode(&encoded, &decoded);
@@ -348,7 +369,17 @@ void dk_rtsp_receiver::on_begin_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_c
 					{
 						if (render_err == dk_directdraw_renderer::ERR_CODE_SUCCESS)
 						{
-							dk_directdraw_renderer::dk_video_entity_t render = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+							dk_directdraw_renderer::dk_video_entity_t render; //= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE, false, false, false };
+							render.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
+							render.surface = nullptr;
+							render.data = nullptr;
+							render.data_size = 0;
+							render.data_capacity = 0;
+							render.pic_type = dk_ff_video_decoder::PICTURE_TYPE_NONE;
+							render.gen_spspps = false;
+							render.gen_idr = false;
+							render.flush = false;
+
 							render.data = decoded.data;
 							render.data_size = decoded.data_size;
 							_renderer->render(&render);
@@ -382,8 +413,12 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 			//dk_video_entity_t encoded = { 0, };
 			//dk_video_entity_t decoded = { _buffer, 0, 1920 * 1080 * 4 };
 
-			dk_ff_video_decoder::dk_video_entity_t encoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-			dk_ff_video_decoder::dk_video_entity_t decoded = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+			dk_ff_video_decoder::dk_video_entity_t encoded;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+			encoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
+			dk_ff_video_decoder::dk_video_entity_t decoded;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _buffer, 0, 1920 * 1080 * 4, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+			decoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
+			decoded.data = _buffer;
+			decoded.data_capacity = 1920 * 1080 * 4;
 
 			encoded.data = (uint8_t*)data;
 			encoded.data_size = data_size;
@@ -402,7 +437,8 @@ void dk_rtsp_receiver::on_recv_media(dk_rtsp_client::MEDIA_TYPE_T mt, dk_rtsp_cl
 				_frame_count++;
 				*/
 
-				dk_directdraw_renderer::dk_video_entity_t render = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+				dk_directdraw_renderer::dk_video_entity_t render;
+				render.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
 				render.data = decoded.data;
 				render.data_size = decoded.data_size;
 				_renderer->render(&render);

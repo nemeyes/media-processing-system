@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\dk_video_base\include;..\dk_media_buffering\include;..\dk_simd_colorspace_converter\include;..\3rdparty\ffmpeg\win32\x86\include;..\dk_ffmpeg_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\dk_common\include;..\dk_video_base\include;..\dk_media_buffering\include;..\dk_simd_colorspace_converter\include;..\3rdparty\ffmpeg\win32\x86\include;..\dk_ffmpeg_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

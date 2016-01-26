@@ -486,7 +486,7 @@ dk_directdraw_renderer::ERR_CODE directdraw_renderer::render(dk_directdraw_rende
 					}
 				}*/
 
-				do
+				/*do
 				{
 					DDBLTFX  ddbltfx;
 					ddbltfx.dwSize = sizeof(ddbltfx);
@@ -499,7 +499,7 @@ dk_directdraw_renderer::ERR_CODE directdraw_renderer::render(dk_directdraw_rende
 						hr = _pdd_primary->Restore();
 						return dk_directdraw_renderer::ERR_CODE_FAIL;
 					}
-				} while (hr == DDERR_SURFACEBUSY);
+				} while (hr == DDERR_SURFACEBUSY);*/
 
 				do
 				{
