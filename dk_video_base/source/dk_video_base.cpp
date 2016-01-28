@@ -20,6 +20,16 @@ dk_video_base::~dk_video_base(void)
 {
 	if (_use_builtin_queue)
 	{
+		vbuffer_t * vbuffer = _root->next;
+		while (vbuffer)
+		{
+			vbuffer->prev->next = vbuffer->next;
+			free(vbuffer);
+			vbuffer = nullptr;
+		}
+		free(_root);
+		_root = nullptr;
+
 		dk_circular_buffer_destroy(_vqueue);
 		::DeleteCriticalSection(&_mutex);
 	}
@@ -80,21 +90,18 @@ dk_video_base::ERR_CODE dk_video_base::pop(uint8_t * bs, size_t & size)
 	vbuffer_t * vbuffer = _root->next;
 	if (vbuffer)
 	{
-		_root->next = vbuffer->next;
-		if (_root->next)
-			_root->next->prev = _root;
-
+		vbuffer->prev->next = vbuffer->next;
 		int32_t result = dk_circular_buffer_read(_vqueue, bs, vbuffer->amount);
 		if (result == -1)
+		{
 			status = dk_video_base::ERR_CODE_FAIL;
-
-		size = vbuffer->amount;
-
-		//wchar_t debug[500];
-		//_snwprintf_s(debug, sizeof(debug), L"<<pop audio data[%zu]\n", abuffer->amount);
-		//OutputDebugString(debug);
-
+		}
+		else
+		{
+			size = vbuffer->amount;
+		}
 		free(vbuffer);
+		vbuffer = nullptr;
 	}
 	return status;
 }
@@ -104,6 +111,7 @@ dk_video_base::ERR_CODE dk_video_base::init(vbuffer_t * buffer)
 	buffer->amount = 0;
 	buffer->next = nullptr;
 	buffer->prev = nullptr;
+	buffer->pts = 0;
 	return dk_video_base::ERR_CODE_SUCCESS;
 }
 
@@ -188,9 +196,47 @@ dk_video_encoder::ERR_CODE dk_video_encoder::encode_async(dk_video_encoder::dk_v
 	return dk_video_encoder::ERR_CODE_NOT_IMPLEMENTED;
 }
 
-dk_video_encoder::ERR_CODE dk_video_encoder::check_encoding_flnish(void)
+dk_video_encoder::ERR_CODE dk_video_encoder::check_encoding_finish(void)
 {
 	return dk_video_encoder::ERR_CODE_ENCODING_UNDER_PROCESSING;
+}
+
+const int dk_video_encoder::next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
+{
+	int i;
+	*nal_start = 0;
+	*nal_end = 0;
+
+	i = 0;
+	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01) &&
+		(bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0 || bitstream[i + 3] != 0x01))
+	{
+		i++;
+		if (i + 4 >= size)
+			return 0;
+	}
+
+	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01)
+		i++;
+
+	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01)
+		return 0;/* error, should never happen */
+
+	i += 3;
+	*nal_start = i;
+	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0) &&
+		(bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01))
+	{
+		i++;
+		if (i + 3 >= size)
+		{
+			*nal_end = size;
+			return -1;
+		}
+	}
+
+	*nal_end = i;
+	return (*nal_end - *nal_start);
 }
 
 dk_video_renderer::dk_video_renderer(void)

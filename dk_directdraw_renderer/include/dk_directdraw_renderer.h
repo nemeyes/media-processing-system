@@ -39,7 +39,7 @@ public:
 	} configuration_t;
 
 	dk_directdraw_renderer(void);
-	~dk_directdraw_renderer(void);
+	virtual ~dk_directdraw_renderer(void);
 
 	dk_directdraw_renderer::ERR_CODE initialize_renderer(void * config);
 	dk_directdraw_renderer::ERR_CODE release_renderer(void);

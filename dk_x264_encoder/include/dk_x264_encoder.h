@@ -1,44 +1,12 @@
 #ifndef _DK_X264_ENCODER_H_
 #define _DK_X264_ENCODER_H_
 
-#if defined(_WIN32)
-# include <windows.h>
-# if defined(EXPORT_LIB)
-#  define EXP_DLL __declspec(dllexport)
-# else
-#  define EXP_DLL __declspec(dllimport)
-# endif
-#else
-# define EXP_DLL
-#endif
-#include <cstdint>
+#include <dk_video_base.h>
 
-class x264_encoder_core;
-class EXP_DLL dk_x264_encoder
+class x264_encoder;
+class EXP_CLASS dk_x264_encoder : public dk_video_encoder
 {
 public:
-	typedef enum _ERR_CODE
-	{
-		ERR_CODE_SUCCESS,
-		ERR_CODE_FAILED,
-		ERR_CODE_UNSUPPORTED_FUNCTION
-	} ERR_CODE;
-
-	typedef enum _CODEC_TYPE
-	{
-		CODEC_TYPE_H264,
-		CODEC_TYPE_HEVC
-	} CODEC_TYPE;
-
-	typedef enum _COLOR_SPACE
-	{
-		COLOR_SPACE_I420,
-		COLOR_SPACE_YV12,
-		COLOR_SPACE_NV12,
-		COLOR_SPACE_RGB24,
-		COLOR_SPACE_RGB32
-	} COLOR_SPACE;
-
 	typedef enum _PRESET_TYPE
 	{
 		PRESET_TYPE_ULTRA_FAST,
@@ -79,22 +47,22 @@ public:
 		RC_MODE_ABR
 	} RC_MODE;
 
-	typedef enum _PIC_TYPE
+	/*typedef enum _PIC_TYPE
 	{
-		PIC_TYPE_P = 0x0,     /**< Forward predicted */
-		PIC_TYPE_B = 0x01,    /**< Bi-directionally predicted picture */
-		PIC_TYPE_I = 0x02,    /**< Intra predicted picture */
-		PIC_TYPE_IDR = 0x03,    /**< IDR picture */
-		PIC_TYPE_BI = 0x04,    /**< Bi-directionally predicted with only Intra MBs */
-		PIC_TYPE_SKIPPED = 0x05,    /**< Picture is skipped */
-		PIC_TYPE_INTRA_REFRESH = 0x06,    /**< First picture in intra refresh cycle */
-		PIC_TYPE_UNKNOWN = 0xFF     /**< Picture type unknown */
-	} PIC_TYPE;
+		PIC_TYPE_P = 0x0,     //Forward predicted
+		PIC_TYPE_B = 0x01,    //Bi-directionally predicted picture
+		PIC_TYPE_I = 0x02,    //Intra predicted picture
+		PIC_TYPE_IDR = 0x03,    //IDR picture
+		PIC_TYPE_BI = 0x04,    //Bi-directionally predicted with only Intra MBs
+		PIC_TYPE_SKIPPED = 0x05,   //Picture is skipped
+		PIC_TYPE_INTRA_REFRESH = 0x06,    //First picture in intra refresh cycle
+		PIC_TYPE_UNKNOWN = 0xFF     //Picture type unknown
+	} PIC_TYPE;*/
 
 
-	typedef struct EXP_DLL _configuration_t
+	typedef struct EXP_CLASS _configuration_t
 	{
-		int cs;
+		SUBMEDIA_TYPE cs;
 		int width;
 		int height;
 		int max_width;
@@ -114,7 +82,7 @@ public:
 		int numb;
 		int bitstream_buffer_size;
 		_configuration_t(void)
-			: cs(COLOR_SPACE_YV12)
+			: cs(SUBMEDIA_TYPE_YV12)
 			, width(1280)
 			, height(1024)
 			, max_width(1920)
@@ -190,14 +158,23 @@ public:
 	dk_x264_encoder(void);
 	~dk_x264_encoder(void);
 
-public:
-	dk_x264_encoder::ERR_CODE initialize(dk_x264_encoder::configuration_t conf);
-	dk_x264_encoder::ERR_CODE release(void);
-	dk_x264_encoder::ERR_CODE encode(uint8_t * input, size_t & isize, uint8_t * output, size_t & osize, dk_x264_encoder::PIC_TYPE & pic_type, bool flush = false);
+	dk_x264_encoder::ENCODER_STATE state(void);
 
+	dk_x264_encoder::ERR_CODE initialize_encoder(void * config);
+	dk_x264_encoder::ERR_CODE release_encoder(void);
+
+	dk_x264_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * input, dk_video_encoder::dk_video_entity_t * bitstream);
+	dk_x264_encoder::ERR_CODE encode(dk_video_encoder::dk_video_entity_t * input);
+	dk_x264_encoder::ERR_CODE get_queued_data(dk_video_encoder::dk_video_entity_t * input);
+
+	dk_x264_encoder::ERR_CODE encode_async(dk_video_encoder::dk_video_entity_t * input);
+	dk_x264_encoder::ERR_CODE check_encoding_finish(void);
+
+
+	void on_acquire_bitstream(uint8_t * bistream, size_t size) {};
 
 private:
-	x264_encoder_core * _core;
+	x264_encoder * _core;
 };
 
 

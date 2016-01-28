@@ -73,7 +73,7 @@ HRESULT  dk_x264_encode_filter::BreakConnect(PIN_DIRECTION direction)
 	if (direction == PINDIR_INPUT)
 	{
 		if (_encoder)
-			_encoder->release();
+			_encoder->release_encoder();
 	}
 	UNREFERENCED_PARAMETER(direction);
 	return NOERROR;
@@ -85,7 +85,7 @@ HRESULT  dk_x264_encode_filter::CompleteConnect(PIN_DIRECTION direction, IPin *p
 	if (direction == PINDIR_INPUT)
 	{
 		if (_encoder)
-			_encoder->initialize(_config);
+			_encoder->initialize_encoder(&_config);
 	}
 
 	UNREFERENCED_PARAMETER(direction);
@@ -206,7 +206,7 @@ HRESULT  dk_x264_encode_filter::CheckInputType(const CMediaType *type)
 					_config.height = -vih2->bmiHeader.biHeight;
 				else
 					_config.height = vih2->bmiHeader.biHeight;
-				_config.cs = dk_x264_encoder::COLOR_SPACE_YV12;
+				_config.cs = dk_x264_encoder::SUBMEDIA_TYPE_YV12;
 				return S_OK;
 			}
 			else if (IsEqualGUID(*(formaType), FORMAT_VideoInfo))
@@ -378,7 +378,20 @@ HRESULT dk_x264_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 		//dst->SetTime( &start_time, &end_time );
 	}
 	dk_x264_encoder::PIC_TYPE pic_type;
-	int result = _encoder->encode(input_buffer, input_data_size, output_buffer, output_data_size, pic_type);
+
+	dk_x264_encoder::dk_video_entity_t input;
+	input.mem_type = dk_x264_encoder::MEMORY_TYPE_HOST;
+	input.data = input_buffer;
+	input.data_size = input_data_size;
+	input.data_capacity = input_data_size;
+
+	dk_x264_encoder::dk_video_entity_t bitstream;
+	bitstream.mem_type = dk_x264_encoder::MEMORY_TYPE_HOST;
+	bitstream.data = output_buffer;
+	bitstream.data_size = 0;
+	bitstream.data_capacity = output_data_size;
+
+	int result = _encoder->encode(&input, &bitstream);
 
 	dst->SetActualDataLength(output_data_size);
 

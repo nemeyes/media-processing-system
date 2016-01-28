@@ -94,8 +94,8 @@ private:
 	int32_t _sps_size;
 	int32_t _pps_size;
 
-	char * _recv_buffer;
-	int32_t _recv_buffer_size;
+	//char * _recv_buffer;
+	//int32_t _recv_buffer_size;
 
 	char * _video_send_buffer;
 	char * _audio_send_buffer;

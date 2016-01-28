@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\3rdparty\x264\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\dk_common\include;..\dk_video_base\include;..\dk_media_buffering\include;include;..\3rdparty\x264\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -77,7 +77,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\3rdparty\x264\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\dk_common\include;..\dk_video_base\include;..\dk_media_buffering\include;include;..\3rdparty\x264\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,11 +90,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\x264_encoder_core.h" />
+    <ClInclude Include="..\dk_media_buffering\include\dk_circular_buffer.h" />
+    <ClInclude Include="..\dk_video_base\include\dk_video_base.h" />
+    <ClInclude Include="include\x264_encoder.h" />
     <ClInclude Include="include\dk_x264_encoder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\x264_encoder_core.cpp" />
+    <ClCompile Include="..\dk_media_buffering\source\dk_circular_buffer.cpp" />
+    <ClCompile Include="..\dk_video_base\source\dk_video_base.cpp" />
+    <ClCompile Include="source\x264_encoder.cpp" />
     <ClCompile Include="source\dk_x264_encoder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

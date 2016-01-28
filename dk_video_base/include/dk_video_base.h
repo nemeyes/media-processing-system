@@ -204,9 +204,11 @@ public:
 	virtual dk_video_encoder::ERR_CODE get_queued_data(dk_video_encoder::dk_video_entity_t * input);
 
 	virtual dk_video_encoder::ERR_CODE encode_async(dk_video_encoder::dk_video_entity_t * input);
-	virtual dk_video_encoder::ERR_CODE check_encoding_flnish(void);
+	virtual dk_video_encoder::ERR_CODE check_encoding_finish(void);
 
 	virtual void on_acquire_bitstream(uint8_t * bistream, size_t size) = 0;
+
+	static const int next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
 
 };
 

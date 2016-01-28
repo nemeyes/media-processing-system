@@ -3,7 +3,7 @@
 
 dk_vce_encoder::_configuration_t::_configuration_t(void)
 	: mem_type(dk_vce_encoder::MEMORY_TYPE_HOST)
-	, cs(COLOR_SPACE_YV12)
+	, cs(SUBMEDIA_TYPE_YV12)
 	, width(1280)
 	, height(1024)
 	, bitrate(4000000)
@@ -116,7 +116,7 @@ dk_vce_encoder::ERR_CODE dk_vce_encoder::encode_async(dk_video_encoder::dk_video
 	return _core->encode_async(input);
 }
 
-dk_vce_encoder::ERR_CODE dk_vce_encoder::check_encoding_flnish(void)
+dk_vce_encoder::ERR_CODE dk_vce_encoder::check_encoding_finish(void)
 {
-	return _core->check_encoding_flnish();
+	return _core->check_encoding_finish();
 }

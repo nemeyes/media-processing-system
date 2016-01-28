@@ -129,16 +129,16 @@ dk_vce_encoder::ERR_CODE vce_encoder::initialize_encoder(dk_vce_encoder::configu
 
 	switch (_config->cs)
 	{
-	case dk_vce_encoder::COLOR_SPACE_I420:
+	case dk_vce_encoder::SUBMEDIA_TYPE_I420:
 		_cs = amf::AMF_SURFACE_YUV420P;
 		break;
-	case dk_vce_encoder::COLOR_SPACE_YV12:
+	case dk_vce_encoder::SUBMEDIA_TYPE_YV12:
 		_cs = amf::AMF_SURFACE_YV12;
 		break;
-	case dk_vce_encoder::COLOR_SPACE_NV12:
+	case dk_vce_encoder::SUBMEDIA_TYPE_NV12:
 		_cs = amf::AMF_SURFACE_NV12;
 		break;
-	case dk_vce_encoder::COLOR_SPACE_RGB32:
+	case dk_vce_encoder::SUBMEDIA_TYPE_RGB32:
 		_cs = amf::AMF_SURFACE_BGRA;
 		break;
 	default:
@@ -466,7 +466,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t *
 			while (begin < bs + bs_size)
 			{
 				int nalu_begin, nalu_end;
-				int nalu_size = next_nalu(begin, (bs + bs_size) - begin, &nalu_begin, &nalu_end);
+				int nalu_size = dk_vce_encoder::next_nalu(begin, (bs + bs_size) - begin, &nalu_begin, &nalu_end);
 				if (nalu_size == 0)
 				{
 					break;
@@ -557,11 +557,11 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode_async(dk_video_encoder::dk_video_en
 
 	return dk_vce_encoder::ERR_CODE_SUCCESS;
 #else
-	return dk_vce_encoder::ERR_CODE_FAIL;
+	return dk_vce_encoder::ERR_CODE_NOT_IMPLEMENTED;
 #endif
 }
 
-dk_vce_encoder::ERR_CODE vce_encoder::check_encoding_flnish(void)
+dk_vce_encoder::ERR_CODE vce_encoder::check_encoding_finish(void)
 {
 #if defined(WITH_ENCODING_THREAD)
 	if (::WaitForSingleObject(_encoding_finish_event, 0) == WAIT_OBJECT_0)
@@ -630,7 +630,7 @@ void vce_encoder::query_output(void)
 						while (begin < bs + bs_size)
 						{
 							int nalu_begin, nalu_end;
-							int nalu_size = next_nalu(begin, (bs + bs_size) - begin, &nalu_begin, &nalu_end);
+							int nalu_size = dk_vce_encoder::next_nalu(begin, (bs + bs_size) - begin, &nalu_begin, &nalu_end);
 							if (nalu_size == 0)
 							{
 								break;
@@ -703,41 +703,3 @@ void vce_encoder::process_encoding(void)
 }
 
 #endif
-
-const int vce_encoder::next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
-{
-	int i;
-	*nal_start = 0;
-	*nal_end = 0;
-
-	i = 0;
-	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01) &&
-		(bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0 || bitstream[i + 3] != 0x01))
-	{
-		i++;
-		if (i + 4 >= size)
-			return 0;
-	}
-
-	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01)
-		i++;
-
-	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01)
-		return 0;/* error, should never happen */
-
-	i += 3;
-	*nal_start = i;
-	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0) &&
-		(bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01))
-	{
-		i++;
-		if (i + 3 >= size)
-		{
-			*nal_end = size;
-			return -1;
-		}
-	}
-
-	*nal_end = i;
-	return (*nal_end - *nal_start);
-}

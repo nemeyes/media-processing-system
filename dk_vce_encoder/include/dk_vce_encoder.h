@@ -7,15 +7,6 @@ class vce_encoder;
 class EXP_CLASS dk_vce_encoder : public dk_video_encoder
 {
 public:
-	typedef enum _COLOR_SPACE
-	{
-		COLOR_SPACE_I420,
-		COLOR_SPACE_YV12,
-		COLOR_SPACE_NV12,
-		COLOR_SPACE_RGB24,
-		COLOR_SPACE_RGB32
-	} COLOR_SPACE;
-
 	typedef enum _CODEC_PROFILE_TYPE
 	{
 		CODEC_PROFILE_TYPE_BASELINE,
@@ -92,7 +83,7 @@ public:
 	dk_vce_encoder::ERR_CODE get_queued_data(dk_vce_encoder::dk_video_entity_t * input);
 
 	dk_vce_encoder::ERR_CODE encode_async(dk_vce_encoder::dk_video_entity_t * input);
-	dk_vce_encoder::ERR_CODE check_encoding_flnish(void);
+	dk_vce_encoder::ERR_CODE check_encoding_finish(void);
 private:
 	vce_encoder * _core;
 

@@ -1427,6 +1427,26 @@ SendConnectPacket(RTMP *r, RTMPPacket *cp)
   if (cp)
     return RTMP_SendPacket(r, cp, TRUE);
 
+  //nemeyes begin
+  if ((r->Link.protocol & RTMP_FEATURE_WRITE) /*&& r->m_bSendChunkSizeInfo*/)
+  {
+	  packet.m_nChannel = 0x02;
+	  packet.m_headerType = RTMP_PACKET_SIZE_LARGE;
+	  packet.m_packetType = RTMP_PACKET_TYPE_CHUNK_SIZE;
+	  packet.m_nTimeStamp = 0;
+	  packet.m_nInfoField2 = 0;
+	  packet.m_hasAbsTimestamp = 0;
+	  packet.m_body = pbuf + RTMP_MAX_HEADER_SIZE;
+	  packet.m_nBodySize = 4;
+
+	  enc = packet.m_body;
+	  AMF_EncodeInt32(enc, pend, r->m_outChunkSize);
+
+	  if (!RTMP_SendPacket(r, &packet, FALSE))
+		  return 0;
+  }
+  //nemeyes end
+
   packet.m_nChannel = 0x03;	/* control channel (invoke) */
   packet.m_headerType = RTMP_PACKET_SIZE_LARGE;
   packet.m_packetType = 0x14;	/* INVOKE */

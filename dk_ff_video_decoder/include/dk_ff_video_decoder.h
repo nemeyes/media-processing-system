@@ -83,7 +83,7 @@ public:
 	} configuration_t;
 
 	dk_ff_video_decoder(void);
-	~dk_ff_video_decoder(void);
+	virtual ~dk_ff_video_decoder(void);
 
 	ERR_CODE initialize_decoder(void * config);
 	ERR_CODE release_decoder(void);

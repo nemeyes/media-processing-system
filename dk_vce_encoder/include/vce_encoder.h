@@ -33,7 +33,7 @@ public:
 	dk_vce_encoder::ERR_CODE get_queued_data(dk_vce_encoder::dk_video_entity_t * bitstream);
 
 	dk_vce_encoder::ERR_CODE encode_async(dk_video_encoder::dk_video_entity_t * input);
-	dk_vce_encoder::ERR_CODE check_encoding_flnish(void);
+	dk_vce_encoder::ERR_CODE check_encoding_finish(void);
 
 private:
 #if defined(WITH_AMF_CALLBACK_THREAD)
@@ -46,7 +46,7 @@ private:
 	void process_encoding(void);
 #endif
 
-	static const int next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
+	//static const int next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
 
 private:
 #if defined(WITH_AMF_CALLBACK_THREAD)

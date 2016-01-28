@@ -123,13 +123,44 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 
 					dk_ff_video_decoder::dk_video_entity_t decoded; //= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _video_buffer, 0, VIDEO_BUFFER_SIZE, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 					decoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;//, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-
-					encoded.data = (uint8_t*)data;
-					encoded.data_size = data_size;
-
 					decoded.data = _video_buffer;
 					decoded.data_capacity = VIDEO_BUFFER_SIZE;
 
+					//sps
+					encoded.data = (uint8_t*)sps;
+					encoded.data_size = spssize;
+					decode_err = _video_decoder->decode(&encoded, &decoded);
+					if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
+					{
+						if (render_err == dk_directdraw_renderer::ERR_CODE_SUCCESS)
+						{
+							dk_directdraw_renderer::dk_video_entity_t render;//= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+							render.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
+							render.data = decoded.data;
+							render.data_size = decoded.data_size;
+							_video_renderer->render(&render);
+						}
+					}
+
+					//pps
+					encoded.data = (uint8_t*)pps;
+					encoded.data_size = ppssize;
+					decode_err = _video_decoder->decode(&encoded, &decoded);
+					if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
+					{
+						if (render_err == dk_directdraw_renderer::ERR_CODE_SUCCESS)
+						{
+							dk_directdraw_renderer::dk_video_entity_t render;//= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+							render.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
+							render.data = decoded.data;
+							render.data_size = decoded.data_size;
+							_video_renderer->render(&render);
+						}
+					}
+
+					//idr
+					encoded.data = (uint8_t*)data;
+					encoded.data_size = data_size;
 					decode_err = _video_decoder->decode(&encoded, &decoded);
 					if ((decode_err == dk_ff_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
 					{
@@ -164,6 +195,8 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 {
 	if (_is_preview_enabled)
 	{
+		//if ((data[4] & 0x1F) != 0x07)
+		//	return;
 		dk_ff_video_decoder::dk_video_entity_t encoded;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
 		encoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
 		dk_ff_video_decoder::dk_video_entity_t decoded;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _video_buffer, 0, VIDEO_BUFFER_SIZE, dk_ff_video_decoder::PICTURE_TYPE_NONE };
@@ -187,7 +220,7 @@ void dk_rtmp_receiver::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	}
 	if (_is_recording_enabled)
 	{
-		if ((data[3] & 0x1F) == 0x05)
+		if ((data[4] & 0x1F) == 0x05)
 			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
 		else
 			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
