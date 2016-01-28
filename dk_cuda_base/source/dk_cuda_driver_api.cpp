@@ -21,12 +21,6 @@ typedef CUresult(CUDAAPI *cuMemAlloc_)(CUdeviceptr* dptr, size_t bytesize);
 typedef CUresult(CUDAAPI *cuMemAllocPitch_)(CUdeviceptr* dptr, size_t* pPitch, size_t WidthInBytes, size_t Height, unsigned int  ElementSizeBytes);
 typedef CUresult(CUDAAPI *cuMemFree_)(CUdeviceptr dptr);
 
-//dk_cuda_driver_api::dk_cuda_driver_api(void)
-//{}
-//
-//dk_cuda_driver_api::~dk_cuda_driver_api(void)
-//{}
-
 bool dk_cuda_driver_api::load(void)
 {
 #if defined(WIN32)

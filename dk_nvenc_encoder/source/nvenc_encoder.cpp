@@ -93,21 +93,21 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 	}
 
 #if !defined(WITH_CUDA_BUFFER_MAPPED_TO_NVENC)
-	switch (_enc_config.cs)
+	switch (_config->cs)
 	{
-	case dk_nvenc_encoder::COLOR_SPACE_YUY2:
+	case dk_nvenc_encoder::SUBMEDIA_TYPE_YUY2:
 		_input_format = NV_ENC_BUFFER_FORMAT_NV12_PL;
 		break;
-	case dk_nvenc_encoder::COLOR_SPACE_YV12:
+	case dk_nvenc_encoder::SUBMEDIA_TYPE_YV12:
 		_input_format = NV_ENC_BUFFER_FORMAT_YV12_PL;
 		break;
-	case dk_nvenc_encoder::COLOR_SPACE_NV12:
+	case dk_nvenc_encoder::SUBMEDIA_TYPE_NV12:
 		_input_format = NV_ENC_BUFFER_FORMAT_NV12_PL;
 		break;
-	case dk_nvenc_encoder::COLOR_SPACE_RGB24:
+	case dk_nvenc_encoder::SUBMEDIA_TYPE_RGB24:
 		_input_format = NV_ENC_BUFFER_FORMAT_NV12_PL;
 		break;
-	case dk_nvenc_encoder::COLOR_SPACE_RGB32:
+	case dk_nvenc_encoder::SUBMEDIA_TYPE_RGB32:
 		_input_format = NV_ENC_BUFFER_FORMAT_NV12_PL;
 		break;
 	}
