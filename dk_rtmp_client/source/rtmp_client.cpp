@@ -23,7 +23,7 @@
 
 #define DEFAULT_METADATA_BUFFER_SIZE 2048
 
-#define MAX_VIDEO_SIZE 1024*1024/*2*/
+#define MAX_VIDEO_SIZE 1024*1024*2
 
 #define MAX_CHANNELS	8
 #define MAX_SAMPLE_RATE	48000
@@ -402,16 +402,8 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 					saved_pps = get_pps(saved_pps_size);
 					if (saved_sps_size > 0 && saved_pps_size > 0)
 					{
-						if (is_idr)
-						{
-							if (_front)
-								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, nalu, nalu_size, presentation_time);
-						}
-						else
-						{
-							if (_front)
-								_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, nalu, nalu_size, presentation_time);
-						}
+						if (_front)
+							_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, nalu, nalu_size, presentation_time);
 					}
 				}
 				remained -= nalu_size;
@@ -516,7 +508,7 @@ void rtmp_client::sb_process(void)
 		netstackdump_read = fopen("netstackdump_read", "wb");
 #endif
 
-		int read_buffer_size = MAX_VIDEO_SIZE;// 1024 * 1024;
+		int read_buffer_size = MAX_VIDEO_SIZE;
 		char * read_buffer = (char *)malloc(read_buffer_size);
 
 		int32_t protocol = RTMP_PROTOCOL_UNDEFINED;
@@ -534,7 +526,7 @@ void rtmp_client::sb_process(void)
 		AVal sock_host = { 0, 0 };
 		AVal subscribe_path = { 0, 0 };
 
-		long int timeout = DEFAULT_TIMEOUT;
+		long int timeout = 1;// DEFAULT_TIMEOUT;
 		int32_t seek = 0;	 // seek position in resume mode, 0 otherwise
 		double duration = 0.0;
 		uint32_t buffer_time = DEFAULT_BUFTIME; // 10 hours as default
@@ -573,21 +565,6 @@ void rtmp_client::sb_process(void)
 
 		RTMP_ctrlC = false;
 		int32_t nb_read = 0;
-
-#if 0
-		RTMPPacket packet;
-		while (!RTMP_ctrlC && RTMP_IsConnected(_rtmp) &/*& RTMP_ReadPacket(_rtmp, &packet)*/)
-		{
-			if (RTMPPacket_IsReady(&packet))
-			{
-				if (!packet.m_nBodySize)
-					continue;
-				RTMP_ClientPacket(_rtmp, &packet); //This takes care of handling ping/other messages
-				//RTMPPacket_Free(&packet);
-			}
-		}
-
-#else
 		do
 		{
 			nb_read = RTMP_Read(_rtmp, read_buffer, read_buffer_size);
@@ -596,7 +573,6 @@ void rtmp_client::sb_process(void)
 			//Sleep(duration / 1000);
 
 		} while (!RTMP_ctrlC && /*(nb_read>-1) &&*/ RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
-#endif
 
 		RTMP_Close(_rtmp);
 		RTMP_Free(_rtmp);
@@ -684,12 +660,9 @@ void rtmp_client::pb_process(void)
 		RTMP_ctrlC = false;
 		do
 		{
-#if 1
 			RTMP_Read(_rtmp, read_buffer, read_buffer_size);
 			double duration = RTMP_GetDuration(_rtmp);
-#else
 
-#endif
 		} while (!RTMP_ctrlC && RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
 
 		RTMP_DeleteStream(_rtmp);
