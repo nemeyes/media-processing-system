@@ -17,7 +17,7 @@ dk_msdk_encoder::_configuration_t::_configuration_t(void)
 	, preset(dk_msdk_encoder::PRESET_TYPE_QUALITY)
 	, numb(0)
 	, enable_4k(0)
-	, mvc(false)
+	, quality(0)
 {
 }
 
@@ -39,7 +39,7 @@ dk_msdk_encoder::_configuration_t::_configuration_t(const _configuration_t & clo
 	preset = clone.preset;
 	numb = clone.numb;
 	enable_4k = clone.enable_4k;
-	mvc = clone.mvc;
+	quality = clone.quality;
 }
 
 dk_msdk_encoder::_configuration_t dk_msdk_encoder::_configuration_t::operator=(const dk_msdk_encoder::_configuration_t & clone)
@@ -60,7 +60,7 @@ dk_msdk_encoder::_configuration_t dk_msdk_encoder::_configuration_t::operator=(c
 	preset = clone.preset;
 	numb = clone.numb;
 	enable_4k = clone.enable_4k;
-	mvc = clone.mvc;
+	quality = clone.quality;
 	return (*this);
 }
 

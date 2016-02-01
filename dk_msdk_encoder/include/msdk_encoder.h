@@ -3,6 +3,7 @@
 #include <mfxmvc.h>
 #include <mfxvideo.h>
 #include <mfxvp8.h>
+#include <mfxjpeg.h>
 #include <mfxvideo++.h>
 #include <mfxplugin.h>
 #include <mfxplugin++.h>
@@ -26,7 +27,12 @@ public:
 	dk_msdk_encoder::ERR_CODE check_encoding_finish(void);
 
 private:
+	mfxStatus init_encoder_parameter(void);
+	mfxStatus init_vpp_parameter(void);
+
 	bool check_version(mfxVersion * version, dk_msdk_encoder::MSDK_API_FEATURE feature);
+	mfxStatus convert_fps(mfxF64 dFrameRate, mfxU32 * pnFrameRateExtN, mfxU32 * pnFrameRateExtD);
+	mfxF64 calculate_fps(mfxU32 nFrameRateExtN, mfxU32 nFrameRateExtD);
 
 
 private:
@@ -36,6 +42,8 @@ private:
 
 	MFXVideoSession _session;
 	MFXVideoENCODE * _encoder;
+
+	mfxVideoParam _encoder_param;
 
 	std::shared_ptr<MFXVideoUSER> _user_module;
 	std::shared_ptr<MFXPlugin> _plugin;

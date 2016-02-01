@@ -13,8 +13,21 @@ public:
 		RC_MODE_VBR,
 		RC_MODE_CBR,
 		RC_MODE_AVBR,
-		RC_MODE_LOOK_AHEAD
+		RC_MODE_LA,
+		RC_MODE_ICQ,
+		RC_MODE_VCM,
+		RC_MODE_LA_ICQ,
+		RC_MODE_LA_EXT,
+		RC_MODE_LA_HRD,
+		RC_MODE_QVBR
 	} RC_MODE;
+
+	typedef enum _USAGE
+	{
+		USAGE_BEST_QUALITY = 0,
+		USAGE_BALANCED,
+		USAGE_BEST_SPEED,
+	} USAGE;
 
 	typedef enum _MSDK_API_FEATURE
 	{
@@ -49,7 +62,7 @@ public:
 		int				numb;
 		int				slice_per_frame;
 		int				enable_4k;
-		bool			mvc;
+		int				quality;
 		_configuration_t(void);
 		_configuration_t(const _configuration_t & clone);
 		_configuration_t operator=(const _configuration_t & clone);

@@ -4,6 +4,7 @@
 #include <dk_fileio.h>
 #include <dk_string_helper.h>
 #include <d3d9.h>
+#include <dk_macros.h>
 //#include <d3dx9tex.h>
 
 
@@ -46,7 +47,6 @@ dk_msdk_encoder::ERR_CODE msdk_encoder::initialize_encoder(dk_msdk_encoder::conf
 	mfxVersion version;
 
 	mfxIMPL impl = MFX_IMPL_HARDWARE_ANY;
-
 	if (config->mem_type == dk_msdk_encoder::MEMORY_TYPE_DX11)
 		impl |= MFX_IMPL_VIA_D3D11;
 
@@ -55,7 +55,7 @@ dk_msdk_encoder::ERR_CODE msdk_encoder::initialize_encoder(dk_msdk_encoder::conf
 		code = _session.Init((impl & (!MFX_IMPL_HARDWARE_ANY)) | MFX_IMPL_HARDWARE, &min_version);
 	if (code != MFX_ERR_NONE)
 		return dk_msdk_encoder::ERR_CODE_FAIL;
-	if (_config->mvc && !check_version(&version, dk_msdk_encoder::MSDK_FEATURE_MVC))
+	if ((_config->codec == dk_msdk_encoder::SUBMEDIA_TYPE_MVC) && !check_version(&version, dk_msdk_encoder::MSDK_FEATURE_MVC))
 	{
 		_session.Close();
 		_state = dk_msdk_encoder::ENCODER_STATE_NONE;
@@ -70,21 +70,29 @@ dk_msdk_encoder::ERR_CODE msdk_encoder::initialize_encoder(dk_msdk_encoder::conf
 	}
 	*/
 
-	if ((_config->codec == dk_msdk_encoder::SUBMEDIA_TYPE_MJPEG) && !check_version(&version, dk_msdk_encoder::MSDK_FEATURE_JPEG_ENCODE))
+	if ((_config->codec == dk_msdk_encoder::SUBMEDIA_TYPE_JPEG) && !check_version(&version, dk_msdk_encoder::MSDK_FEATURE_JPEG_ENCODE))
 	{
 		_session.Close();
 		_state = dk_msdk_encoder::ENCODER_STATE_NONE;
 		return dk_msdk_encoder::ERR_CODE_FAIL;
 	}
 
-	if ((_config->rc_mode == dk_msdk_encoder::RC_MODE_LOOK_AHEAD) && !check_version(&version, dk_msdk_encoder::MSDK_FEATURE_LOOK_AHEAD))
+	if ((_config->rc_mode == dk_msdk_encoder::RC_MODE_LA) && !check_version(&version, dk_msdk_encoder::MSDK_FEATURE_LOOK_AHEAD))
 	{
 		_session.Close();
 		_state = dk_msdk_encoder::ENCODER_STATE_NONE;
 		return dk_msdk_encoder::ERR_CODE_FAIL;
 	}
 
+	code = init_encoder_parameter();
+	if (code != MFX_ERR_NONE)
+	{
+		_session.Close();
+		_state = dk_msdk_encoder::ENCODER_STATE_NONE;
+		return dk_msdk_encoder::ERR_CODE_FAIL;
+	}
 
+	_encoder = new MFXVideoENCODE(_session);
 
 	_state = dk_msdk_encoder::ENCODER_STATE_INITIALIZED;
 	return dk_msdk_encoder::ERR_CODE_SUCCESS;
@@ -226,6 +234,153 @@ void msdk_encoder::process_encoding(void)
 
 #endif
 
+mfxStatus msdk_encoder::init_encoder_parameter(void)
+{
+	switch (_config->codec)
+	{
+	case dk_msdk_encoder::SUBMEDIA_TYPE_H264:
+		_encoder_param.mfx.CodecId = MFX_CODEC_AVC;
+		break;
+	case dk_msdk_encoder::SUBMEDIA_TYPE_HEVC:
+		_encoder_param.mfx.CodecId = MFX_CODEC_HEVC;
+		break;
+	case dk_msdk_encoder::SUBMEDIA_TYPE_VC1:
+		_encoder_param.mfx.CodecId = MFX_CODEC_VC1;
+		break;
+	case dk_msdk_encoder::SUBMEDIA_TYPE_MVC:
+		_encoder_param.mfx.CodecId = MFX_CODEC_AVC;
+		_encoder_param.mfx.CodecProfile = MFX_PROFILE_AVC_STEREO_HIGH;
+		break;
+	case dk_msdk_encoder::SUBMEDIA_TYPE_JPEG:
+		_encoder_param.mfx.CodecId = MFX_CODEC_JPEG;
+		_encoder_param.mfx.Interleaved = 1;
+		_encoder_param.mfx.Quality = _config->quality;
+		_encoder_param.mfx.RestartInterval = 0;
+		ZERO_MEMORY(_encoder_param.mfx.reserved5);
+		break;
+	case dk_msdk_encoder::SUBMEDIA_TYPE_VP8:
+		_encoder_param.mfx.CodecId = MFX_CODEC_VP8;
+		break;
+	}
+
+	switch (_config->usage)
+	{
+	case dk_msdk_encoder::USAGE_BALANCED:
+		_encoder_param.mfx.TargetUsage = MFX_TARGETUSAGE_BEST_QUALITY;
+		break;
+	case dk_msdk_encoder::USAGE_BEST_QUALITY:
+		_encoder_param.mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
+		break;
+	case dk_msdk_encoder::USAGE_BEST_SPEED:
+		_encoder_param.mfx.TargetUsage = MFX_TARGETUSAGE_BEST_SPEED;
+		break;
+	}
+	_encoder_param.mfx.TargetKbps = _config->bitrate / 1000; // in Kbps
+
+	switch (_config->rc_mode)
+	{
+	case dk_msdk_encoder::RC_MODE_CONSTQP:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_CQP;
+		//_encoder_param.mfx.QPI = pInParams->nQPI;
+		//_encoder_param.mfx.QPP = pInParams->nQPP;
+		//_encoder_param.mfx.QPB = pInParams->nQPB;
+		break;
+	case dk_msdk_encoder::RC_MODE_VBR:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+		break;
+	case dk_msdk_encoder::RC_MODE_CBR:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_CBR;
+		break;
+	case dk_msdk_encoder::RC_MODE_AVBR:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_AVBR;
+		break;
+	case dk_msdk_encoder::RC_MODE_LA:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_LA;
+		break;
+	case dk_msdk_encoder::RC_MODE_ICQ:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_ICQ;
+		break;
+	case dk_msdk_encoder::RC_MODE_VCM:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_VCM;
+		break;
+	case dk_msdk_encoder::RC_MODE_LA_ICQ:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_LA_ICQ;
+		break;
+	case dk_msdk_encoder::RC_MODE_LA_EXT:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_LA_EXT;
+		break;
+	case dk_msdk_encoder::RC_MODE_LA_HRD:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_LA_HRD;
+		break;
+	case dk_msdk_encoder::RC_MODE_QVBR:
+		_encoder_param.mfx.RateControlMethod = MFX_RATECONTROL_QVBR;
+		break;
+	}
+
+	_encoder_param.mfx.NumSlice = _config->slice_per_frame;
+	convert_fps(_config->fps, &_encoder_param.mfx.FrameInfo.FrameRateExtN, &_encoder_param.mfx.FrameInfo.FrameRateExtD);
+	_encoder_param.mfx.EncodedOrder = 0; // binary flag, 0 signals encoder to take frames in display order
+
+	if (_config->mem_type == dk_msdk_encoder::MEMORY_TYPE_HOST)
+		_encoder_param.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+	else
+		_encoder_param.IOPattern = MFX_IOPATTERN_IN_VIDEO_MEMORY;
+
+	_encoder_param.mfx.FrameInfo.FourCC = MFX_FOURCC_NV12;
+	_encoder_param.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+	_encoder_param.mfx.FrameInfo.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+	_encoder_param.mfx.FrameInfo.Width = ALIGN16(_config->width);
+	_encoder_param.mfx.FrameInfo.Height = (_encoder_param.mfx.FrameInfo.PicStruct == MFX_PICSTRUCT_PROGRESSIVE) ? ALIGN16(_config->height) : ALIGN32(_config->height);
+	_encoder_param.mfx.FrameInfo.CropX = 0;
+	_encoder_param.mfx.FrameInfo.CropY = 0;
+	_encoder_param.mfx.FrameInfo.CropW = _config->width;
+	_encoder_param.mfx.FrameInfo.CropH = _config->height;
+
+	/*// configure and attach external parameters
+	if (MVC_ENABLED & pInParams->MVC_flags)
+	m_EncExtParams.push_back((mfxExtBuffer *)&m_MVCSeqDesc);
+
+	if (MVC_VIEWOUTPUT & pInParams->MVC_flags)
+	{
+	// ViewOuput option requested
+	m_CodingOption.ViewOutput = MFX_CODINGOPTION_ON;
+	m_EncExtParams.push_back((mfxExtBuffer *)&m_CodingOption);
+	}
+
+	// configure the depth of the look ahead BRC if specified in command line
+	if (pInParams->nLADepth || pInParams->nMaxSliceSize)
+	{
+	m_CodingOption2.LookAheadDepth = pInParams->nLADepth;
+	m_CodingOption2.MaxSliceSize = pInParams->nMaxSliceSize;
+	m_EncExtParams.push_back((mfxExtBuffer *)&m_CodingOption2);
+	}
+
+	// In case of HEVC when height and/or width divided with 8 but not divided with 16
+	// add extended parameter to increase performance
+	if ((!((m_mfxEncParams.mfx.FrameInfo.CropW & 15) ^ 8) ||
+	!((m_mfxEncParams.mfx.FrameInfo.CropH & 15) ^ 8)) &&
+	(m_mfxEncParams.mfx.CodecId == MFX_CODEC_HEVC))
+	{
+	m_ExtHEVCParam.PicWidthInLumaSamples = m_mfxEncParams.mfx.FrameInfo.CropW;
+	m_ExtHEVCParam.PicHeightInLumaSamples = m_mfxEncParams.mfx.FrameInfo.CropH;
+	m_EncExtParams.push_back((mfxExtBuffer*)&m_ExtHEVCParam);
+	}
+
+	if (!m_EncExtParams.empty())
+	{
+	_encoder_param.ExtParam = &m_EncExtParams[0]; // vector is stored linearly in memory
+	_encoder_param.NumExtParam = (mfxU16)m_EncExtParams.size();
+	}*/
+
+	_encoder_param.AsyncDepth = 4;
+
+	return MFX_ERR_NONE;
+}
+
+mfxStatus msdk_encoder::init_vpp_parameter(void)
+{
+
+}
 
 bool msdk_encoder::check_version(mfxVersion * version, dk_msdk_encoder::MSDK_API_FEATURE feature)
 {
@@ -284,4 +439,39 @@ bool msdk_encoder::check_version(mfxVersion * version, dk_msdk_encoder::MSDK_API
 			return false;
 	}
 	return false;
+}
+
+mfxStatus msdk_encoder::convert_fps(mfxF64 dFrameRate, mfxU32 * pnFrameRateExtN, mfxU32 * pnFrameRateExtD)
+{
+	mfxU32 fr;
+	fr = (mfxU32)(dFrameRate + .5);
+
+	if (fabs(fr - dFrameRate) < 0.0001)
+	{
+		*pnFrameRateExtN = fr;
+		*pnFrameRateExtD = 1;
+		return MFX_ERR_NONE;
+	}
+
+	fr = (mfxU32)(dFrameRate * 1.001 + .5);
+
+	if (fabs(fr * 1000 - dFrameRate * 1001) < 10)
+	{
+		*pnFrameRateExtN = fr * 1000;
+		*pnFrameRateExtD = 1001;
+		return MFX_ERR_NONE;
+	}
+
+	*pnFrameRateExtN = (mfxU32)(dFrameRate * 10000 + .5);
+	*pnFrameRateExtD = 10000;
+
+	return MFX_ERR_NONE;
+}
+
+mfxF64 msdk_encoder::calculate_fps(mfxU32 nFrameRateExtN, mfxU32 nFrameRateExtD)
+{
+	if (nFrameRateExtN && nFrameRateExtD)
+		return (mfxF64)nFrameRateExtN / nFrameRateExtD;
+	else
+		return 0;
 }
