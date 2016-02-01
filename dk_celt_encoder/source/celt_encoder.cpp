@@ -190,7 +190,7 @@ dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_celt_encoder::dk_audio_entity_
 		if (bytes_written>1)
 		{
 			if (_front)
-				_front->push(_buffer4queue, bytes_written);
+				_front->push(_buffer4queue, bytes_written, 0);
 		}
 		cur_sample += _framesize * _config.channels;
 		cur_buf += _framesize * _config.channels;
@@ -210,7 +210,7 @@ dk_celt_encoder::ERR_CODE celt_encoder::get_queued_data(dk_celt_encoder::dk_audi
 {
 	if (_front)
 	{
-		return _front->pop((uint8_t*)encoded->data, encoded->data_size);
+		return _front->pop((uint8_t*)encoded->data, encoded->data_size, encoded->pts);
 	}
 	else
 	{

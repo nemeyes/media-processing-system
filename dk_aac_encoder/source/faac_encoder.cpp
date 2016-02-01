@@ -219,7 +219,7 @@ dk_aac_encoder::ERR_CODE faac_encoder::encode(dk_aac_encoder::dk_audio_entity_t 
 		if (bytes_written > 0)
 		{
 			if (_front)
-				_front->push(_buffer4queue, bytes_written);
+				_front->push(_buffer4queue, bytes_written, 0);
 		}
 		cur_buffer_index += _config.framesize;
 		cur_buffer += _config.framesize;
@@ -239,7 +239,7 @@ dk_aac_encoder::ERR_CODE faac_encoder::get_queued_data(dk_aac_encoder::dk_audio_
 {
 	if (_front)
 	{
-		return _front->pop((uint8_t*)encoded->data, encoded->data_size);
+		return _front->pop((uint8_t*)encoded->data, encoded->data_size, encoded->pts);
 	}
 	else
 	{

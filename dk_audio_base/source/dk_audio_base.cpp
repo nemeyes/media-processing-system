@@ -38,7 +38,7 @@ dk_audio_base::~dk_audio_base(void)
 	::DeleteCriticalSection(&_mutex);
 }
 
-dk_audio_base::ERR_CODE dk_audio_base::push(uint8_t * bs, size_t size)
+dk_audio_base::ERR_CODE dk_audio_base::push(uint8_t * bs, size_t size, long long pts)
 {
 	dk_audio_base::ERR_CODE status = dk_audio_base::ERR_CODE_SUCCESS;
 	dk_audio_base_auto_lock lock(&_mutex);
@@ -60,6 +60,7 @@ dk_audio_base::ERR_CODE dk_audio_base::push(uint8_t * bs, size_t size)
 		abuffer = abuffer->next;
 
 		abuffer->amount = size;
+		abuffer->pts = pts;
 		int32_t result = dk_circular_buffer_write(_aqueue, bs, abuffer->amount);
 		if (result == -1)
 		{
@@ -79,7 +80,7 @@ dk_audio_base::ERR_CODE dk_audio_base::push(uint8_t * bs, size_t size)
 	return status;
 }
 
-dk_audio_base::ERR_CODE dk_audio_base::pop(uint8_t * bs, size_t & size)
+dk_audio_base::ERR_CODE dk_audio_base::pop(uint8_t * bs, size_t & size, long long & pts)
 {
 	dk_audio_base::ERR_CODE status = dk_audio_base::ERR_CODE_SUCCESS;
 	size = 0;
@@ -96,7 +97,7 @@ dk_audio_base::ERR_CODE dk_audio_base::pop(uint8_t * bs, size_t & size)
 			status = dk_audio_base::ERR_CODE_FAIL;
 
 		size = abuffer->amount;
-
+		pts = abuffer->pts;
 		//wchar_t debug[500];
 		//_snwprintf_s(debug, sizeof(debug), L"<<pop audio data[%zu]\n", abuffer->amount);
 		//OutputDebugString(debug);

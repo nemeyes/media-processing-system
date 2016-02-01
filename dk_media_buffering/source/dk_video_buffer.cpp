@@ -33,7 +33,7 @@ dk_video_buffer::~dk_video_buffer(void)
 	::DeleteCriticalSection(&_mutex);
 }
 
-dk_media_buffering::ERR_CODE dk_video_buffer::push(const uint8_t * data, size_t size, long long timestamp)
+dk_media_buffering::ERR_CODE dk_video_buffer::push(const uint8_t * data, size_t size, long long pts)
 {
 	dk_media_buffering::ERR_CODE status = dk_media_buffering::ERR_CODE_SUCCESS;
 	if (data && size > 0)
@@ -55,7 +55,7 @@ dk_media_buffering::ERR_CODE dk_video_buffer::push(const uint8_t * data, size_t 
 		buffer->next->prev = buffer;
 		buffer = buffer->next;
 
-		buffer->timestamp = timestamp;
+		buffer->pts = pts;
 		buffer->amount = size;
 		int32_t result = dk_circular_buffer_write(_cbuffer, data, buffer->amount);
 		if (result == -1)
@@ -76,7 +76,7 @@ dk_media_buffering::ERR_CODE dk_video_buffer::push(const uint8_t * data, size_t 
 	return status;
 }
 
-dk_media_buffering::ERR_CODE dk_video_buffer::pop(uint8_t * data, size_t & size, long long & timestamp)
+dk_media_buffering::ERR_CODE dk_video_buffer::pop(uint8_t * data, size_t & size, long long & pts)
 {
 	dk_media_buffering::ERR_CODE status = dk_media_buffering::ERR_CODE_SUCCESS;
 	size = 0;
@@ -93,7 +93,7 @@ dk_media_buffering::ERR_CODE dk_video_buffer::pop(uint8_t * data, size_t & size,
 			status = dk_media_buffering::ERR_CODE_FAILED;
 
 		size = buffer->amount;
-		timestamp = buffer->timestamp;
+		pts = buffer->pts;
 		//wchar_t debug[500];
 		//_snwprintf_s(debug, sizeof(debug), L"<<pop video data[%zu]\n", vbuffer->amount);
 		//OutputDebugString(debug);
@@ -182,6 +182,7 @@ dk_media_buffering::ERR_CODE dk_video_buffer::get_height(int32_t & height)
 
 dk_media_buffering::ERR_CODE dk_video_buffer::init(buffer_t * buffer)
 {
+	buffer->pts = 0;
 	buffer->amount = 0;
 	buffer->next = nullptr;	
 	buffer->prev = nullptr;

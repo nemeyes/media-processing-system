@@ -86,15 +86,15 @@ dk_vce_encoder::ERR_CODE vce_encoder::initialize_encoder(dk_vce_encoder::configu
 
 	//Static Parameters
 	status = AMF_FAIL;
-	switch (_config->profile)
+	switch (_config->codec)
 	{
-	case dk_vce_encoder::CODEC_PROFILE_TYPE_BASELINE:
+	case dk_vce_encoder::SUBMEDIA_TYPE_H264_BP:
 		status = _encoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE, AMF_VIDEO_ENCODER_PROFILE_BASELINE);
 		break;
-	case dk_vce_encoder::CODEC_PROFILE_TYPE_MAIN:
+	case dk_vce_encoder::SUBMEDIA_TYPE_H264_MP:
 		status = _encoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE, AMF_VIDEO_ENCODER_PROFILE_MAIN);
 		break;
-	case dk_vce_encoder::CODEC_PROFILE_TYPE_HIGH:
+	case dk_vce_encoder::SUBMEDIA_TYPE_H264_HP:
 		status = _encoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE, AMF_VIDEO_ENCODER_PROFILE_HIGH);
 		break;
 	}
@@ -475,7 +475,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t *
 				{
 					begin += nalu_begin;
 					if ((begin[0] & 0x1F) != 0x09) //exclude AUD
-						_front->push(begin - 4, (bs + bs_size) - begin + 4);
+						_front->push(begin - 4, (bs + bs_size) - begin + 4, 0);
 					break;
 				}
 				else
@@ -483,7 +483,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::encode(dk_vce_encoder::dk_video_entity_t *
 					begin += nalu_begin;
 					end += nalu_end;
 					if ((begin[0] & 0x1F) != 0x09) //exclude AUD
-						_front->push(begin - 4, nalu_end - nalu_begin + 4);
+						_front->push(begin - 4, nalu_end - nalu_begin + 4, 0);
 				}
 			}
 			}
@@ -504,7 +504,7 @@ dk_vce_encoder::ERR_CODE vce_encoder::get_queued_data(dk_vce_encoder::dk_video_e
 	if (_front)
 	{
 		bitstream->mem_type = dk_vce_encoder::MEMORY_TYPE_HOST;
-		return _front->pop((uint8_t*)bitstream->data, bitstream->data_size);
+		return _front->pop((uint8_t*)bitstream->data, bitstream->data_size, bitstream->pts);
 	}
 	else
 	{

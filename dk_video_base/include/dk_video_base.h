@@ -24,8 +24,8 @@ class EXP_CLASS dk_video_base
 public:
 	typedef struct _vbuffer_t
 	{
-		size_t amount;
 		long long pts;
+		size_t amount;
 		_vbuffer_t * prev;
 		_vbuffer_t * next;
 	} vbuffer_t;
@@ -69,6 +69,7 @@ public:
 		MEMORY_TYPE_DX9EX,
 		MEMORY_TYPE_DX10,
 		MEMORY_TYPE_DX10_1,
+		MEMORY_TYPE_DX11,
 		MEMORY_TYPE_DX11_1,
 		MEMORY_TYPE_DX11_2,
 		MEMORY_TYPE_DX11_3,
@@ -89,6 +90,7 @@ public:
 
 	typedef struct _dk_video_entity_t
 	{
+		long long	pts;
 		MEMORY_TYPE	mem_type;
 		void *		surface;
 		uint8_t *	data;
@@ -108,6 +110,7 @@ public:
 			, gen_spspps(false)
 			, gen_idr(false)
 			, flush(false)
+			, pts(0)
 		{
 		}
 
@@ -122,6 +125,7 @@ public:
 			gen_spspps = clone.gen_spspps;
 			gen_idr = clone.gen_idr;
 			flush = clone.flush;
+			pts = clone.pts;
 		}
 
 		_dk_video_entity_t operator=(const _dk_video_entity_t & clone)
@@ -135,6 +139,7 @@ public:
 			gen_spspps = clone.gen_spspps;
 			gen_idr = clone.gen_idr;
 			flush = clone.flush;
+			pts = clone.pts;
 			return (*this);
 		}
 
@@ -147,8 +152,8 @@ public:
 	dk_video_base(bool use_builtin_queue = true);
 	virtual ~dk_video_base(void);
 
-	ERR_CODE push(uint8_t * bs, size_t size);
-	ERR_CODE pop(uint8_t * bs, size_t & size);
+	ERR_CODE push(uint8_t * bs, size_t size, long long pts);
+	ERR_CODE pop(uint8_t * bs, size_t & size, long long & pts);
 	ERR_CODE init(vbuffer_t * buffer);
 
 private:

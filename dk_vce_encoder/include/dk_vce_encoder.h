@@ -7,13 +7,6 @@ class vce_encoder;
 class EXP_CLASS dk_vce_encoder : public dk_video_encoder
 {
 public:
-	typedef enum _CODEC_PROFILE_TYPE
-	{
-		CODEC_PROFILE_TYPE_BASELINE,
-		CODEC_PROFILE_TYPE_MAIN,
-		CODEC_PROFILE_TYPE_HIGH
-	} CODEC_PROFILE_TYPE;
-
 	typedef enum _RC_MODE
 	{
 		RC_MODE_CONSTQP,
@@ -47,24 +40,24 @@ public:
 
 	typedef struct EXP_CLASS _configuration_t
 	{
-		MEMORY_TYPE mem_type;
-		void * d3d_device;
-		int cs;
-		int width;
-		int height;
-		int bitrate;
-		int peak_bitrate;
-		int vbv_max_bitrate;
-		int vbv_size;
-		int rc_mode;
-		int usage;
-		int keyframe_interval;
-		int profile;
-		int fps;
-		int preset;
-		int numb;
-		int slice_per_frame;
-		int enable_4k;
+		MEMORY_TYPE		mem_type;
+		void *			d3d_device;
+		SUBMEDIA_TYPE	cs;
+		int				width;
+		int				height;
+		int				bitrate;
+		int				peak_bitrate;
+		int				vbv_max_bitrate;
+		int				vbv_size;
+		RC_MODE			rc_mode;
+		USAGE			usage;
+		int				keyframe_interval;
+		SUBMEDIA_TYPE	codec;
+		int				fps;
+		int				preset;
+		int				numb;
+		int				slice_per_frame;
+		int				enable_4k;
 		_configuration_t(void);
 		_configuration_t(const _configuration_t & clone);
 		_configuration_t operator=(const _configuration_t & clone);

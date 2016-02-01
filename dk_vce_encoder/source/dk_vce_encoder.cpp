@@ -3,7 +3,7 @@
 
 dk_vce_encoder::_configuration_t::_configuration_t(void)
 	: mem_type(dk_vce_encoder::MEMORY_TYPE_HOST)
-	, cs(SUBMEDIA_TYPE_YV12)
+	, cs(dk_vce_encoder::SUBMEDIA_TYPE_YV12)
 	, width(1280)
 	, height(1024)
 	, bitrate(4000000)
@@ -13,11 +13,12 @@ dk_vce_encoder::_configuration_t::_configuration_t(void)
 	, rc_mode(dk_vce_encoder::RC_MODE_CBR)
 	, usage(dk_vce_encoder::USAGE_TRANSCONDING)
 	, keyframe_interval(2)
-	, profile(dk_vce_encoder::CODEC_PROFILE_TYPE_HIGH)
+	, codec(dk_vce_encoder::SUBMEDIA_TYPE_H264_HP)
 	, fps(60)
 	, preset(dk_vce_encoder::PRESET_TYPE_QUALITY)
 	, numb(0)
 	, enable_4k(0)
+	, mvc(false)
 {
 }
 
@@ -34,7 +35,7 @@ dk_vce_encoder::_configuration_t::_configuration_t(const _configuration_t & clon
 	rc_mode = clone.rc_mode;
 	usage = clone.usage;
 	keyframe_interval = clone.keyframe_interval;
-	profile = clone.profile;
+	codec = clone.codec;
 	fps = clone.fps;
 	preset = clone.preset;
 	numb = clone.numb;
@@ -54,7 +55,7 @@ dk_vce_encoder::_configuration_t dk_vce_encoder::_configuration_t::operator=(con
 	rc_mode = clone.rc_mode;
 	usage = clone.usage;
 	keyframe_interval = clone.keyframe_interval;
-	profile = clone.profile;
+	codec = clone.codec;
 	fps = clone.fps;
 	preset = clone.preset;
 	numb = clone.numb;

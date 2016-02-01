@@ -35,7 +35,7 @@ dk_video_base::~dk_video_base(void)
 	}
 }
 
-dk_video_base::ERR_CODE dk_video_base::push(uint8_t * bs, size_t size)
+dk_video_base::ERR_CODE dk_video_base::push(uint8_t * bs, size_t size, long long pts)
 {
 	if (!_use_builtin_queue)
 		return dk_video_base::ERR_CODE_UNSUPPORTED_FUNCTION;
@@ -60,6 +60,7 @@ dk_video_base::ERR_CODE dk_video_base::push(uint8_t * bs, size_t size)
 		vbuffer = vbuffer->next;
 
 		vbuffer->amount = size;
+		vbuffer->pts = pts;
 		int32_t result = dk_circular_buffer_write(_vqueue, bs, vbuffer->amount);
 		if (result == -1)
 		{
@@ -79,7 +80,7 @@ dk_video_base::ERR_CODE dk_video_base::push(uint8_t * bs, size_t size)
 	return status;
 }
 
-dk_video_base::ERR_CODE dk_video_base::pop(uint8_t * bs, size_t & size)
+dk_video_base::ERR_CODE dk_video_base::pop(uint8_t * bs, size_t & size, long long & pts)
 {
 	if (!_use_builtin_queue)
 		return dk_video_base::ERR_CODE_UNSUPPORTED_FUNCTION;
@@ -99,6 +100,7 @@ dk_video_base::ERR_CODE dk_video_base::pop(uint8_t * bs, size_t & size)
 		else
 		{
 			size = vbuffer->amount;
+			pts = vbuffer->pts;
 		}
 		free(vbuffer);
 		vbuffer = nullptr;
@@ -108,6 +110,7 @@ dk_video_base::ERR_CODE dk_video_base::pop(uint8_t * bs, size_t & size)
 
 dk_video_base::ERR_CODE dk_video_base::init(vbuffer_t * buffer)
 {
+	buffer->pts = 0;
 	buffer->amount = 0;
 	buffer->next = nullptr;
 	buffer->prev = nullptr;

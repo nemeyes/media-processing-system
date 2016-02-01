@@ -24,6 +24,7 @@ class EXP_CLASS dk_audio_base
 public:
 	typedef struct _abuffer_t
 	{
+		long long pts;
 		size_t amount;
 		_abuffer_t * prev;
 		_abuffer_t * next;
@@ -38,6 +39,7 @@ public:
 
 	typedef struct _dk_audio_entity_t
 	{
+		long long pts;
 		void * data;
 		size_t data_size;
 		size_t data_capacity;
@@ -46,8 +48,8 @@ public:
 	dk_audio_base(void);
 	virtual ~dk_audio_base(void);
 
-	ERR_CODE push(uint8_t * bs, size_t size);
-	ERR_CODE pop(uint8_t * bs, size_t & size);
+	ERR_CODE push(uint8_t * bs, size_t size, long long pts);
+	ERR_CODE pop(uint8_t * bs, size_t & size, long long & pts);
 	ERR_CODE init(abuffer_t * buffer);
 
 private:
