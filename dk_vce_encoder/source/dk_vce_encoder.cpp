@@ -18,7 +18,6 @@ dk_vce_encoder::_configuration_t::_configuration_t(void)
 	, preset(dk_vce_encoder::PRESET_TYPE_QUALITY)
 	, numb(0)
 	, enable_4k(0)
-	, mvc(false)
 {
 }
 
