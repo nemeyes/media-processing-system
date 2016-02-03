@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -200,6 +200,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_msdk_encoder", "..\..\dk_msdk_encoder\dk_msdk_encoder.vcxproj", "{C6A18124-5596-4263-89CF-4F0D6C5C662D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_msdk_decoder", "..\..\dk_msdk_decoder\dk_msdk_decoder.vcxproj", "{EFAF20A8-96CB-49A5-9382-5746E3A53638}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "game", "game", "{B3AF494C-0295-4737-94B6-7EBCC0899C17}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "custom", "custom", "{3FA9C3BD-DED2-4ADE-BE49-65580F252718}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_custom_server", "..\..\dk_custom_server\dk_custom_server.vcxproj", "{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_custom_client", "..\..\dk_custom_client\dk_custom_client.vcxproj", "{AC735BF9-961D-4F2C-8461-A78DDC429024}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_custom_base", "..\..\dk_custom_base\dk_custom_base.vcxproj", "{69DF82DB-579A-467F-95D8-D63822637514}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -579,6 +589,24 @@ Global
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638}.Release|Win32.ActiveCfg = Release|Win32
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638}.Release|Win32.Build.0 = Release|Win32
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638}.Release|x64.ActiveCfg = Release|Win32
+		{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F}.Debug|Win32.Build.0 = Debug|Win32
+		{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F}.Debug|x64.ActiveCfg = Debug|Win32
+		{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F}.Release|Win32.ActiveCfg = Release|Win32
+		{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F}.Release|Win32.Build.0 = Release|Win32
+		{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F}.Release|x64.ActiveCfg = Release|Win32
+		{AC735BF9-961D-4F2C-8461-A78DDC429024}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AC735BF9-961D-4F2C-8461-A78DDC429024}.Debug|Win32.Build.0 = Debug|Win32
+		{AC735BF9-961D-4F2C-8461-A78DDC429024}.Debug|x64.ActiveCfg = Debug|Win32
+		{AC735BF9-961D-4F2C-8461-A78DDC429024}.Release|Win32.ActiveCfg = Release|Win32
+		{AC735BF9-961D-4F2C-8461-A78DDC429024}.Release|Win32.Build.0 = Release|Win32
+		{AC735BF9-961D-4F2C-8461-A78DDC429024}.Release|x64.ActiveCfg = Release|Win32
+		{69DF82DB-579A-467F-95D8-D63822637514}.Debug|Win32.ActiveCfg = Debug|Win32
+		{69DF82DB-579A-467F-95D8-D63822637514}.Debug|Win32.Build.0 = Debug|Win32
+		{69DF82DB-579A-467F-95D8-D63822637514}.Debug|x64.ActiveCfg = Debug|Win32
+		{69DF82DB-579A-467F-95D8-D63822637514}.Release|Win32.ActiveCfg = Release|Win32
+		{69DF82DB-579A-467F-95D8-D63822637514}.Release|Win32.Build.0 = Release|Win32
+		{69DF82DB-579A-467F-95D8-D63822637514}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -676,5 +704,9 @@ Global
 		{44703039-95AC-4AA2-AE82-37695724C420} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 		{C6A18124-5596-4263-89CF-4F0D6C5C662D} = {A91CFB2C-F57A-49E5-96B3-08C793DE90B3}
 		{EFAF20A8-96CB-49A5-9382-5746E3A53638} = {A91CFB2C-F57A-49E5-96B3-08C793DE90B3}
+		{3FA9C3BD-DED2-4ADE-BE49-65580F252718} = {77B992DC-12CE-408B-B7E8-36A11EF19C38}
+		{037EF4F7-2FFB-4F37-922F-4BF40EE4F65F} = {3FA9C3BD-DED2-4ADE-BE49-65580F252718}
+		{AC735BF9-961D-4F2C-8461-A78DDC429024} = {3FA9C3BD-DED2-4ADE-BE49-65580F252718}
+		{69DF82DB-579A-467F-95D8-D63822637514} = {3FA9C3BD-DED2-4ADE-BE49-65580F252718}
 	EndGlobalSection
 EndGlobal
