@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="amf">
+      <UniqueIdentifier>{321ac253-4d37-44c1-9987-b6f57b613bd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="video_base">
+      <UniqueIdentifier>{bccf5b5c-364a-4420-81aa-0fa73ba3c163}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="buffering">
+      <UniqueIdentifier>{129dc0b0-a8fe-4b58-a08e-e24ae46b4e47}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dk_vce_encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vce_encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\AMFPlatform.h">
+      <Filter>amf</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\PlatformWindows.h">
+      <Filter>amf</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\Thread.h">
+      <Filter>amf</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vce_surface_observer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h">
+      <Filter>buffering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\dk_video_base\include\dk_video_base.h">
+      <Filter>video_base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\dk_vce_encoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vce_encoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\PlatformWindows.cpp">
+      <Filter>amf</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\Thread.cpp">
+      <Filter>amf</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vce_surface_observer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp">
+      <Filter>buffering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\dk_video_base\source\dk_video_base.cpp">
+      <Filter>video_base</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

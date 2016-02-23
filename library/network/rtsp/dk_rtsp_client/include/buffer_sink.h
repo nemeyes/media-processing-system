@@ -33,8 +33,8 @@ protected:
 	bool _sps_not_changed;
 	bool _pps_not_changed;
 	bool _is_first_idr_rcvd;
-	unsigned char _extra_data[400];
-	size_t _extra_data_size;
+	unsigned char _video_extradata[400];
+	size_t _video_extradata_size;
 
 
     struct timeval _prev_presentation_time;

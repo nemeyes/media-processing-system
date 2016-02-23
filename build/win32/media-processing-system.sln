@@ -211,6 +211,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_vce_encoder", "..\..\lib
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_nvenc_encoder", "..\..\library\video\cuda\dk_nvenc_encoder\dk_nvenc_encoder.vcxproj", "{00492082-83D3-479A-A118-488CC9E58A72}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "container", "container", "{76AB79B6-833D-4D37-98D6-E17D2A7E76DE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_file_demuxer", "..\..\library\container\dk_file_demuxer\dk_file_demuxer.vcxproj", "{6EE312F7-CCC1-45EA-9B40-7E82B7745153}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CloudMediaEdgeFileEncoder", "..\..\application\cloud\CloudMediaEdgeFileEncoder\CloudMediaEdgeFileEncoder.vcxproj", "{3997A793-3FCF-494E-B816-F533338EA684}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -613,6 +619,18 @@ Global
 		{00492082-83D3-479A-A118-488CC9E58A72}.Release|Win32.ActiveCfg = Release|Win32
 		{00492082-83D3-479A-A118-488CC9E58A72}.Release|Win32.Build.0 = Release|Win32
 		{00492082-83D3-479A-A118-488CC9E58A72}.Release|x64.ActiveCfg = Release|Win32
+		{6EE312F7-CCC1-45EA-9B40-7E82B7745153}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6EE312F7-CCC1-45EA-9B40-7E82B7745153}.Debug|Win32.Build.0 = Debug|Win32
+		{6EE312F7-CCC1-45EA-9B40-7E82B7745153}.Debug|x64.ActiveCfg = Debug|Win32
+		{6EE312F7-CCC1-45EA-9B40-7E82B7745153}.Release|Win32.ActiveCfg = Release|Win32
+		{6EE312F7-CCC1-45EA-9B40-7E82B7745153}.Release|Win32.Build.0 = Release|Win32
+		{6EE312F7-CCC1-45EA-9B40-7E82B7745153}.Release|x64.ActiveCfg = Release|Win32
+		{3997A793-3FCF-494E-B816-F533338EA684}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3997A793-3FCF-494E-B816-F533338EA684}.Debug|Win32.Build.0 = Debug|Win32
+		{3997A793-3FCF-494E-B816-F533338EA684}.Debug|x64.ActiveCfg = Debug|Win32
+		{3997A793-3FCF-494E-B816-F533338EA684}.Release|Win32.ActiveCfg = Release|Win32
+		{3997A793-3FCF-494E-B816-F533338EA684}.Release|Win32.Build.0 = Release|Win32
+		{3997A793-3FCF-494E-B816-F533338EA684}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -714,5 +732,8 @@ Global
 		{44703039-95AC-4AA2-AE82-37695724C420} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 		{30643D5C-2C7E-47EC-8944-54E10BA81889} = {A69865AB-8A9A-4945-8629-428B17D07932}
 		{00492082-83D3-479A-A118-488CC9E58A72} = {9E86A127-51C1-412F-8117-D40A44BBB37D}
+		{76AB79B6-833D-4D37-98D6-E17D2A7E76DE} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
+		{6EE312F7-CCC1-45EA-9B40-7E82B7745153} = {76AB79B6-833D-4D37-98D6-E17D2A7E76DE}
+		{3997A793-3FCF-494E-B816-F533338EA684} = {EDE1C689-0F67-4CEB-A93C-2E2DDD59AC5D}
 	EndGlobalSection
 EndGlobal
