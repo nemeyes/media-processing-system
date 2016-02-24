@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{30643D5C-2C7E-47EC-8944-54E10BA81889}</ProjectGuid>
+    <ProjectGuid>{0B954993-25E4-4CFA-B1C4-DDC083F74265}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>dk_vce_encoder</RootNamespace>
+    <RootNamespace>dk_ff_video_decoder</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -55,16 +55,16 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;WITH_AMF_CALLBACK_THREAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;amf;..\..\..\..\dk_common\include;..\..\..\..\dk_video_base\include;..\..\..\buffering\dk_media_buffering\include;..\..\..\..\3rdparty\amd\media_sdk\1.1\inc;$(DXSDK_DIR)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\..\..\..\..\dk_common\include;..\..\..\..\..\dk_video_base\include;..\..\..\..\buffering\dk_media_buffering\include;..\..\..\colorspace\dk_simd_colorspace_converter\include;..\..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\..\dk_ffmpeg_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\..\..\..\3rdparty\ffmpeg\win32\x86\lib;$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
-      <AdditionalLibraryDirectories>..\..\..\..\3rdparty\amd\media_sdk\1.1\lib\amf\x86\Release\vs12;$(DXSDK_DIR)Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>amf-component-vcedem-windesktop32.lib;amf-core-windesktop32.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec.lib;avfilter.lib;avformat.lib;avutil.lib;swscale.lib;dk_simd_colorspace_converter.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,42 +75,34 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;WITH_AMF_CALLBACK_THREAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;amf;..\..\..\..\dk_common\include;..\..\..\..\dk_video_base\include;..\..\..\buffering\dk_media_buffering\include;..\..\..\..\3rdparty\amd\media_sdk\1.1\inc;$(DXSDK_DIR)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\dk_video_base\include;..\dk_media_buffering\include;..\dk_simd_colorspace_converter\include;..\3rdparty\ffmpeg\win32\x86\include;..\dk_ffmpeg_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\3rdparty\ffmpeg\win32\x86\lib;$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>avcodec.lib;avfilter.lib;avformat.lib;avutil.lib;swscale.lib;dk_simd_colorspace_converter.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
-      <AdditionalLibraryDirectories>..\..\..\..\3rdparty\amd\media_sdk\1.1\lib\amf\x86\Release\vs12;$(DXSDK_DIR)Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>amf-component-vcedem-windesktop32.lib;amf-core-windesktop32.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\dk_video_base\include\dk_video_base.h" />
-    <ClInclude Include="..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h" />
-    <ClInclude Include="amf\AMFPlatform.h" />
-    <ClInclude Include="amf\PlatformWindows.h" />
-    <ClInclude Include="amf\Thread.h" />
-    <ClInclude Include="include\dk_vce_encoder.h" />
-    <ClInclude Include="include\vce_encoder.h" />
-    <ClInclude Include="include\vce_surface_observer.h" />
+    <ClInclude Include="..\..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h" />
+    <ClInclude Include="..\..\..\..\..\dk_video_base\include\dk_video_base.h" />
+    <ClInclude Include="..\..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h" />
+    <ClInclude Include="include\dk_ff_video_decoder.h" />
+    <ClInclude Include="include\ffmpeg_decoder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\dk_video_base\source\dk_video_base.cpp" />
-    <ClCompile Include="..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp" />
-    <ClCompile Include="amf\PlatformWindows.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="amf\Thread.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="source\dk_vce_encoder.cpp" />
-    <ClCompile Include="source\vce_encoder.cpp" />
-    <ClCompile Include="source\vce_surface_observer.cpp" />
+    <ClCompile Include="..\..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp" />
+    <ClCompile Include="..\..\..\..\..\dk_video_base\source\dk_video_base.cpp" />
+    <ClCompile Include="..\..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp" />
+    <ClCompile Include="source\dk_ff_video_decoder.cpp" />
+    <ClCompile Include="source\ffmpeg_decoder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

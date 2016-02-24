@@ -2,6 +2,9 @@
 #include "stream_parser.h"
 #include <process.h>
 
+#define VIDEO_BUFFER_SIZE 1920 * 1080 * 4
+#define AUDIO_BUFFER_SIZE 48000 * 2 * 8 //48000hz * 16bitdetph * 8 channels ex) for 2channel 192000
+
 ff_demuxer::ff_demuxer(dk_file_demuxer * front)
 	: _front(front)
 	, _format_ctx(nullptr)
@@ -21,11 +24,16 @@ ff_demuxer::ff_demuxer(dk_file_demuxer * front)
 	, _thread(INVALID_HANDLE_VALUE)
 {
 	memset(_video_extradata, 0x00, sizeof(_video_extradata_size));
+	_video_buffer = static_cast<uint8_t*>(malloc(VIDEO_BUFFER_SIZE));
+	_audio_buffer = static_cast<uint8_t*>(malloc(AUDIO_BUFFER_SIZE)); //48000hz * 16bitdetph * 8 channels
 }
 
 ff_demuxer::~ff_demuxer(void)
 {
-
+	if (_video_buffer)
+		free(_video_buffer);
+	if (_audio_buffer)
+		free(_audio_buffer);
 }
 
 dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
@@ -68,7 +76,7 @@ dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
 		break;
 	}
 
-	_audio_stream = _format_ctx->streams[_video_stream_index];
+	_audio_stream = _format_ctx->streams[_audio_stream_index];
 	AVCodecContext * acodec_ctx = _audio_stream->codec;
 	switch (acodec_ctx->codec_id)
 	{
@@ -117,94 +125,82 @@ void ff_demuxer::process(void)
 	packet.data = nullptr;
 	packet.size = 0;
 
+	uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
+
 	_run = true;
 	for (; _run && av_read_frame(_format_ctx, &packet) >= 0;)
 	{
-		//is this a packet from the video stream?
-		uint8_t * data = packet.data;
-		size_t data_size = packet.size;
 		if (packet.stream_index == _video_stream_index)
 		{
-			if (_front)
+			if (_vsubmedia_type == dk_file_demuxer::SUBMEDIA_TYPE_H264)
 			{
-				size_t saved_sps_size = 0;
-				unsigned char * saved_sps = _front->get_sps(saved_sps_size);
-				size_t saved_pps_size = 0;
-				unsigned char * saved_pps = _front->get_pps(saved_pps_size);
+				uint8_t * data = _video_buffer;
+				int32_t data_size = 0;
+				int32_t index = 0;
+				int32_t packet_size = packet.size;
 
-				bool is_sps = stream_parser::is_sps(_vsubmedia_type, data[0] & 0x1F);
-				if (is_sps)
+				do
 				{
-					if (saved_sps_size < 1 || !saved_sps)
+					if (packet_size < (index + 4))
+						break;
+					data_size = (packet.data[index] << 24) + (packet.data[index + 1] << 16) + (packet.data[index + 2] << 8) + packet.data[index + 3];
+					memmove(data, start_code, sizeof(start_code));
+					index += sizeof(start_code);
+
+					if (packet_size < (index + data_size) || (UINT32_MAX - index) < data_size)
+						break;
+
+					memcpy(data + index, &packet.data[index], data_size);
+
+					bool is_idr = stream_parser::is_idr(_vsubmedia_type, data[4] & 0x1F);
+					if (is_idr && !_is_first_idr_rcvd)
 					{
-						_front->set_sps(data, data_size);
-						_change_sps = true;
-					}
-					else
-					{
-						if (memcmp(saved_sps, data, saved_sps_size))
+						uint8_t * sps = _video_ctx->extradata + 8;
+						size_t sps_size = sps[-1];
+						if (_video_ctx->extradata_size < (8 + sps_size))
+							break; // We don't have a complete SPS
+						else
 						{
-							_front->set_sps(data, data_size);
-							_change_sps = true;
+							memmove(_video_extradata, start_code, sizeof(start_code));
+							memmove(_video_extradata + sizeof(start_code), sps, sps_size);
+							_front->set_sps(_video_extradata, sizeof(start_code) + sps_size);
+							_video_extradata_size = sizeof(start_code) + sps_size;
 						}
-					}
-				}
 
-				bool is_pps = stream_parser::is_pps(_vsubmedia_type, data[0] & 0x1F);
-				if (is_pps)
-				{
-					if (saved_pps_size < 1 || !saved_pps)
-					{
-						_front->set_pps(data, data_size);
-						_change_pps = true;
-					}
-					else
-					{
-						if (memcmp(saved_pps, data, saved_pps_size))
+						uint8_t * pps = _video_ctx->extradata + 8 + sps_size + 3;
+						size_t pps_size = pps[-1];
+						if (_video_ctx->extradata_size < (8 + sps_size + 3 + pps_size))
+							break;
+						else
 						{
-							_front->set_pps(data, data_size);
-							_change_pps = true;
+
+							memmove(_video_extradata + sizeof(start_code) + sps_size, start_code, sizeof(start_code));
+							memmove(_video_extradata + sizeof(start_code) + sps_size + sizeof(start_code), pps, pps_size);
+							_front->set_pps(_video_extradata + sizeof(start_code) + sps_size, sizeof(start_code) + pps_size);
+							_video_extradata_size = _video_extradata_size + sizeof(start_code) + pps_size;
+
 						}
+
+						uint8_t * saved_sps = nullptr;
+						uint8_t * saved_pps = nullptr;
+						size_t saved_sps_size = 0;
+						size_t saved_pps_size = 0;
+						saved_sps = _front->get_sps(saved_sps_size);
+						saved_pps = _front->get_pps(saved_pps_size);
+
+						memmove(data, _video_extradata, _video_extradata_size);
+						memmove(data + _video_extradata_size, data, data_size);
+						_is_first_idr_rcvd = true;
+						_front->on_begin_video(_vsubmedia_type, saved_sps, saved_sps_size, saved_pps, saved_pps_size, data, data_size + _video_extradata_size, 0);
 					}
-				}
-
-				bool is_idr = stream_parser::is_idr(_vsubmedia_type, data[0] & 0x1F);
-
-				if (_change_sps || _change_pps)
-				{
-					saved_sps = _front->get_sps(saved_sps_size);
-					saved_pps = _front->get_pps(saved_pps_size);
-					if ((saved_sps_size > 0) && (saved_pps_size > 0))
-					{
-						memcpy(_video_extradata, saved_sps, saved_sps_size);
-						memcpy(_video_extradata + saved_sps_size, saved_pps, saved_pps_size);
-						_video_extradata_size = saved_sps_size + saved_pps_size;
-
-						if (is_idr && !_is_first_idr_rcvd)
-						{
-							memmove(data + _video_extradata_size, data, data_size);
-							memmove(data, _video_extradata, _video_extradata_size);
-							_is_first_idr_rcvd = true;
-
-							_front->on_begin_video(_vsubmedia_type, saved_sps, saved_sps_size, saved_pps, saved_pps_size, data, data_size + _video_extradata_size, 0);
-							_change_sps = false;
-							_change_pps = false;
-						}
-					}
-				}
-
-				//if (_sps_not_changed && _pps_not_changed && is_idr && !_is_first_idr_rcvd)
-				//	_is_first_idr_rcvd = true;
-
-				if (!is_sps && !is_pps && _is_first_idr_rcvd)
-				{
-					saved_sps = _front->get_sps(saved_sps_size);
-					saved_pps = _front->get_pps(saved_pps_size);
-					if (saved_sps_size > 0 && saved_pps_size > 0)
+					
+					if (_is_first_idr_rcvd)
 					{
 						_front->on_recv_video(_vsubmedia_type, data, data_size, 0);
 					}
-				}
+
+					index += data_size;
+				} while (index < packet_size);
 			}
 			
 			/*

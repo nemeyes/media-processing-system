@@ -53,7 +53,7 @@ public:
 	} ERR_CODE;
 
 	dk_file_demuxer(void);
-	~dk_file_demuxer(void);
+	virtual ~dk_file_demuxer(void);
 
 	dk_file_demuxer::ERR_CODE play(const char * filepath);
 	dk_file_demuxer::ERR_CODE stop(void);

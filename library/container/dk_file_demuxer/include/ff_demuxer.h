@@ -54,6 +54,10 @@ private:
 	bool _run;
 	HANDLE _thread;
 
+
+	uint8_t * _video_buffer;
+	uint8_t * _audio_buffer;
+
 };
 
 
