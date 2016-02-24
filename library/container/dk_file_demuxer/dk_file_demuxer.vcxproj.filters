@@ -30,6 +30,9 @@
     <ClInclude Include="include\stream_parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\scoped_lock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">

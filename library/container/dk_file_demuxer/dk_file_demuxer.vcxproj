@@ -87,6 +87,7 @@
     <ClInclude Include="..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h" />
     <ClInclude Include="include\dk_file_demuxer.h" />
     <ClInclude Include="include\ff_demuxer.h" />
+    <ClInclude Include="include\scoped_lock.h" />
     <ClInclude Include="include\stream_parser.h" />
   </ItemGroup>
   <ItemGroup>
