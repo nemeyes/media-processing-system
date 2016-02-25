@@ -11,29 +11,29 @@ public:
 	{
 		int32_t width;
 		int32_t height;
-		HWND full_hwnd;
-		HWND normal_hwnd;
+		HWND hwnd_full;
+		HWND hwnd;
 		_configuration_t(void)
 			: width(0)
 			, height(0)
-			, full_hwnd(NULL)
-			, normal_hwnd(NULL)
+			, hwnd_full(NULL)
+			, hwnd(NULL)
 		{}
 
 		_configuration_t(const _configuration_t & clone)
 		{
 			width = clone.width;
 			height = clone.height;
-			full_hwnd = clone.full_hwnd;
-			normal_hwnd = clone.normal_hwnd;
+			hwnd_full = clone.hwnd_full;
+			hwnd = clone.hwnd;
 		}
 
 		_configuration_t & operator=(const _configuration_t & clone)
 		{
 			width = clone.width;
 			height = clone.height;
-			full_hwnd = clone.full_hwnd;
-			normal_hwnd = clone.normal_hwnd;
+			hwnd_full = clone.hwnd_full;
+			hwnd = clone.hwnd;
 			return (*this);
 		}
 	} configuration_t;

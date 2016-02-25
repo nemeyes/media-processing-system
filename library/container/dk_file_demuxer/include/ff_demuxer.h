@@ -11,6 +11,7 @@ extern "C"
 #include <libavutil/opt.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/time.h>
+
 }
 
 class ff_demuxer
@@ -43,6 +44,9 @@ private:
 	int32_t packet_queue_push(PACKET_QUEUE_T * q, AVPacket * pkt);
 	int32_t packet_queue_pop(PACKET_QUEUE_T * q, AVPacket * pkt);
 
+	double get_audio_clock(void);
+	double get_video_clock(void);
+	double get_master_clock(void);
 private:
 	dk_file_demuxer * _front;
 
@@ -55,18 +59,35 @@ private:
 	double _video_timer;
 	double _video_last_dts;
 	double _video_last_delay;
-	double _video_clock; //pts of last decoded frame
+	double _video_current_dts;
+	double _video_current_dts_time;
+	double _video_clock; //dts of last bitstream
 	PACKET_QUEUE_T _video_packet_queue;
 
 	bool _video_recv_keyframe;
-	uint8_t _video_extradata[400];
+	uint8_t _video_extradata[100];
 	size_t _video_extradata_size;
 
 
+	AVCodecContext * _audio_ctx;
 	int32_t _audio_stream_index;
 	AVStream * _audio_stream;
 
+
+	int32_t _audio_buffer_size;
+	int32_t _audio_buffer_index;
+
+	double _audio_timer;
+	double _audio_last_dts;
+	double _audio_last_delay;
+	double _audio_current_dts;
+	double _audio_current_dts_time;
+	double _audio_clock; //dts of last bitstream
 	PACKET_QUEUE_T _audio_packet_queue;
+
+	bool _audio_recv_sample;
+	uint8_t _audio_extradata[20];
+	size_t _audio_extradata_size;
 
 	dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T _vsubmedia_type;
 	dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T _asubmedia_type;
@@ -81,8 +102,6 @@ private:
 
 	uint8_t * _video_buffer;
 	uint8_t * _audio_buffer;
-
-
 
 };
 

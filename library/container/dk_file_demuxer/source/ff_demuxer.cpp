@@ -24,7 +24,13 @@ ff_demuxer::ff_demuxer(dk_file_demuxer * front)
 	, _video_clock(0)
 	, _video_recv_keyframe(false)
 	, _video_extradata_size(0)
+	, _audio_ctx(nullptr)
 	, _audio_stream_index(-1)
+	, _audio_stream(nullptr)
+	, _audio_timer(0)
+	, _audio_last_dts(0)
+	, _audio_last_delay(0)
+	, _audio_clock(0)
 	, _vsubmedia_type(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T::UNKNOWN_VIDEO_TYPE)
 	, _asubmedia_type(dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T::UNKNOWN_AUDIO_TYPE)
 	, _run(false)
@@ -35,7 +41,7 @@ ff_demuxer::ff_demuxer(dk_file_demuxer * front)
 	, _thread_audio(INVALID_HANDLE_VALUE)
 {
 	_video_buffer = static_cast<uint8_t*>(malloc(VIDEO_BUFFER_SIZE));
-	_audio_buffer = static_cast<uint8_t*>(malloc(AUDIO_BUFFER_SIZE)); //48000hz * 16bitdetph * 8 channels
+	_audio_buffer = static_cast<uint8_t*>(malloc((MAX_AUDIO_FRAME_SIZE * 3) / 2)); //48000hz * 16bitdetph * 8 channels
 }
 
 ff_demuxer::~ff_demuxer(void)
@@ -50,19 +56,35 @@ ff_demuxer::~ff_demuxer(void)
 dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
 {
 	_format_ctx = nullptr;
+	
 	_video_ctx = nullptr;
 	_video_stream_index = -1;
 	_video_stream = nullptr;
-	_video_timer = 0;
+	_video_timer = (double)av_gettime() / 1000000.0;
 	_video_last_dts = 0;
-	_video_last_delay = 0;
+	_video_last_delay = 40e-3;
+	_video_current_dts = 0;
+	_video_current_dts_time = av_gettime();
 	_video_clock = 0;
 	_video_recv_keyframe = false;
+	memset(_video_extradata, 0x00, sizeof(_video_extradata));
 	_video_extradata_size = 0;
-
-	memset(_video_extradata, 0x00, sizeof(_video_extradata_size));
 	packet_queue_init(&_video_packet_queue);
+
+	_audio_ctx = nullptr;
+	_audio_stream_index = -1;
+	_audio_stream = nullptr;
+	_audio_timer = (double)av_gettime() / 1000000.0;
+	_audio_last_dts = 0;
+	_audio_last_delay = 40e-3;
+	_audio_current_dts = 0;
+	_audio_current_dts_time = av_gettime();
+	_audio_clock = 0;
+	_audio_recv_sample = false;
+	memset(_audio_extradata, 0x00, sizeof(_audio_extradata));
+	_audio_extradata_size = 0;
 	packet_queue_init(&_audio_packet_queue);
+
 
 	//open video file
 	if (avformat_open_input(&_format_ctx, filepath, NULL, NULL) != 0)
@@ -106,8 +128,8 @@ dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
 	}
 
 	_audio_stream = _format_ctx->streams[_audio_stream_index];
-	AVCodecContext * acodec_ctx = _audio_stream->codec;
-	switch (acodec_ctx->codec_id)
+	_audio_ctx = _audio_stream->codec;
+	switch (_audio_ctx->codec_id)
 	{
 	case AV_CODEC_ID_MP3:
 		_asubmedia_type = dk_file_demuxer::SUBMEDIA_TYPE_MP3;
@@ -236,9 +258,9 @@ void ff_demuxer::process(void)
 void ff_demuxer::process_video(void)
 {
 	AVPacket packet;
-	double dts;
-	double delay, actual_delay;
-
+	double dts = 0.f;
+	double delay = 0.f;
+	double actual_delay = 0.f;
 	_run_video = true;
 	while (_run_video)
 	{
@@ -251,41 +273,37 @@ void ff_demuxer::process_video(void)
 			continue;
 		}
 
-		dts = 0;
-		if ((dts = packet.dts) == AV_NOPTS_VALUE) 
-			dts = 0;
-		dts *= av_q2d(_video_ctx->time_base);
-
-		if (dts)
+		if (packet.dts != AV_NOPTS_VALUE)
+			dts = packet.dts;
+		dts *= av_q2d(_video_stream->time_base);
+		if (dts != 0)
 			_video_clock = dts;
 		else
 			dts = _video_clock;
 
 		delay = av_q2d(_video_ctx->time_base);
-
-		//if we are repeating a frame, adjust clock accordingly
-		//delay += src_frame->repeat_pict * (frame_delay * 0.5);
+		/* if we are repeating a frame, adjust clock accordingly */
+		//delay += src_frame->repeat_pict * (delay * 0.5);
 		_video_clock += delay;
-
-		delay = dts - _video_last_dts;
-		if (delay <= 0 || delay >= 1.0) 
+		
+		_video_current_dts = dts;
+		_video_current_dts_time = av_gettime();
+		delay = _video_current_dts - _video_last_dts;
+		if (delay <= 0 || delay >= 1.0)
 		{
-			/* if incorrect delay, use previous one */
 			delay = _video_last_delay;
 		}
-
-		/* save for next time */
 		_video_last_delay = delay;
-		_video_last_dts = dts;
+		_video_last_dts = _video_current_dts;
 
 		_video_timer += delay;
-		/* computer the REAL delay */
 		actual_delay = _video_timer - (av_gettime() / 1000000.0);
 		if (actual_delay < 0.010) 
 		{
 			/* Really it should skip the picture instead */
 			actual_delay = 0.010;
 		}
+		actual_delay = actual_delay * 1000 + 0.5;
 
 		if (_vsubmedia_type == dk_file_demuxer::SUBMEDIA_TYPE_H264)
 		{
@@ -354,17 +372,91 @@ void ff_demuxer::process_video(void)
 				index += data_size;
 			} while (index < packet_size);
 		}
-		::Sleep((actual_delay * 1000 + 0.5));
+		::Sleep(actual_delay);
 		av_free_packet(&packet);
 	}
 }
 
 void ff_demuxer::process_audio(void)
 {
-	_run_audio = true;
+	AVPacket packet;
+	double dts = 0.f;
+	double delay = 0.f;
+	double actual_delay = 0.f;	_run_audio = true;
 	while (_run_audio)
 	{
-		::Sleep(1);
+		int32_t code = packet_queue_pop(&_audio_packet_queue, &packet);
+		if (code < 0)
+			break;
+		if (code == 0)
+		{
+			::Sleep(1);
+			continue;
+		}
+
+		if (packet.dts != AV_NOPTS_VALUE)
+			dts = packet.dts;
+		dts *= av_q2d(_audio_stream->time_base);
+		if (dts != 0)
+			_audio_clock = dts;
+		else
+			dts = _audio_clock;
+
+		delay = av_q2d(_audio_ctx->time_base);
+		/* if we are repeating a frame, adjust clock accordingly */
+		//delay += src_frame->repeat_pict * (delay * 0.5);
+		_audio_clock += delay;
+
+		_audio_current_dts = dts;
+		_audio_current_dts_time = av_gettime();
+		delay = _audio_current_dts - _audio_last_dts;
+		if (delay <= 0 || delay >= 1.0)
+		{
+			delay = _audio_last_delay;
+		}
+		_audio_last_delay = delay;
+		_audio_last_dts = _audio_current_dts;
+
+		_audio_timer += delay;
+		actual_delay = _audio_timer - (av_gettime() / 1000000.0);
+		if (actual_delay < 0.010)
+		{
+			/* Really it should skip the picture instead */
+			actual_delay = 0.010;
+		}
+		actual_delay = actual_delay * 1000;
+
+		switch (_asubmedia_type)
+		{
+			case dk_file_demuxer::SUBMEDIA_TYPE_AAC :
+			{
+				if (!_audio_recv_sample)
+				{
+					int32_t samplerate = _audio_ctx->sample_rate;
+					int32_t channels = _audio_ctx->channels;
+					int32_t bitdepth = 16;// _audio_ctx->bits_per_raw_sample;
+					_audio_extradata_size = _audio_ctx->extradata_size;
+					memmove(_audio_extradata, _audio_ctx->extradata, _audio_extradata_size);
+					if (_front)
+						_front->on_begin_audio(_asubmedia_type, _audio_extradata, _audio_extradata_size, samplerate, bitdepth, channels, packet.data, packet.size, 0);
+					_audio_recv_sample = true;
+				}
+				else
+				{
+					_front->on_recv_audio(_asubmedia_type, packet.data, packet.size, 0);
+				}
+				break;
+			}
+			case dk_file_demuxer::SUBMEDIA_TYPE_MP3 :
+			{
+
+				break;
+			}
+		}
+
+
+		Sleep(actual_delay);
+		av_free_packet(&packet);
 	}
 }
 
@@ -379,11 +471,6 @@ int32_t ff_demuxer::packet_queue_push(PACKET_QUEUE_T * q, AVPacket * pkt)
 {
 	AVPacket dup_packet;
 	AVPacketList * pkt1;
-	
-/*
-	if (av_dup_packet(pkt) < 0) 
-		return -1;
-*/
 
 	if (av_copy_packet(&dup_packet, pkt) < 0)
 		return -1;
@@ -413,13 +500,6 @@ int32_t ff_demuxer::packet_queue_pop(PACKET_QUEUE_T * q, AVPacket * pkt)
 	int ret;
 
 	scoped_lock mutex(q->lock);
-
-	//if (global_video_state->quit) 
-	//{
-	//	ret = -1;
-	//	break;
-	//}
-
 	pkt1 = q->first_pkt;
 	if (pkt1) 
 	{
@@ -437,4 +517,35 @@ int32_t ff_demuxer::packet_queue_pop(PACKET_QUEUE_T * q, AVPacket * pkt)
 		ret = 0;
 	}
 	return ret;
+}
+
+double ff_demuxer::get_audio_clock(void)
+{
+	double pts;
+	int32_t hw_buf_size, bytes_per_sec, n;
+
+	pts = _audio_clock; /* maintained in the audio thread */
+	hw_buf_size = _audio_buffer_size - _audio_buffer_index;
+	bytes_per_sec = 0;
+	n = _audio_ctx->channels * 2;
+	if (_audio_stream) 
+	{
+		bytes_per_sec = _audio_ctx->sample_rate * n;
+	}
+	if (bytes_per_sec) 
+	{
+		pts -= (double)hw_buf_size / bytes_per_sec;
+	}
+	return pts;
+}
+double ff_demuxer::get_video_clock(void)
+{
+	double delta;
+	delta = (av_gettime() - _video_current_dts_time) / 1000000.0;
+	return _video_current_dts + delta;
+}
+
+double ff_demuxer::get_master_clock(void)
+{
+	return get_audio_clock();
 }

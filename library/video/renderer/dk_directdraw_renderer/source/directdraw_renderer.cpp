@@ -163,8 +163,8 @@ dk_directdraw_renderer::ERR_CODE directdraw_renderer::initialize_renderer(dk_dir
 {
 	release_renderer();
 	_config = config;
-	_full_screen_hwnd = _config->full_hwnd;
-	_noraml_screen_hwnd = _config->normal_hwnd;
+	_full_screen_hwnd = _config->hwnd_full;
+	_noraml_screen_hwnd = _config->hwnd;
 
 	dk_directdraw_renderer::ERR_CODE value = dk_directdraw_renderer::ERR_CODE_FAIL;
 	HWND hwnd = 0;
