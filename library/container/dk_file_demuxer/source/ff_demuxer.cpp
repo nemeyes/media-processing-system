@@ -424,7 +424,7 @@ void ff_demuxer::process_audio(void)
 			/* Really it should skip the picture instead */
 			actual_delay = 0.010;
 		}
-		actual_delay = actual_delay * 1000;
+		actual_delay = actual_delay * 900;
 
 		switch (_asubmedia_type)
 		{
