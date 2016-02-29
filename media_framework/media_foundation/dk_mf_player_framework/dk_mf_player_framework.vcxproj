@@ -81,10 +81,12 @@
   <ItemGroup>
     <ClInclude Include="dk_mf_player_framework.h" />
     <ClInclude Include="mf_player_framework.h" />
+    <ClInclude Include="mf_topology_builder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dk_mf_player_framework.cpp" />
     <ClCompile Include="mf_player_framework.cpp" />
+    <ClCompile Include="mf_topology_builder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
