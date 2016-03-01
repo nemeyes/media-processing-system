@@ -1,2 +1,0 @@
-NvEncoderLowLatency.exe -i original.yuv -o LL_TPQ_HQ.264 -size 1920 1080 -maxSize 1920 1080 -codec 0 -preset lowLatencyHQ -fps 30 -bitrate 4000000 -vbvSize 4000000 -rcmode 8 -deviceID 0
-ffmpeg.exe -i LL_TPQ_HQ.264 LL_TPQ_HQ.yuv
