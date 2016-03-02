@@ -1,0 +1,1 @@
+ffmpeg -i original.mkv -c:v rawvideo -pix_fmt yuv420p original.yuv
