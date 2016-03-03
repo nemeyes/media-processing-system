@@ -1,0 +1,12 @@
+call SP_CBR_HP.bat
+call SP_CBR_HQ.bat
+call SP_VBR_HP.bat
+call SP_VBR_HQ.bat
+call TPQ_HP.bat
+call TPQ_HQ.bat
+call TPS_HP.bat
+call TPS_HQ.bat
+call LL_TPQ_HP.bat
+call LL_TPQ_HQ.bat
+call LL_TPS_HP.bat
+call LL_TPS_HQ.bat
