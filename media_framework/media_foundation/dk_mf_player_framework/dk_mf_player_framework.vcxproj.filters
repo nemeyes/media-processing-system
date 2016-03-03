@@ -21,18 +21,12 @@
     <ClInclude Include="mf_player_framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mf_topology_builder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dk_mf_player_framework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mf_player_framework.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mf_topology_builder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

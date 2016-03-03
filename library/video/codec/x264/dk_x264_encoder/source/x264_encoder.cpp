@@ -289,7 +289,7 @@ dk_x264_encoder::ERR_CODE x264_encoder::encode(dk_video_encoder::dk_video_entity
 					if ((begin[0] & 0x1F) != 0x09) //exclude AUD
 					{
 						//_front->on_acquire_bitstream(begin - 4, (bs + bs_size) - begin + 4);
-						_front->push(begin - 4, (bs + bs_size) - begin + 4);
+						_front->push(begin - 4, (bs + bs_size) - begin + 4, 0);
 					}
 					break;
 				}
@@ -300,7 +300,7 @@ dk_x264_encoder::ERR_CODE x264_encoder::encode(dk_video_encoder::dk_video_entity
 					if ((begin[0] & 0x1F) != 0x09) //exclude AUD
 					{
 						//_front->on_acquire_bitstream(begin - 4, nalu_end - nalu_begin + 4);
-						_front->push(begin - 4, (bs + bs_size) - begin + 4);
+						_front->push(begin - 4, (bs + bs_size) - begin + 4, 0);
 					}
 				}
 			}
@@ -330,7 +330,7 @@ dk_x264_encoder::ERR_CODE x264_encoder::get_queued_data(dk_video_encoder::dk_vid
 	if (_front)
 	{
 		bitstream->mem_type = dk_x264_encoder::MEMORY_TYPE_HOST;
-		return _front->pop((uint8_t*)bitstream->data, bitstream->data_size);
+		return _front->pop((uint8_t*)bitstream->data, bitstream->data_size, bitstream->pts);
 	}
 	else
 	{

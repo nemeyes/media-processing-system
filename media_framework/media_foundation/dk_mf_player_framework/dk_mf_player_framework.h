@@ -37,36 +37,18 @@ public:
 	dk_mf_player_framework::ERR_CODE initialize(HWND hwnd, bool aspect_ratio, bool use_clock, bool enable_audio);
 	dk_mf_player_framework::ERR_CODE release(void);
 
-	dk_mf_player_framework::STATE state(void);
 
-	bool seekable(void);
-	int seek_resolution(void);
-	int current_seek_position(void);
-	long long current_media_time(void);
+	// Playback control
+	dk_mf_player_framework::ERR_CODE seek(int position);
+	dk_mf_player_framework::ERR_CODE slowfoward_rate(float rate);
+	dk_mf_player_framework::ERR_CODE fastforward_rate(float rate);
 
-	long long get_total_duration(void);
-	float get_step_duration(void);
 
-	//dk_player_framework::ERR_CODE seek(int position);
-	//dk_player_framework::ERR_CODE slowfoward_rate(double rate);
-	//dk_player_framework::ERR_CODE fastforward_rate(double rate);
-
-	dk_mf_player_framework::ERR_CODE open_file(wchar_t * file);
-	dk_mf_player_framework::ERR_CODE open_rtmp(wchar_t * url, wchar_t * username, wchar_t * password);
+	dk_mf_player_framework::ERR_CODE open_file(const wchar_t * file);
 	dk_mf_player_framework::ERR_CODE play(void);
 	dk_mf_player_framework::ERR_CODE pause(void);
 	dk_mf_player_framework::ERR_CODE stop(void);
-
-
-
-	//void aspect_ratio(bool enable);
-	//void fullscreen(bool enable);
-	//void list_dxva2_decoder_guids(std::vector<GUID> * guids);
-
-	//HRESULT update_video_windows(const LPRECT rect);
-	//HRESULT repaint(HDC hdc);
-	//HRESULT on_change_displaymode(void);
-	//HRESULT handle_graphevent(fn_graph_event func);
+	dk_mf_player_framework::STATE state(void) const;
 
 
 private:

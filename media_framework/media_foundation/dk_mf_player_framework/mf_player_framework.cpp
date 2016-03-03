@@ -18,7 +18,8 @@ mf_player_framework::mf_player_framework(void)
 
 mf_player_framework::~mf_player_framework(void)
 {
-
+	shutdown_source();
+	close_session();
 	MFShutdown();
 	::CloseHandle(_close_completion_event);
 }
@@ -26,17 +27,18 @@ mf_player_framework::~mf_player_framework(void)
 dk_mf_player_framework::ERR_CODE mf_player_framework::initialize(HWND hwnd, bool aspect_ratio, bool use_clock, bool enable_audio)
 {
 	_hwnd = hwnd;
+	return dk_mf_player_framework::ERR_CODE_SUCCESS;
 }
 
 dk_mf_player_framework::ERR_CODE mf_player_framework::release(void)
 {
-
+	return dk_mf_player_framework::ERR_CODE_SUCCESS;
 }
 
 // Playback control
 dk_mf_player_framework::ERR_CODE mf_player_framework::seek(int position)
 {
-
+	return dk_mf_player_framework::ERR_CODE_SUCCESS;
 }
 
 dk_mf_player_framework::ERR_CODE mf_player_framework::slowfoward_rate(float rate)
@@ -85,12 +87,9 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::fastforward_rate(float rat
 		return dk_mf_player_framework::ERR_CODE_SUCCESS;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(wchar_t * file)
+dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * file)
 {
-	CComPtr<IMFTopology> topology = NULL;
 	HRESULT hr = S_OK;
-	DWORD extension_start = 0;
-
 	if (_hwnd == NULL)
 		return dk_mf_player_framework::ERR_CODE_FAILED;
 
@@ -103,32 +102,236 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(wchar_t * file)
 			BREAK_ON_FAIL(hr);
 		}
 
-		// Step 2: build the topology.  Here we are using the TopoBuilder helper class.
-		if (renderHwnd != NULL && network)
+
+		// Step 2 : create a media source for specified URL string, The URL can be a path to a stream or it can be a path to a local file
+		MF_OBJECT_TYPE obj_type = MF_OBJECT_INVALID;
+		ATL::CComPtr<IMFSourceResolver> src_resolver = NULL;
+		ATL::CComPtr<IUnknown> source;
+		//ATL::CComPtr<IMFMediaSource> media_source;
+		do
 		{
-			hr = m_topoBuilder.RenderURL(sURL, m_hwndVideo, true);
-		}
-		else if (renderHwnd != NULL && !network)
+			hr = MFCreateSourceResolver(&src_resolver);
+			BREAK_ON_FAIL(hr);
+
+			hr = src_resolver->CreateObjectFromURL(file, MF_RESOLUTION_MEDIASOURCE | MF_RESOLUTION_CONTENT_DOES_NOT_HAVE_TO_MATCH_EXTENSION_OR_MIME_TYPE, NULL, &obj_type, &source);
+			BREAK_ON_FAIL(hr);
+
+			hr = source->QueryInterface(IID_PPV_ARGS(&_media_source));
+			BREAK_ON_NULL(_media_source, E_NOINTERFACE);
+		} while (0);
+
+		if (FAILED(hr))
+			return dk_mf_player_framework::ERR_CODE_FAILED;
+
+		// Step 3: build the topology
+		CComQIPtr<IMFPresentationDescriptor> present_descriptor;
+		DWORD number_of_streams = 0;
+		do
 		{
-			hr = m_topoBuilder.RenderURL(sURL, m_hwndVideo, false);
-		}
-		else if (renderHwnd == NULL && network)
-		{
-			hr = m_topoBuilder.RenderURL(sURL, NULL, true);
-		}
+			_topology.Release();
+			hr = MFCreateTopology(&_topology);
+			BREAK_ON_FAIL(hr);
+
+			hr = _media_source->CreatePresentationDescriptor(&present_descriptor);
+			BREAK_ON_FAIL(hr);
+
+			hr = present_descriptor->GetStreamDescriptorCount(&number_of_streams);
+			BREAK_ON_FAIL(hr);
+
+			for (DWORD index = 0; index < number_of_streams; index++)
+			{
+				ATL::CComPtr<IMFStreamDescriptor> stream_descriptor;
+				ATL::CComPtr<IMFTopologyNode> source_node = NULL;
+				ATL::CComPtr<IMFTopologyNode> transform_node = NULL;
+				ATL::CComPtr<IMFTopologyNode> sink_node = NULL;
+				BOOL stream_selected = FALSE;
+
+				do
+				{
+					BREAK_ON_NULL(_topology, E_UNEXPECTED);
+
+					// get the stream descriptor for this stream(information about stream).
+					hr = present_descriptor->GetStreamDescriptorByIndex(index, &stream_selected, &stream_descriptor);
+					BREAK_ON_FAIL(hr);
+
+					if (stream_selected)
+					{
+
+						/////////////////create a source node for this stream///////////////////
+						do
+						{
+							// create a source node for this stream
+							hr = MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &source_node);
+							BREAK_ON_FAIL(hr);
+
+							// associate the node with the souce by passing in a pointer to the media source and indicating that it is the source
+							hr = source_node->SetUnknown(MF_TOPONODE_SOURCE, _media_source);
+							BREAK_ON_FAIL(hr);
+
+							// set the node presentation descriptor attribute of the node by passing in a pointer to the presentation descriptor
+							hr = source_node->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, present_descriptor);
+							BREAK_ON_FAIL(hr);
+
+							// set the node stream descriptor attribute by passing in a pointer to the stream descriptor
+							hr = source_node->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, stream_descriptor);
+							BREAK_ON_FAIL(hr);
+
+							hr = source_node->SetUINT32(MF_TOPONODE_CONNECT_METHOD, MF_CONNECT_ALLOW_DECODER);
+							BREAK_ON_FAIL(hr);
+
+						} while (0);
+						BREAK_ON_FAIL(hr);
+
+						/////////////////create a output node for renderer///////////////////
+						ATL::CComPtr<IMFMediaTypeHandler> media_type_handler = NULL;
+						ATL::CComPtr<IMFMediaType> media_type;
+						ATL::CComPtr<IMFActivate> renderer_activate = NULL;
+						GUID major_type = GUID_NULL;
+
+						do
+						{
+							if (_hwnd!=NULL)
+							{
+								hr = stream_descriptor->GetMediaTypeHandler(&media_type_handler);
+								BREAK_ON_FAIL(hr);
+
+								hr = media_type_handler->GetCurrentMediaType(&media_type);
+								BREAK_ON_FAIL(hr);
+
+								hr = media_type->GetMajorType(&major_type);
+								BREAK_ON_FAIL(hr);
+
+								// Create an IMFActivate controller object for the renderer, based on the media type.
+								if (major_type == MFMediaType_Audio)
+								{
+									hr = MFCreateAudioRendererActivate(&renderer_activate);
+									// create the node which will represent the renderer
+									hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
+									BREAK_ON_FAIL(hr);
+
+									// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
+									hr = sink_node->SetObject(renderer_activate);
+									BREAK_ON_FAIL(hr);
+								}
+								else if (major_type == MFMediaType_Video)
+								{
+#if 0
+									hr = MFCreateVideoRendererActivate(_hwnd, &renderer_activate);
+									BREAK_ON_FAIL(hr);
+
+									// create the node which will represent the renderer
+									hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
+									BREAK_ON_FAIL(hr);
+
+									// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
+									hr = sink_node->SetObject(renderer_activate);
+									BREAK_ON_FAIL(hr);
+#else
+									hr = create_dx11_video_renderer_activate(_hwnd, &renderer_activate);
+									BREAK_ON_FAIL(hr);
+
+									ATL::CComPtr<IMFMediaSink> media_sink;
+									hr = renderer_activate->ActivateObject(IID_PPV_ARGS(&media_sink));
+									BREAK_ON_FAIL(hr);
+
+
+									ATL::CComPtr<IMFGetService> get_service;
+									hr = media_sink->QueryInterface(IID_PPV_ARGS(&get_service));
+									BREAK_ON_FAIL(hr);
+
+
+									ATL::CComPtr<IMFStreamSink> stream_sink;
+									DWORD stream_sink_count = 0;
+									hr = media_sink->GetStreamSinkCount(&stream_sink_count);
+									BREAK_ON_FAIL(hr);
+									hr = media_sink->GetStreamSinkByIndex((stream_sink_count-1), &stream_sink);
+									BREAK_ON_FAIL(hr);
+
+									CLSID devuce_manager_iid = IID_IMFDXGIDeviceManager;
+									hr = get_service->GetService(MR_VIDEO_ACCELERATION_SERVICE, devuce_manager_iid, (void**)&_device_manager);
+									BREAK_ON_FAIL(hr);
+
+									LONG_PTR device_manage_ptr = reinterpret_cast<ULONG_PTR>(_device_manager.p);
+
+									hr = create_video_decoder_node(media_type, &transform_node, device_manage_ptr, NULL);
+									BREAK_ON_FAIL(hr);
+
+
+									hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
+									BREAK_ON_FAIL(hr);
+
+									hr = sink_node->SetObject(stream_sink);
+									BREAK_ON_FAIL(hr);
+
+									hr = sink_node->SetUINT32(MF_TOPONODE_STREAMID, index+1);
+									BREAK_ON_FAIL(hr);
+
+									hr = sink_node->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE);
+									BREAK_ON_FAIL(hr);
+#endif
+
+								}
+								else
+								{
+									hr = E_FAIL;
+								}
+								BREAK_ON_FAIL(hr);
+							}
+						} while (0);
+						BREAK_ON_FAIL(hr);
+
+						if (source_node)
+						{
+							hr = _topology->AddNode(source_node);
+							BREAK_ON_FAIL(hr);
+						}
+
+						if (transform_node)
+						{
+							hr = _topology->AddNode(transform_node);
+							BREAK_ON_FAIL(hr);
+						}
+
+						if (sink_node)
+						{
+							hr = _topology->AddNode(sink_node);
+							BREAK_ON_FAIL(hr);
+						}
+
+						// Connect the source node to the output node.  The topology will find the
+						// intermediate nodes needed to convert media types.
+						if (source_node && transform_node && sink_node)
+						{
+							hr = source_node->ConnectOutput(0, transform_node, 0);
+							hr = transform_node->ConnectOutput(0, sink_node, 0);
+						}
+						else if (source_node && sink_node)
+						{
+							hr = source_node->ConnectOutput(0, sink_node, 0);
+						}
+					}
+				} while (0);
+
+				if (FAILED(hr))
+				{
+					hr = present_descriptor->DeselectStream(index);
+					BREAK_ON_FAIL(hr);
+				}
+			}
+		} while (0);
 		BREAK_ON_FAIL(hr);
 
-		// get the topology from the TopoBuilder
-		topology = m_topoBuilder.GetTopology();
-		BREAK_ON_NULL(topology, E_UNEXPECTED);
+		// Step 4: add the topology to the internal queue of topologies associated with this
+		hr = _topology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE);
+		BREAK_ON_FAIL(hr);
 
-		// Step 3: add the topology to the internal queue of topologies associated with this
+		hr = _topology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL);
+		BREAK_ON_FAIL(hr);
+
+		// Step 5: add the topology to the internal queue of topologies associated with this
 		// media session
-		if (topology != NULL)
-		{
-			hr = _session->SetTopology(0, topology);
-			BREAK_ON_FAIL(hr);
-		}
+		hr = _session->SetTopology(0, _topology);
+		BREAK_ON_FAIL(hr);
 
 		// If we've just initialized a brand new topology in step 1, set the player state 
 		// to "open pending" - not playing yet, but ready to begin.
@@ -146,7 +349,144 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(wchar_t * file)
 	return dk_mf_player_framework::ERR_CODE_SUCCESS;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::Play(void)
+HRESULT mf_player_framework::create_dx11_video_renderer_activate(HWND hwnd, IMFActivate ** activate)
+{
+	if (activate == nullptr)
+		return E_POINTER;
+
+	HMODULE renderer_dll = ::LoadLibrary(L"dk_mf_dx11_video_renderer.dll");
+	if (renderer_dll == NULL)
+		return E_FAIL;
+
+	LPCSTR fn_name = "CreateDX11VideoRendererActivate";
+	FARPROC create_dx11_video_renderer_activate_far_proc = ::GetProcAddress(renderer_dll, fn_name);
+	if (create_dx11_video_renderer_activate_far_proc == nullptr)
+		return E_FAIL;
+
+	typedef HRESULT(STDAPICALLTYPE* LPCreateDX11VideoRendererActivate)(HWND, IMFActivate**);
+	LPCreateDX11VideoRendererActivate create_dx11_video_renderer_activate = reinterpret_cast<LPCreateDX11VideoRendererActivate> (create_dx11_video_renderer_activate_far_proc);
+
+	HRESULT hr = create_dx11_video_renderer_activate(hwnd, activate);
+
+	//::FreeLibrary(renderer_dll);
+
+	return hr;
+}
+
+HRESULT mf_player_framework::create_video_decoder_node(IMFMediaType * media_type, IMFTopologyNode ** decoder, ULONG_PTR device_manager, IMFTransform ** transform)
+{
+	HRESULT hr;
+
+	GUID subtype;
+	hr = media_type->GetGUID(MF_MT_SUBTYPE, &subtype);
+	RETURN_ON_FAIL(hr);
+
+	ATL::CComPtr<IMFTransform> decoder_transform;
+
+	uint32_t input_image_width = 0;
+	uint32_t input_image_height = 0;
+	hr = MFGetAttributeSize(media_type, MF_MT_FRAME_SIZE, &input_image_width, &input_image_height);
+	RETURN_ON_FAIL(hr);
+
+	hr = find_video_decoder(subtype, input_image_width, input_image_height, &decoder_transform);
+	RETURN_ON_FAIL(hr);
+
+	ATL::CComPtr<IMFAttributes> decoder_attribute;
+	hr = decoder_transform->GetAttributes(&decoder_attribute);
+	RETURN_ON_FAIL(hr);
+
+	uint32_t transform_async = 0;
+	hr = decoder_attribute->GetUINT32(MF_TRANSFORM_ASYNC, &transform_async);
+	if (SUCCEEDED(hr) && transform_async == TRUE)
+	{
+		hr = decoder_attribute->SetUINT32(MF_TRANSFORM_ASYNC_UNLOCK, TRUE);
+		RETURN_ON_FAIL(hr);
+	}
+
+	if (device_manager != NULL)
+	{
+		ATL::CComPtr<IUnknown> device_manager_unknown = reinterpret_cast<IUnknown*>(device_manager);
+		ATL::CComPtr<IUnknown> dxgi_device_manager;
+		CLSID d3d_aware_attribute;
+		hr = device_manager_unknown->QueryInterface(BORROWED_IID_IMFDXGIDeviceManager, (void**)(&dxgi_device_manager));
+		if (SUCCEEDED(hr))
+			d3d_aware_attribute = BORROWED_MF_SA_D3D11_AWARE;
+		else
+			d3d_aware_attribute = MF_SA_D3D_AWARE;
+
+		uint32_t d3d_aware;
+		hr = decoder_attribute->GetUINT32(d3d_aware_attribute, &d3d_aware);
+		if (SUCCEEDED(hr) && d3d_aware != 0)
+		{
+			hr = decoder_transform->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, device_manager);
+			RETURN_ON_FAIL(hr);
+		}
+	}
+
+	hr = decoder_transform->SetInputType(0, media_type, 0);
+	RETURN_ON_FAIL(hr);
+
+	CComPtr<IMFTopologyNode> node;
+	hr = MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &node);
+	RETURN_ON_FAIL(hr);
+
+	hr = node->SetObject(decoder_transform);
+	RETURN_ON_FAIL(hr);
+
+	hr = node->SetUINT32(MF_TOPONODE_CONNECT_METHOD, MF_CONNECT_ALLOW_CONVERTER);
+	RETURN_ON_FAIL(hr);
+
+	*decoder = node.Detach();
+	if (transform != NULL)
+	{
+		*transform = decoder_transform.Detach();
+	}
+	return S_OK;
+}
+
+HRESULT mf_player_framework::find_video_decoder(REFCLSID subtype, uint32_t width, uint32_t height, IMFTransform ** decoder)
+{
+	HRESULT hr;
+	UINT32 flags = MFT_ENUM_FLAG_SORTANDFILTER;
+
+	MFT_REGISTER_TYPE_INFO input_register_type_info = { MFMediaType_Video, subtype };
+	flags |= MFT_ENUM_FLAG_SYNCMFT;
+	flags |= MFT_ENUM_FLAG_HARDWARE;
+
+
+	IMFActivate ** activate = NULL;
+	uint32_t registered_decoders_number = 0;
+
+	const CLSID supported_output_subtypes[] = { MFVideoFormat_NV12, MFVideoFormat_YUY2 };
+	bool found_decoder = false;
+	for (int32_t index = 0; !found_decoder && index < ARRAYSIZE(supported_output_subtypes); index++)
+	{
+		MFT_REGISTER_TYPE_INFO output_register_type_info = { MFMediaType_Video, supported_output_subtypes[index] };
+		hr = MFTEnumEx(MFT_CATEGORY_VIDEO_DECODER, flags, &input_register_type_info, &output_register_type_info, &activate, &registered_decoders_number);
+		RETURN_ON_FAIL(hr);
+
+		if (SUCCEEDED(hr) && (registered_decoders_number == 0))
+			hr = MF_E_TOPO_CODEC_NOT_FOUND;
+
+		if (SUCCEEDED(hr))
+		{
+			hr = activate[0]->ActivateObject(IID_PPV_ARGS(decoder));
+			found_decoder = true;
+		}
+		for (int32_t x = 0; x < registered_decoders_number; x++)
+		{
+			activate[x]->Release();
+		}
+		CoTaskMemFree(activate);
+	}
+
+	if (!found_decoder)
+		return E_FAIL;
+
+	return S_OK;
+}
+
+dk_mf_player_framework::ERR_CODE mf_player_framework::play(void)
 {
 	if (_state != dk_mf_player_framework::STATE_PAUSED && _state != dk_mf_player_framework::STATE_STOPPED)
 		return dk_mf_player_framework::ERR_CODE_FAILED;
@@ -161,7 +501,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::Play(void)
 		return dk_mf_player_framework::ERR_CODE_FAILED;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::Pause(void)
+dk_mf_player_framework::ERR_CODE mf_player_framework::pause(void)
 {
 	if (_state != dk_mf_player_framework::STATE_STARTED)
 		return dk_mf_player_framework::ERR_CODE_FAILED;
@@ -179,7 +519,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::Pause(void)
 		return dk_mf_player_framework::ERR_CODE_FAILED;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::Stop(void)
+dk_mf_player_framework::ERR_CODE mf_player_framework::stop(void)
 {
 	HRESULT hr = S_OK;
 	do
@@ -262,7 +602,7 @@ ULONG mf_player_framework::Release(void)
 // that implements the IMFMediaEventGenerator interface.)
 HRESULT mf_player_framework::Invoke(IMFAsyncResult * async_result)
 {
-	CComPtr<IMFMediaEvent> media_event;
+	ATL::CComPtr<IMFMediaEvent> media_event;
 	HRESULT hr = S_OK;
 	MediaEventType media_event_type;
 
@@ -302,12 +642,90 @@ HRESULT mf_player_framework::Invoke(IMFAsyncResult * async_result)
 	return S_OK;
 }
 
+HRESULT mf_player_framework::process_event(ATL::CComPtr<IMFMediaEvent> & media_event)
+{
+	HRESULT hr_status = S_OK;            // Event status
+	HRESULT hr = S_OK;
+	MF_TOPOSTATUS topo_status = MF_TOPOSTATUS_INVALID;
+	MediaEventType media_event_type;
+
+	do
+	{
+		BREAK_ON_NULL(media_event, E_POINTER);
+
+		// Get the event type.
+		hr = media_event->GetType(&media_event_type);
+		BREAK_ON_FAIL(hr);
+
+		// Get the event status. If the operation that triggered the event did
+		// not succeed, the status is a failure code.
+		hr = media_event->GetStatus(&hr_status);
+		BREAK_ON_FAIL(hr);
+
+		//Check if the async operation succeeded.
+		if (FAILED(hr_status))
+		{
+			hr = hr_status;
+			break;
+		}
+
+		// Switch on the event type. Update the internal state of the CPlayer as needed.
+		if (media_event_type == MESessionTopologyStatus)
+		{
+			// Get the status code.
+			hr = media_event->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&topo_status);
+			BREAK_ON_FAIL(hr);
+
+			if (topo_status == MF_TOPOSTATUS_READY)
+			{
+				hr = topology_ready_callback();
+			}
+		}
+		else if (media_event_type == MEEndOfPresentation)
+		{
+			hr = presentation_ended_callback();
+		}
+	} while (0);
+	return hr;
+}
+
+HRESULT mf_player_framework::topology_ready_callback(void)
+{
+	HRESULT hr = S_OK;
+
+	// release any previous instance of the m_pVideoDisplay interface
+	_video_display.Release();
+	// Ask the session for the IMFVideoDisplayControl interface. 
+	MFGetService(_session, MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&_video_display));
+
+	// since the topology is ready, start playback
+	hr = start_playback();
+
+	_presentation_clock = NULL;
+	_session->GetClock(&_presentation_clock);
+
+	determine_duration();
+
+	// get the rate control service that can be used to change the playback rate of the service
+	_rate_control = NULL;
+	MFGetService(_session, MF_RATE_CONTROL_SERVICE, IID_IMFRateControl, (void**)&_rate_control);
+
+	return hr;
+}
+
+HRESULT mf_player_framework::presentation_ended_callback(void)
+{
+	// The session puts itself into the stopped state automatically.
+	_state = dk_mf_player_framework::STATE_STOPPED;
+	_session->Stop();
+	_session->Shutdown();
+	return S_OK;
+}
+
 HRESULT mf_player_framework::create_session(void)
 {
 	// Close the old session, if any.
 	HRESULT hr = S_OK;
-	HRESULT hr2 = S_OK;
-	MF_TOPOSTATUS topo_status = MF_TOPOSTATUS_INVALID;
 	CComQIPtr<IMFMediaEvent> media_event;
 
 	do
@@ -438,82 +856,19 @@ HRESULT mf_player_framework::determine_duration(void)
 	return hr;
 }
 
-HRESULT mf_player_framework::process_event(CComPtr<IMFMediaEvent> & media_event)
+HRESULT mf_player_framework::shutdown_source(void)
 {
-	HRESULT hr_status = S_OK;            // Event status
 	HRESULT hr = S_OK;
-	MF_TOPOSTATUS topo_status = MF_TOPOSTATUS_INVALID;
-	MediaEventType media_event_type;
-
-	do
+	if (_media_source)
 	{
-		BREAK_ON_NULL(media_event, E_POINTER);
-
-		// Get the event type.
-		hr = media_event->GetType(&media_event_type);
-		BREAK_ON_FAIL(hr);
-
-		// Get the event status. If the operation that triggered the event did
-		// not succeed, the status is a failure code.
-		hr = media_event->GetStatus(&hr_status);
-		BREAK_ON_FAIL(hr);
-
-		// Check if the async operation succeeded.
-		if (FAILED(hr_status))
-		{
-			hr = hr_status;
-			break;
-		}
-
-		// Switch on the event type. Update the internal state of the CPlayer as needed.
-		if (media_event_type == MESessionTopologyStatus)
-		{
-			// Get the status code.
-			hr = media_event->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&topo_status);
-			BREAK_ON_FAIL(hr);
-
-			if (topo_status == MF_TOPOSTATUS_READY)
-			{
-				hr = topology_ready_callback();
-			}
-		}
-		else if (media_event_type == MEEndOfPresentation)
-		{
-			hr = presentation_ended_callback();
-		}
-	} while (0);
+		// shut down the source
+		hr = _media_source->Shutdown();
+		// release the source, since all subsequent calls to it will fail
+		_media_source.Release();
+	}
+	else
+	{
+		hr = E_UNEXPECTED;
+	}
 	return hr;
-}
-
-HRESULT mf_player_framework::topology_ready_callback(void)
-{
-	HRESULT hr = S_OK;
-
-	// release any previous instance of the m_pVideoDisplay interface
-	_video_display.Release();
-	// Ask the session for the IMFVideoDisplayControl interface. 
-	MFGetService(_session, MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&_video_display));
-
-	// since the topology is ready, start playback
-	hr = start_playback();
-
-	_presentation_clock = NULL;
-	_session->GetClock(&_presentation_clock);
-
-	determine_duration();
-
-	// get the rate control service that can be used to change the playback rate of the service
-	_rate_control = NULL;
-	MFGetService(_session, MF_RATE_CONTROL_SERVICE, IID_IMFRateControl, (void**)&_rate_control);
-
-	return hr;
-}
-
-HRESULT mf_player_framework::presentation_ended_callback(void)
-{
-	// The session puts itself into the stopped state automatically.
-	_state = dk_mf_player_framework::STATE_STOPPED;
-	_session->Stop();
-	_session->Shutdown();
-	return S_OK;
 }
