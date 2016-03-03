@@ -1,24 +1,7 @@
 #pragma once
 #include "dk_mf_player_framework.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <assert.h>
-#include <atlbase.h>
-
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mferror.h>
-#include <evr.h>
-#include <wmcontainer.h>
-#include <initguid.h>
-#include <mferror.h>
-
-#define BREAK_ON_FAIL(value)            if(FAILED(value)) break;
-#define BREAK_ON_NULL(value, newHr)     if(value == NULL) { hr = newHr; break; }
-#define RETURN_ON_FAIL(value) if(FAILED(value)) return value;
-
-const IID BORROWED_IID_IMFDXGIDeviceManager = { 0xeb533d5d, 0x2db6, 0x40f8, { 0x97, 0xa9, 0x49, 0x46, 0x92, 0x01, 0x4f, 0x07 } };
-const GUID BORROWED_MF_SA_D3D11_AWARE = { 0x206b4fc8, 0xfcf9, 0x4c51, { 0xaf, 0xe3, 0x97, 0x64, 0x36, 0x9e, 0x33, 0xa0 } };
+#include "mf_defines.h"
 
 class mf_player_framework : public IMFAsyncCallback
 {
@@ -69,11 +52,6 @@ private:
 	HRESULT presentation_ended_callback(void);
 
 	HRESULT shutdown_source(void);
-
-	//create custom video renderer
-	HRESULT create_dx11_video_renderer_activate(HWND hwnd, IMFActivate ** activate);
-	HRESULT create_video_decoder_node(IMFMediaType * media_type, IMFTopologyNode ** decoder, ULONG_PTR device_manager, IMFTransform ** transform);
-	HRESULT find_video_decoder(REFCLSID subtype, uint32_t width, uint32_t height, IMFTransform ** decoder);
 
 private:
 	volatile long _ref_count;

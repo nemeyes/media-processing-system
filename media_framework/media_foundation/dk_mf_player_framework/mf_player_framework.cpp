@@ -1,6 +1,7 @@
 #include <windows.h>
 #include "mf_player_framework.h"
-#include <mferror.h>
+//#include <mferror.h>
+#include "mf_topology_builder.h"
 
 mf_player_framework::mf_player_framework(void)
 	: _ref_count(1)
@@ -18,6 +19,7 @@ mf_player_framework::mf_player_framework(void)
 
 mf_player_framework::~mf_player_framework(void)
 {
+	stop();
 	shutdown_source();
 	close_session();
 	MFShutdown();
@@ -102,26 +104,9 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 			BREAK_ON_FAIL(hr);
 		}
 
-
 		// Step 2 : create a media source for specified URL string, The URL can be a path to a stream or it can be a path to a local file
-		MF_OBJECT_TYPE obj_type = MF_OBJECT_INVALID;
-		ATL::CComPtr<IMFSourceResolver> src_resolver = NULL;
-		ATL::CComPtr<IUnknown> source;
-		//ATL::CComPtr<IMFMediaSource> media_source;
-		do
-		{
-			hr = MFCreateSourceResolver(&src_resolver);
-			BREAK_ON_FAIL(hr);
-
-			hr = src_resolver->CreateObjectFromURL(file, MF_RESOLUTION_MEDIASOURCE | MF_RESOLUTION_CONTENT_DOES_NOT_HAVE_TO_MATCH_EXTENSION_OR_MIME_TYPE, NULL, &obj_type, &source);
-			BREAK_ON_FAIL(hr);
-
-			hr = source->QueryInterface(IID_PPV_ARGS(&_media_source));
-			BREAK_ON_NULL(_media_source, E_NOINTERFACE);
-		} while (0);
-
-		if (FAILED(hr))
-			return dk_mf_player_framework::ERR_CODE_FAILED;
+		hr = mf_topology_builder::create_source(file, &_media_source);
+		BREAK_ON_FAIL(hr);
 
 		// Step 3: build the topology
 		CComQIPtr<IMFPresentationDescriptor> present_descriptor;
@@ -140,7 +125,10 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 
 			for (DWORD index = 0; index < number_of_streams; index++)
 			{
-				ATL::CComPtr<IMFStreamDescriptor> stream_descriptor;
+#if 1
+				mf_topology_builder::add_branch_to_partial_topology(_topology, _media_source, index, present_descriptor, _hwnd, &_device_manager);
+#else
+				ATL::CComPtr<IMFStreamDescriptor> stream_descriptor = NULL;
 				ATL::CComPtr<IMFTopologyNode> source_node = NULL;
 				ATL::CComPtr<IMFTopologyNode> transform_node = NULL;
 				ATL::CComPtr<IMFTopologyNode> sink_node = NULL;
@@ -158,28 +146,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 					{
 
 						/////////////////create a source node for this stream///////////////////
-						do
-						{
-							// create a source node for this stream
-							hr = MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &source_node);
-							BREAK_ON_FAIL(hr);
-
-							// associate the node with the souce by passing in a pointer to the media source and indicating that it is the source
-							hr = source_node->SetUnknown(MF_TOPONODE_SOURCE, _media_source);
-							BREAK_ON_FAIL(hr);
-
-							// set the node presentation descriptor attribute of the node by passing in a pointer to the presentation descriptor
-							hr = source_node->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, present_descriptor);
-							BREAK_ON_FAIL(hr);
-
-							// set the node stream descriptor attribute by passing in a pointer to the stream descriptor
-							hr = source_node->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, stream_descriptor);
-							BREAK_ON_FAIL(hr);
-
-							hr = source_node->SetUINT32(MF_TOPONODE_CONNECT_METHOD, MF_CONNECT_ALLOW_DECODER);
-							BREAK_ON_FAIL(hr);
-
-						} while (0);
+						hr = mf_topology_builder::create_stream_source_node(_media_source, present_descriptor, stream_descriptor, &source_node);
 						BREAK_ON_FAIL(hr);
 
 						/////////////////create a output node for renderer///////////////////
@@ -227,7 +194,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 									hr = sink_node->SetObject(renderer_activate);
 									BREAK_ON_FAIL(hr);
 #else
-									hr = create_dx11_video_renderer_activate(_hwnd, &renderer_activate);
+									hr = mf_topology_builder::create_dx11_video_renderer_activate(_hwnd, &renderer_activate);
 									BREAK_ON_FAIL(hr);
 
 									ATL::CComPtr<IMFMediaSink> media_sink;
@@ -251,25 +218,14 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 									hr = get_service->GetService(MR_VIDEO_ACCELERATION_SERVICE, devuce_manager_iid, (void**)&_device_manager);
 									BREAK_ON_FAIL(hr);
 
-									LONG_PTR device_manage_ptr = reinterpret_cast<ULONG_PTR>(_device_manager.p);
+									LONG_PTR device_manager_ptr = reinterpret_cast<ULONG_PTR>(_device_manager.p);
 
-									hr = create_video_decoder_node(media_type, &transform_node, device_manage_ptr, NULL);
+									hr = mf_topology_builder::create_video_decoder_node(media_type, device_manager_ptr, &transform_node);
 									BREAK_ON_FAIL(hr);
 
-
-									hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
-									BREAK_ON_FAIL(hr);
-
-									hr = sink_node->SetObject(stream_sink);
-									BREAK_ON_FAIL(hr);
-
-									hr = sink_node->SetUINT32(MF_TOPONODE_STREAMID, index+1);
-									BREAK_ON_FAIL(hr);
-
-									hr = sink_node->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE);
+									hr = mf_topology_builder::create_stream_sink_node(stream_sink, index + 1, &sink_node);
 									BREAK_ON_FAIL(hr);
 #endif
-
 								}
 								else
 								{
@@ -317,6 +273,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 					hr = present_descriptor->DeselectStream(index);
 					BREAK_ON_FAIL(hr);
 				}
+#endif
 			}
 		} while (0);
 		BREAK_ON_FAIL(hr);
@@ -347,143 +304,6 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 		return dk_mf_player_framework::ERR_CODE_FAILED;
 	}
 	return dk_mf_player_framework::ERR_CODE_SUCCESS;
-}
-
-HRESULT mf_player_framework::create_dx11_video_renderer_activate(HWND hwnd, IMFActivate ** activate)
-{
-	if (activate == nullptr)
-		return E_POINTER;
-
-	HMODULE renderer_dll = ::LoadLibrary(L"dk_mf_dx11_video_renderer.dll");
-	if (renderer_dll == NULL)
-		return E_FAIL;
-
-	LPCSTR fn_name = "CreateDX11VideoRendererActivate";
-	FARPROC create_dx11_video_renderer_activate_far_proc = ::GetProcAddress(renderer_dll, fn_name);
-	if (create_dx11_video_renderer_activate_far_proc == nullptr)
-		return E_FAIL;
-
-	typedef HRESULT(STDAPICALLTYPE* LPCreateDX11VideoRendererActivate)(HWND, IMFActivate**);
-	LPCreateDX11VideoRendererActivate create_dx11_video_renderer_activate = reinterpret_cast<LPCreateDX11VideoRendererActivate> (create_dx11_video_renderer_activate_far_proc);
-
-	HRESULT hr = create_dx11_video_renderer_activate(hwnd, activate);
-
-	//::FreeLibrary(renderer_dll);
-
-	return hr;
-}
-
-HRESULT mf_player_framework::create_video_decoder_node(IMFMediaType * media_type, IMFTopologyNode ** decoder, ULONG_PTR device_manager, IMFTransform ** transform)
-{
-	HRESULT hr;
-
-	GUID subtype;
-	hr = media_type->GetGUID(MF_MT_SUBTYPE, &subtype);
-	RETURN_ON_FAIL(hr);
-
-	ATL::CComPtr<IMFTransform> decoder_transform;
-
-	uint32_t input_image_width = 0;
-	uint32_t input_image_height = 0;
-	hr = MFGetAttributeSize(media_type, MF_MT_FRAME_SIZE, &input_image_width, &input_image_height);
-	RETURN_ON_FAIL(hr);
-
-	hr = find_video_decoder(subtype, input_image_width, input_image_height, &decoder_transform);
-	RETURN_ON_FAIL(hr);
-
-	ATL::CComPtr<IMFAttributes> decoder_attribute;
-	hr = decoder_transform->GetAttributes(&decoder_attribute);
-	RETURN_ON_FAIL(hr);
-
-	uint32_t transform_async = 0;
-	hr = decoder_attribute->GetUINT32(MF_TRANSFORM_ASYNC, &transform_async);
-	if (SUCCEEDED(hr) && transform_async == TRUE)
-	{
-		hr = decoder_attribute->SetUINT32(MF_TRANSFORM_ASYNC_UNLOCK, TRUE);
-		RETURN_ON_FAIL(hr);
-	}
-
-	if (device_manager != NULL)
-	{
-		ATL::CComPtr<IUnknown> device_manager_unknown = reinterpret_cast<IUnknown*>(device_manager);
-		ATL::CComPtr<IUnknown> dxgi_device_manager;
-		CLSID d3d_aware_attribute;
-		hr = device_manager_unknown->QueryInterface(BORROWED_IID_IMFDXGIDeviceManager, (void**)(&dxgi_device_manager));
-		if (SUCCEEDED(hr))
-			d3d_aware_attribute = BORROWED_MF_SA_D3D11_AWARE;
-		else
-			d3d_aware_attribute = MF_SA_D3D_AWARE;
-
-		uint32_t d3d_aware;
-		hr = decoder_attribute->GetUINT32(d3d_aware_attribute, &d3d_aware);
-		if (SUCCEEDED(hr) && d3d_aware != 0)
-		{
-			hr = decoder_transform->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, device_manager);
-			RETURN_ON_FAIL(hr);
-		}
-	}
-
-	hr = decoder_transform->SetInputType(0, media_type, 0);
-	RETURN_ON_FAIL(hr);
-
-	CComPtr<IMFTopologyNode> node;
-	hr = MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &node);
-	RETURN_ON_FAIL(hr);
-
-	hr = node->SetObject(decoder_transform);
-	RETURN_ON_FAIL(hr);
-
-	hr = node->SetUINT32(MF_TOPONODE_CONNECT_METHOD, MF_CONNECT_ALLOW_CONVERTER);
-	RETURN_ON_FAIL(hr);
-
-	*decoder = node.Detach();
-	if (transform != NULL)
-	{
-		*transform = decoder_transform.Detach();
-	}
-	return S_OK;
-}
-
-HRESULT mf_player_framework::find_video_decoder(REFCLSID subtype, uint32_t width, uint32_t height, IMFTransform ** decoder)
-{
-	HRESULT hr;
-	UINT32 flags = MFT_ENUM_FLAG_SORTANDFILTER;
-
-	MFT_REGISTER_TYPE_INFO input_register_type_info = { MFMediaType_Video, subtype };
-	flags |= MFT_ENUM_FLAG_SYNCMFT;
-	flags |= MFT_ENUM_FLAG_HARDWARE;
-
-
-	IMFActivate ** activate = NULL;
-	uint32_t registered_decoders_number = 0;
-
-	const CLSID supported_output_subtypes[] = { MFVideoFormat_NV12, MFVideoFormat_YUY2 };
-	bool found_decoder = false;
-	for (int32_t index = 0; !found_decoder && index < ARRAYSIZE(supported_output_subtypes); index++)
-	{
-		MFT_REGISTER_TYPE_INFO output_register_type_info = { MFMediaType_Video, supported_output_subtypes[index] };
-		hr = MFTEnumEx(MFT_CATEGORY_VIDEO_DECODER, flags, &input_register_type_info, &output_register_type_info, &activate, &registered_decoders_number);
-		RETURN_ON_FAIL(hr);
-
-		if (SUCCEEDED(hr) && (registered_decoders_number == 0))
-			hr = MF_E_TOPO_CODEC_NOT_FOUND;
-
-		if (SUCCEEDED(hr))
-		{
-			hr = activate[0]->ActivateObject(IID_PPV_ARGS(decoder));
-			found_decoder = true;
-		}
-		for (int32_t x = 0; x < registered_decoders_number; x++)
-		{
-			activate[x]->Release();
-		}
-		CoTaskMemFree(activate);
-	}
-
-	if (!found_decoder)
-		return E_FAIL;
-
-	return S_OK;
 }
 
 dk_mf_player_framework::ERR_CODE mf_player_framework::play(void)
