@@ -11,7 +11,7 @@ mf_player_framework::mf_player_framework(void)
 	, _presentation_clock(NULL)
 	, _duration(0)
 	, _video_display(NULL)
-	, _hwnd(NULL)
+//	, _hwnd(NULL)
 {
 	MFStartup(MF_VERSION);
 	_close_completion_event = ::CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -20,21 +20,10 @@ mf_player_framework::mf_player_framework(void)
 mf_player_framework::~mf_player_framework(void)
 {
 	stop();
-	shutdown_source();
 	close_session();
+	shutdown_source();
 	MFShutdown();
 	::CloseHandle(_close_completion_event);
-}
-
-dk_mf_player_framework::ERR_CODE mf_player_framework::initialize(HWND hwnd, bool aspect_ratio, bool use_clock, bool enable_audio)
-{
-	_hwnd = hwnd;
-	return dk_mf_player_framework::ERR_CODE_SUCCESS;
-}
-
-dk_mf_player_framework::ERR_CODE mf_player_framework::release(void)
-{
-	return dk_mf_player_framework::ERR_CODE_SUCCESS;
 }
 
 // Playback control
@@ -89,20 +78,25 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::fastforward_rate(float rat
 		return dk_mf_player_framework::ERR_CODE_SUCCESS;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * file)
+dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * file, HWND hwnd)
 {
 	HRESULT hr = S_OK;
-	if (_hwnd == NULL)
+	if (hwnd == NULL)
 		return dk_mf_player_framework::ERR_CODE_FAILED;
 
 	do
 	{
 		// Step 1: create a media session if one doesn't exist already
-		if (_session == NULL)
-		{
-			hr = create_session();
-			BREAK_ON_FAIL(hr);
-		}
+		// close the session if one is already created
+		stop();
+		close_session();
+		shutdown_source();
+
+		_topology.Release();
+		_device_manager.Release();
+
+		hr = create_session();
+		BREAK_ON_FAIL(hr);
 
 		// Step 2 : create a media source for specified URL string, The URL can be a path to a stream or it can be a path to a local file
 		hr = mf_topology_builder::create_source(file, &_media_source);
@@ -113,7 +107,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 		DWORD number_of_streams = 0;
 		do
 		{
-			_topology.Release();
+			
 			hr = MFCreateTopology(&_topology);
 			BREAK_ON_FAIL(hr);
 
@@ -125,155 +119,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 
 			for (DWORD index = 0; index < number_of_streams; index++)
 			{
-#if 1
-				mf_topology_builder::add_branch_to_partial_topology(_topology, _media_source, index, present_descriptor, _hwnd, &_device_manager);
-#else
-				ATL::CComPtr<IMFStreamDescriptor> stream_descriptor = NULL;
-				ATL::CComPtr<IMFTopologyNode> source_node = NULL;
-				ATL::CComPtr<IMFTopologyNode> transform_node = NULL;
-				ATL::CComPtr<IMFTopologyNode> sink_node = NULL;
-				BOOL stream_selected = FALSE;
-
-				do
-				{
-					BREAK_ON_NULL(_topology, E_UNEXPECTED);
-
-					// get the stream descriptor for this stream(information about stream).
-					hr = present_descriptor->GetStreamDescriptorByIndex(index, &stream_selected, &stream_descriptor);
-					BREAK_ON_FAIL(hr);
-
-					if (stream_selected)
-					{
-
-						/////////////////create a source node for this stream///////////////////
-						hr = mf_topology_builder::create_stream_source_node(_media_source, present_descriptor, stream_descriptor, &source_node);
-						BREAK_ON_FAIL(hr);
-
-						/////////////////create a output node for renderer///////////////////
-						ATL::CComPtr<IMFMediaTypeHandler> media_type_handler = NULL;
-						ATL::CComPtr<IMFMediaType> media_type;
-						ATL::CComPtr<IMFActivate> renderer_activate = NULL;
-						GUID major_type = GUID_NULL;
-
-						do
-						{
-							if (_hwnd!=NULL)
-							{
-								hr = stream_descriptor->GetMediaTypeHandler(&media_type_handler);
-								BREAK_ON_FAIL(hr);
-
-								hr = media_type_handler->GetCurrentMediaType(&media_type);
-								BREAK_ON_FAIL(hr);
-
-								hr = media_type->GetMajorType(&major_type);
-								BREAK_ON_FAIL(hr);
-
-								// Create an IMFActivate controller object for the renderer, based on the media type.
-								if (major_type == MFMediaType_Audio)
-								{
-									hr = MFCreateAudioRendererActivate(&renderer_activate);
-									// create the node which will represent the renderer
-									hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
-									BREAK_ON_FAIL(hr);
-
-									// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
-									hr = sink_node->SetObject(renderer_activate);
-									BREAK_ON_FAIL(hr);
-								}
-								else if (major_type == MFMediaType_Video)
-								{
-#if 0
-									hr = MFCreateVideoRendererActivate(_hwnd, &renderer_activate);
-									BREAK_ON_FAIL(hr);
-
-									// create the node which will represent the renderer
-									hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
-									BREAK_ON_FAIL(hr);
-
-									// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
-									hr = sink_node->SetObject(renderer_activate);
-									BREAK_ON_FAIL(hr);
-#else
-									hr = mf_topology_builder::create_dx11_video_renderer_activate(_hwnd, &renderer_activate);
-									BREAK_ON_FAIL(hr);
-
-									ATL::CComPtr<IMFMediaSink> media_sink;
-									hr = renderer_activate->ActivateObject(IID_PPV_ARGS(&media_sink));
-									BREAK_ON_FAIL(hr);
-
-
-									ATL::CComPtr<IMFGetService> get_service;
-									hr = media_sink->QueryInterface(IID_PPV_ARGS(&get_service));
-									BREAK_ON_FAIL(hr);
-
-
-									ATL::CComPtr<IMFStreamSink> stream_sink;
-									DWORD stream_sink_count = 0;
-									hr = media_sink->GetStreamSinkCount(&stream_sink_count);
-									BREAK_ON_FAIL(hr);
-									hr = media_sink->GetStreamSinkByIndex((stream_sink_count-1), &stream_sink);
-									BREAK_ON_FAIL(hr);
-
-									CLSID devuce_manager_iid = IID_IMFDXGIDeviceManager;
-									hr = get_service->GetService(MR_VIDEO_ACCELERATION_SERVICE, devuce_manager_iid, (void**)&_device_manager);
-									BREAK_ON_FAIL(hr);
-
-									LONG_PTR device_manager_ptr = reinterpret_cast<ULONG_PTR>(_device_manager.p);
-
-									hr = mf_topology_builder::create_video_decoder_node(media_type, device_manager_ptr, &transform_node);
-									BREAK_ON_FAIL(hr);
-
-									hr = mf_topology_builder::create_stream_sink_node(stream_sink, index + 1, &sink_node);
-									BREAK_ON_FAIL(hr);
-#endif
-								}
-								else
-								{
-									hr = E_FAIL;
-								}
-								BREAK_ON_FAIL(hr);
-							}
-						} while (0);
-						BREAK_ON_FAIL(hr);
-
-						if (source_node)
-						{
-							hr = _topology->AddNode(source_node);
-							BREAK_ON_FAIL(hr);
-						}
-
-						if (transform_node)
-						{
-							hr = _topology->AddNode(transform_node);
-							BREAK_ON_FAIL(hr);
-						}
-
-						if (sink_node)
-						{
-							hr = _topology->AddNode(sink_node);
-							BREAK_ON_FAIL(hr);
-						}
-
-						// Connect the source node to the output node.  The topology will find the
-						// intermediate nodes needed to convert media types.
-						if (source_node && transform_node && sink_node)
-						{
-							hr = source_node->ConnectOutput(0, transform_node, 0);
-							hr = transform_node->ConnectOutput(0, sink_node, 0);
-						}
-						else if (source_node && sink_node)
-						{
-							hr = source_node->ConnectOutput(0, sink_node, 0);
-						}
-					}
-				} while (0);
-
-				if (FAILED(hr))
-				{
-					hr = present_descriptor->DeselectStream(index);
-					BREAK_ON_FAIL(hr);
-				}
-#endif
+				mf_topology_builder::add_branch_to_partial_topology(_topology, _media_source, index, present_descriptor, hwnd, &_device_manager);
 			}
 		} while (0);
 		BREAK_ON_FAIL(hr);
@@ -550,10 +396,6 @@ HRESULT mf_player_framework::create_session(void)
 
 	do
 	{
-		// close the session if one is already created
-		hr = close_session();
-		BREAK_ON_FAIL(hr);
-
 		assert(_state == dk_mf_player_framework::STATE_CLOSED);
 
 		// Create the media session.
@@ -591,7 +433,7 @@ HRESULT mf_player_framework::close_session(void)
 			// Begin waiting for the Win32 close event, fired in CPlayer::Invoke(). The 
 			// close event will indicate that the close operation is finished, and the 
 			// session can be shut down.
-			wait_result = WaitForSingleObject(_close_completion_event, 5000);
+			wait_result = WaitForSingleObject(_close_completion_event, INFINITE);
 			if (wait_result == WAIT_TIMEOUT)
 			{
 				assert(FALSE);

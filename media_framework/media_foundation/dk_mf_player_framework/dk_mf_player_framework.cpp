@@ -14,35 +14,9 @@ dk_mf_player_framework::~dk_mf_player_framework(void)
 	_core = nullptr;
 }
 
-dk_mf_player_framework::ERR_CODE dk_mf_player_framework::initialize(HWND hwnd, bool aspect_ratio, bool use_clock, bool enable_audio)
+dk_mf_player_framework::ERR_CODE dk_mf_player_framework::open_file(const wchar_t * file, HWND hwnd)
 {
-	return _core->initialize(hwnd, aspect_ratio, use_clock, enable_audio);
-}
-
-dk_mf_player_framework::ERR_CODE dk_mf_player_framework::release(void)
-{
-	return _core->release();
-}
-
-// Playback control
-dk_mf_player_framework::ERR_CODE dk_mf_player_framework::seek(int position)
-{
-	return _core->seek(position);
-}
-
-dk_mf_player_framework::ERR_CODE dk_mf_player_framework::slowfoward_rate(float rate)
-{
-	return _core->slowfoward_rate(rate);
-}
-
-dk_mf_player_framework::ERR_CODE dk_mf_player_framework::fastforward_rate(float rate)
-{
-	return _core->fastforward_rate(rate);
-}
-
-dk_mf_player_framework::ERR_CODE dk_mf_player_framework::open_file(const wchar_t * file)
-{
-	return _core->open_file(file);
+	return _core->open_file(file, hwnd);
 }
 
 dk_mf_player_framework::ERR_CODE dk_mf_player_framework::play(void)

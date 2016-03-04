@@ -15,21 +15,13 @@ media_edge_file_encoder::~media_edge_file_encoder(void)
 void media_edge_file_encoder::play(const wchar_t * filepath, HWND hwnd)
 {
 	dk_mf_player_framework::ERR_CODE code = dk_mf_player_framework::ERR_CODE_FAILED;
-	code = _player.initialize(hwnd, true, true, true);
-	if (code == dk_mf_player_framework::ERR_CODE_SUCCESS)
-	{
-		code = _player.open_file(filepath);
-	}
+	code = _player.open_file(filepath, hwnd);
 }
 
 void media_edge_file_encoder::stop(void)
 {
 	dk_mf_player_framework::ERR_CODE code = dk_mf_player_framework::ERR_CODE_FAILED;
 	code = _player.stop();
-	if (code == dk_mf_player_framework::ERR_CODE_SUCCESS)
-	{
-		_player.release();
-	}
 }
 
 #else

@@ -34,17 +34,8 @@ public:
 	dk_mf_player_framework(void);
 	virtual ~dk_mf_player_framework(void);
 
-	dk_mf_player_framework::ERR_CODE initialize(HWND hwnd, bool aspect_ratio, bool use_clock, bool enable_audio);
-	dk_mf_player_framework::ERR_CODE release(void);
-
-
 	// Playback control
-	dk_mf_player_framework::ERR_CODE seek(int position);
-	dk_mf_player_framework::ERR_CODE slowfoward_rate(float rate);
-	dk_mf_player_framework::ERR_CODE fastforward_rate(float rate);
-
-
-	dk_mf_player_framework::ERR_CODE open_file(const wchar_t * file);
+	dk_mf_player_framework::ERR_CODE open_file(const wchar_t * file, HWND hwnd);
 	dk_mf_player_framework::ERR_CODE play(void);
 	dk_mf_player_framework::ERR_CODE pause(void);
 	dk_mf_player_framework::ERR_CODE stop(void);
