@@ -42,8 +42,8 @@ DX11VideoRenderer::CPresenter::CPresenter(void) :
     m_bDeviceChanged(FALSE),
     m_bResize(TRUE),
     m_b3DVideo(FALSE),
-    m_bStereoEnabled(FALSE),
-    m_vp3DOutput(MFVideo3DSampleFormat_BaseView),
+	m_bStereoEnabled(FALSE),
+	m_vp3DOutput(MFVideo3DSampleFormat_BaseView),
     m_bFullScreenState(FALSE),
     m_bCanProcessNextSample(TRUE),
     m_displayRect(), // default ctor
