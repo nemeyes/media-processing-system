@@ -21,10 +21,10 @@
     <ClInclude Include="include\dk_ff_mpeg2ts_muxer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ff_mpeg2ts_muxer_core.h">
+    <ClInclude Include="include\mpeg2ts_muxer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
+    <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
       <Filter>ffmpeg_base</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,10 +32,10 @@
     <ClCompile Include="source\dk_ff_mpeg2ts_muxer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\ff_mpeg2ts_muxer_core.cpp">
+    <ClCompile Include="source\mpeg2ts_muxer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
+    <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
       <Filter>ffmpeg_base</Filter>
     </ClCompile>
   </ItemGroup>

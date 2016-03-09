@@ -60,7 +60,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\dk_common\include;..\..\dk_rtsp_client\include;..\..\dk_rtmp_client\include;..\..\dk_video_base\include;..\..\dk_ff_video_decoder\include;..\..\dk_directdraw_renderer\include;..\..\dk_audio_base\include;..\..\dk_ff_mp3_decoder\include;..\..\dk_aac_decoder\include;..\..\dk_mmwave_renderer\include;..\..\dk_ff_mpeg2ts_muxer\include;..\..\dk_mpeg2ts_segmenter\include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dk_common\include;..\..\library\network\rtsp\dk_rtsp_client\include;..\..\library\network\rtmp\dk_rtmp_client\include;..\..\dk_video_base\include;..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\dk_audio_base\include;..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\library\audio\codec\dk_aac_decoder\include;..\..\library\audio\renderer\dk_mmwave_renderer\include;..\..\library\container\mpeg2ts\dk_ff_mpeg2ts_muxer\include;..\..\library\container\mpeg2ts\dk_mpeg2ts_segmenter\include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>

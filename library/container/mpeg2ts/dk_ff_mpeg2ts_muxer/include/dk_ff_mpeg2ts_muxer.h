@@ -14,7 +14,7 @@
 # define EXP_DLL
 #endif
 
-class ff_mpeg2ts_muxer_core;
+class mpeg2ts_muxer;
 class EXP_DLL dk_ff_mpeg2ts_muxer
 {
 public:
@@ -23,6 +23,12 @@ public:
 		ERR_CODE_SUCCESS,
 		ERR_CODE_FAILED
 	} ERR_CODE;
+
+	typedef enum _STATE
+	{
+		STATE_NONE,
+		STATE_INITIALIZED,
+	} STATE;
 
 	typedef enum _CODEC_TYPE
 	{
@@ -58,13 +64,14 @@ public:
 
 	dk_ff_mpeg2ts_muxer::ERR_CODE initialize(configuration_t * config);
 	dk_ff_mpeg2ts_muxer::ERR_CODE release(void);
+	dk_ff_mpeg2ts_muxer::STATE state(void);
 
 	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe);
 
-	virtual dk_ff_mpeg2ts_muxer::ERR_CODE on_recv_ts_stream(uint8_t * ts, size_t stream_size) = 0;
+	virtual dk_ff_mpeg2ts_muxer::ERR_CODE recv_ts_stream_callback(uint8_t * ts, size_t stream_size) = 0;
 
 private:
-	ff_mpeg2ts_muxer_core * _core;
+	mpeg2ts_muxer * _core;
 
 };
 

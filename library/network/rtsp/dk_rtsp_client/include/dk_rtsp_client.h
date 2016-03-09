@@ -13,7 +13,7 @@
 #endif
 #endif
 
-class live_media_wrapper;
+class rtsp_client;
 class EXP_CLASS dk_rtsp_client
 {
 	friend class buffer_sink;
@@ -24,13 +24,23 @@ public:
 		MEDIA_TYPE_AUDIO
 	} MEDIA_TYPE_T;
 
-	typedef enum _SUBMEDIA_TYPE_T
+
+	typedef enum _VIDEO_SUBMEDIA_TYPE_T
 	{
-		SUBMEDIA_TYPE_H264 = 0,
+		UNKNOWN_VIDEO_TYPE = -1,
+		SUBMEDIA_TYPE_JPEG = 0,
 		SUBMEDIA_TYPE_MPEG4,
-		SUBMEDIA_TYPE_JPEG,
-		SUBMEDIA_TYPE_H265
-	} SUBMEDIA_TYPE_T;
+		SUBMEDIA_TYPE_H264,
+		SUBMEDIA_TYPE_HEVC,
+	} VIDEO_SUBMEDIA_TYPE_T;
+
+	typedef enum _AUDIO_SUBMEDIA_TYPE_T
+	{
+		UNKNOWN_AUDIO_TYPE = -1,
+		SUBMEDIA_TYPE_MP3 = 0,
+		SUBMEDIA_TYPE_AAC = 1,
+		SUBMEDIA_TYPE_CELT,
+	} AUDIO_SUBMEDIA_TYPE_T;
 
 	typedef enum _ERROR_CODE
 	{
@@ -67,10 +77,10 @@ public:
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
 
-	virtual void on_begin_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, 
-								uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, 
-								const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
-	virtual void on_recv_media(MEDIA_TYPE_T mt, SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, struct timeval presentation_time) = 0;
+	virtual void on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp) = 0;
+	virtual void on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp) = 0;
+	virtual void on_begin_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp) = 0;
+	virtual void on_recv_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp) = 0;
 
 	bool ignore_sdp(void);
 private:
@@ -98,7 +108,7 @@ private:
 	int32_t _recv_timeout;
 	bool _repeat;
 
-    live_media_wrapper * _live;	
+	rtsp_client * _live;
     bool _kill;
 	bool _ignore_sdp;
 

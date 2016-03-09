@@ -48,7 +48,6 @@ private:
 
 	dk_audio_decoder * _audio_decoder;
 	void * _audio_decoder_config;
-
 	dk_mmwave_renderer * _audio_renderer;
 	dk_mmwave_renderer::configuration_t _audio_renderer_config;
 

@@ -27,13 +27,13 @@
     <ClCompile Include="source\h2645_buffer_sink.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="source\live_media_wrapper.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="source\stream_parser.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="source\dk_rtsp_client.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rtsp_client.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,13 +50,13 @@
     <ClInclude Include="include\h2645_buffer_sink.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\live_media_wrapper.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="include\stream_parser.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\dk_rtsp_client.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rtsp_client.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

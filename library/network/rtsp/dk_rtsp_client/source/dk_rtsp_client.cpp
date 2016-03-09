@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include "live_media_wrapper.h"
+#include "rtsp_client.h"
 
 dk_rtsp_client::dk_rtsp_client( void )
 	: _ignore_sdp(true)
@@ -31,9 +31,9 @@ dk_rtsp_client::ERROR_CODE dk_rtsp_client::play(const char * url, const char * u
 	memset(_password, 0x00, sizeof(_password));
 	if (strlen(url)>0)
 		strcpy(_url, url);
-	if (strlen(username)>0)
+	if (username && strlen(username)>0)
 		strcpy(_username, username);
-	if (strlen(password)>0)
+	if (password && strlen(password)>0)
 		strcpy(_password, password);
 	_transport_option = transport_option;
 	_recv_option = recv_option;
@@ -107,12 +107,12 @@ void dk_rtsp_client::process( void )
 		TaskScheduler * sched = BasicTaskScheduler::createNew();
 		UsageEnvironment * env = BasicUsageEnvironment::createNew(*sched);
 		if (strlen(_username) > 0 && strlen(_password) > 0)
-			_live = live_media_wrapper::createNew(this, *env, _url, _username, _password, _transport_option, _recv_option, _recv_timeout, 0, &_kill);
+			_live = rtsp_client::createNew(this, *env, _url, _username, _password, _transport_option, _recv_option, _recv_timeout, 0, &_kill);
 		else
-			_live = live_media_wrapper::createNew(this, *env, _url, 0, 0, _transport_option, _recv_option, _recv_timeout, 0, &_kill);
+			_live = rtsp_client::createNew(this, *env, _url, 0, 0, _transport_option, _recv_option, _recv_timeout, 0, &_kill);
 
 		_kill = false;
-		live_media_wrapper::continue_after_client_creation(_live);
+		rtsp_client::continue_after_client_creation(_live);
 		env->taskScheduler().doEventLoop((char*)&_kill);
 
 		if (env)

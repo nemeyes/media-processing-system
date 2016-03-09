@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="recorder">
+      <UniqueIdentifier>{95334b96-bc3f-4cac-8a1a-3bc8429fac74}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -33,6 +36,15 @@
     <ClInclude Include="Resource.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="recorder\dk_rtsp_recorder.h">
+      <Filter>recorder</Filter>
+    </ClInclude>
+    <ClInclude Include="recorder\dk_bit_vector.h">
+      <Filter>recorder</Filter>
+    </ClInclude>
+    <ClInclude Include="recorder\dk_mpeg2ts_recorder.h">
+      <Filter>recorder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ParallelRecordServer.cpp">
@@ -43,6 +55,15 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="recorder\dk_rtsp_recorder.cpp">
+      <Filter>recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="recorder\dk_bit_vector.cpp">
+      <Filter>recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="recorder\dk_mpeg2ts_recorder.cpp">
+      <Filter>recorder</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

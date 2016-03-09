@@ -11,22 +11,22 @@
 
 bool stream_parser::is_sps(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_AVC ? nal_unit_type == 7 : nal_unit_type == 33;
+	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 7 : nal_unit_type == 33;
 }
 
 bool stream_parser::is_pps(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_AVC ? nal_unit_type == 8 : nal_unit_type == 34;
+	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 8 : nal_unit_type == 34;
 }
 
 bool stream_parser::is_idr(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_AVC ? nal_unit_type == 5 : nal_unit_type == 34;
+	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 5 : nal_unit_type == 34;
 }
 
 bool stream_parser::is_vlc(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_AVC ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
+	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }
 
 const int stream_parser::find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)

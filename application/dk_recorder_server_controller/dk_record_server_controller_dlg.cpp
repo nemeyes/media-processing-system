@@ -340,7 +340,7 @@ void dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol()
 		_cmb_retry_connection.SetCurSel(0);
 
 		//_url.SetWindowTextW(_T("rtmp://192.168.0.107/vod/00.flv"));
-		_url.SetWindowTextW(_T("rtmp://192.168.0.107/live/game"));
+		_url.SetWindowTextW(_T("rtmp://10.202.140.37/vod/00.flv"));
 	}
 }
 

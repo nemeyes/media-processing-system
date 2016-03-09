@@ -1,5 +1,5 @@
 #include "dk_ff_mpeg2ts_muxer.h"
-#include "ff_mpeg2ts_muxer_core.h"
+#include "mpeg2ts_muxer.h"
 
 dk_ff_mpeg2ts_muxer::_configuration_t::_video_configuration_t::_video_configuration_t(void)
 	: stream_index(0)
@@ -71,7 +71,7 @@ dk_ff_mpeg2ts_muxer::_configuration_t dk_ff_mpeg2ts_muxer::_configuration_t::ope
 
 dk_ff_mpeg2ts_muxer::dk_ff_mpeg2ts_muxer(void)
 {
-	_core = new ff_mpeg2ts_muxer_core(this);
+	_core = new mpeg2ts_muxer(this);
 }
 
 dk_ff_mpeg2ts_muxer::~dk_ff_mpeg2ts_muxer(void)
@@ -93,6 +93,10 @@ dk_ff_mpeg2ts_muxer::ERR_CODE dk_ff_mpeg2ts_muxer::release(void)
 	return _core->release();
 }
 
+dk_ff_mpeg2ts_muxer::STATE dk_ff_mpeg2ts_muxer::state(void)
+{
+	return _core->state();
+}
 
 dk_ff_mpeg2ts_muxer::ERR_CODE dk_ff_mpeg2ts_muxer::put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe)
 {

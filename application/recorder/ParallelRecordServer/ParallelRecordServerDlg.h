@@ -4,7 +4,7 @@
 
 #pragma once
 
-
+#include "dk_rtsp_recorder.h"
 // CParallelRecordServerDlg 대화 상자
 class CParallelRecordServerDlg : public CDialogEx
 {
@@ -18,6 +18,8 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
 
+private:
+	dk_rtsp_recorder _recorder;
 
 // 구현입니다.
 protected:
@@ -29,4 +31,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedButtonStartRecord();
+	afx_msg void OnBnClickedButtonStopRecord();
 };

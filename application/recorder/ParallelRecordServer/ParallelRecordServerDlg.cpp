@@ -62,6 +62,8 @@ BEGIN_MESSAGE_MAP(CParallelRecordServerDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON_START_RECORD, &CParallelRecordServerDlg::OnBnClickedButtonStartRecord)
+	ON_BN_CLICKED(IDC_BUTTON_STOP_RECORD, &CParallelRecordServerDlg::OnBnClickedButtonStopRecord)
 END_MESSAGE_MAP()
 
 
@@ -150,3 +152,17 @@ HCURSOR CParallelRecordServerDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CParallelRecordServerDlg::OnBnClickedButtonStartRecord()
+{
+	// TODO: Add your control notification handler code here
+	_recorder.start_recording("rtsp://now.iptime.org/1/stream1", nullptr, nullptr, dk_rtsp_client::RTP_OVER_TCP, dk_rtsp_client::RECV_VIDEO, "now.iptime.org");
+}
+
+
+void CParallelRecordServerDlg::OnBnClickedButtonStopRecord()
+{
+	// TODO: Add your control notification handler code here
+	_recorder.stop_recording();
+}

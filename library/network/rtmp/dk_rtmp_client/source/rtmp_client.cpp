@@ -295,7 +295,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 	//if (((video_data[0] & 0xF0) >> 4) == 0x05) //FrameType Generated Video Info/Command Frame
 	//	keyframe = true;
 
-	if ((video_data[0] & 0x0F) == dk_rtmp_client::SUBMEDIA_TYPE_AVC) //CodecID
+	if ((video_data[0] & 0x0F) == dk_rtmp_client::SUBMEDIA_TYPE_H264) //CodecID
 	{
 		uint8_t * avc_video_packet = (uint8_t*)&video_data[1];
 		uint8_t avc_packet_type = avc_video_packet[0]; //0:AVC Sequence header, 1:AVC NALU, 2:AVC end of sequence
@@ -379,7 +379,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 				size_t saved_pps_size = 0;
 				uint8_t * saved_sps = nullptr;
 				uint8_t * saved_pps = nullptr;
-				bool is_idr = stream_parser::is_idr(dk_rtmp_client::SUBMEDIA_TYPE_AVC, nalu[4] & 0x1F);
+				bool is_idr = stream_parser::is_idr(dk_rtmp_client::SUBMEDIA_TYPE_H264, nalu[4] & 0x1F);
 				if (!_rcv_first_idr)
 				{
 					if (is_idr && (_change_sps || _change_pps))
@@ -390,7 +390,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 						{
 							_rcv_first_idr = true;
 							if (_front)
-								_front->on_begin_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, saved_sps, saved_sps_size, saved_pps, saved_pps_size, nalu, nalu_size, presentation_time);
+								_front->on_begin_video(dk_rtmp_client::SUBMEDIA_TYPE_H264, saved_sps, saved_sps_size, saved_pps, saved_pps_size, nalu, nalu_size, presentation_time);
 							_change_sps = false;
 							_change_pps = false;
 						}
@@ -403,7 +403,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 					if (saved_sps_size > 0 && saved_pps_size > 0)
 					{
 						if (_front)
-							_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_AVC, nalu, nalu_size, presentation_time);
+							_front->on_recv_video(dk_rtmp_client::SUBMEDIA_TYPE_H264, nalu, nalu_size, presentation_time);
 					}
 				}
 				remained -= nalu_size;

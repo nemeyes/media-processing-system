@@ -1,288 +1,105 @@
-#include "stdafx.h"
-#include "dk_rtsp_receiver.h"
-#include "dk_image_creator.h"
+#include "dk_rtsp_recorder.h"
 
-#define VIDEO_BUFFER_SIZE 1920 * 1080 * 4
-#define AUDIO_BUFFER_SIZE 48000 * 2 * 8 //48000hz * 16bitdetph * 8 channels ex) for 2channel 192000
+#define DEFAULT_FILE_CHUNK_SIZE 1024*1024*64
 
-dk_rtsp_receiver::dk_rtsp_receiver(void)
-	: _is_preview_enabled(false)
-	, _is_recording_enabled(false)
+dk_rtsp_recorder::dk_rtsp_recorder(void)
+	: _chunk_size_bytes(DEFAULT_FILE_CHUNK_SIZE)
 {
-	_video_buffer = static_cast<uint8_t*>(malloc(VIDEO_BUFFER_SIZE));
-	_audio_buffer = static_cast<uint8_t*>(malloc(AUDIO_BUFFER_SIZE)); //48000hz * 16bitdetph * 8 channels
 }
 
-dk_rtsp_receiver::~dk_rtsp_receiver(void)
+dk_rtsp_recorder::~dk_rtsp_recorder(void)
 {
-	if (_video_buffer)
-		free(_video_buffer);
-	if (_audio_buffer)
-		free(_audio_buffer);
 }
 
-void dk_rtsp_receiver::start_preview(const char * url, const char * username, const char * password, int transport_option, int recv_option, HWND hwnd)
+void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, const char * id)
 {
-	_is_preview_enabled = true;
-	_hwnd = hwnd;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+	if (id && strlen(id)>0)
+	{
+		strncpy_s(_id, id, sizeof(_id));
+		dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+	}
 }
 
-void dk_rtsp_receiver::stop_preview(void)
+void dk_rtsp_recorder::stop_recording(void)
 {
 	dk_rtsp_client::stop();
-
-	if (_video_decoder)
+	if (_mpeg2ts_recorder)
 	{
-		_video_decoder->release_decoder();
-		delete _video_decoder;
-		_video_decoder = nullptr;
-	}
-	if (_video_decoder_config)
-	{
-		delete _video_decoder_config;
-		_video_decoder_config = nullptr;
-	}
-
-	if (_video_renderer)
-	{
-		_video_renderer->release_renderer();
-		delete _video_renderer;
-		_video_renderer = nullptr;
-	}
-	if (_video_renderer_config)
-	{
-		delete _video_renderer_config;
-		_video_renderer_config = nullptr;
-	}
-
-	if (_audio_decoder)
-	{
-		_audio_decoder->release_decoder();
-		delete _audio_decoder;
-		_audio_decoder = nullptr;
-	}
-	if (_audio_decoder_config)
-	{
-		delete _audio_decoder_config;
-		_audio_decoder_config = nullptr;
-	}
-
-	if (_audio_renderer)
-	{
-		_audio_renderer->release_renderer();
-		delete _audio_renderer;
-		_audio_renderer = nullptr;
-	}
-	if (_audio_renderer_config)
-	{
-		delete _audio_renderer_config;
-		_audio_renderer_config = nullptr;
-	}
-
-	_is_preview_enabled = false;
-}
-
-void dk_rtsp_receiver::start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option)
-{
-	_mpeg2ts_saver = new dk_mpeg2ts_saver();
-	_is_recording_enabled = true;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
-}
-
-void dk_rtsp_receiver::stop_recording(void)
-{
-	dk_rtsp_client::stop();
-	_is_recording_enabled = false;
-	if (_mpeg2ts_saver)
-	{
-		delete _mpeg2ts_saver;
-		_mpeg2ts_saver = nullptr;
+		if (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED)
+			_mpeg2ts_recorder->release();
+		delete _mpeg2ts_recorder;
+		_mpeg2ts_recorder = nullptr;
 	}
 }
 
-void dk_rtsp_receiver::on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (_is_preview_enabled)
+	if (smt == dk_rtsp_client::SUBMEDIA_TYPE_H264)
 	{
-		if (_video_decoder)
-		{
-			_video_decoder->release_decoder();
-			delete _video_decoder;
-			_video_decoder = nullptr;
-		}
-		if (_video_decoder_config)
-		{
-			delete _video_decoder_config;
-			_video_decoder_config = nullptr;
-		}
-
-		if (_video_renderer)
-		{
-			_video_renderer->release_renderer();
-			delete _video_renderer;
-			_video_renderer = nullptr;
-		}
-		if (_video_renderer_config)
-		{
-			delete _video_renderer_config;
-			_video_renderer_config = nullptr;
-		}
-
-
-		_video_decoder = new dk_ff_video_decoder();
-		_video_decoder_config = new dk_ff_video_decoder::configuration_t();
-		_video_renderer = new dk_directdraw_renderer();
-		_video_renderer_config = new dk_directdraw_renderer::configuration_t();
-
-		dk_ff_video_decoder * video_decoder = static_cast<dk_ff_video_decoder*>(_video_decoder);
-		dk_ff_video_decoder::configuration_t * video_decoder_config = static_cast<dk_ff_video_decoder::configuration_t*>(_video_decoder_config);
-
-		dk_directdraw_renderer * video_renderer = static_cast<dk_directdraw_renderer*>(_video_renderer);
-		dk_directdraw_renderer::configuration_t * video_renderer_config = static_cast<dk_directdraw_renderer::configuration_t*>(_video_renderer_config);
-
 		do
 		{
-			if (parse_sps((BYTE*)(sps), spssize, &video_decoder_config->iwidth, &video_decoder_config->iheight, &video_decoder_config->sarw, &video_decoder_config->sarh) > 0)
+			int32_t sarw = 0;
+			int32_t sarh = 0;
+			if (parse_sps((BYTE*)(sps), spssize, &_config.vconfig.width, &_config.vconfig.height, &sarw, &sarh) > 0)
 			{
-				video_decoder_config->owidth = video_decoder_config->iwidth;
-				video_decoder_config->oheight = video_decoder_config->iheight;
-				video_decoder_config->ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
-				video_decoder_config->osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
 
-				video_renderer_config->hwnd = _hwnd;
-				video_renderer_config->width = video_decoder_config->owidth;
-				video_renderer_config->height = video_decoder_config->oheight;
-
-				dk_video_decoder::ERR_CODE decode_err = video_decoder->initialize_decoder(video_decoder_config);
-				dk_video_renderer::ERR_CODE render_err = video_renderer->initialize_renderer(video_renderer_config);
-
-
-				if (decode_err == dk_video_decoder::ERR_CODE_SUCCESS)
+				if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
 				{
-					dk_video_decoder::dk_video_entity_t encoded;
-					encoded.mem_type = dk_video_decoder::MEMORY_TYPE_HOST;
-
-					dk_video_decoder::dk_video_entity_t decoded;
-					decoded.mem_type = dk_video_decoder::MEMORY_TYPE_HOST;
-					decoded.data = _video_buffer;
-					decoded.data_capacity = VIDEO_BUFFER_SIZE;
-
-					//sps
-					encoded.data = (uint8_t*)sps;
-					encoded.data_size = spssize;
-					decode_err = video_decoder->decode(&encoded, &decoded);
-					if ((decode_err == dk_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
-					{
-						if (render_err == dk_video_renderer::ERR_CODE_SUCCESS)
-						{
-							dk_video_renderer::dk_video_entity_t render;//= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-							render.mem_type = dk_video_renderer::MEMORY_TYPE_HOST;
-							render.data = decoded.data;
-							render.data_size = decoded.data_size;
-							video_renderer->render(&render);
-						}
-					}
-
-					//pps
-					encoded.data = (uint8_t*)pps;
-					encoded.data_size = ppssize;
-					decode_err = video_decoder->decode(&encoded, &decoded);
-					if ((decode_err == dk_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
-					{
-						if (render_err == dk_video_renderer::ERR_CODE_SUCCESS)
-						{
-							dk_video_renderer::dk_video_entity_t render;//= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-							render.mem_type = dk_video_renderer::MEMORY_TYPE_HOST;
-							render.data = decoded.data;
-							render.data_size = decoded.data_size;
-							video_renderer->render(&render);
-						}
-					}
-
-					//idr
-					encoded.data = (uint8_t*)data;
-					encoded.data_size = data_size;
-					decode_err = video_decoder->decode(&encoded, &decoded);
-					if ((decode_err == dk_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
-					{
-						if (render_err == dk_video_renderer::ERR_CODE_SUCCESS)
-						{
-							dk_video_renderer::dk_video_entity_t render;//= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-							render.mem_type = dk_video_renderer::MEMORY_TYPE_HOST;
-							render.data = decoded.data;
-							render.data_size = decoded.data_size;
-							video_renderer->render(&render);
-						}
-					}
+					_mpeg2ts_recorder->release();
+					delete _mpeg2ts_recorder;
+					_mpeg2ts_recorder = nullptr;
 				}
+			
+				_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_id);
+
+				_config.vconfig.extradata_size = spssize + ppssize;
+				memcpy(_config.vconfig.extradata, sps, spssize);
+				memcpy(_config.vconfig.extradata + spssize, pps, ppssize);
+				//config.vconfig.width = 1280;
+				//config.vconfig.height = 720;
+				_config.vconfig.fps = 30;
+				_config.vconfig.stream_index = 0;
+				_config.vconfig.bitrate = 4000000;
+				_mpeg2ts_recorder->initialize(&_config);
+				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, 0, true);
 			}
 		} while (0);
 	}
-	if (_is_recording_enabled)
-	{
-		dk_ff_mpeg2ts_muxer::configuration_t config;
-		config.vconfig.extradata_size = data_size;
-		memcpy(config.vconfig.extradata, data, data_size);
-		config.vconfig.width = 1280;
-		config.vconfig.height = 720;
-		config.vconfig.fps = 30;
-		config.vconfig.stream_index = 0;
-		config.vconfig.bitrate = 4000000;
-		_mpeg2ts_saver->initialize(&config);
-	}
-	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
 
-void dk_rtsp_receiver::on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (_is_preview_enabled)
+	if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
 	{
-		dk_ff_video_decoder * video_decoder = static_cast<dk_ff_video_decoder*>(_video_decoder);
-		dk_directdraw_renderer * video_renderer = static_cast<dk_directdraw_renderer*>(_video_renderer);
-
-		dk_ff_video_decoder::dk_video_entity_t encoded;
-		encoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
-		dk_ff_video_decoder::dk_video_entity_t decoded;
-		decoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
-
-
-		encoded.data = (uint8_t*)data;
-		encoded.data_size = data_size;
-		decoded.data = _video_buffer;
-		decoded.data_capacity = 1920 * 1080 * 4;
-
-		dk_video_decoder::ERR_CODE decode_err = video_decoder->decode(&encoded, &decoded);
-		if ((decode_err == dk_video_decoder::ERR_CODE_SUCCESS) && (decoded.data_size > 0))
+		//_chunk_size_bytes
+		long long saved_chunk_size_bytes = _mpeg2ts_recorder->get_file_size();
+		if ((saved_chunk_size_bytes > saved_chunk_size_bytes) && ((data[3] & 0x1F) == 0x05))
 		{
-			dk_video_renderer::dk_video_entity_t render;
-			render.mem_type = dk_video_decoder::MEMORY_TYPE_HOST;
-			render.data = decoded.data;
-			render.data_size = decoded.data_size;
-			video_renderer->render(&render);
+			_mpeg2ts_recorder->release();
+			delete _mpeg2ts_recorder;
+			_mpeg2ts_recorder = nullptr;
+			_mpeg2ts_recorder->initialize(&_config);
 		}
-	}
-	else if (_is_recording_enabled)
-	{
-		if ((data[3] & 0x1F)==0x05)
-			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, true);
+
+		if ((data[3] & 0x1F) == 0x05)
+			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, 0, true);
 		else
-			_mpeg2ts_saver->put_video_stream((unsigned char*)data, data_size, 0, false);
+			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, 0, false);
 	}
 }
 
-void dk_rtsp_receiver::on_begin_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_begin_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }
 
-void dk_rtsp_receiver::on_recv_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_recv_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }
 
 // Local Functions
-void dk_rtsp_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
+void dk_rtsp_recorder::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
 {
 	unsigned aspect_ratio_info_present_flag = bv.get1Bit();
 	DEBUG_PRINT(aspect_ratio_info_present_flag);
@@ -340,7 +157,7 @@ void dk_rtsp_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, un
 	}
 }
 
-int dk_rtsp_receiver::parse_pps(uint8_t * pps, int pps_size)
+int dk_rtsp_recorder::parse_pps(uint8_t * pps, int pps_size)
 {
 	if (pps_size <= 0 || pps == NULL)
 		return 0;
@@ -360,7 +177,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int dk_rtsp_receiver::parse_sps(uint8_t* data, int sizeOfSPS, int *width, int *height, int* sar_width, int* sar_height)
+int dk_rtsp_recorder::parse_sps(uint8_t* data, int sizeOfSPS, int *width, int *height, int* sar_width, int* sar_height)
 {
 	uint8_t* sps;
 	uint32_t sps_size;
@@ -547,7 +364,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int dk_rtsp_receiver::parse_mpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
+int dk_rtsp_recorder::parse_mpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
 {
 	// First, Find VOL Header
 	int i;
@@ -689,7 +506,7 @@ int dk_rtsp_receiver::parse_mpeg(uint8_t* data, int size, int *width, int *heigh
 	return 1;
 }
 
-int dk_rtsp_receiver::parse_jpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
+int dk_rtsp_recorder::parse_jpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
 {
 	int i, found = 0;
 
@@ -708,7 +525,7 @@ int dk_rtsp_receiver::parse_jpeg(uint8_t* data, int size, int *width, int *heigh
 	return found;
 }
 
-void dk_rtsp_receiver::make_adts_header(uint8_t* data, int size, char audioObjectType, char samplingFreqIndex, char channelConfig)
+void dk_rtsp_recorder::make_adts_header(uint8_t* data, int size, char audioObjectType, char samplingFreqIndex, char channelConfig)
 {
 	CBitVector bv(data, 0, 72);
 

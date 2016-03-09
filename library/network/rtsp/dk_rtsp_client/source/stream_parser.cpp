@@ -9,28 +9,28 @@
 
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
 
-bool stream_parser::is_vps(dk_rtsp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_vps(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
 	// VPS NAL units occur in H.265 only:
-	return smt == dk_rtsp_client::SUBMEDIA_TYPE_H265 && nal_unit_type == 32;
+	return smt == dk_rtsp_client::SUBMEDIA_TYPE_HEVC && nal_unit_type == 32;
 }
 
-bool stream_parser::is_sps(dk_rtsp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_sps(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 7 : nal_unit_type == 33;
 }
 
-bool stream_parser::is_pps(dk_rtsp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_pps(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 8 : nal_unit_type == 34;
 }
 
-bool stream_parser::is_idr(dk_rtsp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_idr(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 5 : nal_unit_type == 34;
 }
 
-bool stream_parser::is_vlc(dk_rtsp_client::SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_vlc(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_client::SUBMEDIA_TYPE_H264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }

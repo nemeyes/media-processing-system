@@ -109,7 +109,7 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 				_video_decoder_config.ismt = dk_ff_video_decoder::SUBMEDIA_TYPE_H264;
 				_video_decoder_config.osmt = dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32;
 
-				_video_renderer_config.normal_hwnd = _normal_hwnd;
+				_video_renderer_config.hwnd = _normal_hwnd;
 				_video_renderer_config.width = _video_decoder_config.owidth;
 				_video_renderer_config.height = _video_decoder_config.oheight;
 
@@ -121,8 +121,8 @@ void dk_rtmp_receiver::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 					dk_ff_video_decoder::dk_video_entity_t encoded;
 					encoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
 
-					dk_ff_video_decoder::dk_video_entity_t decoded; //= { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, _video_buffer, 0, VIDEO_BUFFER_SIZE, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-					decoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;//, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+					dk_ff_video_decoder::dk_video_entity_t decoded;
+					decoded.mem_type = dk_ff_video_decoder::MEMORY_TYPE_HOST;
 					decoded.data = _video_buffer;
 					decoded.data_capacity = VIDEO_BUFFER_SIZE;
 
@@ -276,8 +276,10 @@ void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt,
 
 				if (decode_err == dk_ff_mp3_decoder::ERR_CODE_SUCCESS)
 				{
-					dk_ff_mp3_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
-					dk_ff_mp3_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+					dk_ff_mp3_decoder::dk_audio_entity_t encoded = { 0 };
+					dk_ff_mp3_decoder::dk_audio_entity_t pcm = { 0 };
+					pcm.data = _audio_buffer;
+					pcm.data_capacity = AUDIO_BUFFER_SIZE;
 					encoded.data = (uint8_t*)data;
 					encoded.data_size = data_size;
 					decode_err = mp3_audio_decoder->decode(&encoded, &pcm);
@@ -312,8 +314,10 @@ void dk_rtmp_receiver::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt,
 
 				if (decode_err == dk_ff_mp3_decoder::ERR_CODE_SUCCESS)
 				{
-					dk_aac_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
-					dk_aac_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+					dk_aac_decoder::dk_audio_entity_t encoded = { 0 };
+					dk_aac_decoder::dk_audio_entity_t pcm = { 0 };
+					pcm.data = _audio_buffer;
+					pcm.data_capacity = AUDIO_BUFFER_SIZE;
 					encoded.data = (uint8_t*)data;
 					encoded.data_size = data_size;
 					decode_err = aac_audio_decoder->decode(&encoded, &pcm);
@@ -354,8 +358,10 @@ void dk_rtmp_receiver::on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, 
 		{
 			dk_ff_mp3_decoder * mp3_audio_decoder = static_cast<dk_ff_mp3_decoder*>(_audio_decoder);
 
-			dk_ff_mp3_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
-			dk_ff_mp3_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+			dk_ff_mp3_decoder::dk_audio_entity_t encoded = { 0 };
+			dk_ff_mp3_decoder::dk_audio_entity_t pcm = { 0 };
+			pcm.data = _audio_buffer;
+			pcm.data_capacity = AUDIO_BUFFER_SIZE;
 			encoded.data = (uint8_t*)data;
 			encoded.data_size = data_size;
 
@@ -372,8 +378,10 @@ void dk_rtmp_receiver::on_recv_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, 
 		{
 			dk_aac_decoder * aac_audio_decoder = static_cast<dk_aac_decoder*>(_audio_decoder);
 
-			dk_aac_decoder::dk_audio_entity_t encoded = { 0, 0, 0 };
-			dk_aac_decoder::dk_audio_entity_t pcm = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+			dk_aac_decoder::dk_audio_entity_t encoded = { 0 };
+			dk_aac_decoder::dk_audio_entity_t pcm = { 0 };// = { _audio_buffer, 0, AUDIO_BUFFER_SIZE };
+			pcm.data = _audio_buffer;
+			pcm.data_capacity = AUDIO_BUFFER_SIZE;
 			encoded.data = (uint8_t*)data;
 			encoded.data_size = data_size;
 

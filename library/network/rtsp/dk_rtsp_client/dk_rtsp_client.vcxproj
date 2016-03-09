@@ -101,7 +101,7 @@
     <ClCompile Include="source\stream_parser.cpp" />
     <ClCompile Include="source\h264_buffer_sink.cpp" />
     <ClCompile Include="source\h265_buffer_sink.cpp" />
-    <ClCompile Include="source\live_media_wrapper.cpp" />
+    <ClCompile Include="source\rtsp_client.cpp" />
     <ClCompile Include="source\dk_rtsp_client.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -110,7 +110,7 @@
     <ClInclude Include="include\stream_parser.h" />
     <ClInclude Include="include\h264_buffer_sink.h" />
     <ClInclude Include="include\h265_buffer_sink.h" />
-    <ClInclude Include="include\live_media_wrapper.h" />
+    <ClInclude Include="include\rtsp_client.h" />
     <ClInclude Include="include\dk_rtsp_client.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
