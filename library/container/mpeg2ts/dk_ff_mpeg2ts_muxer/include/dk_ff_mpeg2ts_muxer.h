@@ -66,7 +66,7 @@ public:
 	dk_ff_mpeg2ts_muxer::ERR_CODE release(void);
 	dk_ff_mpeg2ts_muxer::STATE state(void);
 
-	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe);
+	dk_ff_mpeg2ts_muxer::ERR_CODE put_video_stream(uint8_t * buffer, size_t nb, int64_t ts, bool keyframe);
 
 	virtual dk_ff_mpeg2ts_muxer::ERR_CODE recv_ts_stream_callback(uint8_t * ts, size_t stream_size) = 0;
 

@@ -61,7 +61,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dk_rtsp_client.lib;dk_ff_mpeg2ts_muxer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dk_rtsp_client.lib;dk_ff_mpeg2ts_muxer.lib;ntdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Midl>

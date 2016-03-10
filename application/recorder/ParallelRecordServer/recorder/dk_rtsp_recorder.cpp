@@ -61,7 +61,7 @@ void dk_rtsp_recorder::on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 				_config.vconfig.stream_index = 0;
 				_config.vconfig.bitrate = 4000000;
 				_mpeg2ts_recorder->initialize(&_config);
-				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, 0, true);
+				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
 			}
 		} while (0);
 	}
@@ -73,18 +73,20 @@ void dk_rtsp_recorder::on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	{
 		//_chunk_size_bytes
 		long long saved_chunk_size_bytes = _mpeg2ts_recorder->get_file_size();
-		if ((saved_chunk_size_bytes > saved_chunk_size_bytes) && ((data[3] & 0x1F) == 0x05))
+		if ((saved_chunk_size_bytes >= _chunk_size_bytes)/* && ((data[3] & 0x1F) == 0x05)*/)
 		{
 			_mpeg2ts_recorder->release();
 			delete _mpeg2ts_recorder;
 			_mpeg2ts_recorder = nullptr;
+
+			_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_id);
 			_mpeg2ts_recorder->initialize(&_config);
 		}
 
 		if ((data[3] & 0x1F) == 0x05)
-			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, 0, true);
+			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
 		else
-			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, 0, false);
+			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, false);
 	}
 }
 

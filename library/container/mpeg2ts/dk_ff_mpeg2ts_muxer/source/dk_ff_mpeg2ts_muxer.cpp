@@ -98,7 +98,7 @@ dk_ff_mpeg2ts_muxer::STATE dk_ff_mpeg2ts_muxer::state(void)
 	return _core->state();
 }
 
-dk_ff_mpeg2ts_muxer::ERR_CODE dk_ff_mpeg2ts_muxer::put_video_stream(uint8_t * buffer, size_t nb, int64_t pts, bool keyframe)
+dk_ff_mpeg2ts_muxer::ERR_CODE dk_ff_mpeg2ts_muxer::put_video_stream(uint8_t * buffer, size_t nb, int64_t ts, bool keyframe)
 {
-	return _core->put_video_stream(buffer, nb, pts, keyframe);
+	return _core->put_video_stream(buffer, nb, ts, keyframe);
 }

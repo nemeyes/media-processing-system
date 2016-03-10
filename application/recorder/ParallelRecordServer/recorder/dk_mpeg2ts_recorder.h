@@ -13,6 +13,8 @@ public:
 	long long get_file_size(void);
 	dk_mpeg2ts_recorder::ERR_CODE recv_ts_stream_callback(uint8_t * ts, size_t stream_size);
 
+	static unsigned long get_elapsed_utc_time(void);
+
 private:
 	HANDLE _file;
 
