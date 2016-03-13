@@ -223,6 +223,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_live_rtsp_client", "..\.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_fft", "..\..\library\fourier_transform\dk_fft\dk_fft.vcxproj", "{41432CB8-1142-46BE-A659-B65E8AE16749}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_vod_rtsp_server", "..\..\library\network\rtsp\dk_vod_rtsp_server\dk_vod_rtsp_server.vcxproj", "{76C0648A-BAE1-4614-A493-AC92017C01F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -647,6 +649,12 @@ Global
 		{41432CB8-1142-46BE-A659-B65E8AE16749}.Release|Win32.ActiveCfg = Release|Win32
 		{41432CB8-1142-46BE-A659-B65E8AE16749}.Release|Win32.Build.0 = Release|Win32
 		{41432CB8-1142-46BE-A659-B65E8AE16749}.Release|x64.ActiveCfg = Release|Win32
+		{76C0648A-BAE1-4614-A493-AC92017C01F2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{76C0648A-BAE1-4614-A493-AC92017C01F2}.Debug|Win32.Build.0 = Debug|Win32
+		{76C0648A-BAE1-4614-A493-AC92017C01F2}.Debug|x64.ActiveCfg = Debug|Win32
+		{76C0648A-BAE1-4614-A493-AC92017C01F2}.Release|Win32.ActiveCfg = Release|Win32
+		{76C0648A-BAE1-4614-A493-AC92017C01F2}.Release|Win32.Build.0 = Release|Win32
+		{76C0648A-BAE1-4614-A493-AC92017C01F2}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -758,5 +766,6 @@ Global
 		{44703039-95AC-4AA2-AE82-37695724C420} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 		{5F2830A6-DE6E-41EC-B55F-95E4723B403A} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 		{41432CB8-1142-46BE-A659-B65E8AE16749} = {78FDD14C-B3C4-4F08-AB24-A16F2CFDF589}
+		{76C0648A-BAE1-4614-A493-AC92017C01F2} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 	EndGlobalSection
 EndGlobal

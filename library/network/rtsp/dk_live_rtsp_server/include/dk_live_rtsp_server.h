@@ -1,5 +1,5 @@
-#ifndef _DK_RTSP_SERVER_H_
-#define _DK_RTSP_SERVER_H_
+#ifndef _DK_LIVE_RTSP_SERVER_H_
+#define _DK_LIVE_RTSP_SERVER_H_
 
 #include <cstdint>
 #if !defined(WIN32)

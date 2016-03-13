@@ -1,4 +1,4 @@
-#include "vmxnet_rtsp_server.h"
+#include "live_rtsp_server.h"
 #include <liveMedia.hh>
 #include "log/logger.h"
 #include <string.h>
@@ -7,28 +7,28 @@
 #include "byte_stream_shared_memory_source.h"
 
 
-vmxnet_rtsp_server* vmxnet_rtsp_server::createNew(UsageEnvironment& env, Port port, UserAuthenticationDatabase* auth_db, unsigned reclamationTestSeconds)
+live_rtsp_server* live_rtsp_server::createNew(UsageEnvironment& env, Port port, UserAuthenticationDatabase* auth_db, unsigned reclamationTestSeconds)
 {
 	int ourSocket = setUpOurSocket(env, port);
 	if (ourSocket == -1)
 		return NULL;
 
-	return new vmxnet_rtsp_server(env, ourSocket, port, auth_db, reclamationTestSeconds);
+	return new live_rtsp_server(env, ourSocket, port, auth_db, reclamationTestSeconds);
 }
 
-vmxnet_rtsp_server::vmxnet_rtsp_server(UsageEnvironment& env, int socket, Port port, UserAuthenticationDatabase* auth_db, unsigned reclamationTestSeconds)
+live_rtsp_server::live_rtsp_server(UsageEnvironment& env, int socket, Port port, UserAuthenticationDatabase* auth_db, unsigned reclamationTestSeconds)
 	: RTSPServerSupportingHTTPStreaming(env, socket, port, auth_db, reclamationTestSeconds)
 {
 
 }
 
-vmxnet_rtsp_server::~vmxnet_rtsp_server(void)
+live_rtsp_server::~live_rtsp_server(void)
 {
 
 }
 
 static ServerMediaSession* createNewSMS(UsageEnvironment& env, char const* stream_name);
-ServerMediaSession* vmxnet_rtsp_server::lookupServerMediaSession(char const* stream_name)
+ServerMediaSession* live_rtsp_server::lookupServerMediaSession(char const* stream_name)
 {
 	//char tmp_stream_name[100] = {0};
 	//_snprintf( tmp_stream_name, sizeof(tmp_stream_name), "Global\\%s", stream_name );
