@@ -1,9 +1,9 @@
 #include "dk_shared_memory.h"
 #include "shared_memory.h"
 
-ic::dk_shared_memory_server::dk_shared_memory_server(const char * uuid)
+ic::dk_shared_memory_server::dk_shared_memory_server(void)
 {
-	_sms = new ic::shared_memory_server(uuid);
+	_sms = new ic::shared_memory_server();
 }
 
 ic::dk_shared_memory_server::~dk_shared_memory_server(void)
@@ -13,6 +13,16 @@ ic::dk_shared_memory_server::~dk_shared_memory_server(void)
 		delete _sms;
 		_sms = nullptr;
 	}
+}
+
+bool ic::dk_shared_memory_server::create_shared_memory(const char * uuid)
+{
+	return _sms->create_shared_memory(uuid);
+}
+
+bool ic::dk_shared_memory_server::destroy_shared_memory(void)
+{
+	return _sms->destroy_shared_memory();
 }
 
 const char * ic::dk_shared_memory_server::uuid(void) const
@@ -44,9 +54,9 @@ long ic::dk_shared_memory_server::read(void * buffer, long size, long timeout)
 #endif
 
 
-ic::dk_shared_memory_client::dk_shared_memory_client(const char * uuid)
+ic::dk_shared_memory_client::dk_shared_memory_client(void)
 {
-	_smc = new ic::shared_memory_client(uuid);
+	_smc = new ic::shared_memory_client();
 }
 
 ic::dk_shared_memory_client::~dk_shared_memory_client(void)
@@ -56,6 +66,16 @@ ic::dk_shared_memory_client::~dk_shared_memory_client(void)
 		delete _smc;
 		_smc = nullptr;
 	}
+}
+
+bool ic::dk_shared_memory_client::connect_shared_memory(const char * uuid)
+{
+	return _smc->connect_shared_memory(uuid);
+}
+
+bool ic::dk_shared_memory_client::disconnect_shared_memory(void)
+{
+	return _smc->disconnect_shared_memory();
 }
 
 const char * ic::dk_shared_memory_client::uuid(void) const

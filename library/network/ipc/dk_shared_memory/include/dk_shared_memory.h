@@ -48,8 +48,11 @@ namespace ic
 	class EXP_CLASS dk_shared_memory_server
 	{
 	public:
-		dk_shared_memory_server(const char * uuid);
+		dk_shared_memory_server(void);
 		virtual ~dk_shared_memory_server(void);
+
+		bool create_shared_memory(const char * uuid);
+		bool destroy_shared_memory(void);
 
 		const char * uuid(void) const;
 		bool check_smb(void);
@@ -69,8 +72,11 @@ namespace ic
 	class EXP_CLASS  dk_shared_memory_client
 	{
 	public:
-		dk_shared_memory_client(const char * uuid);
+		dk_shared_memory_client(void);
 		virtual ~dk_shared_memory_client(void);
+
+		bool connect_shared_memory(const char * uuid);
+		bool disconnect_shared_memory(void);
 
 		const char * uuid(void) const;
 		bool check_smb(void);
