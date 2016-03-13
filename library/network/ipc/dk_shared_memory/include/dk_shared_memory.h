@@ -1,8 +1,19 @@
 #ifndef _DK_SHARED_MEMORY_H_
 #define _DK_SHARED_MEMORY_H_
 
-#include <windows.h>
 #include <cstdint>
+#if !defined(WIN32)
+#include <pthread.h>
+#define EXP_CLASS
+#else
+#include <winsock2.h>
+#include <windows.h>
+#if defined(EXPORT_LIB)
+#define EXP_CLASS __declspec(dllexport)
+#else
+#define EXP_CLASS __declspec(dllimport)
+#endif
+#endif
 
 #define SM_BLOCK_COUNT	512
 #define SM_BLOCK_SIZE	4096
@@ -10,7 +21,7 @@
 
 namespace ic
 {
-	typedef struct _SHARED_MEMORY_BLOCK_T
+	typedef EXP_CLASS struct _SHARED_MEMORY_BLOCK_T
 	{
 		long next;
 		long prev;
@@ -21,7 +32,7 @@ namespace ic
 		uint8_t data[SM_BLOCK_SIZE];
 	} SHARED_MEMORY_BLOCK_T;
 
-	typedef struct _SHARED_MEMORY_BUFFER_T
+	typedef EXP_CLASS struct _SHARED_MEMORY_BUFFER_T
 	{
 		SHARED_MEMORY_BLOCK_T	blocks[SM_BLOCK_COUNT];
 
@@ -33,48 +44,46 @@ namespace ic
 		volatile long	wbegin;
 	} SHARED_MEMORY_BUFFER_T;
 
-	static long id(void)
-	{
-		static volatile long id = 1;
-		return (long)InterlockedIncrement((long*)&id);
-	};
-
-	class dk_shared_memory_server
+	class shared_memory_server;
+	class EXP_CLASS dk_shared_memory_server
 	{
 	public:
-		dk_shared_memory_server(void);
+		dk_shared_memory_server(const char * uuid);
 		virtual ~dk_shared_memory_server(void);
 
-		long read(void * buffer, long size, long timeout = INFINITE);
-		char * address(void) { return _address; }
-		
-		//Block Functions
-		SHARED_MEMORY_BLOCK_T * block(long timeout = INFINITE);
-		void block(SHARED_MEMORY_BLOCK_T * block);
+		const char * uuid(void) const;
+		bool check_smb(void);
 
-		void create(void);
-		void close(void);
+#if defined(WITH_SERVER_PUBLISH)
+		long write(void * buffer, long size, long timeout = INFINITE);
+		bool wait_available(long timeout = INFINITE);
+#else
+		long read(void * buffer, long size, long timeout = INFINITE);
+#endif
 
 	private:
-		char * _address;
-		HANDLE _map;
-		HANDLE _signal;
-		HANDLE _available;
-		SHARED_MEMORY_BUFFER_T * _smb;
+		shared_memory_server * _sms;
 	};
 
-	class dk_shared_memory_client
+	class shared_memory_client;
+	class EXP_CLASS  dk_shared_memory_client
 	{
+	public:
+		dk_shared_memory_client(const char * uuid);
+		virtual ~dk_shared_memory_client(void);
 
+		const char * uuid(void) const;
+		bool check_smb(void);
+
+#if defined(WITH_SERVER_PUBLISH)
+		long read(void * buffer, long size, long timeout = INFINITE);
+#else
+		long write(void * buffer, long size, long timeout = INFINITE);
+		bool wait_available(long timeout = INFINITE);
+#endif
+
+	private:
+		shared_memory_client * _smc;
 	};
-
-
-
-
-
-
-
-
-
 };
 #endif
