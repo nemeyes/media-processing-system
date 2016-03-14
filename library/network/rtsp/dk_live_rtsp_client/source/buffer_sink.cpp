@@ -1,8 +1,7 @@
 #include "buffer_sink.h"
 #include <GroupsockHelper.hh>
-#include "stream_parser.h"
 
-buffer_sink::buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::MEDIA_TYPE_T mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
+buffer_sink::buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type_t mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
     : MediaSink(env)
 	, _front(front)
     , _buffer_size(buffer_size)
@@ -12,10 +11,10 @@ buffer_sink::buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::MEDIA
 	, _change_pps(false)
 	, _recv_idr(false)
 {
-	if (_mt == dk_live_rtsp_client::MEDIA_TYPE_VIDEO)
-		_vsmt = dk_live_rtsp_client::VIDEO_SUBMEDIA_TYPE_T(smt);
-	if (_mt == dk_live_rtsp_client::MEDIA_TYPE_AUDIO)
-		_asmt = dk_live_rtsp_client::AUDIO_SUBMEDIA_TYPE_T(smt);
+	if (_mt == dk_live_rtsp_client::media_type_video)
+		_vsmt = dk_live_rtsp_client::vsubmedia_type_t(smt);
+	if (_mt == dk_live_rtsp_client::media_type_audio)
+		_asmt = dk_live_rtsp_client::asubmedia_type_t(smt);
 
     _buffer = new unsigned char[buffer_size];
     _prev_presentation_time.tv_sec = ~0;
@@ -31,7 +30,7 @@ buffer_sink::~buffer_sink(void)
 	}
 }
 
-buffer_sink* buffer_sink::createNew(dk_live_rtsp_client * front, dk_live_rtsp_client::MEDIA_TYPE_T mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
+buffer_sink* buffer_sink::createNew(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type_t mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
 {
 	return new buffer_sink(front, mt, smt, env, buffer_size);
 }
@@ -75,14 +74,14 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 		//9  Access unit delimiter access_unit_delimiter_rbsp( )
 		//10 End of sequence end_of_seq_rbsp( )
 		//11 End of stream end_of_stream_rbsp( )
-		if ((_mt == dk_live_rtsp_client::MEDIA_TYPE_VIDEO) && (_vsmt == dk_live_rtsp_client::SUBMEDIA_TYPE_H264))
+		if ((_mt == dk_live_rtsp_client::media_type_video) && (_vsmt == dk_live_rtsp_client::vsubmedia_type_h264))
 		{
 			size_t saved_sps_size = 0;
 			unsigned char * saved_sps = _front->get_sps(saved_sps_size);
 			size_t saved_pps_size = 0;
 			unsigned char * saved_pps = _front->get_pps(saved_pps_size);
 
-			bool is_sps = stream_parser::is_sps(_vsmt, data[4] & 0x1F);
+			bool is_sps = dk_live_rtsp_client::is_sps(_vsmt, data[4] & 0x1F);
 			if (is_sps)
 			{
 				if (saved_sps_size < 1 || !saved_sps)
@@ -100,7 +99,7 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 				}
 			}
 
-			bool is_pps = stream_parser::is_pps(_vsmt, data[4] & 0x1F);
+			bool is_pps = dk_live_rtsp_client::is_pps(_vsmt, data[4] & 0x1F);
 			if (is_pps)
 			{
 				if (saved_pps_size < 1 || !saved_pps)
@@ -118,7 +117,7 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 				}
 			}
 
-			bool is_idr = stream_parser::is_idr(_vsmt, data[4] & 0x1F);
+			bool is_idr = dk_live_rtsp_client::is_idr(_vsmt, data[4] & 0x1F);
 
 			if (_change_sps || _change_pps)
 			{
@@ -149,7 +148,7 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 				}
 			}
 		}
-		else if ((_mt == dk_live_rtsp_client::MEDIA_TYPE_VIDEO) && (_vsmt == dk_live_rtsp_client::SUBMEDIA_TYPE_HEVC))
+		else if ((_mt == dk_live_rtsp_client::media_type_video) && (_vsmt == dk_live_rtsp_client::vsubmedia_type_hevc))
 		{
 
 		}

@@ -23,15 +23,15 @@ namespace ic
 #else
 		long read(void * buffer, long size, long timeout = INFINITE);
 #endif
-		SHARED_MEMORY_BLOCK_T * block(long timeout = INFINITE);
-		void block(SHARED_MEMORY_BLOCK_T * blk);
+		shared_memory_block_t * block(long timeout = INFINITE);
+		void block(shared_memory_block_t * blk);
 
 	private:
 		char _uuid[64];
 		HANDLE _map;
 		HANDLE _signal;
 		HANDLE _available;
-		SHARED_MEMORY_BUFFER_T * _smb;
+		shared_memory_buffer_t * _smb;
 	};
 
 	class shared_memory_client
@@ -52,15 +52,15 @@ namespace ic
 		long write(void * buffer, long size, long timeout = INFINITE);
 		bool wait_available(long timeout = INFINITE);
 #endif
-		SHARED_MEMORY_BLOCK_T * block(long timeout = INFINITE);
-		void block(SHARED_MEMORY_BLOCK_T * blk);
+		shared_memory_block_t * block(long timeout = INFINITE);
+		void block(shared_memory_block_t * blk);
 
 	private:
 		char _uuid[64];
 		HANDLE _map;
 		HANDLE _signal;
 		HANDLE _available;
-		SHARED_MEMORY_BUFFER_T * _smb;
+		shared_memory_buffer_t * _smb;
 	};
 
 

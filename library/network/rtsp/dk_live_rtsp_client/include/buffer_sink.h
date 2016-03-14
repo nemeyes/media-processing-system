@@ -8,12 +8,12 @@
 class buffer_sink : public MediaSink
 {
 public:
-	static buffer_sink * createNew(dk_live_rtsp_client * front, dk_live_rtsp_client::MEDIA_TYPE_T mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size);
+	static buffer_sink * createNew(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type_t mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size);
 
     virtual void add_data(unsigned char * data, unsigned size, struct timeval presentation_time);
 
 protected:
-	buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::MEDIA_TYPE_T mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size);
+	buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type_t mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size);
     virtual ~buffer_sink(void);
 
 protected: //redefined virtual functions
@@ -38,9 +38,9 @@ protected:
     struct timeval _prev_presentation_time;
     unsigned _same_presentation_time_counter;
 
-	dk_live_rtsp_client::MEDIA_TYPE_T _mt;
-	dk_live_rtsp_client::VIDEO_SUBMEDIA_TYPE_T _vsmt;
-	dk_live_rtsp_client::AUDIO_SUBMEDIA_TYPE_T _asmt;
+	dk_live_rtsp_client::media_type_t _mt;
+	dk_live_rtsp_client::vsubmedia_type_t _vsmt;
+	dk_live_rtsp_client::asubmedia_type_t _asmt;
 };
 
 #endif // BUFFER_SINK_H

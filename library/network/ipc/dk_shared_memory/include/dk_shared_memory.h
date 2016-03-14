@@ -8,10 +8,10 @@
 #else
 #include <winsock2.h>
 #include <windows.h>
-#if defined(EXPORT_LIB)
-#define EXP_CLASS __declspec(dllexport)
+#if defined(EXPORT_SHARED_MEMORY_LIB)
+#define EXP_SHARED_MEMORY_CLASS __declspec(dllexport)
 #else
-#define EXP_CLASS __declspec(dllimport)
+#define EXP_SHARED_MEMORY_CLASS __declspec(dllimport)
 #endif
 #endif
 
@@ -21,7 +21,7 @@
 
 namespace ic
 {
-	typedef EXP_CLASS struct _SHARED_MEMORY_BLOCK_T
+	typedef EXP_SHARED_MEMORY_CLASS struct _shared_memory_block_t
 	{
 		long next;
 		long prev;
@@ -30,22 +30,20 @@ namespace ic
 		int32_t amount;
 		int32_t padding; //padded used to ensure 64bit boundary
 		uint8_t data[SM_BLOCK_SIZE];
-	} SHARED_MEMORY_BLOCK_T;
+	} shared_memory_block_t;
 
-	typedef EXP_CLASS struct _SHARED_MEMORY_BUFFER_T
+	typedef EXP_SHARED_MEMORY_CLASS struct _shared_memory_buffer_t
 	{
-		SHARED_MEMORY_BLOCK_T	blocks[SM_BLOCK_COUNT];
-
+		shared_memory_block_t blocks[SM_BLOCK_COUNT];
 		//cursors
-		volatile long	rend;
-		volatile long	rbegin;
-
-		volatile long	wend;
-		volatile long	wbegin;
-	} SHARED_MEMORY_BUFFER_T;
+		volatile long rend;
+		volatile long rbegin;
+		volatile long wend;
+		volatile long wbegin;
+	} shared_memory_buffer_t;
 
 	class shared_memory_server;
-	class EXP_CLASS dk_shared_memory_server
+	class EXP_SHARED_MEMORY_CLASS dk_shared_memory_server
 	{
 	public:
 		dk_shared_memory_server(void);
@@ -69,7 +67,7 @@ namespace ic
 	};
 
 	class shared_memory_client;
-	class EXP_CLASS  dk_shared_memory_client
+	class EXP_SHARED_MEMORY_CLASS  dk_shared_memory_client
 	{
 	public:
 		dk_shared_memory_client(void);

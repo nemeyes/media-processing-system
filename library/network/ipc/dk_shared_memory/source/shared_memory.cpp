@@ -44,14 +44,14 @@ bool ic::shared_memory_server::create_shared_memory(const char * uuid)
 	if (_available == NULL || _available == INVALID_HANDLE_VALUE)
 		goto fail;
 
-	_map = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SHARED_MEMORY_BUFFER_T), (LPCSTR)evt_sm);
+	_map = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(shared_memory_buffer_t), (LPCSTR)evt_sm);
 	if (_map == NULL || _map == INVALID_HANDLE_VALUE)
 		goto fail;
 
-	_smb = (SHARED_MEMORY_BUFFER_T*)MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SHARED_MEMORY_BUFFER_T));
+	_smb = (shared_memory_buffer_t*)MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(shared_memory_buffer_t));
 	if (_smb == NULL)
 		goto fail;
-	::ZeroMemory(_smb, sizeof(SHARED_MEMORY_BUFFER_T));
+	::ZeroMemory(_smb, sizeof(shared_memory_buffer_t));
 
 	//create circular linked list
 	int32_t index = 1;
@@ -156,7 +156,7 @@ bool ic::shared_memory_server::check_smb(void)
 
 long ic::shared_memory_server::write(void * buffer, long size, long timeout)
 {
-	SHARED_MEMORY_BLOCK_T * blk = block(timeout);
+	shared_memory_block_t * blk = block(timeout);
 	if (!blk)
 		return 0;
 
@@ -178,12 +178,12 @@ bool ic::shared_memory_server::wait_available(long timeout)
 	return true;
 }
 
-ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_server::block(long timeout)
+ic::shared_memory_block_t * ic::shared_memory_server::block(long timeout)
 {
 	for (;;)
 	{
 		long blk_index = _smb->wbegin;
-		SHARED_MEMORY_BLOCK_T * blk = _smb->blocks + blk_index;
+		shared_memory_block_t * blk = _smb->blocks + blk_index;
 		if (blk->next == _smb->rend)
 		{
 			if (::WaitForSingleObject(_available, timeout) == WAIT_OBJECT_0)
@@ -200,7 +200,7 @@ ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_server::block(long timeout)
 	}
 }
 
-void ic::shared_memory_server::block(ic::SHARED_MEMORY_BLOCK_T * blk)
+void ic::shared_memory_server::block(ic::shared_memory_block_t * blk)
 {
 	blk->wdone = 1;
 
@@ -224,7 +224,7 @@ void ic::shared_memory_server::block(ic::SHARED_MEMORY_BLOCK_T * blk)
 
 long ic::shared_memory_server::read(void * buffer, long size, long timeout)
 {
-	ic::SHARED_MEMORY_BLOCK_T * block = this->block(timeout);
+	ic::shared_memory_block_t * block = this->block(timeout);
 	if (!block)
 		return 0;
 
@@ -236,12 +236,12 @@ long ic::shared_memory_server::read(void * buffer, long size, long timeout)
 }
 
 //Block Functions
-ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_server::block(long timeout)
+ic::shared_memory_block_t * ic::shared_memory_server::block(long timeout)
 {
 	for (;;)
 	{
 		long blk_index = _smb->rbegin;
-		ic::SHARED_MEMORY_BLOCK_T * blk = _smb->blocks + blk_index;
+		ic::shared_memory_block_t * blk = _smb->blocks + blk_index;
 		if (blk->next == _smb->wend)
 		{
 			if (::WaitForSingleObject(_signal, timeout) == WAIT_OBJECT_0)
@@ -256,7 +256,7 @@ ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_server::block(long timeout)
 	}
 }
 
-void ic::shared_memory_server::block(ic::SHARED_MEMORY_BLOCK_T * blk)
+void ic::shared_memory_server::block(ic::shared_memory_block_t * blk)
 {
 	//set the done flag for this block
 	blk->rdone = 1;
@@ -324,7 +324,7 @@ bool ic::shared_memory_client::connect_shared_memory(const char * uuid)
 	if (_map == NULL || _map == INVALID_HANDLE_VALUE)
 		goto fail;
 
-	_smb = static_cast<SHARED_MEMORY_BUFFER_T*>(::MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SHARED_MEMORY_BUFFER_T)));
+	_smb = static_cast<shared_memory_buffer_t*>(::MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(shared_memory_buffer_t)));
 	if (_smb == NULL)
 		goto fail;
 
@@ -410,7 +410,7 @@ bool ic::shared_memory_client::check_smb(void)
 
 long ic::shared_memory_client::read(void * buffer, long size, long timeout)
 {
-	ic::SHARED_MEMORY_BLOCK_T * block = this->block(timeout);
+	ic::shared_memory_block_t * block = this->block(timeout);
 	if (!block)
 		return 0;
 
@@ -422,12 +422,12 @@ long ic::shared_memory_client::read(void * buffer, long size, long timeout)
 }
 
 //Block Functions
-ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_client::block(long timeout)
+ic::shared_memory_block_t * ic::shared_memory_client::block(long timeout)
 {
 	for (;;)
 	{
 		long blk_index = _smb->rbegin;
-		ic::SHARED_MEMORY_BLOCK_T * blk = _smb->blocks + blk_index;
+		ic::shared_memory_block_t * blk = _smb->blocks + blk_index;
 		if (blk->next == _smb->wend)
 		{
 			if (::WaitForSingleObject(_signal, timeout) == WAIT_OBJECT_0)
@@ -442,7 +442,7 @@ ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_client::block(long timeout)
 	}
 }
 
-void ic::shared_memory_client::block(ic::SHARED_MEMORY_BLOCK_T * blk)
+void ic::shared_memory_client::block(ic::shared_memory_block_t * blk)
 {
 	//set the done flag for this block
 	blk->rdone = 1;
@@ -467,7 +467,7 @@ void ic::shared_memory_client::block(ic::SHARED_MEMORY_BLOCK_T * blk)
 
 long ic::shared_memory_client::write(void * buffer, long size, long timeout)
 {
-	SHARED_MEMORY_BLOCK_T * blk = block(timeout);
+	shared_memory_block_t * blk = block(timeout);
 	if (!blk)
 		return 0;
 
@@ -489,12 +489,12 @@ bool ic::shared_memory_client::wait_available(long timeout)
 	return true;
 }
 
-ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_client::block(long timeout)
+ic::shared_memory_block_t * ic::shared_memory_client::block(long timeout)
 {
 	for (;;)
 	{
 		long blk_index = _smb->wbegin;
-		SHARED_MEMORY_BLOCK_T * blk = _smb->blocks + blk_index;
+		shared_memory_block_t * blk = _smb->blocks + blk_index;
 		if (blk->next == _smb->rend)
 		{
 			if (::WaitForSingleObject(_available, timeout) == WAIT_OBJECT_0)
@@ -511,7 +511,7 @@ ic::SHARED_MEMORY_BLOCK_T * ic::shared_memory_client::block(long timeout)
 	}
 }
 
-void ic::shared_memory_client::block(ic::SHARED_MEMORY_BLOCK_T * blk)
+void ic::shared_memory_client::block(ic::shared_memory_block_t * blk)
 {
 	blk->wdone = 1;
 

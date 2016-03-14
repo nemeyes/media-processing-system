@@ -61,7 +61,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>include;..\..\..\..\3rdparty\live_media\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;..\..\..\..\3rdparty\live_media\include;..\dk_rtsp_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -97,18 +97,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\dk_rtsp_base\source\dk_rtsp_base.cpp" />
     <ClCompile Include="source\buffer_sink.cpp" />
     <ClCompile Include="source\h2645_buffer_sink.cpp" />
-    <ClCompile Include="source\stream_parser.cpp" />
     <ClCompile Include="source\h264_buffer_sink.cpp" />
     <ClCompile Include="source\h265_buffer_sink.cpp" />
     <ClCompile Include="source\live_rtsp_client.cpp" />
     <ClCompile Include="source\dk_live_rtsp_client.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\dk_rtsp_base\include\dk_rtsp_base.h" />
     <ClInclude Include="include\buffer_sink.h" />
     <ClInclude Include="include\h2645_buffer_sink.h" />
-    <ClInclude Include="include\stream_parser.h" />
     <ClInclude Include="include\h264_buffer_sink.h" />
     <ClInclude Include="include\h265_buffer_sink.h" />
     <ClInclude Include="include\live_rtsp_client.h" />

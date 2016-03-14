@@ -1,5 +1,5 @@
-#include "h264_video_shared_memory_sms.h"
-#include "byte_stream_shared_memory_source.h"
+#include "shared_memory_h264_sms.h"
+#include "shared_memory_byte_stream_source.h"
 #include "H264VideoRTPSink.hh"
 #if defined(USE_H264_VIDEO_STREAM_FRAMER)
 #include "H264VideoStreamFramer.hh"
@@ -7,12 +7,12 @@
 #include "H264VideoStreamDiscreteFramer.hh"
 #endif
 
-h264_video_shared_memory_sms* h264_video_shared_memory_sms::createNew(UsageEnvironment& env, char const* stream_name, Boolean reuseFirstSource)
+shared_memory_h264_sms* shared_memory_h264_sms::createNew(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource)
 {
-	return new h264_video_shared_memory_sms(env, stream_name, reuseFirstSource);
+	return new shared_memory_h264_sms(env, stream_name, reuseFirstSource);
 }
 
-h264_video_shared_memory_sms::h264_video_shared_memory_sms(UsageEnvironment& env, char const* stream_name, Boolean reuseFirstSource)
+shared_memory_h264_sms::shared_memory_h264_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource)
 	: shared_memory_sms(env, stream_name, reuseFirstSource)
 	, fAuxSDPLine(NULL)
 	, fDoneFlag(0)
@@ -23,18 +23,18 @@ h264_video_shared_memory_sms::h264_video_shared_memory_sms(UsageEnvironment& env
 
 }
 
-h264_video_shared_memory_sms::~h264_video_shared_memory_sms(void)
+shared_memory_h264_sms::~shared_memory_h264_sms(void)
 {
 	delete[] fAuxSDPLine;
 }
 
-static void afterPlayingDummy(void* clientData)
+static void afterPlayingDummy(void * client_data)
 {
-	h264_video_shared_memory_sms* sms = (h264_video_shared_memory_sms*)clientData;
+	shared_memory_h264_sms * sms = static_cast<shared_memory_h264_sms*>(client_data);
 	sms->afterPlayingDummy1();
 }
 
-void h264_video_shared_memory_sms::afterPlayingDummy1(void)
+void shared_memory_h264_sms::afterPlayingDummy1(void)
 {
 	// Unschedule any pending 'checking' task:
 	envir().taskScheduler().unscheduleDelayedTask(nextTask());
@@ -42,13 +42,13 @@ void h264_video_shared_memory_sms::afterPlayingDummy1(void)
 	setDoneFlag();
 }
 
-static void checkForAuxSDPLine(void* clientData)
+static void checkForAuxSDPLine(void * client_data)
 {
-	h264_video_shared_memory_sms* sms = (h264_video_shared_memory_sms*)clientData;
+	shared_memory_h264_sms * sms = static_cast<shared_memory_h264_sms*>(client_data);
 	sms->checkForAuxSDPLine1();
 }
 
-void h264_video_shared_memory_sms::checkForAuxSDPLine1(void)
+void shared_memory_h264_sms::checkForAuxSDPLine1(void)
 {
 	char const* dasl;
 
@@ -72,7 +72,7 @@ void h264_video_shared_memory_sms::checkForAuxSDPLine1(void)
 	}
 }
 
-char const* h264_video_shared_memory_sms::getAuxSDPLine(RTPSink* rtpSink, FramedSource* inputSource)
+char const* shared_memory_h264_sms::getAuxSDPLine(RTPSink * rtpSink, FramedSource * inputSource)
 {
 	if (fAuxSDPLine != NULL)
 		return fAuxSDPLine; // it's already been set up (for a previous client)
@@ -96,19 +96,12 @@ char const* h264_video_shared_memory_sms::getAuxSDPLine(RTPSink* rtpSink, Framed
 	return fAuxSDPLine;
 }
 
-FramedSource* h264_video_shared_memory_sms::createNewStreamSource(unsigned /*clientSessionId*/, unsigned& estBitrate)
+FramedSource* shared_memory_h264_sms::createNewStreamSource(unsigned /*clientSessionId*/, unsigned & estBitrate)
 {
-	//estBitrate = 6000;//500; // kbps, estimate
-#if defined(USE_HIGH_BITRATE)
-	//estBitrate = (6000000 + 500)/1000;
-	//estBitrate	= 60000;
-	estBitrate = (4000000 + 500) / 1000;
-#else
-	estBitrate = (4000000 + 500) / 1000;
-#endif
+	estBitrate = 6000;//500; // kbps, estimate
 
 	// Create the video source:
-	byte_stream_shared_memory_source* shared_memory_source = byte_stream_shared_memory_source::createNew(envir(), _stream_name);
+	shared_memory_byte_stream_source * shared_memory_source = shared_memory_byte_stream_source::createNew(envir(), _stream_name);
 	if (shared_memory_source == NULL)
 		return NULL;
 
@@ -127,13 +120,13 @@ FramedSource* h264_video_shared_memory_sms::createNewStreamSource(unsigned /*cli
 	return H264VideoStreamDiscreteFramer::createNew(envir(), shared_memory_source);
 }
 
-RTPSink* h264_video_shared_memory_sms::createNewRTPSink(Groupsock* rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource)
+RTPSink* shared_memory_h264_sms::createNewRTPSink(Groupsock * rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * inputSource)
 {
 	if (_sps_size>0 && _pps_size>0)
 	{
-		unsigned int profile_level_id = 0;
-		profile_level_id = _sps[1] << 16 | _sps[2] << 8 | _sps[3];
-		return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, _sps, _sps_size, _pps, _pps_size, profile_level_id);
+		//unsigned int profile_level_id = 0;
+		//profile_level_id = _sps[1] << 16 | _sps[2] << 8 | _sps[3];
+		return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, _sps, _sps_size, _pps, _pps_size/*, profile_level_id*/);
 	}
 	else
 		return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);

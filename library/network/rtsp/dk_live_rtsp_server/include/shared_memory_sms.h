@@ -8,7 +8,7 @@
 class shared_memory_sms : public OnDemandServerMediaSubsession
 {
 protected: // we're a virtual base class
-	shared_memory_sms(UsageEnvironment& env, char const* stream_name, Boolean reuseFirstSource);
+	shared_memory_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource);
 	virtual ~shared_memory_sms(void);
 
 protected:

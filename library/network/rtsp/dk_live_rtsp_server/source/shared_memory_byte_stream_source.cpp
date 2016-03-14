@@ -1,62 +1,44 @@
-#include "byte_stream_shared_memory_source.h"
+#include "shared_memory_byte_stream_source.h"
 #include "GroupsockHelper.hh"
 //#include "buffers/session_queue_manager.h"
 //#include "log/logger.h"
 
-byte_stream_shared_memory_source * byte_stream_shared_memory_source::createNew(UsageEnvironment & env, char const * stream_name, unsigned preferredFrameSize, unsigned playTimePerFrame)
+shared_memory_byte_stream_source * shared_memory_byte_stream_source::createNew(UsageEnvironment & env, char const * stream_name, unsigned preferredFrameSize, unsigned playTimePerFrame)
 {
-
-	std::string session_id = session_queue_manager::instance().create_stream_session(stream_name);
-	if (session_id.length()<1)
-	{
-		char log[MAX_PATH] = { 0 };
-		_snprintf(log, sizeof(log), "shared memory related to token name '%s' is not available", stream_name);
-		logger::instance().make_system_fatal_log(log);
-		return NULL;
-	}
-	else
-	{
-		byte_stream_shared_memory_source * new_source = new byte_stream_shared_memory_source(env, stream_name, preferredFrameSize, playTimePerFrame);
-		strcpy(new_source->_session_id, session_id.c_str());
-		return new_source;
-	}
+	shared_memory_byte_stream_source * new_source = new shared_memory_byte_stream_source(env, stream_name, preferredFrameSize, playTimePerFrame);
+	return new_source;
 }
 
-void byte_stream_shared_memory_source::seekToByteAbsolute(u_int64_t byteNumber, u_int64_t numBytesToStream)
+void shared_memory_byte_stream_source::seekToByteAbsolute(u_int64_t byteNumber, u_int64_t numBytesToStream)
 {
 	fNumBytesToStream = numBytesToStream;
 	fLimitNumBytesToStream = fNumBytesToStream > 0;
 }
 
-void byte_stream_shared_memory_source::seekToByteRelative(int64_t offset, u_int64_t numBytesToStream)
+void shared_memory_byte_stream_source::seekToByteRelative(int64_t offset, u_int64_t numBytesToStream)
 {
 	fNumBytesToStream = numBytesToStream;
 	fLimitNumBytesToStream = fNumBytesToStream > 0;
 }
 
-void byte_stream_shared_memory_source::seekToEnd()
+void shared_memory_byte_stream_source::seekToEnd()
 {
 
 }
 
-byte_stream_shared_memory_source::byte_stream_shared_memory_source(UsageEnvironment & env, char const * stream_name, unsigned preferredFrameSize, unsigned playTimePerFrame)
-	: framed_shared_memory_source(env, stream_name)
+shared_memory_byte_stream_source::shared_memory_byte_stream_source(UsageEnvironment & env, char const * stream_name, unsigned preferredFrameSize, unsigned playTimePerFrame)
+	: shared_memory_framed_source(env, stream_name)
 	, fPreferredFrameSize(preferredFrameSize)
 	, fPlayTimePerFrame(playTimePerFrame)
 	, fLastPlayTime(0)
 	, fHaveStartedReading(False)
 	, fLimitNumBytesToStream(False)
 	, fNumBytesToStream(0)
-	, _recv_sps(True)
-	, _recv_pps(True)
-	, _recv_idr(True)
-	, _sps_size(0)
-	, _pps_size(0)
-	, _recv_time(0)
+	, _sm_video_receiver(nullptr)
 {
-	//memset( _real_frame, 0x00, FRAMESIZE );
-	// Test whether the file is seekable
-	//fFidIsSeekable = FileIsSeekable(fFid);
+	_sm_video_receiver = new shared_memory_video_receiver();
+	_sm_video_receiver->connect(stream_name);
+
 
 	while (session_queue_manager::instance().get_sps_size(stream_name)<1 || session_queue_manager::instance().get_pps_size(stream_name)<1)
 		Sleep(10);
@@ -73,12 +55,17 @@ byte_stream_shared_memory_source::byte_stream_shared_memory_source(UsageEnvironm
 	}
 }
 
-byte_stream_shared_memory_source::~byte_stream_shared_memory_source()
+shared_memory_byte_stream_source::~shared_memory_byte_stream_source()
 {
-	session_queue_manager::instance().delete_stream_session(_stream_name, _session_id);
+	if (_sm_video_receiver)
+	{
+		_sm_video_receiver->disconnect();
+		delete _sm_video_receiver;
+		_sm_video_receiver = nullptr;
+	}
 }
 
-void byte_stream_shared_memory_source::doGetNextFrame()
+void shared_memory_byte_stream_source::doGetNextFrame()
 {
 	if (fLimitNumBytesToStream && fNumBytesToStream == 0)
 	{
@@ -88,12 +75,12 @@ void byte_stream_shared_memory_source::doGetNextFrame()
 	read_from_shared_memory();
 }
 
-void byte_stream_shared_memory_source::doStopGettingFrames()
+void shared_memory_byte_stream_source::doStopGettingFrames()
 {
 	envir().taskScheduler().unscheduleDelayedTask(nextTask());
 }
 
-void byte_stream_shared_memory_source::read_from_shared_memory(void)
+void shared_memory_byte_stream_source::read_from_shared_memory(void)
 {
 	// Try to read as many bytes as will fit in the buffer provided (or "fPreferredFrameSize" if less)
 	/*
@@ -125,9 +112,9 @@ void byte_stream_shared_memory_source::read_from_shared_memory(void)
 			{
 				fNumTruncatedBytes = fFrameSize - fMaxSize;
 				fFrameSize = fMaxSize;
-				char log[MAX_PATH] = { 0 };
-				_snprintf(log, sizeof(log), "%d bytes is truncated", fFrameSize - fMaxSize);
-				logger::instance().make_system_info_log(log);
+				//char log[MAX_PATH] = { 0 };
+				//_snprintf(log, sizeof(log), "%d bytes is truncated", fFrameSize - fMaxSize);
+				//logger::instance().make_system_info_log(log);
 			}
 			memcpy(fTo, fRealFrame, fFrameSize);
 			gettimeofday(&fPresentationTime, NULL);

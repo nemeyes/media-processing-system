@@ -15,25 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\byte_stream_shared_memory_source.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\framed_shared_memory_source.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\h264_video_shared_memory_sms.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="include\shared_memory_sms.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\session_queue_manager.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shared_memory_queue_manager.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\sample_rtsp_server.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\dk_live_rtsp_server.h">
@@ -42,33 +24,39 @@
     <ClInclude Include="include\live_rtsp_server.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="include\shared_memory_video_receiver.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shared_memory_h264_sms.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shared_memory_framed_source.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shared_memory_byte_stream_source.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\byte_stream_shared_memory_source.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="source\framed_shared_memory_source.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="source\h264_video_shared_memory_sms.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="source\shared_memory_sms.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="source\shared_memory_queue_manager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="source\session_queue_manager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="source\sample_rtsp_server.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="source\dk_live_rtsp_server.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="source\live_rtsp_server.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shared_memory_video_receiver.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shared_memory_h264_sms.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shared_memory_framed_source.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shared_memory_byte_stream_source.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

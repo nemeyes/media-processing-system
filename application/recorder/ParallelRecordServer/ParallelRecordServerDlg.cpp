@@ -157,7 +157,7 @@ HCURSOR CParallelRecordServerDlg::OnQueryDragIcon()
 void CParallelRecordServerDlg::OnBnClickedButtonStartRecord()
 {
 	// TODO: Add your control notification handler code here
-	_recorder.start_recording("rtsp://now.iptime.org/1/stream1", nullptr, nullptr, dk_rtsp_client::RTP_OVER_TCP, dk_rtsp_client::RECV_VIDEO, "now.iptime.org");
+	_recorder.start_recording("rtsp://now.iptime.org/1/stream1", nullptr, nullptr, dk_live_rtsp_client::rtp_over_tcp, dk_live_rtsp_client::recv_video, "now.iptime.org");
 }
 
 

@@ -16,13 +16,13 @@ void dk_rtsp_recorder::start_recording(const char * url, const char * username, 
 	if (id && strlen(id)>0)
 	{
 		strncpy_s(_id, id, sizeof(_id));
-		dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
 	}
 }
 
 void dk_rtsp_recorder::stop_recording(void)
 {
-	dk_rtsp_client::stop();
+	dk_live_rtsp_client::stop();
 	if (_mpeg2ts_recorder)
 	{
 		if (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED)
@@ -32,9 +32,9 @@ void dk_rtsp_recorder::stop_recording(void)
 	}
 }
 
-void dk_rtsp_recorder::on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type_t smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (smt == dk_rtsp_client::SUBMEDIA_TYPE_H264)
+	if (smt == dk_live_rtsp_client::vsubmedia_type_h264)
 	{
 		do
 		{
@@ -67,7 +67,7 @@ void dk_rtsp_recorder::on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 	}
 }
 
-void dk_rtsp_recorder::on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type_t smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 	if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
 	{
@@ -90,12 +90,12 @@ void dk_rtsp_recorder::on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	}
 }
 
-void dk_rtsp_recorder::on_begin_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_begin_audio(dk_live_rtsp_client::asubmedia_type_t smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }
 
-void dk_rtsp_recorder::on_recv_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_recv_audio(dk_live_rtsp_client::asubmedia_type_t smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }

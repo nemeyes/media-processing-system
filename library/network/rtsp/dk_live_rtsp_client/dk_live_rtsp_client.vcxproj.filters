@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="rtsp_base">
+      <UniqueIdentifier>{072d16bf-3afc-4e43-8377-036985e3a49e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\buffer_sink.cpp">
@@ -27,14 +30,14 @@
     <ClCompile Include="source\h2645_buffer_sink.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="source\stream_parser.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="source\dk_live_rtsp_client.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="source\live_rtsp_client.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dk_rtsp_base\source\dk_rtsp_base.cpp">
+      <Filter>rtsp_base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,14 +53,14 @@
     <ClInclude Include="include\h2645_buffer_sink.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\stream_parser.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="include\dk_live_rtsp_client.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\live_rtsp_client.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dk_rtsp_base\include\dk_rtsp_base.h">
+      <Filter>rtsp_base</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

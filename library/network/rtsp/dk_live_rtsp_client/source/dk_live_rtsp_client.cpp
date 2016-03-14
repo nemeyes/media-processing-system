@@ -21,10 +21,10 @@ dk_live_rtsp_client::~dk_live_rtsp_client( void )
 	WSACleanup();
 }
 
-dk_live_rtsp_client::ERROR_CODE dk_live_rtsp_client::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, bool repeat)
+dk_live_rtsp_client::error_code dk_live_rtsp_client::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, bool repeat)
 {
     if( !url || strlen(url)<1 )
-		return ERROR_CODE_FAIL;
+		return error_code_fail;
 
 	memset(_url, 0x00, sizeof(_url));
 	memset(_username, 0x00, sizeof(_username));
@@ -46,10 +46,10 @@ dk_live_rtsp_client::ERROR_CODE dk_live_rtsp_client::play(const char * url, cons
 #else
 	pthread_create( &_worker, 0, &dk_live_rtsp_client::process_cb, this );
 #endif
-	return dk_live_rtsp_client::ERROR_CODE_SUCCESS;
+	return dk_live_rtsp_client::error_code_success;
 }
 
-dk_live_rtsp_client::ERROR_CODE dk_live_rtsp_client::stop(void)
+dk_live_rtsp_client::error_code dk_live_rtsp_client::stop(void)
 {
 	_repeat = false;
 	_kill = true;
@@ -66,7 +66,7 @@ dk_live_rtsp_client::ERROR_CODE dk_live_rtsp_client::stop(void)
 #else
 	pthread_join(_worker, 0);
 #endif
-	return dk_live_rtsp_client::ERROR_CODE_SUCCESS;
+	return dk_live_rtsp_client::error_code_success;
 }
 
 uint8_t * dk_live_rtsp_client::get_sps(size_t & sps_size)

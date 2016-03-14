@@ -1,13 +1,11 @@
 #include "live_rtsp_server.h"
 #include <liveMedia.hh>
-#include "log/logger.h"
 #include <string.h>
-#include "h264_video_shared_memory_sms.h"
-#include "buffers/session_queue_manager.h"
-#include "byte_stream_shared_memory_source.h"
+#include "shared_memory_h264_sms.h"
+#include "shared_memory_byte_stream_source.h"
 
 
-live_rtsp_server* live_rtsp_server::createNew(UsageEnvironment& env, Port port, UserAuthenticationDatabase* auth_db, unsigned reclamationTestSeconds)
+live_rtsp_server* live_rtsp_server::createNew(UsageEnvironment & env, Port port, UserAuthenticationDatabase * auth_db, unsigned reclamationTestSeconds)
 {
 	int ourSocket = setUpOurSocket(env, port);
 	if (ourSocket == -1)
@@ -16,7 +14,7 @@ live_rtsp_server* live_rtsp_server::createNew(UsageEnvironment& env, Port port, 
 	return new live_rtsp_server(env, ourSocket, port, auth_db, reclamationTestSeconds);
 }
 
-live_rtsp_server::live_rtsp_server(UsageEnvironment& env, int socket, Port port, UserAuthenticationDatabase* auth_db, unsigned reclamationTestSeconds)
+live_rtsp_server::live_rtsp_server(UsageEnvironment & env, int socket, Port port, UserAuthenticationDatabase * auth_db, unsigned reclamationTestSeconds)
 	: RTSPServerSupportingHTTPStreaming(env, socket, port, auth_db, reclamationTestSeconds)
 {
 
@@ -27,8 +25,8 @@ live_rtsp_server::~live_rtsp_server(void)
 
 }
 
-static ServerMediaSession* createNewSMS(UsageEnvironment& env, char const* stream_name);
-ServerMediaSession* live_rtsp_server::lookupServerMediaSession(char const* stream_name)
+static ServerMediaSession * createNewSMS(UsageEnvironment & env, char const * stream_name);
+ServerMediaSession * live_rtsp_server::lookupServerMediaSession(char const * stream_name)
 {
 	//char tmp_stream_name[100] = {0};
 	//_snprintf( tmp_stream_name, sizeof(tmp_stream_name), "Global\\%s", stream_name );
@@ -42,9 +40,9 @@ ServerMediaSession* live_rtsp_server::lookupServerMediaSession(char const* strea
 	// Handle the four possibilities for "fileExists" and "smsExists":
 	if (!exists)
 	{
-		char log[MAX_PATH] = { 0 };
-		_snprintf(log, sizeof(log), "could not access shared memory");
-		logger::instance().make_system_fatal_log(log);
+		//char log[MAX_PATH] = { 0 };
+		//_snprintf(log, sizeof(log), "could not access shared memory");
+		//logger::instance().make_system_fatal_log(log);
 
 		if (smsExists)
 		{
@@ -56,8 +54,8 @@ ServerMediaSession* live_rtsp_server::lookupServerMediaSession(char const* strea
 	{
 		if (!smsExists)
 		{
-			char debug[MAX_PATH] = { 0 };
-			logger::instance().make_system_info_log("accept new rtsp client");
+			//char debug[MAX_PATH] = { 0 };
+			//logger::instance().make_system_info_log("accept new rtsp client");
 
 			sms = createNewSMS(envir(), stream_name);
 			addServerMediaSession(sms);
@@ -67,33 +65,6 @@ ServerMediaSession* live_rtsp_server::lookupServerMediaSession(char const* strea
 	}
 }
 
-/*
-// Special code for handling Matroska files:
-struct MatroskaDemuxCreationState
-{
-MatroskaFileServerDemux* demux;
-char watchVariable;
-};
-static void onMatroskaDemuxCreation(MatroskaFileServerDemux* newDemux, void* clientData) {
-MatroskaDemuxCreationState* creationState = (MatroskaDemuxCreationState*)clientData;
-creationState->demux = newDemux;
-creationState->watchVariable = 1;
-}
-// END Special code for handling Matroska files:
-
-// Special code for handling Ogg files:
-struct OggDemuxCreationState {
-OggFileServerDemux* demux;
-char watchVariable;
-};
-static void onOggDemuxCreation(OggFileServerDemux* newDemux, void* clientData) {
-OggDemuxCreationState* creationState = (OggDemuxCreationState*)clientData;
-creationState->demux = newDemux;
-creationState->watchVariable = 1;
-}
-// END Special code for handling Ogg files:
-*/
-
 #define NEW_SMS(description) do {\
 								char const* descStr = description\
 								", DebugerKing RTSP Media Server";\
@@ -101,7 +72,7 @@ creationState->watchVariable = 1;
 							} while(0)
 
 //static ServerMediaSession* createNewSMS( UsageEnvironment& env, char const* stream_name, FILE* /*fid*/ ) 
-static ServerMediaSession * createNewSMS(UsageEnvironment& env, char const* stream_name)
+static ServerMediaSession * createNewSMS(UsageEnvironment & env, char const * stream_name)
 {
 	// Use the file name extension to determine the type of "ServerMediaSession":
 	//char const* extension		= strrchr( stream_name, '.' );
@@ -122,7 +93,7 @@ static ServerMediaSession * createNewSMS(UsageEnvironment& env, char const* stre
 	OutPacketBuffer::maxSize = SESSION_VIDEO_FRAME_SIZE;
 #endif
 
-	sms->addSubsession(h264_video_shared_memory_sms::createNew(env, stream_name, reuse_source));
+	sms->addSubsession(shared_memory_h264_sms::createNew(env, stream_name, reuse_source));
 
 	/*
 	if( strcmp(extension, ".aac")==0 )
