@@ -60,13 +60,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\dk_common\include;..\..\library\network\rtsp\dk_rtsp_client\include;..\..\library\network\rtmp\dk_rtmp_client\include;..\..\dk_video_base\include;..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\dk_audio_base\include;..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\library\audio\codec\dk_aac_decoder\include;..\..\library\audio\renderer\dk_mmwave_renderer\include;..\..\library\container\mpeg2ts\dk_ff_mpeg2ts_muxer\include;..\..\library\container\mpeg2ts\dk_mpeg2ts_segmenter\include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dk_common\include;..\..\library\network\rtsp\dk_rtsp_base\include;..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\library\network\rtmp\dk_rtmp_client\include;..\..\dk_video_base\include;..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\dk_audio_base\include;..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\library\audio\codec\dk_aac_decoder\include;..\..\library\audio\renderer\dk_mmwave_renderer\include;..\..\library\container\mpeg2ts\dk_ff_mpeg2ts_muxer\include;..\..\library\container\mpeg2ts\dk_mpeg2ts_segmenter\include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dk_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_directdraw_renderer.lib;dk_ff_mp3_decoder.lib;dk_aac_decoder.lib;dk_mmwave_renderer.lib;dk_ff_mpeg2ts_muxer.lib;dk_mpeg2ts_segmenter.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dk_live_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_directdraw_renderer.lib;dk_ff_mp3_decoder.lib;dk_aac_decoder.lib;dk_mmwave_renderer.lib;dk_ff_mpeg2ts_muxer.lib;dk_mpeg2ts_segmenter.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

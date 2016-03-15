@@ -12,7 +12,7 @@ dk_mpeg2ts_saver::~dk_mpeg2ts_saver(void)
 	::close_file(_file);
 }
 
-dk_mpeg2ts_saver::ERR_CODE dk_mpeg2ts_saver::on_recv_ts_stream(uint8_t * ts, size_t stream_size)
+dk_mpeg2ts_saver::ERR_CODE dk_mpeg2ts_saver::recv_ts_stream_callback(uint8_t * ts, size_t stream_size)
 {
 #if 0
 	static int index = 1;

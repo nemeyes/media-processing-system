@@ -5,52 +5,52 @@
 
 #if defined(_WIN32)
 # include <windows.h>
-# if defined(EXPORT_LIB)
-#  define EXP_DLL __declspec(dllexport)
+# if defined(EXPORT_FILE_DEMUXER_LIB)
+#  define EXP_FILE_DEMUXER_CLASS __declspec(dllexport)
 # else
-#  define EXP_DLL __declspec(dllimport)
+#  define EXP_FILE_DEMUXER_CLASS __declspec(dllimport)
 # endif
 #else
-# define EXP_DLL
+# define EXP_FILE_DEMUXER_CLASS
 #endif
 
 class ff_demuxer;
-class EXP_DLL dk_file_demuxer
+class EXP_FILE_DEMUXER_CLASS dk_file_demuxer
 {
 public:
-	typedef enum _STATE_T
+	typedef enum _state
 	{
-		STATE_STOPPED = 0,
-	} STATE_T;
+		state_stopped = 0,
+	} state;
 
 
-	typedef enum _MEDIA_TYPE_T
+	typedef enum _media_type
 	{
-		MEDIA_TYPE_VIDEO = 0,
-		MEDIA_TYPE_AUDIO
-	} MEDIA_TYPE_T;
+		media_type_video = 0,
+		media_type_audio
+	} media_type;
 
-	typedef enum _VIDEO_SUBMEDIA_TYPE_T
+	typedef enum _video_submedia_type
 	{
-		UNKNOWN_VIDEO_TYPE = -1,
-		SUBMEDIA_TYPE_JPEG = 0,
-		SUBMEDIA_TYPE_MPEG4,
-		SUBMEDIA_TYPE_H264,
-		SUBMEDIA_TYPE_HEVC,
-	} VIDEO_SUBMEDIA_TYPE_T;
+		unknown_video_type = -1,
+		vsubmedia_type_jpeg = 0,
+		vsubmedia_type_mpeg4,
+		vsubmedia_type_h264,
+		vsubmedia_type_hevc,
+	} vsubmedia_type;
 
-	typedef enum _AUDIO_SUBMEDIA_TYPE_T
+	typedef enum _asubmedia_type
 	{
-		UNKNOWN_AUDIO_TYPE = -1,
-		SUBMEDIA_TYPE_MP3 = 0,
-		SUBMEDIA_TYPE_AAC,
-	} AUDIO_SUBMEDIA_TYPE_T;
+		unknown_audio_type = -1,
+		asubmedia_type_mp3 = 0,
+		asubmedia_type_aac,
+	} asubmedia_type;
 
-	typedef enum _ERR_CODE
+	typedef enum _err_code
 	{
 		ERR_CODE_SUCCESS = 0,
 		ERR_CODE_FAIL
-	} ERR_CODE;
+	} err_code;
 
 	dk_file_demuxer(void);
 	virtual ~dk_file_demuxer(void);

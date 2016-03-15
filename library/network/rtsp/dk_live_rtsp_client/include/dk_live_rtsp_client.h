@@ -16,10 +16,10 @@ public:
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
 
-	virtual void on_begin_video(dk_live_rtsp_client::vsubmedia_type_t smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp) = 0;
-	virtual void on_recv_video(dk_live_rtsp_client::vsubmedia_type_t smt, const uint8_t * data, size_t data_size, long long timestamp) = 0;
-	virtual void on_begin_audio(dk_live_rtsp_client::asubmedia_type_t smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp) = 0;
-	virtual void on_recv_audio(dk_live_rtsp_client::asubmedia_type_t smt, const uint8_t * data, size_t data_size, long long timestamp) = 0;
+	virtual void on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp) = 0;
+	virtual void on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp) = 0;
+	virtual void on_begin_audio(dk_live_rtsp_client::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp) = 0;
+	virtual void on_recv_audio(dk_live_rtsp_client::asubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp) = 0;
 
 	bool ignore_sdp(void);
 private:

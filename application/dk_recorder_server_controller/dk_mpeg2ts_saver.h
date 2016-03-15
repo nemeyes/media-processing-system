@@ -10,7 +10,7 @@ public:
 	dk_mpeg2ts_saver(void);
 	~dk_mpeg2ts_saver(void);
 
-	dk_mpeg2ts_saver::ERR_CODE on_recv_ts_stream(uint8_t * ts, size_t stream_size);
+	dk_mpeg2ts_saver::ERR_CODE recv_ts_stream_callback(uint8_t * ts, size_t stream_size);
 
 
 private:

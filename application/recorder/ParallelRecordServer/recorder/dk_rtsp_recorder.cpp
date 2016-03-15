@@ -32,7 +32,7 @@ void dk_rtsp_recorder::stop_recording(void)
 	}
 }
 
-void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type_t smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
 {
 	if (smt == dk_live_rtsp_client::vsubmedia_type_h264)
 	{
@@ -67,7 +67,7 @@ void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type_t smt,
 	}
 }
 
-void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type_t smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 	if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
 	{
@@ -90,12 +90,12 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type_t smt, 
 	}
 }
 
-void dk_rtsp_recorder::on_begin_audio(dk_live_rtsp_client::asubmedia_type_t smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_begin_audio(dk_live_rtsp_client::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }
 
-void dk_rtsp_recorder::on_recv_audio(dk_live_rtsp_client::asubmedia_type_t smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_recv_audio(dk_live_rtsp_client::asubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }

@@ -19,28 +19,28 @@ dk_rtsp_base::~dk_rtsp_base(void)
 
 }
 
-bool dk_rtsp_base::is_vps(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type)
+bool dk_rtsp_base::is_vps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
 {
 	// VPS NAL units occur in H.265 only:
 	return smt == dk_rtsp_base::vsubmedia_type_hevc && nal_unit_type == 32;
 }
 
-bool dk_rtsp_base::is_sps(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type)
+bool dk_rtsp_base::is_sps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_base::vsubmedia_type_h264 ? nal_unit_type == 7 : nal_unit_type == 33;
 }
 
-bool dk_rtsp_base::is_pps(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type)
+bool dk_rtsp_base::is_pps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_base::vsubmedia_type_h264 ? nal_unit_type == 8 : nal_unit_type == 34;
 }
 
-bool dk_rtsp_base::is_idr(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type)
+bool dk_rtsp_base::is_idr(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_base::vsubmedia_type_h264 ? nal_unit_type == 5 : nal_unit_type == 34;
 }
 
-bool dk_rtsp_base::is_vlc(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type)
+bool dk_rtsp_base::is_vlc(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
 {
 	return smt == dk_rtsp_base::vsubmedia_type_h264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }

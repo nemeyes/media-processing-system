@@ -16,29 +16,29 @@
 class EXP_CLASS dk_rtsp_base
 {
 public:
-	typedef enum _media_type_t
+	typedef enum _media_type
 	{
 		unknown_media_type = -1,
 		media_type_video = 0,
 		media_type_audio
-	} media_type_t;
+	} media_type;
 
-	typedef enum _vsubmedia_type_t
+	typedef enum _vsubmedia_type
 	{
 		unknown_video_type = -1,
 		vsubmedia_type_jpeg = 0,
 		vsubmedia_type_mpeg4,
 		vsubmedia_type_h264,
 		vsubmedia_type_hevc,
-	} vsubmedia_type_t;
+	} vsubmedia_type;
 
-	typedef enum _asubmedia_type_t
+	typedef enum _asubmedia_type
 	{
 		unknown_audio_type = -1,
 		asubmedia_type_mp3 = 0,
 		asubmedia_type_aac = 1,
 		asubmedia_type_celt,
-	} asubmedia_type_t;
+	} asubmedia_type;
 
 	typedef enum _error_code
 	{
@@ -46,35 +46,35 @@ public:
 		error_code_fail
 	} error_code;
 
-	typedef enum _recv_option_t
+	typedef enum _recv_option
 	{
 		recv_audio_video = 0,
 		recv_video,
 		recv_audio
-	} recv_option_t;
+	} recv_option;
 
-	typedef enum _transport_option_t
+	typedef enum _transport_option
 	{
 		rtp_over_udp = 0,
 		rtp_over_tcp,
 		rtp_over_http
-	} transport_option_t;
+	} transport_option;
 
-	typedef enum _focus_option_t
+	typedef enum _focus_option
 	{
 		focus_on_nothing = 0,
 		focus_on_video,
 		focus_on_audio
-	} focus_option_t;
+	} focus_option;
 
 	dk_rtsp_base(void);
 	virtual ~dk_rtsp_base(void);
 	
-	static bool is_vps(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type);
-	static bool is_sps(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type);
-	static bool is_pps(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type);
-	static bool is_idr(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type);
-	static bool is_vlc(dk_rtsp_base::vsubmedia_type_t smt, uint8_t nal_unit_type);
+	static bool is_vps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type);
+	static bool is_sps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type);
+	static bool is_pps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type);
+	static bool is_idr(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type);
+	static bool is_vlc(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type);
 	static const int find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
 	static const uint8_t * find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state);
 };

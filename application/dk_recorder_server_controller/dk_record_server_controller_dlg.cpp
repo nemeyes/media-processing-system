@@ -115,13 +115,13 @@ BOOL dk_record_server_controller_dlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	_cmb_streaming_protocol.SetCurSel(0);
-	_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_UDP, L"RTP OVER TCP");
-	_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_TCP, L"RTP OVER UDP");
-	_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_HTTP, L"RTP OVER HTTP");
+	_cmb_transport_type.InsertString(dk_live_rtsp_client::rtp_over_udp, L"RTP OVER TCP");
+	_cmb_transport_type.InsertString(dk_live_rtsp_client::rtp_over_tcp, L"RTP OVER UDP");
+	_cmb_transport_type.InsertString(dk_live_rtsp_client::rtp_over_http, L"RTP OVER HTTP");
 	_cmb_transport_type.SetCurSel(0);
-	_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO_VIDEO, L"Recv Audio & Video");
-	_cmb_recv_option.InsertString(dk_rtsp_client::RECV_VIDEO, L"Recv Video");
-	_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO, L"Recv Audio");
+	_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_audio_video, L"Recv Audio & Video");
+	_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_video, L"Recv Video");
+	_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_audio, L"Recv Audio");
 	_cmb_recv_option.SetCurSel(0);
 	_cmb_retry_connection.SetCurSel(0);
 
@@ -311,15 +311,15 @@ void dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol()
 	if (protocol==RTSP)
 	{
 		_cmb_transport_type.ResetContent();
-		_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_UDP, L"RTP OVER TCP");
-		_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_TCP, L"RTP OVER UDP");
-		_cmb_transport_type.InsertString(dk_rtsp_client::RTP_OVER_HTTP, L"RTP OVER HTTP");
+		_cmb_transport_type.InsertString(dk_live_rtsp_client::rtp_over_udp, L"RTP OVER TCP");
+		_cmb_transport_type.InsertString(dk_live_rtsp_client::rtp_over_tcp, L"RTP OVER UDP");
+		_cmb_transport_type.InsertString(dk_live_rtsp_client::rtp_over_http, L"RTP OVER HTTP");
 		_cmb_transport_type.SetCurSel(0);
 
 		_cmb_recv_option.ResetContent();
-		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO_VIDEO, L"Recv Audio & Video");
-		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_VIDEO, L"Recv Video");
-		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO, L"Recv Audio");
+		_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_audio_video, L"Recv Audio & Video");
+		_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_video, L"Recv Video");
+		_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_audio, L"Recv Audio");
 		_cmb_recv_option.SetCurSel(0);
 		
 		_cmb_retry_connection.SetCurSel(0);
@@ -332,9 +332,9 @@ void dk_record_server_controller_dlg::OnCbnSelchangeComboStreamingProtocol()
 		_cmb_transport_type.EnableWindow(FALSE);
 
 		_cmb_recv_option.ResetContent();
-		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO_VIDEO, L"Recv Audio & Video");
-		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_VIDEO, L"Recv Video");
-		_cmb_recv_option.InsertString(dk_rtsp_client::RECV_AUDIO, L"Recv Audio");
+		_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_audio_video, L"Recv Audio & Video");
+		_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_video, L"Recv Video");
+		_cmb_recv_option.InsertString(dk_live_rtsp_client::recv_audio, L"Recv Audio");
 		_cmb_recv_option.SetCurSel(0);
 
 		_cmb_retry_connection.SetCurSel(0);

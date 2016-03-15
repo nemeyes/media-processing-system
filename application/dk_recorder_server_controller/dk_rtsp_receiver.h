@@ -2,7 +2,7 @@
 #include <windows.h>
 #include <cstdint>
 #include "dk_bit_vector.h"
-#include <dk_rtsp_client.h>
+#include <dk_live_rtsp_client.h>
 #include <dk_ff_video_decoder.h>
 #include <dk_aac_decoder.h>
 #include <dk_ff_mp3_decoder.h>
@@ -10,7 +10,7 @@
 #include <dk_mmwave_renderer.h>
 #include "dk_mpeg2ts_saver.h"
 
-class dk_rtsp_receiver : public dk_rtsp_client
+class dk_rtsp_receiver : public dk_live_rtsp_client
 {
 public:
 	dk_rtsp_receiver(void);
@@ -22,11 +22,11 @@ public:
 	void start_recording(const char * url, const char * username, const char * password, int transport_option, int recv_option);
 	void stop_recording(void);
 
-	void on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp);
-	void on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp);
+	void on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp);
+	void on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp);
 
-	void on_begin_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp);
-	void on_recv_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp);
+	void on_begin_audio(dk_live_rtsp_client::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp);
+	void on_recv_audio(dk_live_rtsp_client::asubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp);
 
 private:
 	// A general bit copy operation:

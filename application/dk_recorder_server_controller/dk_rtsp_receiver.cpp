@@ -25,12 +25,12 @@ void dk_rtsp_receiver::start_preview(const char * url, const char * username, co
 {
 	_is_preview_enabled = true;
 	_hwnd = hwnd;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+	dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
 }
 
 void dk_rtsp_receiver::stop_preview(void)
 {
-	dk_rtsp_client::stop();
+	dk_live_rtsp_client::stop();
 
 	if (_video_decoder)
 	{
@@ -87,12 +87,12 @@ void dk_rtsp_receiver::start_recording(const char * url, const char * username, 
 {
 	_mpeg2ts_saver = new dk_mpeg2ts_saver();
 	_is_recording_enabled = true;
-	dk_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+	dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
 }
 
 void dk_rtsp_receiver::stop_recording(void)
 {
-	dk_rtsp_client::stop();
+	dk_live_rtsp_client::stop();
 	_is_recording_enabled = false;
 	if (_mpeg2ts_saver)
 	{
@@ -101,7 +101,7 @@ void dk_rtsp_receiver::stop_recording(void)
 	}
 }
 
-void dk_rtsp_receiver::on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_receiver::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
 {
 	if (_is_preview_enabled)
 	{
@@ -234,7 +234,7 @@ void dk_rtsp_receiver::on_begin_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt,
 	//TRACE(_T("on_begin_media : received video data size is %d\n"), data_size);
 }
 
-void dk_rtsp_receiver::on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_receiver::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 	if (_is_preview_enabled)
 	{
@@ -271,12 +271,12 @@ void dk_rtsp_receiver::on_recv_video(dk_rtsp_client::VIDEO_SUBMEDIA_TYPE_T smt, 
 	}
 }
 
-void dk_rtsp_receiver::on_begin_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_receiver::on_begin_audio(dk_live_rtsp_client::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }
 
-void dk_rtsp_receiver::on_recv_audio(dk_rtsp_client::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_receiver::on_recv_audio(dk_live_rtsp_client::asubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }

@@ -7,7 +7,7 @@
 class h2645_buffer_sink : public buffer_sink
 {
 public:
-	h2645_buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::vsubmedia_type_t smt, UsageEnvironment & env, unsigned buffer_size, const char * vps, const char * sps = 0, const char * pps = 0);
+	h2645_buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::vsubmedia_type smt, UsageEnvironment & env, unsigned buffer_size, const char * vps, const char * sps = 0, const char * pps = 0);
     virtual ~h2645_buffer_sink(void);
 
 protected:

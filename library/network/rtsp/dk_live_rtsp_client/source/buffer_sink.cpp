@@ -1,7 +1,7 @@
 #include "buffer_sink.h"
 #include <GroupsockHelper.hh>
 
-buffer_sink::buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type_t mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
+buffer_sink::buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
     : MediaSink(env)
 	, _front(front)
     , _buffer_size(buffer_size)
@@ -12,9 +12,9 @@ buffer_sink::buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::media
 	, _recv_idr(false)
 {
 	if (_mt == dk_live_rtsp_client::media_type_video)
-		_vsmt = dk_live_rtsp_client::vsubmedia_type_t(smt);
+		_vsmt = dk_live_rtsp_client::vsubmedia_type(smt);
 	if (_mt == dk_live_rtsp_client::media_type_audio)
-		_asmt = dk_live_rtsp_client::asubmedia_type_t(smt);
+		_asmt = dk_live_rtsp_client::asubmedia_type(smt);
 
     _buffer = new unsigned char[buffer_size];
     _prev_presentation_time.tv_sec = ~0;
@@ -30,7 +30,7 @@ buffer_sink::~buffer_sink(void)
 	}
 }
 
-buffer_sink* buffer_sink::createNew(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type_t mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
+buffer_sink* buffer_sink::createNew(dk_live_rtsp_client * front, dk_live_rtsp_client::media_type mt, int32_t smt, UsageEnvironment & env, unsigned buffer_size)
 {
 	return new buffer_sink(front, mt, smt, env, buffer_size);
 }
