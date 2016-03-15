@@ -2,6 +2,8 @@
 #define _DK_VOD_RTSP_SERVER_H_
 
 #include <cstdint>
+#include <winsock2.h>
+#include <windows.h>
 #if !defined(WIN32)
 #include <pthread.h>
 #define EXP_CLASS
@@ -14,7 +16,7 @@
 #endif
 
 
-class dk_vod_rtsp_server
+class EXP_CLASS dk_vod_rtsp_server
 {
 public:
 	dk_vod_rtsp_server(void);

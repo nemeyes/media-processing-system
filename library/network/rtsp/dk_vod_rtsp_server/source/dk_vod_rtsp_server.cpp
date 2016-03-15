@@ -1,6 +1,7 @@
 #include "dk_vod_rtsp_server.h"
 #include <process.h>
 #include <BasicUsageEnvironment.hh>
+#include "vod_rtsp_server.h"
 
 dk_vod_rtsp_server::dk_vod_rtsp_server(void)
 {
@@ -53,7 +54,7 @@ void dk_vod_rtsp_server::process(void)
 	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
 	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
 
-	UserAuthenticationDatabase* authDB = NULL;
+	UserAuthenticationDatabase * authDB = NULL;
 	/*
 	#ifdef ACCESS_CONTROL
 	authDB								= new UserAuthenticationDatabase;
@@ -65,11 +66,11 @@ void dk_vod_rtsp_server::process(void)
 	// and then with the alternative port number (8554):
 	RTSPServer* rtspServer;
 	portNumBits rtspServerPortNum = 554;
-	rtspServer = rtsp_server::createNew(*env, rtspServerPortNum, authDB);
+	rtspServer = vod_rtsp_server::createNew(*env, rtspServerPortNum, authDB);
 	if (rtspServer == NULL)
 	{
 		rtspServerPortNum = 8554;
-		rtspServer = rtsp_server::createNew(*env, rtspServerPortNum, authDB);
+		rtspServer = vod_rtsp_server::createNew(*env, rtspServerPortNum, authDB);
 	}
 	if (rtspServer == NULL)
 	{

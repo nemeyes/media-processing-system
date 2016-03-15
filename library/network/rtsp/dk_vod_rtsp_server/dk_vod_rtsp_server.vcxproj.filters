@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="file_reader">
+      <UniqueIdentifier>{2f8c55af-a92a-4940-8b95-3d1ee24639c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ffmpeg_base">
+      <UniqueIdentifier>{3459c584-fc21-430a-a6bb-6c1b4762b3af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_vod_rtsp_server.h">
@@ -21,6 +27,24 @@
     <ClInclude Include="include\vod_rtsp_server.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="file_reader\media_file_reader.h">
+      <Filter>file_reader</Filter>
+    </ClInclude>
+    <ClInclude Include="include\buffered_h264_sms.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\buffered_sms.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\buffered_byte_stream_source.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\buffered_framed_source.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
+      <Filter>ffmpeg_base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_vod_rtsp_server.cpp">
@@ -28,6 +52,24 @@
     </ClCompile>
     <ClCompile Include="source\vod_rtsp_server.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="file_reader\media_file_reader.cpp">
+      <Filter>file_reader</Filter>
+    </ClCompile>
+    <ClCompile Include="source\buffered_sms.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\buffered_framed_source.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\buffered_byte_stream_source.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\buffered_h264_sms.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
+      <Filter>ffmpeg_base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

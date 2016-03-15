@@ -1,13 +1,11 @@
 
-// CloudMediaEdgeFileEncoderDlg.cpp : implementation file
+// ParallelRecordStreamerDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
-#include "CloudMediaEdgeFileEncoder.h"
-#include "CloudMediaEdgeFileEncoderDlg.h"
+#include "ParallelRecordStreamer.h"
+#include "ParallelRecordStreamerDlg.h"
 #include "afxdialogex.h"
-
-#include "dk_string_helper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,34 +43,35 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CCloudMediaEdgeFileEncoderDlg dialog
+// CParallelRecordStreamerDlg dialog
 
 
 
-CCloudMediaEdgeFileEncoderDlg::CCloudMediaEdgeFileEncoderDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(CCloudMediaEdgeFileEncoderDlg::IDD, pParent)
+CParallelRecordStreamerDlg::CParallelRecordStreamerDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(CParallelRecordStreamerDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CCloudMediaEdgeFileEncoderDlg::DoDataExchange(CDataExchange* pDX)
+void CParallelRecordStreamerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CCloudMediaEdgeFileEncoderDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CParallelRecordStreamerDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON_PLAY, &CCloudMediaEdgeFileEncoderDlg::OnBnClickedButtonPlay)
-	ON_BN_CLICKED(IDC_BUTTON_STOP, &CCloudMediaEdgeFileEncoderDlg::OnBnClickedButtonStop)
-	ON_WM_ERASEBKGND()
+	ON_BN_CLICKED(IDC_BUTTON_TRAY, &CParallelRecordStreamerDlg::OnBnClickedButtonTray)
+	ON_BN_CLICKED(IDC_BUTTON_START, &CParallelRecordStreamerDlg::OnBnClickedButtonStart)
+	ON_BN_CLICKED(IDC_BUTTON_STOP, &CParallelRecordStreamerDlg::OnBnClickedButtonStop)
+	ON_MESSAGE(TRAY_NOTIFY, OnTrayIconClick)
 END_MESSAGE_MAP()
 
 
-// CCloudMediaEdgeFileEncoderDlg message handlers
+// CParallelRecordStreamerDlg message handlers
 
-BOOL CCloudMediaEdgeFileEncoderDlg::OnInitDialog()
+BOOL CParallelRecordStreamerDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
@@ -106,7 +105,7 @@ BOOL CCloudMediaEdgeFileEncoderDlg::OnInitDialog()
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-void CCloudMediaEdgeFileEncoderDlg::OnSysCommand(UINT nID, LPARAM lParam)
+void CParallelRecordStreamerDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
@@ -123,7 +122,7 @@ void CCloudMediaEdgeFileEncoderDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 
-void CCloudMediaEdgeFileEncoderDlg::OnPaint()
+void CParallelRecordStreamerDlg::OnPaint()
 {
 	if (IsIconic())
 	{
@@ -144,65 +143,81 @@ void CCloudMediaEdgeFileEncoderDlg::OnPaint()
 	}
 	else
 	{
-		CBrush brush;
-		brush.CreateSolidBrush(RGB(0, 0, 0));
-
-		CRect rect;
-		CWnd * video_view = GetDlgItem(IDC_STATIC_VIDEO_VIEW);
-		CDC * video_view_dc = video_view->GetDC();
-		video_view->GetClientRect(rect);
-		video_view_dc->FillRect(rect, &brush);
-		brush.DeleteObject();
-
 		CDialogEx::OnPaint();
 	}
 }
 
-BOOL CCloudMediaEdgeFileEncoderDlg::OnEraseBkgnd(CDC* pDC)
-{
-	// TODO: Add your message handler code here and/or call default
-	return CDialogEx::OnEraseBkgnd(pDC);
-}
-
-
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR CCloudMediaEdgeFileEncoderDlg::OnQueryDragIcon()
+HCURSOR CParallelRecordStreamerDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CCloudMediaEdgeFileEncoderDlg::OnBnClickedButtonPlay()
+
+
+void CParallelRecordStreamerDlg::OnBnClickedButtonTray()
 {
 	// TODO: Add your control notification handler code here
-	wchar_t filter[] = L"Media Files(*.mkv, *.avi, *.mp4, *.wmv)|*.mkv;*.avi;*.mp4;*.wmv||"; //L"All Files(*.*)|*.*||";
-	CFileDialog dlg(TRUE, L"mkv", NULL, OFN_HIDEREADONLY, filter);
+	NOTIFYICONDATA nid;
 
-	if (dlg.DoModal() == IDOK)
+	ShowWindow(SW_SHOWMINIMIZED);
+	PostMessage(WM_SHOWWINDOW, FALSE, SW_OTHERUNZOOM);
+
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.hWnd = this->m_hWnd;
+	nid.uID = 0;
+	Shell_NotifyIcon(NIM_DELETE, &nid);
+
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	nid.hWnd = this->m_hWnd;
+	CString str;
+	GetWindowText(str);
+	StrCpyW(nid.szTip, str.GetBuffer(str.GetLength() + 1));
+	str.ReleaseBuffer();
+	nid.uID = 0;
+	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+	nid.uCallbackMessage = TRAY_NOTIFY;
+	Shell_NotifyIcon(NIM_ADD, &nid);
+}
+
+
+void CParallelRecordStreamerDlg::OnBnClickedButtonStart()
+{
+	// TODO: Add your control notification handler code here
+	_server.start();
+}
+
+
+void CParallelRecordStreamerDlg::OnBnClickedButtonStop()
+{
+	// TODO: Add your control notification handler code here
+	_server.stop();
+}
+
+LRESULT CParallelRecordStreamerDlg::OnTrayIconClick(WPARAM wParam, LPARAM lParam)
+{
+	switch (lParam)
 	{
-		CString filepath = dlg.GetPathName();
-		if (filepath.GetLength()>0)
-		{
-#if defined(WITH_MEDIA_FOUNDATION)
-			_encoder.play((LPCWSTR)filepath, ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO_VIEW));
-#else
-			char * mb_filepath = 0;
-			dk_string_helper::convert_wide2multibyte((LPWSTR)(LPCWSTR)filepath, &mb_filepath);
-			if (mb_filepath && strlen(mb_filepath)>0)
-			{
-				_encoder.play(mb_filepath, ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO_VIEW));
-				free(mb_filepath);
-				mb_filepath = 0;
-			}
-#endif
-		}
+	case WM_LBUTTONDBLCLK:   // 트레이아이콘 왼쪽버튼 더블클릭시 창이 다시 열린다.
+	{
+		NOTIFYICONDATA nid;
+
+		nid.cbSize = sizeof(NOTIFYICONDATA);
+		nid.hWnd = this->m_hWnd;
+		nid.uID = 0;
+		Shell_NotifyIcon(NIM_DELETE, &nid);
+
+		ShowWindow(SW_RESTORE);
+		SetForegroundWindow();
 	}
+	break;
+	case WM_RBUTTONDOWN:     // 트레이아이콘 오른쪽버튼 클릭 
+	{
+
+	}
+	break;
+	}
+	return 0;
 }
-
-
-void CCloudMediaEdgeFileEncoderDlg::OnBnClickedButtonStop()
-{
-	// TODO: Add your control notification handler code here
-	_encoder.stop();
-}
-

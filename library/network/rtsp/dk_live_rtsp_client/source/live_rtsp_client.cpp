@@ -345,13 +345,31 @@ void live_rtsp_client::setup_streams(void)
 			continue;
 
 		buffer_sink * bs;
-		if (!strcmp(media_subsession->mediumName(), "video") && !strcmp(media_subsession->codecName(), "H265"))
+		if (!strcmp(media_subsession->mediumName(), "video"))
 		{
-			//bs = h265_buffer_sink::createNew(_front, (*_env), media_subsession->fmtp_spropparametersets(), 512 * 1024);
+			if(!strcmp(media_subsession->codecName(), "H265"))
+			{
+				//bs = h265_buffer_sink::createNew(_front, (*_env), media_subsession->fmtp_spropparametersets(), 512 * 1024);
+			}
+			else if (!strcmp(media_subsession->codecName(), "H264"))
+			{
+				bs = h264_buffer_sink::createNew(_front, envir(), media_subsession->fmtp_spropparametersets(), 512 * 1024);
+			}
+			else if (!strcmp(media_subsession->codecName(), "MP4V-ES"))
+			{
+
+			}
 		}
-		else if(!strcmp(media_subsession->mediumName(), "video") && !strcmp(media_subsession->codecName(), "H264"))
+		else if(!strcmp(media_subsession->mediumName(), "audio"))
 		{
-			bs = h264_buffer_sink::createNew(_front, envir(), media_subsession->fmtp_spropparametersets(), 512 * 1024);
+			if (!strcmp(media_subsession->codecName(), "AMR") || !strcmp(media_subsession->codecName(), "AMR-WB"))
+			{
+				//bs = amr_buffer_sink::createNew(_front, envir(), media_subsession->fmtp_spropparametersets(), 512 * 1024);
+			}
+			else if (!strcmp(media_subsession->codecName(), "MPEG4-GENERIC") || !strcmp(media_subsession->codecName(), "MP4A-LATM")) //aac
+			{
+
+			}
 			//unsigned numSPropRecords;
 			//SPropRecord* sPropRecords = parseSPropParameterSets(media_subsession->fmtp_spropparametersets(), numSPropRecords);
 			//if (numSPropRecords)

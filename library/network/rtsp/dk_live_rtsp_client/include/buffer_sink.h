@@ -31,8 +31,8 @@ protected:
 	bool _change_sps;
 	bool _change_pps;
 	bool _recv_idr;
-	unsigned char _video_extradata[400];
-	size_t _video_extradata_size;
+	//unsigned char _video_extradata[400];
+	//size_t _video_extradata_size;
 
 
     struct timeval _prev_presentation_time;

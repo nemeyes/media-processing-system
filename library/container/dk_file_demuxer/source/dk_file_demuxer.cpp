@@ -15,12 +15,12 @@ dk_file_demuxer::~dk_file_demuxer(void)
 	}
 }
 
-dk_file_demuxer::ERR_CODE dk_file_demuxer::play(const char * filepath)
+dk_file_demuxer::err_code dk_file_demuxer::play(const char * filepath)
 {
 	return _core->play(filepath);
 }
 
-dk_file_demuxer::ERR_CODE dk_file_demuxer::stop(void)
+dk_file_demuxer::err_code dk_file_demuxer::stop(void)
 {
 	return _core->stop();
 }

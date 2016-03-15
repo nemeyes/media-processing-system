@@ -5,7 +5,7 @@
 #include <cstdint>
 #define MAX_VIDEO_FRAME_SIZE 1024*1024*4
 
-#include "dk_media_buffering.h"
+#include "define.h"
 
 typedef struct _dk_circular_buffer_t dk_circular_buffer_t;
 class dk_video_buffer
@@ -23,29 +23,29 @@ public:
 	dk_video_buffer(size_t buffer_size = MAX_VIDEO_FRAME_SIZE);
 	~dk_video_buffer(void);
 
-	dk_media_buffering::ERR_CODE push(const uint8_t * data, size_t size, long long pts);
-	dk_media_buffering::ERR_CODE pop(uint8_t * data, size_t & size, long long & pts);
+	buffering::err_code push(const uint8_t * data, size_t size, long long pts);
+	buffering::err_code pop(uint8_t * data, size_t & size, long long & pts);
 
 
-	dk_media_buffering::ERR_CODE set_submedia_type(dk_media_buffering::VIDEO_SUBMEDIA_TYPE mt);
-	dk_media_buffering::ERR_CODE set_vps(uint8_t * vps, size_t size);
-	dk_media_buffering::ERR_CODE set_sps(uint8_t * sps, size_t size);
-	dk_media_buffering::ERR_CODE set_pps(uint8_t * pps, size_t size);
-	dk_media_buffering::ERR_CODE set_width(int32_t width);
-	dk_media_buffering::ERR_CODE set_height(int32_t height);
+	buffering::err_code set_submedia_type(buffering::vsubmedia_type mt);
+	buffering::err_code set_vps(uint8_t * vps, size_t size);
+	buffering::err_code set_sps(uint8_t * sps, size_t size);
+	buffering::err_code set_pps(uint8_t * pps, size_t size);
+	buffering::err_code set_width(int32_t width);
+	buffering::err_code set_height(int32_t height);
 
-	dk_media_buffering::ERR_CODE get_submedia_type(dk_media_buffering::VIDEO_SUBMEDIA_TYPE & mt);
-	dk_media_buffering::ERR_CODE get_vps(uint8_t * sps, size_t & size);
-	dk_media_buffering::ERR_CODE get_sps(uint8_t * sps, size_t & size);
-	dk_media_buffering::ERR_CODE get_pps(uint8_t * pps, size_t & size);
-	dk_media_buffering::ERR_CODE get_width(int32_t & width);
-	dk_media_buffering::ERR_CODE get_height(int32_t & height);
-
-private:
-	dk_media_buffering::ERR_CODE init(buffer_t *  buffer);
+	buffering::err_code get_submedia_type(buffering::vsubmedia_type & mt);
+	buffering::err_code get_vps(uint8_t * sps, size_t & size);
+	buffering::err_code get_sps(uint8_t * sps, size_t & size);
+	buffering::err_code get_pps(uint8_t * pps, size_t & size);
+	buffering::err_code get_width(int32_t & width);
+	buffering::err_code get_height(int32_t & height);
 
 private:
-	dk_media_buffering::VIDEO_SUBMEDIA_TYPE _mt;
+	buffering::err_code init(buffer_t *  buffer);
+
+private:
+	buffering::vsubmedia_type _mt;
 	uint8_t _vps[200];
 	uint8_t _sps[200];
 	uint8_t _pps[200];

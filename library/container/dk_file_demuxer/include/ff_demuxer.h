@@ -28,8 +28,8 @@ public:
 	ff_demuxer(dk_file_demuxer * front);
 	virtual ~ff_demuxer(void);
 
-	dk_file_demuxer::ERR_CODE play(const char * filepath);
-	dk_file_demuxer::ERR_CODE stop(void);
+	dk_file_demuxer::err_code play(const char * filepath);
+	dk_file_demuxer::err_code stop(void);
 
 private:
 	unsigned static __stdcall process_cb(void * param);
@@ -89,8 +89,8 @@ private:
 	uint8_t _audio_extradata[20];
 	size_t _audio_extradata_size;
 
-	dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T _vsubmedia_type;
-	dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T _asubmedia_type;
+	dk_file_demuxer::vsubmedia_type _vsubmedia_type;
+	dk_file_demuxer::asubmedia_type _asubmedia_type;
 
 	bool _run;
 	bool _run_video;
@@ -99,10 +99,8 @@ private:
 	HANDLE _thread_video;
 	HANDLE _thread_audio;
 
-
 	uint8_t * _video_buffer;
 	uint8_t * _audio_buffer;
-
 };
 
 

@@ -31,8 +31,8 @@ ff_demuxer::ff_demuxer(dk_file_demuxer * front)
 	, _audio_last_dts(0)
 	, _audio_last_delay(0)
 	, _audio_clock(0)
-	, _vsubmedia_type(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T::UNKNOWN_VIDEO_TYPE)
-	, _asubmedia_type(dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T::UNKNOWN_AUDIO_TYPE)
+	, _vsubmedia_type(dk_file_demuxer::vsubmedia_type::unknown_video_type)
+	, _asubmedia_type(dk_file_demuxer::asubmedia_type::unknown_audio_type)
 	, _run(false)
 	, _run_video(false)
 	, _run_audio(false)
@@ -53,7 +53,7 @@ ff_demuxer::~ff_demuxer(void)
 		free(_audio_buffer);
 }
 
-dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
+dk_file_demuxer::err_code ff_demuxer::play(const char * filepath)
 {
 	_format_ctx = nullptr;
 	
@@ -114,16 +114,16 @@ dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
 	switch (_video_ctx->codec_id)
 	{
 	case AV_CODEC_ID_MJPEG :
-		_vsubmedia_type = dk_file_demuxer::SUBMEDIA_TYPE_JPEG;
+		_vsubmedia_type = dk_file_demuxer::vsubmedia_type_jpeg;
 		break;
 	case AV_CODEC_ID_MPEG4 :
-		_vsubmedia_type = dk_file_demuxer::SUBMEDIA_TYPE_MPEG4;
+		_vsubmedia_type = dk_file_demuxer::vsubmedia_type_mpeg4;
 		break;
 	case AV_CODEC_ID_H264 :
-		_vsubmedia_type = dk_file_demuxer::SUBMEDIA_TYPE_H264;
+		_vsubmedia_type = dk_file_demuxer::vsubmedia_type_h264;
 		break;
 	default:
-		_vsubmedia_type = dk_file_demuxer::UNKNOWN_VIDEO_TYPE;
+		_vsubmedia_type = dk_file_demuxer::unknown_video_type;
 		break;
 	}
 
@@ -132,13 +132,13 @@ dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
 	switch (_audio_ctx->codec_id)
 	{
 	case AV_CODEC_ID_MP3:
-		_asubmedia_type = dk_file_demuxer::SUBMEDIA_TYPE_MP3;
+		_asubmedia_type = dk_file_demuxer::asubmedia_type_mp3;
 		break;
 	case AV_CODEC_ID_AAC:
-		_asubmedia_type = dk_file_demuxer::SUBMEDIA_TYPE_AAC;
+		_asubmedia_type = dk_file_demuxer::asubmedia_type_aac;
 		break;
 	default :
-		_asubmedia_type = dk_file_demuxer::UNKNOWN_AUDIO_TYPE;
+		_asubmedia_type = dk_file_demuxer::unknown_audio_type;
 		break;
 	}
 
@@ -147,7 +147,7 @@ dk_file_demuxer::ERR_CODE ff_demuxer::play(const char * filepath)
 	return dk_file_demuxer::ERR_CODE_SUCCESS;
 }
 
-dk_file_demuxer::ERR_CODE ff_demuxer::stop(void)
+dk_file_demuxer::err_code ff_demuxer::stop(void)
 {
 	_run = false;
 	if (_thread != INVALID_HANDLE_VALUE)
@@ -212,9 +212,9 @@ void ff_demuxer::process(void)
 	_run = true;
 
 	unsigned thrdaddr = 0;
-	if (_vsubmedia_type!=dk_file_demuxer::UNKNOWN_VIDEO_TYPE)
+	if (_vsubmedia_type!=dk_file_demuxer::unknown_video_type)
 		_thread_video = (HANDLE)::_beginthreadex(NULL, 0, ff_demuxer::process_video_cb, this, 0, &thrdaddr);
-	if (_asubmedia_type != dk_file_demuxer::UNKNOWN_AUDIO_TYPE)
+	if (_asubmedia_type != dk_file_demuxer::unknown_audio_type)
 		_thread_audio = (HANDLE)::_beginthreadex(NULL, 0, ff_demuxer::process_audio_cb, this, 0, &thrdaddr);
 
 	for (; _run && av_read_frame(_format_ctx, &packet) >= 0;)
@@ -232,7 +232,7 @@ void ff_demuxer::process(void)
 	}
 
 
-	if (_vsubmedia_type != dk_file_demuxer::UNKNOWN_VIDEO_TYPE)
+	if (_vsubmedia_type != dk_file_demuxer::unknown_video_type)
 	{
 		_run_video = false;
 		if (_thread_video != INVALID_HANDLE_VALUE)
@@ -243,7 +243,7 @@ void ff_demuxer::process(void)
 		}
 	}
 	
-	if (_asubmedia_type != dk_file_demuxer::UNKNOWN_AUDIO_TYPE)
+	if (_asubmedia_type != dk_file_demuxer::unknown_audio_type)
 	{
 		_run_audio = false;
 		if (_thread_audio != INVALID_HANDLE_VALUE)
@@ -305,7 +305,7 @@ void ff_demuxer::process_video(void)
 		}
 		actual_delay = actual_delay * 1000 + 0.5;
 
-		if (_vsubmedia_type == dk_file_demuxer::SUBMEDIA_TYPE_H264)
+		if (_vsubmedia_type == dk_file_demuxer::vsubmedia_type_h264)
 		{
 			uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
 			uint8_t * data = _video_buffer;
@@ -428,7 +428,7 @@ void ff_demuxer::process_audio(void)
 
 		switch (_asubmedia_type)
 		{
-			case dk_file_demuxer::SUBMEDIA_TYPE_AAC :
+			case dk_file_demuxer::asubmedia_type_aac :
 			{
 				if (!_audio_recv_sample)
 				{
@@ -447,7 +447,7 @@ void ff_demuxer::process_audio(void)
 				}
 				break;
 			}
-			case dk_file_demuxer::SUBMEDIA_TYPE_MP3 :
+			case dk_file_demuxer::asubmedia_type_mp3 :
 			{
 
 				break;

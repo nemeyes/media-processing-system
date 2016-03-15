@@ -9,30 +9,30 @@
 
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
 
-bool stream_parser::is_vps(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_vps(dk_file_demuxer::vsubmedia_type smt, uint8_t nal_unit_type)
 {
 	// VPS NAL units occur in H.265 only:
-	return smt == dk_file_demuxer::SUBMEDIA_TYPE_HEVC && nal_unit_type == 32;
+	return smt == dk_file_demuxer::vsubmedia_type_hevc && nal_unit_type == 32;
 }
 
-bool stream_parser::is_sps(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_sps(dk_file_demuxer::vsubmedia_type smt, uint8_t nal_unit_type)
 {
-	return smt == dk_file_demuxer::SUBMEDIA_TYPE_H264 ? nal_unit_type == 7 : nal_unit_type == 33;
+	return smt == dk_file_demuxer::vsubmedia_type_h264 ? nal_unit_type == 7 : nal_unit_type == 33;
 }
 
-bool stream_parser::is_pps(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_pps(dk_file_demuxer::vsubmedia_type smt, uint8_t nal_unit_type)
 {
-	return smt == dk_file_demuxer::SUBMEDIA_TYPE_H264 ? nal_unit_type == 8 : nal_unit_type == 34;
+	return smt == dk_file_demuxer::vsubmedia_type_h264 ? nal_unit_type == 8 : nal_unit_type == 34;
 }
 
-bool stream_parser::is_idr(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_idr(dk_file_demuxer::vsubmedia_type smt, uint8_t nal_unit_type)
 {
-	return smt == dk_file_demuxer::SUBMEDIA_TYPE_H264 ? nal_unit_type == 5 : nal_unit_type == 34;
+	return smt == dk_file_demuxer::vsubmedia_type_h264 ? nal_unit_type == 5 : nal_unit_type == 34;
 }
 
-bool stream_parser::is_vlc(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool stream_parser::is_vlc(dk_file_demuxer::vsubmedia_type smt, uint8_t nal_unit_type)
 {
-	return smt == dk_file_demuxer::SUBMEDIA_TYPE_H264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
+	return smt == dk_file_demuxer::vsubmedia_type_h264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }
 
 const int stream_parser::find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)

@@ -98,6 +98,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\dk_rtsp_base\source\dk_rtsp_base.cpp" />
+    <ClCompile Include="source\aac_buffer_sink.cpp" />
     <ClCompile Include="source\buffer_sink.cpp" />
     <ClCompile Include="source\h2645_buffer_sink.cpp" />
     <ClCompile Include="source\h264_buffer_sink.cpp" />
@@ -107,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dk_rtsp_base\include\dk_rtsp_base.h" />
+    <ClInclude Include="include\aac_buffer_sink.h" />
     <ClInclude Include="include\buffer_sink.h" />
     <ClInclude Include="include\h2645_buffer_sink.h" />
     <ClInclude Include="include\h264_buffer_sink.h" />

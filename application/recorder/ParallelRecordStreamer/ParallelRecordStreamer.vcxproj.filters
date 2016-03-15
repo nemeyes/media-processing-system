@@ -15,40 +15,49 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dk_circular_buffer.h">
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ParallelRecordStreamer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dk_video_buffer.h">
+    <ClInclude Include="ParallelRecordStreamerDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dk_media_buffering.h">
+    <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dk_audio_buffer.h">
+    <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dk_multiple_media_buffering.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\define.h">
+    <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\dk_circular_buffer.cpp">
+    <ClCompile Include="ParallelRecordStreamer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\dk_video_buffer.cpp">
+    <ClCompile Include="ParallelRecordStreamerDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\dk_media_buffering.cpp">
+    <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\dk_audio_buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\dk_multiple_media_buffering.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ParallelRecordStreamer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ParallelRecordStreamer.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\ParallelRecordStreamer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -39,6 +39,9 @@
     <ClCompile Include="..\dk_rtsp_base\source\dk_rtsp_base.cpp">
       <Filter>rtsp_base</Filter>
     </ClCompile>
+    <ClCompile Include="source\aac_buffer_sink.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\buffer_sink.h">
@@ -61,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="..\dk_rtsp_base\include\dk_rtsp_base.h">
       <Filter>rtsp_base</Filter>
+    </ClInclude>
+    <ClInclude Include="include\aac_buffer_sink.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

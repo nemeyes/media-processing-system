@@ -55,18 +55,18 @@ public:
 	dk_file_demuxer(void);
 	virtual ~dk_file_demuxer(void);
 
-	dk_file_demuxer::ERR_CODE play(const char * filepath);
-	dk_file_demuxer::ERR_CODE stop(void);
+	dk_file_demuxer::err_code play(const char * filepath);
+	dk_file_demuxer::err_code stop(void);
 
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
 	void set_sps(uint8_t * sps, size_t sps_size);
 	void set_pps(uint8_t * pps, size_t pps_size);
 
-	virtual void on_begin_video(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
-	virtual void on_recv_video(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
-	virtual void on_begin_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
-	virtual void on_recv_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
+	virtual void on_begin_video(dk_file_demuxer::vsubmedia_type smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
+	virtual void on_recv_video(dk_file_demuxer::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
+	virtual void on_begin_audio(dk_file_demuxer::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
+	virtual void on_recv_audio(dk_file_demuxer::asubmedia_type smt, const uint8_t * data, size_t data_size, long long presentation_time) = 0;
 
 private:
 	ff_demuxer * _core;

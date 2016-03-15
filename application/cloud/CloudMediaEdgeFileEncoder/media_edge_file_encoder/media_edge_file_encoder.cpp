@@ -104,7 +104,7 @@ void media_edge_file_encoder::stop(void)
 	}
 }
 
-void media_edge_file_encoder::on_begin_video(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long presentation_time)
+void media_edge_file_encoder::on_begin_video(dk_file_demuxer::vsubmedia_type smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	if (_video_decoder)
 	{
@@ -219,7 +219,7 @@ void media_edge_file_encoder::on_begin_video(dk_file_demuxer::VIDEO_SUBMEDIA_TYP
 	} while (0);
 }
 
-void media_edge_file_encoder::on_recv_video(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time)
+void media_edge_file_encoder::on_recv_video(dk_file_demuxer::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	dk_ff_video_decoder * video_decoder = static_cast<dk_ff_video_decoder*>(_video_decoder);
 	dk_ff_video_decoder::configuration_t * video_decoder_config = static_cast<dk_ff_video_decoder::configuration_t*>(_video_decoder_config);
@@ -249,7 +249,7 @@ void media_edge_file_encoder::on_recv_video(dk_file_demuxer::VIDEO_SUBMEDIA_TYPE
 	}
 }
 
-void media_edge_file_encoder::on_begin_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long presentation_time)
+void media_edge_file_encoder::on_begin_audio(dk_file_demuxer::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	if (_audio_decoder)
 	{
@@ -282,7 +282,7 @@ void media_edge_file_encoder::on_begin_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYP
 
 	switch (smt)
 	{
-		case dk_file_demuxer::SUBMEDIA_TYPE_AAC :
+		case dk_file_demuxer::asubmedia_type_aac :
 		{
 			_audio_decoder = new dk_aac_decoder();
 			_audio_decoder_config = new dk_aac_decoder::configuration_t();
@@ -323,7 +323,7 @@ void media_edge_file_encoder::on_begin_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYP
 			}
 			break;
 		}
-		case dk_file_demuxer::SUBMEDIA_TYPE_MP3 :
+		case dk_file_demuxer::asubmedia_type_mp3 :
 		{
 			_audio_decoder = new dk_ff_mp3_decoder();
 			_audio_decoder_config = new dk_ff_mp3_decoder::configuration_t();
@@ -365,11 +365,11 @@ void media_edge_file_encoder::on_begin_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYP
 	}
 }
 
-void media_edge_file_encoder::on_recv_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYPE_T smt, const uint8_t * data, size_t data_size, long long presentation_time)
+void media_edge_file_encoder::on_recv_audio(dk_file_demuxer::asubmedia_type smt, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	switch (smt)
 	{
-		case dk_file_demuxer::SUBMEDIA_TYPE_AAC:
+		case dk_file_demuxer::asubmedia_type_aac:
 		{
 			dk_aac_decoder * audio_decoder = static_cast<dk_aac_decoder*>(_audio_decoder);
 			dk_aac_decoder::configuration_t * audio_decoder_config = static_cast<dk_aac_decoder::configuration_t*>(_audio_decoder_config);
@@ -391,7 +391,7 @@ void media_edge_file_encoder::on_recv_audio(dk_file_demuxer::AUDIO_SUBMEDIA_TYPE
 			}
 			break;
 		}
-		case dk_file_demuxer::SUBMEDIA_TYPE_MP3:
+		case dk_file_demuxer::asubmedia_type_mp3:
 		{
 			dk_ff_mp3_decoder * audio_decoder = static_cast<dk_ff_mp3_decoder*>(_audio_decoder);
 			dk_ff_mp3_decoder::configuration_t * audio_decoder_config = static_cast<dk_ff_mp3_decoder::configuration_t*>(_audio_decoder_config);
