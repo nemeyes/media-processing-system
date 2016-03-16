@@ -71,6 +71,7 @@ void buffered_byte_stream_source::read_from_buffer(void)
 		fFrameSize = 0;
 		size_t data_size = 0;
 		long long timestamp = 0;
+		
 		_reader->read(media_file_reader::media_type_video, fRealFrame, sizeof(fRealFrame), data_size, timestamp);
 
 		if (data_size > 0)
@@ -83,7 +84,15 @@ void buffered_byte_stream_source::read_from_buffer(void)
 			}
 			memcpy(fTo, fRealFrame, fFrameSize);
 			gettimeofday(&fPresentationTime, NULL);
+
+#if 1
+			if (timestamp==0)
+				FramedSource::afterGetting(this);
+			else
+				nextTask() = envir().taskScheduler().scheduleDelayedTask(timestamp, (TaskFunc*)FramedSource::afterGetting, this);
+#else
 			FramedSource::afterGetting(this);
+#endif
 		}
 		else
 		{

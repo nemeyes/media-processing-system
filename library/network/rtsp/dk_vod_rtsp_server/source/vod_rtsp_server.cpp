@@ -47,7 +47,7 @@ ServerMediaSession * vod_rtsp_server::lookupServerMediaSession(char const * stre
 #define NEW_SMS(description) do {\
 								char const* descStr = description\
 								", streamed by the DebugerKing Media Server";\
-								sms = ServerMediaSession::createNew(env, fileName, fileName, descStr);\
+								sms = ServerMediaSession::createNew(env, stream_name, stream_name, descStr);\
 							} while(0)
 
 static ServerMediaSession * createNewSMS(UsageEnvironment & env, char const * stream_name)
@@ -59,6 +59,16 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env, char const * st
 	Boolean const reuse_source = False;
 
 	std::shared_ptr<media_file_reader> reader(new media_file_reader);
-	sms->addSubsession(buffered_h264_sms::createNew(env, stream_name, reuse_source, reader));
+
+	media_file_reader::vsubmedia_type video_type = media_file_reader::unknown_video_type;
+	media_file_reader::asubmedia_type audio_type = media_file_reader::unknown_audio_type;
+	reader->open(stream_name, 0, video_type, audio_type);
+
+	if (video_type == media_file_reader::vsubmedia_type_h264)
+	{
+		NEW_SMS("H.264 Video");
+		OutPacketBuffer::maxSize = 6000000; // allow for some possibly large H.264 frames
+		sms->addSubsession(buffered_h264_sms::createNew(env, stream_name, reuse_source, reader));
+	}
 	return sms;
 }

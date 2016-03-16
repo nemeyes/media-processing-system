@@ -363,11 +363,11 @@ void ff_demuxer::process_video(void)
 					memmove(data, _video_extradata, _video_extradata_size);
 					memmove(data + _video_extradata_size, data, data_size);
 					_video_recv_keyframe = true;
-					_front->on_begin_video(_vsubmedia_type, saved_sps, saved_sps_size, saved_pps, saved_pps_size, data, data_size + _video_extradata_size, 0);
+					_front->on_begin_video(_vsubmedia_type, saved_sps, saved_sps_size, saved_pps, saved_pps_size, data, sizeof(start_code) + data_size + _video_extradata_size, 0);
 				}
 
 				if (_video_recv_keyframe)
-					_front->on_recv_video(_vsubmedia_type, data, data_size, 0);
+					_front->on_recv_video(_vsubmedia_type, data, sizeof(start_code) + data_size, 0);
 
 				index += data_size;
 			} while (index < packet_size);

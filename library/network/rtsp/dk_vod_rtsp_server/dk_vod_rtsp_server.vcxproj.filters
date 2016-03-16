@@ -45,6 +45,9 @@
     <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
       <Filter>ffmpeg_base</Filter>
     </ClInclude>
+    <ClInclude Include="include\scoped_lock.h">
+      <Filter>file_reader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_vod_rtsp_server.cpp">

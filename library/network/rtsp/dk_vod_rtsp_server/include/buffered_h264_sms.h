@@ -32,11 +32,6 @@ private:
 	char * fAuxSDPLine;
 	char fDoneFlag; // used when setting up "fAuxSDPLine"
 	RTPSink * fDummyRTPSink; // ditto
-
-	unsigned char _sps[100];
-	unsigned char _pps[100];
-	int _sps_size;
-	int _pps_size;
 };
 
 #endif

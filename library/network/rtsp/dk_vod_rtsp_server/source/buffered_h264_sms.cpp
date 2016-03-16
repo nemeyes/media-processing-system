@@ -17,8 +17,6 @@ buffered_h264_sms::buffered_h264_sms(UsageEnvironment & env, char const * stream
 	, fAuxSDPLine(NULL)
 	, fDoneFlag(0)
 	, fDummyRTPSink(NULL)
-	, _sps_size(0)
-	, _pps_size(0)
 {
 
 }
@@ -98,7 +96,7 @@ char const* buffered_h264_sms::getAuxSDPLine(RTPSink * rtpSink, FramedSource * i
 
 FramedSource* buffered_h264_sms::createNewStreamSource(unsigned /*clientSessionId*/, unsigned & estBitrate)
 {
-	estBitrate = 6000;//500; // kbps, estimate
+	estBitrate = 8*1024;//500; // kbps, estimate
 
 	// Create the video source:
 	buffered_byte_stream_source * buffered_source = buffered_byte_stream_source::createNew(envir(), _stream_name, _reader);
@@ -110,12 +108,19 @@ FramedSource* buffered_h264_sms::createNewStreamSource(unsigned /*clientSessionI
 
 RTPSink* buffered_h264_sms::createNewRTPSink(Groupsock * rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * inputSource)
 {
-	if (_sps_size>0 && _pps_size>0)
+	size_t sps_size = 0;
+	size_t pps_size = 0;
+	const uint8_t * sps = _reader->get_sps(sps_size);
+	const uint8_t * pps = _reader->get_pps(pps_size);
+
+	if (sps && pps && (sps_size > 0) && (pps_size > 0))
 	{
 		//unsigned int profile_level_id = 0;
 		//profile_level_id = _sps[1] << 16 | _sps[2] << 8 | _sps[3];
-		return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, _sps, _sps_size, _pps, _pps_size/*, profile_level_id*/);
+		return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, sps, sps_size, pps, pps_size/*, profile_level_id*/);
 	}
 	else
+	{
 		return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
+	}
 }

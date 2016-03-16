@@ -229,6 +229,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_rtsp_base", "..\..\libra
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordStreamer", "..\..\application\recorder\ParallelRecordStreamer\ParallelRecordStreamer.vcxproj", "{2690508B-2E36-43D9-8CF1-4FF8C9AB247B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "codec_ccu", "codec_ccu", "{9E70D9C4-F055-4304-9815-4A15C54CA941}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x264_ccu_tester", "..\..\application\codec_ccu\x264_ccu_tester\x264_ccu_tester.vcxproj", "{48076324-D8EB-4682-B6A5-DF27CC49B691}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -671,6 +675,12 @@ Global
 		{2690508B-2E36-43D9-8CF1-4FF8C9AB247B}.Release|Win32.ActiveCfg = Release|Win32
 		{2690508B-2E36-43D9-8CF1-4FF8C9AB247B}.Release|Win32.Build.0 = Release|Win32
 		{2690508B-2E36-43D9-8CF1-4FF8C9AB247B}.Release|x64.ActiveCfg = Release|Win32
+		{48076324-D8EB-4682-B6A5-DF27CC49B691}.Debug|Win32.ActiveCfg = Debug|Win32
+		{48076324-D8EB-4682-B6A5-DF27CC49B691}.Debug|Win32.Build.0 = Debug|Win32
+		{48076324-D8EB-4682-B6A5-DF27CC49B691}.Debug|x64.ActiveCfg = Debug|Win32
+		{48076324-D8EB-4682-B6A5-DF27CC49B691}.Release|Win32.ActiveCfg = Release|Win32
+		{48076324-D8EB-4682-B6A5-DF27CC49B691}.Release|Win32.Build.0 = Release|Win32
+		{48076324-D8EB-4682-B6A5-DF27CC49B691}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -785,5 +795,7 @@ Global
 		{76C0648A-BAE1-4614-A493-AC92017C01F2} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 		{1DE4E24A-2555-42E6-88CC-05847D9B92A6} = {0EDD8E90-6D29-4D7F-8CB0-A26326EE71CF}
 		{2690508B-2E36-43D9-8CF1-4FF8C9AB247B} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
+		{9E70D9C4-F055-4304-9815-4A15C54CA941} = {E4B8A439-8AD6-40B4-AF49-854160791F6E}
+		{48076324-D8EB-4682-B6A5-DF27CC49B691} = {9E70D9C4-F055-4304-9815-4A15C54CA941}
 	EndGlobalSection
 EndGlobal

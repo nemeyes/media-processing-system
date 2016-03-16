@@ -40,11 +40,13 @@ dk_multiple_media_buffering::~dk_multiple_media_buffering(void)
 	::DeleteCriticalSection(&_amutex);
 }
 
+#if defined(WITH_SINGLETON)
 dk_multiple_media_buffering & dk_multiple_media_buffering::instance(void)
 {
 	static dk_multiple_media_buffering _instance;
 	return _instance;
 }
+#endif
 
 buffering::err_code dk_multiple_media_buffering::create(const char * id)
 {
@@ -279,6 +281,45 @@ buffering::err_code dk_multiple_media_buffering::get_video_height(const char * i
 	else
 	{
 		return buffering::err_code_failed;
+	}
+}
+
+const uint8_t * dk_multiple_media_buffering::get_vps(const char * id, size_t & size)
+{
+	dk_video_buffer * vbuffer = get_video_buffer(id);
+	if (vbuffer)
+	{
+		return vbuffer->get_vps(size);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+const uint8_t * dk_multiple_media_buffering::get_sps(const char * id, size_t & size)
+{
+	dk_video_buffer * vbuffer = get_video_buffer(id);
+	if (vbuffer)
+	{
+		return vbuffer->get_sps(size);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+const uint8_t * dk_multiple_media_buffering::get_pps(const char * id, size_t & size)
+{
+	dk_video_buffer * vbuffer = get_video_buffer(id);
+	if (vbuffer)
+	{
+		return vbuffer->get_pps(size);
+	}
+	else
+	{
+		return nullptr;
 	}
 }
 

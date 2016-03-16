@@ -22,11 +22,13 @@ dk_media_buffering::~dk_media_buffering(void)
 	}
 }
 
+#if defined(WITH_SINGLETON)
 dk_media_buffering & dk_media_buffering::instance(void)
 {
 	static dk_media_buffering _instance;
 	return _instance;
 }
+#endif
 
 buffering::err_code dk_media_buffering::push_video(const uint8_t * data, size_t size, long long timestamp)
 {
@@ -96,6 +98,21 @@ buffering::err_code dk_media_buffering::get_video_width(int32_t & width)
 buffering::err_code dk_media_buffering::get_video_height(int32_t & height)
 {
 	return _vbuffer->get_height(height);
+}
+
+const uint8_t * dk_media_buffering::get_vps(size_t & size)
+{
+	return _vbuffer->get_vps(size);
+}
+
+const uint8_t * dk_media_buffering::get_sps(size_t & size)
+{
+	return _vbuffer->get_sps(size);
+}
+
+const uint8_t * dk_media_buffering::get_pps(size_t & size)
+{
+	return _vbuffer->get_pps(size);
 }
 
 buffering::err_code dk_media_buffering::push_audio(const uint8_t * data, size_t size, long long timestamp)

@@ -7,7 +7,7 @@
 
 #include "media_file_reader.h"
 
-#define SESSION_VIDEO_FRAME_SIZE 1000000
+#define SESSION_VIDEO_FRAME_SIZE 1024*1024*2
 
 class buffered_byte_stream_source : public buffered_framed_source
 {

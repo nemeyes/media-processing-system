@@ -14,6 +14,14 @@ extern "C"
 class media_file_reader
 {
 public:
+	typedef struct _packet_queue_t
+	{
+		AVPacketList *first_pkt, *last_pkt;
+		int32_t nb_packets;
+		int32_t size;
+		HANDLE lock;
+	} packet_queue_t;
+
 	typedef enum _media_type
 	{
 		media_type_video = 0,
@@ -50,6 +58,19 @@ public:
 	bool close(void);
 	bool read(media_file_reader::media_type mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & timestamp);
 
+	void packet_queue_init(media_file_reader::packet_queue_t * q);
+	int32_t packet_queue_push(media_file_reader::packet_queue_t * q, AVPacket * pkt);
+	int32_t packet_queue_pop(media_file_reader::packet_queue_t * q, AVPacket * pkt);
+
+	void set_vps(uint8_t * vps, size_t size);
+	void set_sps(uint8_t * sps, size_t size);
+	void set_pps(uint8_t * pps, size_t size);
+	const uint8_t * get_vps(size_t & size);
+	const uint8_t * get_sps(size_t & size);
+	const uint8_t * get_pps(size_t & size);
+
+
+
 private:
 	unsigned static __stdcall process_cb(void * param);
 	void process(void);
@@ -71,16 +92,17 @@ private:
 	int32_t _video_stream_index;
 	AVStream * _video_stream;
 
-	double _video_timer;
+	//double _video_timer;
 	double _video_last_dts;
-	double _video_last_delay;
-	double _video_current_dts;
-	double _video_current_dts_time;
-	double _video_clock; //dts of last bitstream
+	//double _video_last_delay;
+	//double _video_current_dts;
+	//double _video_current_dts_time;
+	//double _video_clock; //dts of last bitstream
 
 	bool _video_recv_keyframe;
 	uint8_t _video_extradata[100];
 	size_t _video_extradata_size;
+
 
 	int32_t _audio_buffer_size;
 	int32_t _audio_buffer_index;
@@ -89,7 +111,7 @@ private:
 	AVCodecContext * _audio_ctx;
 	int32_t _audio_stream_index;
 	AVStream * _audio_stream;
-
+	/*
 	double _audio_timer;
 	double _audio_last_dts;
 	double _audio_last_delay;
@@ -100,9 +122,20 @@ private:
 	bool _audio_recv_sample;
 	uint8_t _audio_extradata[20];
 	size_t _audio_extradata_size;
+	*/
 
 	media_file_reader::vsubmedia_type _vsubmedia_type;
 	media_file_reader::asubmedia_type _asubmedia_type;
+
+	media_file_reader::packet_queue_t _video_packet_queue;
+	media_file_reader::packet_queue_t _audio_packet_queue;
+
+	uint8_t _vps[200];
+	uint8_t _sps[200];
+	uint8_t _pps[200];
+	size_t _vps_size;
+	size_t _sps_size;
+	size_t _pps_size;
 
 	uint8_t * _video_buffer;
 	uint8_t * _audio_buffer;

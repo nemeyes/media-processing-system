@@ -15,13 +15,7 @@ dk_vod_rtsp_server::~dk_vod_rtsp_server(void)
 
 void dk_vod_rtsp_server::start(void)
 {
-	if (_thread != INVALID_HANDLE_VALUE)
-	{
-		_bstop = true;
-		::WaitForSingleObjectEx(_thread, INFINITE, FALSE);
-		::CloseHandle(_thread);
-		_thread = INVALID_HANDLE_VALUE;
-	}
+	stop();
 
 	unsigned int thrd_addr;
 	_bstop = false;

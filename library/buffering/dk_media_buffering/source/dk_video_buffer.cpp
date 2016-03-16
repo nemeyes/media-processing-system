@@ -180,6 +180,24 @@ buffering::err_code dk_video_buffer::get_height(int32_t & height)
 	return buffering::err_code_success;
 }
 
+const uint8_t * dk_video_buffer::get_vps(size_t & size) const
+{
+	size = _vps_size;
+	return _vps;
+}
+
+const uint8_t * dk_video_buffer::get_sps(size_t & size) const
+{
+	size = _sps_size;
+	return _sps;
+}
+
+const uint8_t * dk_video_buffer::get_pps(size_t & size) const
+{
+	size = _pps_size;
+	return _pps;
+}
+
 buffering::err_code dk_video_buffer::init(buffer_t * buffer)
 {
 	buffer->pts = 0;

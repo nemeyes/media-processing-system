@@ -55,13 +55,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;..\..\..\buffering\dk_media_buffering\include;file_reader;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;file_reader;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\..\..\..\3rdparty\ffmpeg\win32\x86\lib;$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ws2_32.lib;live_media.lib;avcodec.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;dk_media_buffering.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;live_media.lib;avcodec.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
@@ -91,6 +91,7 @@
     <ClInclude Include="include\dk_vod_rtsp_server.h" />
     <ClInclude Include="include\buffered_h264_sms.h" />
     <ClInclude Include="include\buffered_sms.h" />
+    <ClInclude Include="include\scoped_lock.h" />
     <ClInclude Include="include\vod_rtsp_server.h" />
   </ItemGroup>
   <ItemGroup>

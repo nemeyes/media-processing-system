@@ -19,7 +19,12 @@ class dk_audio_buffer;
 class EXP_MEDIA_BUFFERING_CLASS dk_multiple_media_buffering
 {
 public:
+#if defined(WITH_SINGLETON)
 	static dk_multiple_media_buffering & instance(void);
+#else
+	dk_multiple_media_buffering(void);
+	virtual ~dk_multiple_media_buffering(void);
+#endif
 
 	buffering::err_code create(const char * id);
 	buffering::err_code destroy(const char * id);
@@ -41,6 +46,9 @@ public:
 	buffering::err_code get_video_width(const char * id, int32_t & width);
 	buffering::err_code get_video_height(const char * id, int32_t & height);
 
+	const uint8_t * get_vps(const char * id, size_t & size);
+	const uint8_t * get_sps(const char * id, size_t & size);
+	const uint8_t * get_pps(const char * id, size_t & size);
 
 
 	buffering::err_code push_audio(const char * id, const uint8_t * data, size_t size, long long timestamp);
@@ -60,8 +68,10 @@ public:
 
 
 private:
+#if defined(WITH_SINGLETON)
 	dk_multiple_media_buffering(void);
-	~dk_multiple_media_buffering(void);
+	virtual ~dk_multiple_media_buffering(void);
+#endif
 	dk_multiple_media_buffering(const dk_multiple_media_buffering & clone);
 
 	dk_video_buffer * get_video_buffer(const char * id);

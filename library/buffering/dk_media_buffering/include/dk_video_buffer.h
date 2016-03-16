@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <cstdlib>
 #include <cstdint>
-#define MAX_VIDEO_FRAME_SIZE 1024*1024*4
+#define MAX_VIDEO_FRAME_SIZE 1024*1024*6
 
 #include "define.h"
 
@@ -40,6 +40,10 @@ public:
 	buffering::err_code get_pps(uint8_t * pps, size_t & size);
 	buffering::err_code get_width(int32_t & width);
 	buffering::err_code get_height(int32_t & height);
+
+	const uint8_t * get_vps(size_t & size) const;
+	const uint8_t * get_sps(size_t & size) const;
+	const uint8_t * get_pps(size_t & size) const;
 
 private:
 	buffering::err_code init(buffer_t *  buffer);

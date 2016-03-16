@@ -54,9 +54,9 @@ long sumMillisTook = 0;
 	WarmupCounter();
     reReadCurrentPosition(0);
 
-	int config_width = read_config_setting(TEXT("capture_width"), 0);
+	int config_width = 1280;// read_config_setting(TEXT("capture_width"), 0);
 	ASSERT(config_width >= 0); // negatives not allowed...
-	int config_height = read_config_setting(TEXT("capture_height"), 0);
+	int config_height = 720;// read_config_setting(TEXT("capture_height"), 0);
 	ASSERT(config_height >= 0); // negatives not allowed, if it's set :)
 
 	if(config_width > 0) {
@@ -98,7 +98,7 @@ long sumMillisTook = 0;
 	ASSERT(config_max_fps >= 0);	
 
 	// m_rtFrameLength is also re-negotiated later...
-  	m_rtFrameLength = UNITS / config_max_fps; 
+	m_rtFrameLength = UNITS / 30;// config_max_fps;
 
 	if(is_config_set_to_1(TEXT("track_new_x_y_coords_each_frame_if_1"))) {
 		m_bReReadRegistry = 1; // takes 0.416880ms, but I thought it took more when I made it off by default :P

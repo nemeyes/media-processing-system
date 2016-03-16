@@ -173,15 +173,15 @@ void dk_colorspace_converter::convert_rgba_to_yv12(unsigned int width, unsigned 
 
 	if (flip)
 		dk_colorspace_converter::flip(width, height, width*4, bgra);
-	media::ConvertRGB32ToYUV_SSE2(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
-	if(media::hasSSE2())
-	{
-		media::ConvertRGB32ToYUV_SSE2(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
-	}
-	else
-	{
-		media::ConvertRGB32ToYUV_C(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
-	}
+	//media::ConvertRGB32ToYUV_SSE2(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
+	//if(media::hasSSE2())
+	//{
+	//	media::ConvertRGB32ToYUV_SSE2(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
+	//}
+	//else
+	//{
+	//	media::ConvertRGB32ToYUV_C(bgra, y, u, v, width, height, y_stride, y_stride, u_stride);
+	//}
 
-	//SimdBgraToYuv420p(bgra, width, height, bgra_stride, y, y_stride, u, u_stride, v, v_stride);
+	SimdBgraToYuv420p(bgra, width, height, bgra_stride, y, y_stride, u, u_stride, v, v_stride);
 }

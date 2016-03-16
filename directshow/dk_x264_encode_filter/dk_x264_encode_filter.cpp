@@ -393,11 +393,11 @@ HRESULT dk_x264_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 
 	int result = _encoder->encode(&input, &bitstream);
 
-	dst->SetActualDataLength(output_data_size);
+	dst->SetActualDataLength(bitstream.data_size);
 
 
-	end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
-	dst->SetTime(&start_time, &end_time);
+	//end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
+	//dst->SetTime(&start_time, &end_time);
 
 	return S_OK;
 
