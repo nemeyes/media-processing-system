@@ -91,7 +91,7 @@ public:
 			, fps(30)
 			, vbv_max_bitrate(4000000)
 			, vbv_size(4000000)
-			, tune(TUNE_TYPE_FILM)
+			, tune(TUNE_TYPE_ZEROLATENCY)
 			, keyframe_interval(2)
 			, profile(CODEC_PROFILE_TYPE_HIGH)
 			//, qp(28)
