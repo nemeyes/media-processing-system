@@ -54,7 +54,7 @@ bool media_file_reader::open(const char * stream_name, long long timestamp, medi
 	_video_recv_keyframe = false;
 
 	//open video file
-	if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\03.movie\\EPIC PARAGLIDING 360 VIDEO.mp4", NULL, NULL) != 0)
+	if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\03.movie\\COSTA RICA IN 4K 60fps (ULTRA HD) (4k).mp4", NULL, NULL) != 0)
 		return false; //couldn't open file
 
 	//retrieve stream information

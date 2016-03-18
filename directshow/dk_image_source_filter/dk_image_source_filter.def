@@ -1,0 +1,9 @@
+;===========================================================================;
+; 
+;===========================================================================;
+LIBRARY		dk_image_source_filter.ax
+EXPORTS
+			DllRegisterServer	PRIVATE
+			DllUnregisterServer	PRIVATE
+			DllGetClassObject	PRIVATE
+			DllCanUnloadNow		PRIVATE

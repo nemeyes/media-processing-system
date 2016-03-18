@@ -95,6 +95,12 @@ CComPtr<IPin> GetPin(IBaseFilter * pFilter, LPCOLESTR pinname)
 DEFINE_GUID(CLSID_DKScreenCaptureFilter,
 	0xdf7c90a9, 0xc202, 0x4506, 0xa4, 0xee, 0x6, 0x56, 0xc0, 0xc0, 0x29, 0x23);
 
+DEFINE_GUID(CLSID_DK_IMAGE_SOURCE_FILTER,
+	0x47eb2952, 0xfbf7, 0x4d27, 0xbe, 0xa9, 0x8b, 0xe6, 0xa4, 0x4b, 0xba, 0xa2);
+
+DEFINE_GUID(CLSID_DK_YUVSOURCE_FILTER,
+	0xb46bc4e, 0x729e, 0x4496, 0xa7, 0xe0, 0x82, 0x35, 0x3d, 0x1b, 0x5f, 0xc0);
+
 DEFINE_GUID(CLSID_DK_COLORSPACE_CONVERT_FILTER,
 	0x96143a18, 0xcbd3, 0x406d, 0x8d, 0xd0, 0x31, 0x9e, 0x8e, 0x2f, 0xcd, 0x9d);
 
@@ -137,10 +143,11 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 		CHECK_HR(hr, L"Can't SetFiltergraph");
 
 		CComPtr<IBaseFilter> pCaptureFilter;
-		hr = pCaptureFilter.CoCreateInstance(CLSID_DKScreenCaptureFilter);
+		hr = pCaptureFilter.CoCreateInstance(CLSID_DK_YUVSOURCE_FILTER);
 		pGraph->AddFilter(pCaptureFilter, L"Capture Filter");
 		CHECK_HR(hr, L"Can't Add Capture Filter To Graph");
 
+#if 0
 		CComPtr<IBaseFilter> pColorSpaceConverter;
 		hr = pColorSpaceConverter.CoCreateInstance(CLSID_DK_COLORSPACE_CONVERT_FILTER);
 		CHECK_HR(hr, L"Can't Create ColorSpace Converter");
@@ -153,11 +160,21 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 		hr = pGraph->AddFilter(pVideoRenderer, L"Video Renderer");
 		CHECK_HR(hr, L"Can't Add Video Renderer To Graph");
 
-		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"Capture"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
+		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
 		CHECK_HR(hr, L"Can't Connect Capture Filter and ColorSpace Converter");
 
 		hr = pGraph->ConnectDirect(GetPin(pColorSpaceConverter, L"XForm Out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
 		CHECK_HR(hr, L"Can't Connect ColorSpace Converter and Video Renderer");
+#else
+		CComPtr<IBaseFilter> pVideoRenderer;
+		hr = pVideoRenderer.CoCreateInstance(CLSID_VideoMixingRenderer9);
+		CHECK_HR(hr, L"Can't Create Video Renderer");
+		hr = pGraph->AddFilter(pVideoRenderer, L"Video Renderer");
+		CHECK_HR(hr, L"Can't Add Video Renderer To Graph");
+
+		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
+		CHECK_HR(hr, L"Can't Connect Capture Filter and ideo Renderer");
+#endif
 	}
 	else if (option==1)
 	{
@@ -168,10 +185,12 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 		CHECK_HR(hr, L"Can't SetFiltergraph");
 
 		CComPtr<IBaseFilter> pCaptureFilter;
-		hr = pCaptureFilter.CoCreateInstance(CLSID_DKScreenCaptureFilter);
+		hr = pCaptureFilter.CoCreateInstance(CLSID_DK_YUVSOURCE_FILTER);
 		pGraph->AddFilter(pCaptureFilter, L"Capture Filter");
 		CHECK_HR(hr, L"Can't Add Capture Filter To Graph");
 
+
+#if 0
 		CComPtr<IBaseFilter> pColorSpaceConverter;
 		hr = pColorSpaceConverter.CoCreateInstance(CLSID_DK_COLORSPACE_CONVERT_FILTER);
 		CHECK_HR(hr, L"Can't Create ColorSpace Converter");
@@ -197,7 +216,7 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 		hr = pGraph->AddFilter(pVideoRenderer, L"Video Renderer");
 		CHECK_HR(hr, L"Can't Add Video Renderer To Graph");
 
-		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"Capture"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
+		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
 		CHECK_HR(hr, L"Can't Connect Capture Filter and ColorSpace Converter");
 
 		hr = pGraph->ConnectDirect(GetPin(pColorSpaceConverter, L"XForm Out"), GetPin(pEncodeFilter, L"XForm In"), NULL);
@@ -208,6 +227,34 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 
 		hr = pGraph->ConnectDirect(GetPin(pDecodeFilter, L"Out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
 		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
+#else
+		CComPtr<IBaseFilter> pEncodeFilter;
+		hr = pEncodeFilter.CoCreateInstance(CLSID_DK_X264_ENCODE_FILTER);
+		CHECK_HR(hr, L"Can't Create Encode Filter");
+		hr = pGraph->AddFilter(pEncodeFilter, L"Encode Filter");
+		CHECK_HR(hr, L"Can't Add Encode Filter To Graph");
+
+		CComPtr<IBaseFilter> pDecodeFilter;
+		hr = pDecodeFilter.CoCreateInstance(CLSID_ffdshowVideoDecoder);
+		CHECK_HR(hr, L"Can't Create Decode Filter");
+		hr = pGraph->AddFilter(pDecodeFilter, L"Decode Filter");
+		CHECK_HR(hr, L"Can't Add Decode Filter To Graph");
+
+		CComPtr<IBaseFilter> pVideoRenderer;
+		hr = pVideoRenderer.CoCreateInstance(CLSID_VideoMixingRenderer9);
+		CHECK_HR(hr, L"Can't Create Video Renderer");
+		hr = pGraph->AddFilter(pVideoRenderer, L"Video Renderer");
+		CHECK_HR(hr, L"Can't Add Video Renderer To Graph");
+
+		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pEncodeFilter, L"XForm In"), NULL);
+		CHECK_HR(hr, L"Can't Connect YUV Source Filter and Encode Filter");
+
+		hr = pGraph->ConnectDirect(GetPin(pEncodeFilter, L"XForm Out"), GetPin(pDecodeFilter, L"In"), NULL);
+		CHECK_HR(hr, L"Can't Connect Encode Filter and Decode Filter");
+
+		hr = pGraph->ConnectDirect(GetPin(pDecodeFilter, L"Out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
+		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
+#endif
 	}
 	else if (option == 2)
 	{
@@ -218,10 +265,11 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 		CHECK_HR(hr, L"Can't SetFiltergraph");
 
 		CComPtr<IBaseFilter> pCaptureFilter;
-		hr = pCaptureFilter.CoCreateInstance(CLSID_DKScreenCaptureFilter);
+		hr = pCaptureFilter.CoCreateInstance(CLSID_DK_YUVSOURCE_FILTER);
 		pGraph->AddFilter(pCaptureFilter, L"Capture Filter");
 		CHECK_HR(hr, L"Can't Add Capture Filter To Graph");
 
+#if 0
 		CComPtr<IBaseFilter> pColorSpaceConverter;
 		hr = pColorSpaceConverter.CoCreateInstance(CLSID_DK_COLORSPACE_CONVERT_FILTER);
 		CHECK_HR(hr, L"Can't Create ColorSpace Converter");
@@ -240,7 +288,7 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 		hr = pGraph->AddFilter(pNullRenderer, L"Null Renderer");
 		CHECK_HR(hr, L"Can't Add Null Renderer To Graph");
 
-		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"Capture"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
+		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
 		CHECK_HR(hr, L"Can't Connect Capture Filter and ColorSpace Converter");
 
 		hr = pGraph->ConnectDirect(GetPin(pColorSpaceConverter, L"XForm Out"), GetPin(pEncodeFilter, L"XForm In"), NULL);
@@ -248,6 +296,25 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 
 		hr = pGraph->ConnectDirect(GetPin(pEncodeFilter, L"XForm Out"), GetPin(pNullRenderer, L"In"), NULL);
 		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
+#else
+		CComPtr<IBaseFilter> pEncodeFilter;
+		hr = pEncodeFilter.CoCreateInstance(CLSID_DK_X264_ENCODE_FILTER);
+		CHECK_HR(hr, L"Can't Create Encode Filter");
+		hr = pGraph->AddFilter(pEncodeFilter, L"Encode Filter");
+		CHECK_HR(hr, L"Can't Add Encode Filter To Graph");
+
+		CComPtr<IBaseFilter> pNullRenderer;
+		hr = pNullRenderer.CoCreateInstance(CLSID_NullRenderer);
+		CHECK_HR(hr, L"Can't Create Null Renderer");
+		hr = pGraph->AddFilter(pNullRenderer, L"Null Renderer");
+		CHECK_HR(hr, L"Can't Add Null Renderer To Graph");
+
+		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pEncodeFilter, L"XForm In"), NULL);
+		CHECK_HR(hr, L"Can't Connect YUV Source Filter and Encode Filter");
+
+		hr = pGraph->ConnectDirect(GetPin(pEncodeFilter, L"XForm Out"), GetPin(pNullRenderer, L"In"), NULL);
+		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
+#endif
 	}
 	return S_OK;
 }
@@ -256,12 +323,33 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option=1)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	if (argc == 1) 
+	{
+		fputs("option parameter is needed...\n", stderr);
+		exit(1);
+	}
+
+
+
 	CoInitialize(NULL);
 	CComPtr<IGraphBuilder> graph;
 	graph.CoCreateInstance(CLSID_FilterGraph);
 
 	printf("Building graph....\n");
-	HRESULT hr = BuildGraph(graph, 2);
+	HRESULT hr = E_FAIL;
+	if (!wcscmp(argv[1], L"display"))
+	{
+		hr = BuildGraph(graph, 0);
+	}
+	else if (!wcscmp(argv[1], L"transcode"))
+	{
+		hr = BuildGraph(graph, 1);
+	}
+	else if (!wcscmp(argv[1], L"encode"))
+	{
+		hr = BuildGraph(graph, 2);
+	}
+	
 	if (hr == S_OK)
 	{
 		printf("Running");

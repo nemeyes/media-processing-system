@@ -52,6 +52,12 @@ dk_x264_encoder::ERR_CODE x264_encoder::initialize_encoder(dk_x264_encoder::conf
 		_param.i_csp = X264_CSP_BGRA;
 		break;
 	}
+
+	SYSTEM_INFO si;
+	GetSystemInfo(&si);
+	size_t number_of_threads = si.dwNumberOfProcessors;
+	_param.i_threads = number_of_threads;
+	_param.i_lookahead_threads = X264_THREADS_AUTO;
 	_param.i_width = _config->width;
 	_param.i_height = _config->height;
 	_param.i_fps_num = _config->fps;
