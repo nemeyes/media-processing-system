@@ -54,7 +54,10 @@ bool media_file_reader::open(const char * stream_name, long long timestamp, medi
 	_video_recv_keyframe = false;
 
 	//open video file
-	if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\03.movie\\COSTA RICA IN 4K 60fps (ULTRA HD) (4k).mp4", NULL, NULL) != 0)
+	//if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\03.movie\\COSTA RICA IN 4K 60fps (ULTRA HD) (4k).mp4", NULL, NULL) != 0)
+	//	return false; //couldn't open file
+	
+	if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\01.reference\\media-processing-system\\build\\win32\\x86\\debug\\bin\\now.iptime.org-1458300057.ts", NULL, NULL) != 0)
 		return false; //couldn't open file
 
 	//retrieve stream information
@@ -91,6 +94,57 @@ bool media_file_reader::open(const char * stream_name, long long timestamp, medi
 			{
 				_vsubmedia_type = vsubmedia_type_h264;
 
+#if defined(WITH_RECORD_SERVER)
+				uint8_t * data = _video_ctx->extradata;
+				int32_t remained = _video_ctx->extradata_size;
+				uint8_t * begin = data;
+				uint8_t * end = data;
+				bool exit = false;
+				while (begin < data + remained)
+				{
+					uint8_t * nalu = nullptr;
+					size_t nalu_size = 0;
+					int nalu_begin, nalu_end;
+					int size = media_file_reader::next_nalu(begin, (data + remained) - begin, &nalu_begin, &nalu_end);
+					if (size == 0)
+					{
+						nalu = nullptr;
+						nalu_size = 0;
+						exit = true;
+					}
+					else if (size < 0)
+					{
+						begin += nalu_begin;
+						nalu = begin - 4;
+						nalu_size = (data + remained) - begin + 4;
+						exit = true;
+					}
+					else
+					{
+						begin += nalu_begin;
+						end += nalu_end;
+						nalu = begin - 4;
+						nalu_size = nalu_end - nalu_begin + 4;
+					}
+
+					if (nalu && nalu_size > 0)
+					{
+						bool is_sps = media_file_reader::is_sps(_vsubmedia_type, nalu[4] & 0x1F);
+						if (is_sps)
+						{
+							set_sps(nalu, nalu_size);
+						}
+						bool is_pps = media_file_reader::is_pps(_vsubmedia_type, nalu[4] & 0x1F);
+						if (is_pps)
+						{
+							set_pps(nalu, nalu_size);
+						}
+					}
+
+					remained -= nalu_size;//nalu size itself
+					data += nalu_size;
+				}
+#else
 				uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
 
 				uint8_t * sps = _video_ctx->extradata + 8;
@@ -112,6 +166,7 @@ bool media_file_reader::open(const char * stream_name, long long timestamp, medi
 					set_pps(_video_extradata + sizeof(start_code) + sps_size, sizeof(start_code) + pps_size);
 					_video_extradata_size = _video_extradata_size + sizeof(start_code) + pps_size;
 				}
+#endif
 				break;
 			}
 			default:
@@ -229,10 +284,72 @@ bool media_file_reader::read(media_file_reader::media_type mt, uint8_t * data, s
 			int32_t index = 0;
 			int32_t packet_size = packet.size;
 
+#if defined(WITH_RECORD_SERVER)
+			uint8_t * bitstream = &packet.data[0];
+			int32_t remained = packet_size;
+			uint8_t * begin = bitstream;
+			uint8_t * end = bitstream;
+			bool exit = false;
+			while (begin < bitstream + remained)
+			{
+				uint8_t * nalu = nullptr;
+				size_t nalu_size = 0;
+				int nalu_begin, nalu_end;
+				int size = media_file_reader::next_nalu(begin, (bitstream + remained) - begin, &nalu_begin, &nalu_end);
+				if (size == 0)
+				{
+					nalu = nullptr;
+					nalu_size = 0;
+					exit = true;
+				}
+				else if (size < 0)
+				{
+					begin += nalu_begin;
+					nalu = begin - 4;
+					nalu_size = (bitstream + remained) - begin + 4;
+					exit = true;
+				}
+				else
+				{
+					begin += nalu_begin;
+					end += nalu_end;
+					nalu = begin - 4;
+					nalu_size = nalu_end - nalu_begin + 4;
+				}
+
+				if (nalu && nalu_size>0)
+				{
+					bool is_idr = media_file_reader::is_idr(_vsubmedia_type, nalu[4] & 0x1F);
+					if (is_idr && !_video_recv_keyframe)
+					{
+						_video_recv_keyframe = true;
+						size_t sps_size = 0;
+						size_t pps_size = 0;
+						const uint8_t * sps = get_sps(sps_size);
+						const uint8_t * pps = get_pps(pps_size);
+
+						memmove(data + data_size, sps, sps_size);
+						data_size += sps_size;
+						memmove(data + data_size, pps, pps_size);
+						data_size += pps_size;
+						memmove(data + data_size, nalu, nalu_size);
+						data_size += nalu_size;
+					}
+					else if (_video_recv_keyframe)
+					{
+						memmove(data + data_size, nalu, nalu_size);
+						data_size += nalu_size;
+					}
+				}
+				if (exit)
+					break;
+			}
+#else
 			for (int32_t x = 0; index < packet_size; x++)
 			{
 				if (packet_size < (index + 4))
 					break;
+
 				int32_t nalu_size = (packet.data[index] << 24) + (packet.data[index + 1] << 16) + (packet.data[index + 2] << 8) + packet.data[index + 3];
 				index += sizeof(start_code);
 
@@ -272,6 +389,7 @@ bool media_file_reader::read(media_file_reader::media_type mt, uint8_t * data, s
 				}
 				index += nalu_size;
 			}
+#endif
 		}
 		av_free_packet(&packet);
 	}
@@ -596,86 +714,40 @@ bool media_file_reader::is_vlc(media_file_reader::vsubmedia_type smt, uint8_t na
 	return smt == media_file_reader::vsubmedia_type_h264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }
 
-const int32_t media_file_reader::find_nal_unit(uint8_t * bitstream, size_t size, int32_t * nal_start, int32_t * nal_end)
+const int media_file_reader::next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
 {
 	int i;
-	// find start
 	*nal_start = 0;
 	*nal_end = 0;
 
 	i = 0;
-	//( next_bits( 24 ) != 0x000001 && next_bits( 32 ) != 0x00000001 )
 	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01) &&
 		(bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0 || bitstream[i + 3] != 0x01))
 	{
-		i++; // skip leading zero
-		if (i + 4 >= size)
-		{
-			return 0;
-		} // did not find nal start
-	}
-
-	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01) // ( next_bits( 24 ) != 0x000001 )
-	{
 		i++;
+		if (i + 4 >= size)
+			return 0;
 	}
 
 	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01)
-	{
-		/* error, should never happen */
-		return 0;
-	}
+		i++;
+
+	if (bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01)
+		return 0;/* error, should never happen */
 
 	i += 3;
 	*nal_start = i;
-
-	//( next_bits( 24 ) != 0x000000 && next_bits( 24 ) != 0x000001 )
 	while ((bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0) &&
 		(bitstream[i] != 0 || bitstream[i + 1] != 0 || bitstream[i + 2] != 0x01))
 	{
 		i++;
-		// FIXME the next line fails when reading a nal that ends exactly at the end of the data
 		if (i + 3 >= size)
 		{
 			*nal_end = size;
 			return -1;
-		} // did not find nal end, stream ended first
+		}
 	}
 
 	*nal_end = i;
 	return (*nal_end - *nal_start);
-}
-
-const uint8_t * media_file_reader::find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state)
-{
-	int i;
-	if (begin >= end)
-		return end;
-
-	for (i = 0; i < 3; i++)
-	{
-		uint32_t tmp = *state << 8;
-		*state = tmp + *(begin++);
-		if (tmp == 0x100 || begin == end)
-			return begin;
-	}
-
-	while (begin < end)
-	{
-		if (begin[-1] > 1)
-			begin += 3;
-		else if (begin[-2])
-			begin += 2;
-		else if (begin[-3] | (begin[-1] - 1))
-			begin++;
-		else
-		{
-			begin++;
-			break;
-		}
-	}
-
-	begin = MIN(begin, end) - 4;
-	*state = AV_RB32(begin);
-	return begin + 4;
 }

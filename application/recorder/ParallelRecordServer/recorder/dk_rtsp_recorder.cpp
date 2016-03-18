@@ -73,7 +73,7 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 	{
 		//_chunk_size_bytes
 		long long saved_chunk_size_bytes = _mpeg2ts_recorder->get_file_size();
-		if ((saved_chunk_size_bytes >= _chunk_size_bytes)/* && ((data[3] & 0x1F) == 0x05)*/)
+		if ((saved_chunk_size_bytes >= _chunk_size_bytes) && ((data[4] & 0x1F) == 0x05))
 		{
 			_mpeg2ts_recorder->release();
 			delete _mpeg2ts_recorder;
@@ -83,7 +83,7 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 			_mpeg2ts_recorder->initialize(&_config);
 		}
 
-		if ((data[3] & 0x1F) == 0x05)
+		if ((data[4] & 0x1F) == 0x05)
 			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
 		else
 			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, false);

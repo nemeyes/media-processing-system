@@ -80,8 +80,7 @@ private:
 	static bool is_pps(media_file_reader::vsubmedia_type smt, uint8_t nal_unit_type);
 	static bool is_idr(media_file_reader::vsubmedia_type smt, uint8_t nal_unit_type);
 	static bool is_vlc(media_file_reader::vsubmedia_type smt, uint8_t nal_unit_type);
-	static const int32_t find_nal_unit(uint8_t * bitstream, size_t size, int32_t * nal_start, int32_t * nal_end);
-	static const uint8_t * find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state);
+	static const int next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
 
 private:
 	char _stream_name[250];
