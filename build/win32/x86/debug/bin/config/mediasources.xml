@@ -1,0 +1,8 @@
+<?xml version="1.0" standalone="yes"?>
+<mediasources name="groupname">
+	<mediasource uuid="9344D189-202F-4248-905E-F02E9A2288A2">
+		<url>rtsp://now.iptime.org/1/stream1</url>
+		<username></username>
+		<password></password>
+	</mediasource>
+</mediasources>

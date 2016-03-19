@@ -13,7 +13,7 @@ dk_mpeg2ts_recorder::dk_mpeg2ts_recorder(const char * storage, const char * uuid
 	
 	_snprintf_s(folder, MAX_PATH, "%s%s", storage, uuid);
 	if (::GetFileAttributesA(folder) == INVALID_FILE_ATTRIBUTES)
-		CreateDirectoryA(folder, NULL);
+		::CreateDirectoryA(folder, NULL);
 
 	unsigned long utc_elasped_time = dk_mpeg2ts_recorder::get_elapsed_utc_time();
 	_snprintf_s(filepath, MAX_PATH, "%s%s\\%lu.ts", storage, uuid, utc_elasped_time);
@@ -23,6 +23,7 @@ dk_mpeg2ts_recorder::dk_mpeg2ts_recorder(const char * storage, const char * uuid
 		DWORD err = ::GetLastError();
 	}
 }
+
 dk_mpeg2ts_recorder::~dk_mpeg2ts_recorder(void)
 {
 	::CloseHandle(_file);

@@ -1,4 +1,5 @@
 #include "dk_rtsp_base.h"
+#include <memory>
 
 #define AV_RB32(x)  \
     (((uint32_t)((const uint8_t*)(x))[0] << 24) | \
@@ -11,7 +12,6 @@
 
 dk_rtsp_base::dk_rtsp_base(void)
 {
-
 }
 
 dk_rtsp_base::~dk_rtsp_base(void)

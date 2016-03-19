@@ -11,6 +11,7 @@ dk_rtsp_recorder::dk_rtsp_recorder(void)
 
 dk_rtsp_recorder::~dk_rtsp_recorder(void)
 {
+	//stop_recording();
 }
 
 void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, const char * storage, const char * uuid)
