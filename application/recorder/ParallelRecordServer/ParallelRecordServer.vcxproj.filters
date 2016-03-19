@@ -45,6 +45,9 @@
     <ClInclude Include="recorder\dk_mpeg2ts_recorder.h">
       <Filter>recorder</Filter>
     </ClInclude>
+    <ClInclude Include="recorder\dk_recorder_service.h">
+      <Filter>recorder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ParallelRecordServer.cpp">
@@ -63,6 +66,9 @@
       <Filter>recorder</Filter>
     </ClCompile>
     <ClCompile Include="recorder\dk_mpeg2ts_recorder.cpp">
+      <Filter>recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="recorder\dk_recorder_service.cpp">
       <Filter>recorder</Filter>
     </ClCompile>
   </ItemGroup>

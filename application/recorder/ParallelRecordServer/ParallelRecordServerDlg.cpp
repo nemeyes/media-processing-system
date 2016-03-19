@@ -7,6 +7,8 @@
 #include "ParallelRecordServerDlg.h"
 #include "afxdialogex.h"
 
+#include "dk_recorder_service.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -157,12 +159,12 @@ HCURSOR CParallelRecordServerDlg::OnQueryDragIcon()
 void CParallelRecordServerDlg::OnBnClickedButtonStartRecord()
 {
 	// TODO: Add your control notification handler code here
-	_recorder.start_recording("rtsp://now.iptime.org/1/stream1", nullptr, nullptr, dk_live_rtsp_client::rtp_over_tcp, dk_live_rtsp_client::recv_video, "now.iptime.org");
+	dk_recorder_service::instance().start_recording();
 }
 
 
 void CParallelRecordServerDlg::OnBnClickedButtonStopRecord()
 {
 	// TODO: Add your control notification handler code here
-	_recorder.stop_recording();
+	dk_recorder_service::instance().stop_recording();
 }

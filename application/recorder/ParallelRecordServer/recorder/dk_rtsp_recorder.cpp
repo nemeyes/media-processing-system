@@ -5,17 +5,20 @@
 dk_rtsp_recorder::dk_rtsp_recorder(void)
 	: _chunk_size_bytes(DEFAULT_FILE_CHUNK_SIZE)
 {
+	memset(_storage, 0x00, sizeof(_storage));
+	memset(_uuid, 0x00, sizeof(_uuid));
 }
 
 dk_rtsp_recorder::~dk_rtsp_recorder(void)
 {
 }
 
-void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, const char * id)
+void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, const char * storage, const char * uuid)
 {
-	if (id && strlen(id)>0)
+	if (storage && uuid && strlen(storage)>0 && strlen(uuid)>0)
 	{
-		strncpy_s(_id, id, sizeof(_id));
+		strncpy_s(_storage, storage, sizeof(_storage));
+		strncpy_s(_uuid, uuid, sizeof(_uuid));
 		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
 	}
 }
@@ -50,7 +53,7 @@ void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, u
 					_mpeg2ts_recorder = nullptr;
 				}
 			
-				_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_id);
+				_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_storage, _uuid);
 
 				_config.vconfig.extradata_size = spssize + ppssize;
 				memcpy(_config.vconfig.extradata, sps, spssize);
@@ -79,7 +82,7 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 			delete _mpeg2ts_recorder;
 			_mpeg2ts_recorder = nullptr;
 
-			_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_id);
+			_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_storage, _uuid);
 			_mpeg2ts_recorder->initialize(&_config);
 		}
 

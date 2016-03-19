@@ -4,22 +4,25 @@
 #include <stdlib.h>
 #include <winternl.h>
 
-dk_mpeg2ts_recorder::dk_mpeg2ts_recorder(const char * id)
+dk_mpeg2ts_recorder::dk_mpeg2ts_recorder(const char * storage, const char * uuid)
 	: dk_ff_mpeg2ts_muxer()
 	, _file(INVALID_HANDLE_VALUE)
 {
+	char folder[MAX_PATH] = { 0 };
 	char filepath[MAX_PATH] = { 0 };
 	
-	unsigned long utc_elasped_time = dk_mpeg2ts_recorder::get_elapsed_utc_time();
+	_snprintf_s(folder, MAX_PATH, "%s%s", storage, uuid);
+	if (::GetFileAttributesA(folder) == INVALID_FILE_ATTRIBUTES)
+		CreateDirectoryA(folder, NULL);
 
-	_snprintf_s(filepath, MAX_PATH, "%s-%lu.ts", id, utc_elasped_time);
+	unsigned long utc_elasped_time = dk_mpeg2ts_recorder::get_elapsed_utc_time();
+	_snprintf_s(filepath, MAX_PATH, "%s%s\\%lu.ts", storage, uuid, utc_elasped_time);
 	_file = ::CreateFileA(filepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (_file == INVALID_HANDLE_VALUE)
 	{
 		DWORD err = ::GetLastError();
 	}
 }
-
 dk_mpeg2ts_recorder::~dk_mpeg2ts_recorder(void)
 {
 	::CloseHandle(_file);

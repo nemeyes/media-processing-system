@@ -1,7 +1,9 @@
 #include <windows.h>
 #include <process.h>
+#include <dk_util.h>
 #include "scoped_lock.h"
 #include "media_file_reader.h"
+
 
 #define VIDEO_BUFFER_SIZE 1024 * 1024 * 6
 #define AUDIO_BUFFER_SIZE 48000 * 2 * 8 //48000hz * 16bitdetph * 8 channels ex) for 2channel 192000
@@ -140,6 +142,9 @@ bool media_file_reader::open(const char * stream_name, long long timestamp, medi
 							set_pps(nalu, nalu_size);
 						}
 					}
+
+					if (exit)
+						break;
 
 					remained -= nalu_size;//nalu size itself
 					data += nalu_size;
