@@ -20,7 +20,7 @@ void dk_rtsp_recorder::start_recording(const char * url, const char * username, 
 	{
 		strncpy_s(_storage, storage, sizeof(_storage));
 		strncpy_s(_uuid, uuid, sizeof(_uuid));
-		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 1, true);
+		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 0, true);
 	}
 }
 

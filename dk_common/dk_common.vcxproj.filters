@@ -57,5 +57,8 @@
     <ClInclude Include="include\dk_misc_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\dk_time_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

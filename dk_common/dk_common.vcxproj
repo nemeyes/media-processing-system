@@ -88,6 +88,7 @@
     <ClInclude Include="include\dk_platform.h" />
     <ClInclude Include="include\dk_string_helper.h" />
     <ClInclude Include="include\dk_submedia_type.h" />
+    <ClInclude Include="include\dk_time_helper.h" />
     <ClInclude Include="include\dk_util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

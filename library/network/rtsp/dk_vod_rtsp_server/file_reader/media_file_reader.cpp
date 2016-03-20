@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <process.h>
-#include <dk_util.h>
+#include <cstdio>
+#include <dk_misc_helper.h>
+#include <dk_time_helper.h>
 #include "scoped_lock.h"
 #include "media_file_reader.h"
 
@@ -24,7 +26,7 @@
 media_file_reader::media_file_reader(void)
 {
 	_video_buffer = static_cast<uint8_t*>(malloc(VIDEO_BUFFER_SIZE));
-	_audio_buffer = static_cast<uint8_t*>(malloc((MAX_AUDIO_FRAME_SIZE * 3) / 2)); //48000hz * 16bitdetph * 8 channels
+	_audio_buffer = static_cast<uint8_t*>(malloc(AUDIO_BUFFER_SIZE)); //48000hz * 16bitdetph * 8 channels
 }
 
 media_file_reader::~media_file_reader(void)
@@ -56,11 +58,108 @@ bool media_file_reader::open(const char * stream_name, long long timestamp, medi
 	_video_recv_keyframe = false;
 
 	//open video file
-	//if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\03.movie\\COSTA RICA IN 4K 60fps (ULTRA HD) (4k).mp4", NULL, NULL) != 0)
+
+#if defined(WITH_RECORD_SERVER)
+	//if (avformat_open_input(&_format_ctx, "C:\\workspace\\01.reference\\media-processing-system\\build\\win32\\x86\\debug\\bin\\contents\\9344D189-202F-4248-905E-F02E9A2288A2\\1458465130.ts", NULL, NULL) != 0)
 	//	return false; //couldn't open file
-	
+
+	char contents_path[260] = { 0 };
+	char * module_path = nullptr;
+	dk_misc_helper::retrieve_absolute_module_path("dk_vod_rtsp_server.dll", &module_path);
+	if (module_path && strlen(module_path)>0)
+	{
+		_snprintf_s(contents_path, sizeof(contents_path), "%s%s", module_path, "contents\\");
+		free(module_path);
+	}
+
+#if 1
+	char ms_uuid[260] = { 0 };
+	char seek_time[260] = { 0 };
+	char * slash = (char*)strrchr(stream_name, '/');
+	if (slash != NULL)
+	{
+		strncpy_s(seek_time, slash + 1, strlen(slash + 1));
+		memcpy(ms_uuid, stream_name, slash - stream_name);
+
+		char single_ms_path[260] = { 0 };
+		_snprintf_s(single_ms_path, sizeof(single_ms_path), "%s%s\\*", contents_path, ms_uuid);
+
+		HANDLE bfind = INVALID_HANDLE_VALUE;
+		WIN32_FIND_DATAA wfd;
+		bfind = ::FindFirstFileA(single_ms_path, &wfd);
+		if (bfind == INVALID_HANDLE_VALUE)
+			return false;
+		do
+		{
+			if (!(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			{
+				char * recorded_file_name = &wfd.cFileName[0];
+				char single_ms[260] = { 0 };
+				_snprintf_s(single_ms, sizeof(single_ms), "%s%s\\%s", contents_path, ms_uuid, recorded_file_name);
+				if (avformat_open_input(&_format_ctx, single_ms, NULL, NULL) != 0)
+					return false; //couldn't open file
+				break;
+			}
+		} while (::FindNextFileA(bfind, &wfd));
+
+		::FindClose(bfind);
+	}
+	else
+	{
+		return false;
+	}
+#else
+	char ms_uuid[260] = { 0 };
+	char seek_time[260] = { 0 };
+	char * slash = (char*)strrchr(stream_name, '/');
+	if (slash != NULL)
+	{
+		strncpy_s(seek_time, slash + 1, strlen(slash + 1));
+		memcpy(ms_uuid, stream_name, slash - stream_name);
+
+		char single_ms_path[260] = { 0 };
+		_snprintf_s(single_ms_path, sizeof(single_ms_path), "%s%s\\*", contents_path, ms_uuid);
+
+		if (strlen(seek_time) != 14) //20160320154030 : 2015-03-20 15::40::30
+			return false;
+
+		SYSTEMTIME req_utc_time = { 0 };
+		if (!dk_time_helper::convert_local_string_time_to_utc_time(seek_time, req_utc_time))
+			return false;
+
+		HANDLE bfind = INVALID_HANDLE_VALUE;
+		WIN32_FIND_DATAA wfd;
+		bfind = ::FindFirstFileA(single_ms_path, &wfd);
+		if (bfind == INVALID_HANDLE_VALUE)
+			return false;
+		do
+		{
+			if (!(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			{
+				char * recorded_file_name = &wfd.cFileName[0];
+				char * dot = (char*)strrchr(recorded_file_name, '.');
+				char recorded_file_creation_time[260] = { 0 };
+				memcpy(recorded_file_creation_time, recorded_file_name, dot - recorded_file_name);
+				unsigned long recorded_file_creation_elapsed_utc_time = 0;
+				sscanf(recorded_file_creation_time, "%lu", &recorded_file_creation_elapsed_utc_time);
+
+				SYSTEMTIME recored_file_creation_utc_systemtime = { 0 };
+				dk_time_helper::convert_elasped_utc_time_to_utc_system_time(recorded_file_creation_elapsed_utc_time, recored_file_creation_utc_systemtime);
+
+				SYSTEMTIME recored_file_creation_local_systemtime = { 0 };
+				dk_time_helper::convert_elasped_utc_time_to_local_system_time(recorded_file_creation_elapsed_utc_time, recored_file_creation_local_systemtime);
+			}
+		} while (::FindNextFileA(bfind, &wfd));
+	}
+	else
+	{
+		return false;
+	}
+#endif
+#else //defined(WITH_RECORD_SERVER)
 	if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\01.reference\\media-processing-system\\build\\win32\\x86\\debug\\bin\\now.iptime.org-1458300057.ts", NULL, NULL) != 0)
 		return false; //couldn't open file
+#endif
 
 	//retrieve stream information
 	if (avformat_find_stream_info(_format_ctx, NULL) < 0)

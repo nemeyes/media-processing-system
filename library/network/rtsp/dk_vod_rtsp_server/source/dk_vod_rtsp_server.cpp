@@ -16,7 +16,6 @@ dk_vod_rtsp_server::~dk_vod_rtsp_server(void)
 void dk_vod_rtsp_server::start(void)
 {
 	stop();
-
 	unsigned int thrd_addr;
 	_bstop = false;
 	_thread = (HANDLE)::_beginthreadex(NULL, 0, &dk_vod_rtsp_server::process_cb, this, CREATE_SUSPENDED, &thrd_addr);
@@ -44,21 +43,15 @@ unsigned dk_vod_rtsp_server::process_cb(void * param)
 
 void dk_vod_rtsp_server::process(void)
 {
-	// Begin by setting up our usage environment:
-	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
-
+	TaskScheduler * scheduler = BasicTaskScheduler::createNew();
+	UsageEnvironment * env = BasicUsageEnvironment::createNew(*scheduler);
 	UserAuthenticationDatabase * authDB = NULL;
-	/*
-	#ifdef ACCESS_CONTROL
-	authDB								= new UserAuthenticationDatabase;
+#ifdef ACCESS_CONTROL
+	authDB = new UserAuthenticationDatabase;
 	authDB->addUserRecord( "nemeyes", "7224" );
-	#endif
-	*/
+#endif
 
-	// Create the RTSP server.  Try first with the default port number (554),
-	// and then with the alternative port number (8554):
-	RTSPServer* rtspServer;
+	RTSPServer * rtspServer;
 	portNumBits rtspServerPortNum = 554;
 	rtspServer = vod_rtsp_server::createNew(*env, rtspServerPortNum, authDB);
 	if (rtspServer == NULL)
@@ -67,14 +60,7 @@ void dk_vod_rtsp_server::process(void)
 		rtspServer = vod_rtsp_server::createNew(*env, rtspServerPortNum, authDB);
 	}
 	if (rtspServer == NULL)
-	{
 		return;
-	}
-
-
-	//char log[100] = { 0 };
-	//_snprintf(log, sizeof(log), "RTSP server is started with portnumber [%d]", rtspServerPortNum);
-	//logger::instance().make_system_info_log(log);
 
 	if (rtspServer->setUpTunnelingOverHTTP(80) || rtspServer->setUpTunnelingOverHTTP(8000) || rtspServer->setUpTunnelingOverHTTP(8080))
 	{

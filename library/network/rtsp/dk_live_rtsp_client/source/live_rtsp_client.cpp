@@ -226,7 +226,9 @@ void live_rtsp_client::continue_after_play(RTSPClient * param, int result_code, 
 		self->_session_timeout_broken_server_task = 0;
 		//watch for incoming packet
 		self->check_packet_arrival(self);
-		self->check_inter_packet_gaps(self);
+
+		if (self->_inter_packet_gap_max_time>0)
+			self->check_inter_packet_gaps(self);
 		self->check_session_timeout_broken_server(self);
 		return;
 

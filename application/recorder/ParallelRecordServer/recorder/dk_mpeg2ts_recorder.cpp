@@ -1,4 +1,5 @@
 #include "dk_mpeg2ts_recorder.h"
+#include <dk_time_helper.h>
 #include <dk_fileio.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,8 +16,9 @@ dk_mpeg2ts_recorder::dk_mpeg2ts_recorder(const char * storage, const char * uuid
 	if (::GetFileAttributesA(folder) == INVALID_FILE_ATTRIBUTES)
 		::CreateDirectoryA(folder, NULL);
 
-	unsigned long utc_elasped_time = dk_mpeg2ts_recorder::get_elapsed_utc_time();
-	_snprintf_s(filepath, MAX_PATH, "%s%s\\%lu.ts", storage, uuid, utc_elasped_time);
+	dk_time_helper::check_time();
+	unsigned long elasped_utc_time_seconds = dk_time_helper::get_elapsed_utc_time_seconds();
+	_snprintf_s(filepath, MAX_PATH, "%s%s\\%lu.ts", storage, uuid, elasped_utc_time_seconds);
 	_file = ::CreateFileA(filepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (_file == INVALID_HANDLE_VALUE)
 	{
@@ -49,6 +51,7 @@ dk_mpeg2ts_recorder::ERR_CODE dk_mpeg2ts_recorder::recv_ts_stream_callback(uint8
 	return dk_mpeg2ts_recorder::ERR_CODE_SUCCESS;
 }
 
+/*
 unsigned long dk_mpeg2ts_recorder::get_elapsed_utc_time(void)
 {
 	SYSTEMTIME utc_systemtime = { 0 };
@@ -66,3 +69,4 @@ unsigned long dk_mpeg2ts_recorder::get_elapsed_utc_time(void)
 
 	return utc_elasped_time;
 }
+*/

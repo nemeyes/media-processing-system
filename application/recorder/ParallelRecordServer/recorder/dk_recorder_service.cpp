@@ -1,4 +1,5 @@
 #include "dk_recorder_service.h"
+#include <dk_time_helper.h>
 #include <dk_misc_helper.h>
 #include "dk_rtsp_recorder.h"
 #include <tinyxml.h>
