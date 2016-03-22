@@ -157,7 +157,7 @@ bool media_file_reader::open(const char * stream_name, long long timestamp, medi
 	}
 #endif
 #else //defined(WITH_RECORD_SERVER)
-	if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\01.reference\\media-processing-system\\build\\win32\\x86\\debug\\bin\\now.iptime.org-1458300057.ts", NULL, NULL) != 0)
+	if (avformat_open_input(&_format_ctx, /*_stream_name*/"C:\\workspace\\03.movie\\COSTA RICA IN 4K 60fps (ULTRA HD) (4k).mp4", NULL, NULL) != 0)
 		return false; //couldn't open file
 #endif
 

@@ -73,8 +73,10 @@ dk_nvenc_encoder::ERR_CODE nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 		return dk_nvenc_encoder::ERR_CODE_INVALID_ENCODING_DEVICE;
 	}
 
-	//if (dk_nvenc_encoder::ERR_CODE_SUCCESS != is_async_encode_supported())
-	//	return dk_nvenc_encoder::ERR_CODE_FAIL;
+#if defined(WIN32)
+	if (dk_nvenc_encoder::ERR_CODE_SUCCESS != is_async_encode_supported())
+		return dk_nvenc_encoder::ERR_CODE_FAIL;
+#endif
 
 	int max_width = 0;
 	if (dk_nvenc_encoder::ERR_CODE_SUCCESS != get_max_width(max_width))
