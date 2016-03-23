@@ -33,7 +33,12 @@ private:
 	char _storage[260];
 	char _uuid[260];
 	dk_ff_mpeg2ts_muxer::configuration_t _config;
+
+#if defined(WITH_MPEG2TS)
 	dk_mpeg2ts_recorder * _mpeg2ts_recorder;
+#else
+
+#endif
 
 	long long _chunk_size_bytes;
 };
