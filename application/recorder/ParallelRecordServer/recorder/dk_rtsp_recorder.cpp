@@ -27,6 +27,7 @@ void dk_rtsp_recorder::start_recording(const char * url, const char * username, 
 void dk_rtsp_recorder::stop_recording(void)
 {
 	dk_live_rtsp_client::stop();
+#if defined(WITH_MPEG2TS)
 	if (_mpeg2ts_recorder)
 	{
 		if (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED)
@@ -34,12 +35,20 @@ void dk_rtsp_recorder::stop_recording(void)
 		delete _mpeg2ts_recorder;
 		_mpeg2ts_recorder = nullptr;
 	}
+#else
+	if (_file_recorder)
+	{
+		delete _file_recorder;
+		_file_recorder = nullptr;
+	}
+#endif
 }
 
 void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
 {
 	if (smt == dk_live_rtsp_client::vsubmedia_type_h264)
 	{
+#if defined(WITH_MPEG2TS)
 		do
 		{
 			int32_t sarw = 0;
@@ -68,29 +77,50 @@ void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, u
 				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
 			}
 		} while (0);
+#else
+		_file_recorder = new dk_record_module(_storage, _uuid);
+		_file_recorder->write(sps, spssize, timestamp);
+		_file_recorder->write(pps, ppssize, timestamp);
+		_file_recorder->write((uint8_t*)data, data_size, timestamp);
+#endif
 	}
 }
 
 void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
+	if (smt == dk_live_rtsp_client::vsubmedia_type_h264)
 	{
-		//_chunk_size_bytes
-		long long saved_chunk_size_bytes = _mpeg2ts_recorder->get_file_size();
+#if defined(WITH_MPEG2TS)
+		if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
+		{
+			//_chunk_size_bytes
+			long long saved_chunk_size_bytes = _mpeg2ts_recorder->get_file_size();
+			if ((saved_chunk_size_bytes >= _chunk_size_bytes) && ((data[4] & 0x1F) == 0x05))
+			{
+				_mpeg2ts_recorder->release();
+				delete _mpeg2ts_recorder;
+				_mpeg2ts_recorder = nullptr;
+
+				_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_storage, _uuid);
+				_mpeg2ts_recorder->initialize(&_config);
+			}
+
+			if ((data[4] & 0x1F) == 0x05)
+				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
+			else
+				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, false);
+		}
+#else
+		long long saved_chunk_size_bytes = _file_recorder->get_file_size();
 		if ((saved_chunk_size_bytes >= _chunk_size_bytes) && ((data[4] & 0x1F) == 0x05))
 		{
-			_mpeg2ts_recorder->release();
-			delete _mpeg2ts_recorder;
-			_mpeg2ts_recorder = nullptr;
+			delete _file_recorder;
+			_file_recorder = nullptr;
 
-			_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_storage, _uuid);
-			_mpeg2ts_recorder->initialize(&_config);
+			_file_recorder = new dk_record_module(_storage, _uuid);
 		}
-
-		if ((data[4] & 0x1F) == 0x05)
-			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
-		else
-			_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, false);
+		_file_recorder->write((uint8_t*)data, data_size, timestamp);
+#endif
 	}
 }
 

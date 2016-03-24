@@ -3,7 +3,11 @@
 #include <cstdint>
 #include "dk_bit_vector.h"
 #include <dk_live_rtsp_client.h>
+#if defined(WITH_MPEG2TS)
 #include "dk_mpeg2ts_recorder.h"
+#else
+#include "dk_record_module.h"
+#endif
 
 class dk_rtsp_recorder : public dk_live_rtsp_client
 {
@@ -32,12 +36,12 @@ private:
 private:
 	char _storage[260];
 	char _uuid[260];
-	dk_ff_mpeg2ts_muxer::configuration_t _config;
-
+	
 #if defined(WITH_MPEG2TS)
+	dk_ff_mpeg2ts_muxer::configuration_t _config;
 	dk_mpeg2ts_recorder * _mpeg2ts_recorder;
 #else
-
+	dk_record_module * _file_recorder;
 #endif
 
 	long long _chunk_size_bytes;

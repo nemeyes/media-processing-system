@@ -13,7 +13,7 @@ class dk_video_buffer
 public:
 	typedef struct _buffer_t
 	{
-		long long pts;
+		long long timestamp;
 		size_t amount;
 		_buffer_t * prev;
 		_buffer_t * next;
@@ -23,8 +23,8 @@ public:
 	dk_video_buffer(size_t buffer_size = MAX_VIDEO_FRAME_SIZE);
 	~dk_video_buffer(void);
 
-	buffering::err_code push(const uint8_t * data, size_t size, long long pts);
-	buffering::err_code pop(uint8_t * data, size_t & size, long long & pts);
+	buffering::err_code push(const uint8_t * data, size_t size, long long timestamp);
+	buffering::err_code pop(uint8_t * data, size_t & size, long long & timestamp);
 
 
 	buffering::err_code set_submedia_type(buffering::vsubmedia_type mt);
@@ -34,7 +34,7 @@ public:
 	buffering::err_code set_width(int32_t width);
 	buffering::err_code set_height(int32_t height);
 
-	buffering::err_code get_submedia_type(buffering::vsubmedia_type & mt);
+	buffering::err_code get_submedia_type(buffering::vsubmedia_type & timestamp);
 	buffering::err_code get_vps(uint8_t * sps, size_t & size);
 	buffering::err_code get_sps(uint8_t * sps, size_t & size);
 	buffering::err_code get_pps(uint8_t * pps, size_t & size);

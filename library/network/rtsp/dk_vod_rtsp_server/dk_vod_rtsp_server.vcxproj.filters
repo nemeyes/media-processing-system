@@ -48,6 +48,9 @@
     <ClInclude Include="include\scoped_lock.h">
       <Filter>file_reader</Filter>
     </ClInclude>
+    <ClInclude Include="file_reader\record_module_seeker.h">
+      <Filter>file_reader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_vod_rtsp_server.cpp">
@@ -73,6 +76,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
       <Filter>ffmpeg_base</Filter>
+    </ClCompile>
+    <ClCompile Include="file_reader\record_module_seeker.cpp">
+      <Filter>file_reader</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -5,7 +5,110 @@
 #include <dk_time_helper.h>
 #include "scoped_lock.h"
 #include "media_file_reader.h"
+#include <dk_record_module.h>
+#include <boost/date_time/local_time/local_time.hpp>
 
+#if defined(WITH_RECORD_SERVER)
+media_file_reader::media_file_reader(void)
+{
+
+}
+
+media_file_reader::~media_file_reader(void)
+{
+	close();
+}
+
+bool media_file_reader::open(const char * stream_name, long long timestamp, media_file_reader::vsubmedia_type & vsubmedia_type, media_file_reader::asubmedia_type & asubmedia_type)
+{
+	if (!stream_name || strlen(stream_name) < 1)
+		return media_file_reader::err_code_fail;
+
+	strncpy(_stream_name, stream_name, sizeof(_stream_name));
+
+	//open video file
+	char contents_path[260] = { 0 };
+	char * module_path = nullptr;
+	dk_misc_helper::retrieve_absolute_module_path("dk_vod_rtsp_server.dll", &module_path);
+	if (module_path && strlen(module_path)>0)
+	{
+		_snprintf_s(contents_path, sizeof(contents_path), "%s%s", module_path, "contents\\");
+		free(module_path);
+	}
+
+	char ms_uuid[260] = { 0 };
+	char seek_time[260] = { 0 };
+	char * slash = (char*)strrchr(stream_name, '/');
+	if (slash != NULL)
+	{
+		strncpy_s(seek_time, slash + 1, strlen(slash + 1));
+		memcpy(ms_uuid, stream_name, slash - stream_name);
+
+		char single_media_source_path[260] = { 0 };
+		_snprintf_s(single_media_source_path, sizeof(single_media_source_path), "%s%s", contents_path, ms_uuid);
+		//_snprintf_s(single_media_source_path, sizeof(single_media_source_path), "%s%s\\*", contents_path, ms_uuid);
+
+		if (strlen(seek_time) != 14) //20160320154030 : 2015-03-20 15::40::30
+			return false;
+
+		int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
+		sscanf(seek_time, "%4d%2d%2d%2d%2d%2d", &year, &month, &day, &hour, &minute, &second);
+		char time_string[100] = { 0 };
+		_snprintf_s(time_string, sizeof(time_string), "%d-%d-%d %d:%d:%d.000", year, month, day, hour, minute, second);
+
+		boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+		boost::posix_time::ptime pseek_time = boost::posix_time::time_from_string(time_string);
+		boost::posix_time::time_duration elapsed_seek_time = pseek_time - epoch;
+		long long elapsed_seek_time_millsec = elapsed_seek_time.total_milliseconds();
+		bool result = _record_module_seeker.seek(single_media_source_path, elapsed_seek_time_millsec);
+		if (!result)
+			return false;
+	}
+	else
+	{
+		return false;
+	}
+
+	_vsubmedia_type = vsubmedia_type_h264;
+	_asubmedia_type = unknown_audio_type;
+	vsubmedia_type = _vsubmedia_type;
+	asubmedia_type = _asubmedia_type;
+	return true;
+}
+
+bool media_file_reader::close(void)
+{
+	return true;
+}
+
+bool media_file_reader::read(media_file_reader::media_type mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & timestamp)
+{
+	if (mt == media_file_reader::media_type_video)
+	{
+		if (_vsubmedia_type == vsubmedia_type_h264)
+		{
+			_record_module_seeker.read(data, data_size, timestamp);
+		}
+	}
+	else if (mt == media_file_reader::media_type_audio)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+uint8_t * media_file_reader::get_sps(size_t & sps_size)
+{
+	return _record_module_seeker.get_sps(sps_size);
+}
+
+uint8_t * media_file_reader::get_pps(size_t & pps_size)
+{
+	return _record_module_seeker.get_pps(pps_size);
+}
+
+#else
 
 #define VIDEO_BUFFER_SIZE 1024 * 1024 * 6
 #define AUDIO_BUFFER_SIZE 48000 * 2 * 8 //48000hz * 16bitdetph * 8 channels ex) for 2channel 192000
@@ -855,3 +958,5 @@ const int media_file_reader::next_nalu(uint8_t * bitstream, size_t size, int * n
 	*nal_end = i;
 	return (*nal_end - *nal_start);
 }
+
+#endif

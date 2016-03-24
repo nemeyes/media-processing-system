@@ -1,19 +1,75 @@
 #ifndef _MEDIA_FILE_READER_H_
 #define _MEDIA_FILE_READER_H_
 
+#include <cstdint>
+#if defined(WITH_RECORD_SERVER)
+
+#include "record_module_seeker.h"
+
+class media_file_reader
+{
+public:
+	typedef enum _media_type
+	{
+		media_type_video = 0,
+		media_type_audio
+	} media_type;
+
+	typedef enum _video_submedia_type
+	{
+		unknown_video_type = -1,
+		vsubmedia_type_jpeg = 0,
+		vsubmedia_type_mpeg4,
+		vsubmedia_type_h264,
+		vsubmedia_type_hevc,
+	} vsubmedia_type;
+
+	typedef enum _asubmedia_type
+	{
+		unknown_audio_type = -1,
+		asubmedia_type_mp3 = 0,
+		asubmedia_type_aac,
+	} asubmedia_type;
+
+	typedef enum _err_code
+	{
+		err_code_success = 0,
+		err_code_fail
+	} err_code;
+
+	media_file_reader(void);
+	virtual ~media_file_reader(void);
+
+	bool open(const char * stream_name, long long timestamp, media_file_reader::vsubmedia_type & vsubmedia_type, media_file_reader::asubmedia_type & asubmedia_type);
+	bool close(void);
+	bool read(media_file_reader::media_type mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & timestamp);
+
+	uint8_t * get_sps(size_t & size);
+	uint8_t * get_pps(size_t & size);
+
+private:
+	char _stream_name[250];
+	record_module_seeker _record_module_seeker;
+
+	media_file_reader::vsubmedia_type _vsubmedia_type;
+	media_file_reader::asubmedia_type _asubmedia_type;
+};
+
+#else
 extern "C"
 {
-	#include <libavcodec/avcodec.h>
-	#include <libavformat/avformat.h>
-	#include <libswscale/swscale.h>
-	#include <libavutil/opt.h>
-	#include <libavutil/mathematics.h>
-	#include <libavutil/time.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavutil/opt.h>
+#include <libavutil/mathematics.h>
+#include <libavutil/time.h>
 }
 
 class media_file_reader
 {
 public:
+
 	typedef struct _packet_queue_t
 	{
 		AVPacketList *first_pkt, *last_pkt;
@@ -144,15 +200,6 @@ private:
 	bool _run_audio;
 	HANDLE _thread;
 };
-
-
-
-
-
-
-
-
-
-
+#endif
 
 #endif

@@ -33,7 +33,7 @@ dk_video_buffer::~dk_video_buffer(void)
 	::DeleteCriticalSection(&_mutex);
 }
 
-buffering::err_code dk_video_buffer::push(const uint8_t * data, size_t size, long long pts)
+buffering::err_code dk_video_buffer::push(const uint8_t * data, size_t size, long long timestamp)
 {
 	buffering::err_code status = buffering::err_code_success;
 	if (data && size > 0)
@@ -55,7 +55,7 @@ buffering::err_code dk_video_buffer::push(const uint8_t * data, size_t size, lon
 		buffer->next->prev = buffer;
 		buffer = buffer->next;
 
-		buffer->pts = pts;
+		buffer->timestamp = timestamp;
 		buffer->amount = size;
 		int32_t result = dk_circular_buffer_write(_cbuffer, data, buffer->amount);
 		if (result == -1)
@@ -93,7 +93,7 @@ buffering::err_code dk_video_buffer::pop(uint8_t * data, size_t & size, long lon
 			status = buffering::err_code_failed;
 
 		size = buffer->amount;
-		pts = buffer->pts;
+		pts = buffer->timestamp;
 		//wchar_t debug[500];
 		//_snwprintf_s(debug, sizeof(debug), L"<<pop video data[%zu]\n", vbuffer->amount);
 		//OutputDebugString(debug);
@@ -200,7 +200,7 @@ const uint8_t * dk_video_buffer::get_pps(size_t & size) const
 
 buffering::err_code dk_video_buffer::init(buffer_t * buffer)
 {
-	buffer->pts = 0;
+	buffer->timestamp = 0;
 	buffer->amount = 0;
 	buffer->next = nullptr;	
 	buffer->prev = nullptr;
