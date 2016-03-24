@@ -31,8 +31,6 @@ record_module::record_module(const char * storage, const char * uuid)
 	}
 }
 
-
-
 record_module::record_module(const char * filepath)
 	: _sps_size(0)
 	, _pps_size(0)
@@ -260,6 +258,89 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 	}
 
 	_last_end_time = current_time;
+}
+
+void record_module::seek(long long seek_timestamp)
+{
+	uint32_t seek_index = 2 * sizeof(long long);
+
+	void * buf = nullptr;
+	unsigned long bytes_to_read = 0;
+	unsigned long bytes_read = 0;
+
+	uint32_t prev_idr_index = 0;
+	long long prev_idr_timestamp = 0;
+
+	uint32_t next_idr_index = 0;
+	long long next_idr_timestamp = 0;
+	do
+	{
+		uint8_t nalu_type = 0;
+		long long nalu_timestamp = 0;
+		uint32_t nalu_size = 0;
+
+		//read frame type
+		buf = (void*)&nalu_type;
+		bytes_to_read = sizeof(uint8_t);
+		bytes_read = 0;
+		::ReadFile(_file, buf, bytes_to_read, &bytes_read, NULL);
+		seek_index += bytes_read;
+
+		//read timestramp
+		buf = (void*)&nalu_timestamp;
+		bytes_to_read = sizeof(long long);
+		bytes_read = 0;
+		::ReadFile(_file, buf, bytes_to_read, &bytes_read, NULL);
+		seek_index += bytes_read;
+
+		//read nalu size
+		buf = (void*)&nalu_size;
+		bytes_to_read = sizeof(uint32_t);
+		bytes_read = 0;
+		::ReadFile(_file, buf, bytes_to_read, &bytes_read, NULL);
+		seek_index += bytes_read;
+
+		seek_index += nalu_size;
+
+
+		/*if (dk_record_module::nalu_type_idr == nalu_type)
+		{
+			last_idr_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
+			last_idr_timestamp = nalu_timestamp;
+		}*/
+
+		if (dk_record_module::nalu_type_idr == nalu_type)
+		{
+			if (nalu_timestamp == seek_timestamp)
+			{
+				_read_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
+				break;
+			}
+			else if (nalu_timestamp < seek_timestamp)
+			{
+				prev_idr_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
+				prev_idr_timestamp = nalu_timestamp;
+			}
+			else if (nalu_timestamp > seek_timestamp)
+			{
+				next_idr_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
+				next_idr_timestamp = nalu_timestamp;
+				break;
+			}
+		}
+	} while (1);
+
+	if (_read_index == 0)
+	{
+		if ((seek_timestamp - prev_idr_timestamp) <= (next_idr_timestamp - seek_timestamp))
+		{
+			_read_index = prev_idr_index; 
+		}
+		else
+		{
+			_read_index = next_idr_index;
+		}
+	}
 }
 
 void record_module::read(dk_record_module::nalu_type & type, uint8_t * data, size_t & data_size, long long & timestamp)

@@ -53,6 +53,11 @@ void dk_record_module::write(uint8_t * nalu, size_t nalu_size, long long timesta
 	_core->write(nalu, nalu_size, timestamp);
 }
 
+void dk_record_module::seek(long long timestamp)
+{
+	_core->seek(timestamp);
+}
+
 void dk_record_module::read(dk_record_module::nalu_type & type, uint8_t * data, size_t & data_size, long long & timestamp)
 {
 	_core->read(type, data, data_size, timestamp);

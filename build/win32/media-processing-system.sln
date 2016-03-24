@@ -247,6 +247,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_image_source_filter", ".
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_record_module", "..\..\library\container\dk_record_module\dk_record_module.vcxproj", "{3DA1289B-7158-41B8-A00A-AD346FF92140}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordServerWatchdog", "..\..\application\recorder\ParallelRecordServerWatchdog\ParallelRecordServerWatchdog.vcxproj", "{37BAA523-5747-486D-B304-619BEF152BE5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordStreamerWatchdog", "..\..\application\recorder\ParallelRecordStreamerWatchdog\ParallelRecordStreamerWatchdog.vcxproj", "{94E64FE7-E85F-4053-811C-606F20A89511}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -719,6 +723,18 @@ Global
 		{3DA1289B-7158-41B8-A00A-AD346FF92140}.Release|Win32.ActiveCfg = Release|Win32
 		{3DA1289B-7158-41B8-A00A-AD346FF92140}.Release|Win32.Build.0 = Release|Win32
 		{3DA1289B-7158-41B8-A00A-AD346FF92140}.Release|x64.ActiveCfg = Release|Win32
+		{37BAA523-5747-486D-B304-619BEF152BE5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{37BAA523-5747-486D-B304-619BEF152BE5}.Debug|Win32.Build.0 = Debug|Win32
+		{37BAA523-5747-486D-B304-619BEF152BE5}.Debug|x64.ActiveCfg = Debug|Win32
+		{37BAA523-5747-486D-B304-619BEF152BE5}.Release|Win32.ActiveCfg = Release|Win32
+		{37BAA523-5747-486D-B304-619BEF152BE5}.Release|Win32.Build.0 = Release|Win32
+		{37BAA523-5747-486D-B304-619BEF152BE5}.Release|x64.ActiveCfg = Release|Win32
+		{94E64FE7-E85F-4053-811C-606F20A89511}.Debug|Win32.ActiveCfg = Debug|Win32
+		{94E64FE7-E85F-4053-811C-606F20A89511}.Debug|Win32.Build.0 = Debug|Win32
+		{94E64FE7-E85F-4053-811C-606F20A89511}.Debug|x64.ActiveCfg = Debug|Win32
+		{94E64FE7-E85F-4053-811C-606F20A89511}.Release|Win32.ActiveCfg = Release|Win32
+		{94E64FE7-E85F-4053-811C-606F20A89511}.Release|Win32.Build.0 = Release|Win32
+		{94E64FE7-E85F-4053-811C-606F20A89511}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -842,5 +858,7 @@ Global
 		{BCA8E105-33F1-4969-9E93-ED9AD32E41C0} = {73A8201D-9114-4E0B-87D3-E7FF8EBA25C1}
 		{7D966AC8-9BB8-488B-83F4-D5BD21B33D98} = {73A8201D-9114-4E0B-87D3-E7FF8EBA25C1}
 		{3DA1289B-7158-41B8-A00A-AD346FF92140} = {76AB79B6-833D-4D37-98D6-E17D2A7E76DE}
+		{37BAA523-5747-486D-B304-619BEF152BE5} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
+		{94E64FE7-E85F-4053-811C-606F20A89511} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
 	EndGlobalSection
 EndGlobal

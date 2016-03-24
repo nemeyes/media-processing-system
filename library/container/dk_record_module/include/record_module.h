@@ -21,6 +21,8 @@ public:
 	long long get_end_time(void);
 
 	void write(uint8_t * nalu, size_t nalu_size, long long timestamp);
+
+	void seek(long long timestamp);
 	void read(dk_record_module::nalu_type & type, uint8_t * data, size_t & data_size, long long & timestamp);
 
 	uint8_t * get_sps(size_t & sps_size);
