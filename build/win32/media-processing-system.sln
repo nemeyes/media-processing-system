@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -60,8 +60,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_ff_video_decode_filter", "..\..\directshow\dk_ff_video_decode_filter\dk_ff_video_decode_filter.vcxproj", "{F11F5E5A-3DF4-4A00-93E6-CD381278197D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_ffmpeg_base", "..\..\dk_ffmpeg_base\dk_ffmpeg_base.vcxproj", "{476A8B4A-42C6-4C02-AF64-0BFCC9001EAF}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_video_base", "..\..\dk_video_base\dk_video_base.vcxproj", "{75E5D88B-3BDD-407B-A368-9369D535F273}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_directx_rendering_test", "..\..\test\dk_directx_rendering_test\dk_directx_rendering_test.vcxproj", "{E05CF91A-ED35-4754-B02C-45E1E41359A4}"
 EndProject
@@ -251,6 +249,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordServerWatchdo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordStreamerWatchdog", "..\..\application\recorder\ParallelRecordStreamerWatchdog\ParallelRecordStreamerWatchdog.vcxproj", "{94E64FE7-E85F-4053-811C-606F20A89511}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_nvenc_encoder_6.0.1", "..\..\library\video\codec\cuda\dk_nvenc_encoder_6.0.1\dk_nvenc_encoder_6.0.1.vcxproj", "{54747CD9-A165-4B29-9994-FACCCF61312D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_video_base", "..\..\library\video\dk_video_base\dk_video_base.vcxproj", "{75E5D88B-3BDD-407B-A368-9369D535F273}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -341,12 +343,6 @@ Global
 		{476A8B4A-42C6-4C02-AF64-0BFCC9001EAF}.Release|Win32.ActiveCfg = Release|Win32
 		{476A8B4A-42C6-4C02-AF64-0BFCC9001EAF}.Release|Win32.Build.0 = Release|Win32
 		{476A8B4A-42C6-4C02-AF64-0BFCC9001EAF}.Release|x64.ActiveCfg = Release|Win32
-		{75E5D88B-3BDD-407B-A368-9369D535F273}.Debug|Win32.ActiveCfg = Debug|Win32
-		{75E5D88B-3BDD-407B-A368-9369D535F273}.Debug|Win32.Build.0 = Debug|Win32
-		{75E5D88B-3BDD-407B-A368-9369D535F273}.Debug|x64.ActiveCfg = Debug|Win32
-		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|Win32.ActiveCfg = Release|Win32
-		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|Win32.Build.0 = Release|Win32
-		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|x64.ActiveCfg = Release|Win32
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Debug|Win32.Build.0 = Debug|Win32
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4}.Debug|x64.ActiveCfg = Debug|Win32
@@ -735,6 +731,18 @@ Global
 		{94E64FE7-E85F-4053-811C-606F20A89511}.Release|Win32.ActiveCfg = Release|Win32
 		{94E64FE7-E85F-4053-811C-606F20A89511}.Release|Win32.Build.0 = Release|Win32
 		{94E64FE7-E85F-4053-811C-606F20A89511}.Release|x64.ActiveCfg = Release|Win32
+		{54747CD9-A165-4B29-9994-FACCCF61312D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{54747CD9-A165-4B29-9994-FACCCF61312D}.Debug|Win32.Build.0 = Debug|Win32
+		{54747CD9-A165-4B29-9994-FACCCF61312D}.Debug|x64.ActiveCfg = Debug|Win32
+		{54747CD9-A165-4B29-9994-FACCCF61312D}.Release|Win32.ActiveCfg = Release|Win32
+		{54747CD9-A165-4B29-9994-FACCCF61312D}.Release|Win32.Build.0 = Release|Win32
+		{54747CD9-A165-4B29-9994-FACCCF61312D}.Release|x64.ActiveCfg = Release|Win32
+		{75E5D88B-3BDD-407B-A368-9369D535F273}.Debug|Win32.ActiveCfg = Debug|Win32
+		{75E5D88B-3BDD-407B-A368-9369D535F273}.Debug|Win32.Build.0 = Debug|Win32
+		{75E5D88B-3BDD-407B-A368-9369D535F273}.Debug|x64.ActiveCfg = Debug|Win32
+		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|Win32.ActiveCfg = Release|Win32
+		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|Win32.Build.0 = Release|Win32
+		{75E5D88B-3BDD-407B-A368-9369D535F273}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -766,7 +774,6 @@ Global
 		{2D4D34F3-2439-41B0-83D2-77978268E880} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
 		{F11F5E5A-3DF4-4A00-93E6-CD381278197D} = {0FAF5728-06B3-4691-B094-375076752465}
 		{476A8B4A-42C6-4C02-AF64-0BFCC9001EAF} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
-		{75E5D88B-3BDD-407B-A368-9369D535F273} = {9866AB42-AAF7-427A-9F15-738174299D54}
 		{E05CF91A-ED35-4754-B02C-45E1E41359A4} = {20A20008-298C-4904-A58B-A23BA1F883E1}
 		{FE82C889-4DAA-4BBA-9D47-B67D23426D06} = {BB87F48F-C128-495C-B40C-1DFA7C070D31}
 		{CEC35B42-298C-4DC0-832B-266F2AE2D0CC} = {CC2D3C5A-8B5F-414D-AF44-99472F6A31E2}
@@ -860,5 +867,7 @@ Global
 		{3DA1289B-7158-41B8-A00A-AD346FF92140} = {76AB79B6-833D-4D37-98D6-E17D2A7E76DE}
 		{37BAA523-5747-486D-B304-619BEF152BE5} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
 		{94E64FE7-E85F-4053-811C-606F20A89511} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
+		{54747CD9-A165-4B29-9994-FACCCF61312D} = {9E86A127-51C1-412F-8117-D40A44BBB37D}
+		{75E5D88B-3BDD-407B-A368-9369D535F273} = {9866AB42-AAF7-427A-9F15-738174299D54}
 	EndGlobalSection
 EndGlobal
