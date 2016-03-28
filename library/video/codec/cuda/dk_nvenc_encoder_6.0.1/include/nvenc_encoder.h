@@ -8,15 +8,68 @@
 #include <d3d9.h>
 #include <d3d10_1.h>
 #include <d3d11.h>
+#pragma warning(disable : 4996)
+#pragma warning(disable : 4005)
 #include <dxva2api.h>
-#include "dynlink_cuda.h" // <cuda.h>
+//#include "dynlink_cuda.h" // <cuda.h>
+#include <cuda.h>
 #include "nvEncodeAPI.h"
 #include "dk_nvenc_encoder.h"
+
+#define MAX_ENCODE_QUEUE 100
 
 class nvenc_encoder
 {
 public:
-	nvenc_encoder(void);
+	typedef struct _nvenc_input_buffer_t
+	{
+		int32_t					width;
+		int32_t					height;
+		void *					nv12_surface;
+		CUdeviceptr				nv12_device_ptr;
+		uint32_t				nv12_stride;
+		CUdeviceptr				nv12_temp_device_ptr;
+		uint32_t				nv12_temp_stride;
+		void *					nv_registered_resource;
+		NV_ENC_INPUT_PTR		input_surface;
+		NV_ENC_BUFFER_FORMAT	buffer_format;
+	} nvenc_input_buffer_t;
+
+	typedef struct _nvenc_output_buffer_t
+	{
+		uint32_t				bitstream_buffer_size;
+		NV_ENC_OUTPUT_PTR		bitstream_buffer;
+		HANDLE					output_event;
+		bool					wait_event;
+		bool					eos;
+	} nvenc_output_buffer_t;
+
+	typedef struct _nvenc_buffer_t
+	{
+		nvenc_input_buffer_t	input;
+		nvenc_output_buffer_t	output;
+	} nvenc_buffer_t;
+
+	template<class T>
+	class nvenc_queue 
+	{
+	public:
+		nvenc_queue(void);
+		virtual ~nvenc_queue(void);
+
+		bool initialize(T *pItems, uint32_t size);
+		T * get_available(void);
+		T* get_pending(void);
+
+	protected:
+		T** _buffer;
+		uint32_t _size;
+		uint32_t _pending_count;
+		uint32_t _available_index;
+		uint32_t _pending_index;
+	};
+
+	nvenc_encoder(dk_nvenc_encoder * front);
 	virtual ~nvenc_encoder(void);
 
 	dk_nvenc_encoder::encoder_state state(void);
@@ -26,7 +79,7 @@ public:
 
 	dk_nvenc_encoder::err_code encode(dk_nvenc_encoder::dk_video_entity_t * input, dk_nvenc_encoder::dk_video_entity_t * bitstream);
 	dk_nvenc_encoder::err_code encode(dk_nvenc_encoder::dk_video_entity_t * input);
-	dk_nvenc_encoder::err_code get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream);
+	dk_nvenc_encoder::err_code get_qeueued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream);
 
 	dk_nvenc_encoder::err_code encode_async(dk_nvenc_encoder::dk_video_entity_t * input);
 	dk_nvenc_encoder::err_code check_encoding_flnish(void);
@@ -37,9 +90,15 @@ private:
 	NVENCSTATUS initialize_cuda(uint32_t device_id);
 	NVENCSTATUS release_cuda(void);
 
-
 	NVENCSTATUS initialize_nvenc_encoder(void * device, NV_ENC_DEVICE_TYPE type);
 	NVENCSTATUS release_nvenc_encoder(void);
+
+	NVENCSTATUS allocate_io_buffers(uint32_t width, uint32_t height);
+	NVENCSTATUS release_io_buffers(void);
+	NVENCSTATUS flush_encoder(void);
+
+	NVENCSTATUS encode_frame(nvenc_buffer_t * nvenc_buffer, dk_nvenc_encoder::dk_video_entity_t * input);
+	NVENCSTATUS process_output(const nvenc_buffer_t * nvenc_buffer, dk_nvenc_encoder::dk_video_entity_t * bitstream, bool flush=false);
 
 private:
 	NVENCSTATUS NvEncInitializeEncoder(NV_ENC_INITIALIZE_PARAMS * params);
@@ -75,6 +134,7 @@ private:
 	NVENCSTATUS NvEncRegisterResource(NV_ENC_INPUT_RESOURCE_TYPE resourceType, void* resourceToRegister, uint32_t width, uint32_t height, uint32_t pitch, void** registeredResource);
 	NVENCSTATUS NvEncUnregisterResource(NV_ENC_REGISTERED_PTR registeredRes);
 	NVENCSTATUS NvEncFlushEncoderQueue(void *hEOSEvent);
+	NVENCSTATUS NvEncEncodePicture(NV_ENC_PIC_PARAMS * pic_params);
 
 	//NVENCSTATUS NvRunMotionEstimationOnly(EncodeBuffer *pEncodeBuffer[2], MEOnlyConfig *pMEOnly);
 	//NVENCSTATUS NvEncInvalidateRefFrames(const NvEncPictureCommand *pEncPicCommand);
@@ -83,8 +143,10 @@ private:
 
 	//common
 private:
+	dk_nvenc_encoder * _front;
 	dk_nvenc_encoder::encoder_state _state;
 	dk_nvenc_encoder::configuration_t * _config;
+
 
 
 	//cuda and nvenc
@@ -98,7 +160,11 @@ private:
 	NV_ENCODE_API_FUNCTION_LIST * _nvenc_api;
 	void * _nvenc_encoder;
 
-
+	uint32_t					_nvenc_encode_index;
+	uint32_t					_nvenc_buffer_count;
+	nvenc_buffer_t				_nvenc_buffer[MAX_ENCODE_QUEUE];
+	nvenc_queue<nvenc_buffer_t> _nvenc_buffer_queue;
+	nvenc_output_buffer_t		_nvenc_eos_output_buffer;
 
 private:
 	IDirectXVideoProcessorService * _dxva2_video_process_services;

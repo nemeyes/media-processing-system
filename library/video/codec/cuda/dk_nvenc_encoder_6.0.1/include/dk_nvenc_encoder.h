@@ -7,25 +7,13 @@ class nvenc_encoder;
 class EXP_CLASS dk_nvenc_encoder : public dk_video_encoder
 {
 public:
-	typedef enum _codec_type
+	typedef struct EXP_CLASS _nvenc_submedia_type_t : public dk_nvenc_encoder::_submedia_type_t
 	{
-		codec_h264,
-		codec_hevc
-	} codec_type;
-
-	typedef enum _codec_profile_type
-	{
-		codec_profile_auto,
-		codec_h264_profile_baseline,
-		codec_h264_profile_main,
-		codec_h264_profile_high,
-		codec_h264_profile_high_444,
-		codec_h264_profile_stereo,
-		codec_h264_profile_svc_temporal_scalability,
-		codec_h264_profile_progressive_high,
-		codec_h264_profile_constrained_high,
-		codec_hevc_profile_main
-	} codec_profile_type;
+		static const int32_t submedia_type_h264_sp = 21; //stereo profile
+		static const int32_t submedia_type_h264_stsp = 22; //svc_temporal_scalability profile
+		static const int32_t submedia_type_h264_php = 23; //progressive high profile
+		static const int32_t submedia_type_h264_chp = 24; //contrained high profile
+	} nvenc_submedia_type_t;
 
 	typedef enum _preset_type
 	{
@@ -151,6 +139,7 @@ public:
 
 	dk_nvenc_encoder::err_code encode_async(dk_nvenc_encoder::dk_video_entity_t * input);
 	dk_nvenc_encoder::err_code check_encoding_flnish(void);
+	void on_acquire_bitstream(uint8_t * bistream, size_t size);
 
 private:
 	nvenc_encoder * _core;

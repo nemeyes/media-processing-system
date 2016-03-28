@@ -35,7 +35,7 @@ dk_video_base::~dk_video_base(void)
 	}
 }
 
-dk_video_base::err_code dk_video_base::push(uint8_t * bs, size_t size, long long pts)
+dk_video_base::err_code dk_video_base::push(uint8_t * bs, size_t size, long long timestamp)
 {
 	if (!_use_builtin_queue)
 		return dk_video_base::err_code_unsupported_function;
@@ -60,7 +60,7 @@ dk_video_base::err_code dk_video_base::push(uint8_t * bs, size_t size, long long
 		vbuffer = vbuffer->next;
 
 		vbuffer->amount = size;
-		vbuffer->pts = pts;
+		vbuffer->timestamp = timestamp;
 		int32_t result = dk_circular_buffer_write(_vqueue, bs, vbuffer->amount);
 		if (result == -1)
 		{
@@ -80,7 +80,7 @@ dk_video_base::err_code dk_video_base::push(uint8_t * bs, size_t size, long long
 	return status;
 }
 
-dk_video_base::err_code dk_video_base::pop(uint8_t * bs, size_t & size, long long & pts)
+dk_video_base::err_code dk_video_base::pop(uint8_t * bs, size_t & size, long long & timestamp)
 {
 	if (!_use_builtin_queue)
 		return dk_video_base::err_code_unsupported_function;
@@ -100,7 +100,7 @@ dk_video_base::err_code dk_video_base::pop(uint8_t * bs, size_t & size, long lon
 		else
 		{
 			size = vbuffer->amount;
-			pts = vbuffer->pts;
+			timestamp = vbuffer->timestamp;
 		}
 		free(vbuffer);
 		vbuffer = nullptr;
@@ -110,11 +110,10 @@ dk_video_base::err_code dk_video_base::pop(uint8_t * bs, size_t & size, long lon
 
 dk_video_base::err_code dk_video_base::init(vbuffer_t * buffer)
 {
-	buffer->pts = 0;
+	buffer->timestamp = 0;
 	buffer->amount = 0;
 	buffer->next = nullptr;
 	buffer->prev = nullptr;
-	buffer->pts = 0;
 	return dk_video_base::err_code_success;
 }
 
@@ -157,10 +156,10 @@ dk_video_decoder::err_code dk_video_decoder::get_queued_data(dk_video_entity_t *
 dk_video_encoder::_configuration_t::_configuration_t(void)
 	: mem_type(dk_video_encoder::memory_type_host)
 	, d3d_device(nullptr)
-	, cs(dk_video_encoder::submedia_type_yv12)
+	, cs(dk_video_encoder::submedia_type_t::submedia_type_yv12)
 	, width(0)
 	, height(0)
-	, codec(dk_video_encoder::submedia_type_h264_hp)
+	, codec(dk_video_encoder::submedia_type_t::submedia_type_h264_hp)
 	, bitrate(4000000)
 	, fps(30)
 	, keyframe_interval(2)

@@ -81,7 +81,7 @@ dk_nvenc_encoder::_configuration_t & dk_nvenc_encoder::_configuration_t::operato
 
 dk_nvenc_encoder::dk_nvenc_encoder(void)
 {
-	_core = new nvenc_encoder();
+	_core = new nvenc_encoder(this);
 }
 
 dk_nvenc_encoder::~dk_nvenc_encoder(void)
@@ -130,5 +130,10 @@ dk_nvenc_encoder::err_code dk_nvenc_encoder::encode_async(dk_nvenc_encoder::dk_v
 
 dk_nvenc_encoder::err_code dk_nvenc_encoder::check_encoding_flnish(void)
 {
-	return _core->check_encoding_finish();
+	return _core->check_encoding_flnish();
+}
+
+void dk_nvenc_encoder::on_acquire_bitstream(uint8_t * bistream, size_t size)
+{
+
 }

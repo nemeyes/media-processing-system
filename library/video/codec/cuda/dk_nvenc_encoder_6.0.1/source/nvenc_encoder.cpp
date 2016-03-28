@@ -1,15 +1,81 @@
 #include "nvenc_encoder.h"
 #include <tchar.h>
-#include <vector_types.h>
-#include <cuda.h>
 
+#define BITSTREAM_BUFFER_SIZE 2 * 1024 * 1024
 #define SET_VER(configStruct, type) {configStruct.version = type##_VER;}
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define FABS(a) ((a) >= 0 ? (a) : -(a))
 
-nvenc_encoder::nvenc_encoder(void)
-	: _state(dk_nvenc_encoder::encoder_state_none)
+
+template<class T>
+nvenc_encoder::nvenc_queue<T>::nvenc_queue(void)
+		: _buffer(NULL)
+		, _size(0)
+		, _pending_count(0)
+		, _available_index(0)
+		, _pending_index(0)
+{}
+
+template<class T>
+nvenc_encoder::nvenc_queue<T>::~nvenc_queue(void)
+{
+	delete[] _buffer;
+}
+
+template<class T>
+bool nvenc_encoder::nvenc_queue<T>::initialize(T *pItems, uint32_t size)
+{
+	_size = size;
+	_pending_count = 0;
+	_available_index = 0;
+	_pending_index = 0;
+	_buffer = new T *[_size];
+	for (uint32_t i = 0; i < _size; i++)
+	{
+		_buffer[i] = &pItems[i];
+	}
+	return true;
+}
+
+template<class T>
+T * nvenc_encoder::nvenc_queue<T>::get_available(void)
+{
+	T *pItem = NULL;
+	if (_pending_count == _size)
+	{
+		return NULL;
+	}
+	pItem = _buffer[_available_index];
+	_available_index = (_available_index + 1) % _size;
+	_pending_count += 1;
+	return pItem;
+}
+
+template<class T>
+T* nvenc_encoder::nvenc_queue<T>::get_pending(void)
+{
+	if (_pending_count == 0)
+	{
+		return NULL;
+	}
+
+	T *pItem = _buffer[_available_index];
+	_available_index = (_available_index + 1) % _size;
+	_pending_count -= 1;
+	return pItem;
+}
+
+nvenc_encoder::nvenc_encoder(dk_nvenc_encoder * front)
+	: _front(front)
+	, _state(dk_nvenc_encoder::encoder_state_none)
+	, _config(NULL)
+	, _context(NULL)
+	, _nvenc_instance(NULL)
+	, _nvenc_api(NULL)
+	, _nvenc_encoder(NULL)
+	, _nvenc_encode_index(0)
+	, _nvenc_buffer_count(0)
 {
 
 }
@@ -32,228 +98,302 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 	release_encoder();
 	_state = dk_nvenc_encoder::encoder_state_initializing;
 
-	_config = config;
 	NVENCSTATUS status = NV_ENC_SUCCESS;
-	dk_nvenc_encoder::err_code result = dk_nvenc_encoder::err_code_fail;
-
-	if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+	do
 	{
-		status = initialize_cuda(_config->device_id);
+		_config = config;
+		dk_nvenc_encoder::err_code result = dk_nvenc_encoder::err_code_fail;
+		if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+		{
+			status = initialize_cuda(_config->device_id);
+			if (status != NV_ENC_SUCCESS)
+			{
+				release_cuda();
+				break;
+			}
+			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_CUDA);
+			if (status != NV_ENC_SUCCESS)
+			{
+				release_nvenc_encoder();
+				release_cuda();
+				break;
+			}
+		}
+		else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx10)
+		{
+			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
+			if (status != NV_ENC_SUCCESS)
+			{
+				release_nvenc_encoder();
+				break;
+			}
+		}
+		else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx10)
+		{
+			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
+			if (status != NV_ENC_SUCCESS)
+			{
+				release_nvenc_encoder();
+				break;
+			}
+		}
+		else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx11)
+		{
+			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
+			if (status != NV_ENC_SUCCESS)
+			{
+				release_nvenc_encoder();
+				break;
+			}
+		}
+
+		NV_ENC_INITIALIZE_PARAMS nvenc_initialize_param;
+		memset(&nvenc_initialize_param, 0x00, sizeof(nvenc_initialize_param));
+		SET_VER(nvenc_initialize_param, NV_ENC_INITIALIZE_PARAMS);
+
+		NV_ENC_CONFIG nvenc_config;
+		memset(&nvenc_config, 0x00, sizeof(nvenc_config));
+		SET_VER(nvenc_config, NV_ENC_CONFIG);
+		nvenc_initialize_param.encodeConfig = &nvenc_config;
+
+		if (((_config->codec >= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264) && (_config->codec <= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_ep)) ||
+			((_config->codec >= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_sp) && (_config->codec <= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_chp)))
+		{
+			nvenc_initialize_param.encodeGUID = NV_ENC_CODEC_H264_GUID;
+			switch (_config->preset)
+			{
+			case dk_nvenc_encoder::preset_default:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_DEFAULT_GUID;
+				break;
+			case dk_nvenc_encoder::preset_high_performance:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HP_GUID;
+				break;
+			case dk_nvenc_encoder::preset_high_quality:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HQ_GUID;
+				break;
+			case dk_nvenc_encoder::preset_bluelay_disk:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_BD_GUID;
+				break;
+			case dk_nvenc_encoder::preset_low_latency_default:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID;
+				break;
+			case dk_nvenc_encoder::preset_low_latency_high_quality:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HQ_GUID;
+				break;
+			case dk_nvenc_encoder::preset_low_latency_high_performance:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HP_GUID;
+				break;
+			case dk_nvenc_encoder::preset_lossless_default:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID;
+				break;
+			case dk_nvenc_encoder::preset_lossless_high_performance:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_HP_GUID;
+				break;
+			}
+		}
+		else if ((_config->codec >= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_hevc) && (_config->codec <= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_hevc_mp))
+		{
+			nvenc_initialize_param.encodeGUID = NV_ENC_CODEC_HEVC_GUID;
+			switch (_config->preset)
+			{
+			case dk_nvenc_encoder::preset_default:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_DEFAULT_GUID;
+				break;
+			case dk_nvenc_encoder::preset_high_performance:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HP_GUID;
+				break;
+			case dk_nvenc_encoder::preset_high_quality:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HQ_GUID;
+				break;
+			case dk_nvenc_encoder::preset_bluelay_disk:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_BD_GUID;
+				break;
+			case dk_nvenc_encoder::preset_low_latency_default:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID;
+				break;
+			case dk_nvenc_encoder::preset_low_latency_high_quality:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HQ_GUID;
+				break;
+			case dk_nvenc_encoder::preset_low_latency_high_performance:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HP_GUID;
+				break;
+			case dk_nvenc_encoder::preset_lossless_default:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID;
+				break;
+			case dk_nvenc_encoder::preset_lossless_high_performance:
+				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_HP_GUID;
+				break;
+			}
+
+		}
+
+		nvenc_initialize_param.encodeWidth = _config->width;
+		nvenc_initialize_param.encodeHeight = _config->height;
+		nvenc_initialize_param.darWidth = _config->width;
+		nvenc_initialize_param.darHeight = _config->height;
+		nvenc_initialize_param.maxEncodeWidth = _config->width;
+		nvenc_initialize_param.maxEncodeHeight = _config->height;
+		nvenc_initialize_param.frameRateNum = _config->fps;
+		nvenc_initialize_param.frameRateDen = 1;
+#if defined(WIN32)
+		nvenc_initialize_param.enableEncodeAsync = 1;
+#else
+		nvenc_initialize_param.enableEncodeAsync = 0;
+#endif
+		nvenc_initialize_param.enablePTD = 1;
+		nvenc_initialize_param.reportSliceOffsets = 0;
+		nvenc_initialize_param.enableSubFrameWrite = 0;
+
+		// apply preset
+		NV_ENC_PRESET_CONFIG nvenc_preset_config;
+		memset(&nvenc_preset_config, 0, sizeof(NV_ENC_PRESET_CONFIG));
+		SET_VER(nvenc_preset_config, NV_ENC_PRESET_CONFIG);
+		SET_VER(nvenc_preset_config.presetCfg, NV_ENC_CONFIG);
+
+		status = NvEncGetEncodePresetConfig(nvenc_initialize_param.encodeGUID, nvenc_initialize_param.presetGUID, &nvenc_preset_config);
 		if (status != NV_ENC_SUCCESS)
 		{
-			release_cuda();
-			return result;
+			release_nvenc_encoder();
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+				release_cuda();
+			break;
 		}
-		status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_CUDA);
-	}
-	else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx10)
-	{
-		status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
-	}
-	else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx10)
-	{
-		status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
-	}
-	else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx11)
-	{
-		status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
-	}
+		memcpy(nvenc_initialize_param.encodeConfig, &nvenc_preset_config.presetCfg, sizeof(NV_ENC_CONFIG));
 
-	NV_ENC_INITIALIZE_PARAMS nvenc_initialize_param;
-	memset(&nvenc_initialize_param, 0x00, sizeof(nvenc_initialize_param));
-	SET_VER(nvenc_initialize_param, NV_ENC_INITIALIZE_PARAMS);
-
-	NV_ENC_CONFIG nvenc_config;
-	memset(&nvenc_config, 0x00, sizeof(nvenc_config));
-	SET_VER(nvenc_config, NV_ENC_CONFIG);
-
-	nvenc_initialize_param.encodeConfig = &nvenc_config;
-
-	if ((_config->codec >= dk_nvenc_encoder::submedia_type_h264) && (_config->codec <= dk_nvenc_encoder::submedia_type_h264_ep))
-	{
-		nvenc_initialize_param.encodeGUID = NV_ENC_CODEC_H264_GUID;
-		switch (_config->preset)
+		switch (_config->codec)
 		{
-		case dk_nvenc_encoder::preset_default :
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_DEFAULT_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264 :
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_ep:
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
 			break;
-		case dk_nvenc_encoder::preset_high_performance:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HP_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_bp:
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_H264_PROFILE_BASELINE_GUID;
 			break;
-		case dk_nvenc_encoder::preset_high_quality:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HQ_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_hp:
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_H264_PROFILE_MAIN_GUID;
 			break;
-		case dk_nvenc_encoder::preset_bluelay_disk:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_BD_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_mp:
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_H264_PROFILE_HIGH_GUID;
 			break;
-		case dk_nvenc_encoder::preset_low_latency_default:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_sp :
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_H264_PROFILE_STEREO_GUID;
 			break;
-		case dk_nvenc_encoder::preset_low_latency_high_quality:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HQ_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_stsp :
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_H264_PROFILE_SVC_TEMPORAL_SCALABILTY;
 			break;
-		case dk_nvenc_encoder::preset_low_latency_high_performance:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HP_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_php :
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_H264_PROFILE_PROGRESSIVE_HIGH_GUID;
 			break;
-		case dk_nvenc_encoder::preset_lossless_default:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_chp :
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_H264_PROFILE_CONSTRAINED_HIGH_GUID;
 			break;
-		case dk_nvenc_encoder::preset_lossless_high_performance:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_HP_GUID;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_hevc:
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+			break;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_hevc_mp:
+			nvenc_initialize_param.encodeConfig->profileGUID = NV_ENC_HEVC_PROFILE_MAIN_GUID;
 			break;
 		}
-	}
-	else if ((_config->codec >= dk_nvenc_encoder::submedia_type_hevc) && (_config->codec <= dk_nvenc_encoder::submedia_type_hevc_mp))
-	{
-		nvenc_initialize_param.encodeGUID = NV_ENC_CODEC_HEVC_GUID;
-		switch (_config->preset)
+
+		if (_config->keyframe_interval <= 0)
+			nvenc_initialize_param.encodeConfig->gopLength = NVENC_INFINITE_GOPLENGTH;
+		else
+			nvenc_initialize_param.encodeConfig->gopLength = _config->keyframe_interval * _config->fps;
+
+		nvenc_initialize_param.encodeConfig->frameIntervalP = _config->numb + 1;
+		nvenc_initialize_param.encodeConfig->frameFieldMode = NV_ENC_PARAMS_FRAME_FIELD_MODE(_config->frame_field_mode);
+		_config->motioin_vector_precision = NV_ENC_MV_PRECISION(_config->motioin_vector_precision);
+		if (_config->bitrate || _config->vbv_max_bitrate)
 		{
-		case dk_nvenc_encoder::preset_default:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_DEFAULT_GUID;
-			break;
-		case dk_nvenc_encoder::preset_high_performance:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HP_GUID;
-			break;
-		case dk_nvenc_encoder::preset_high_quality:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_HQ_GUID;
-			break;
-		case dk_nvenc_encoder::preset_bluelay_disk:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_BD_GUID;
-			break;
-		case dk_nvenc_encoder::preset_low_latency_default:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID;
-			break;
-		case dk_nvenc_encoder::preset_low_latency_high_quality:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HQ_GUID;
-			break;
-		case dk_nvenc_encoder::preset_low_latency_high_performance:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOW_LATENCY_HP_GUID;
-			break;
-		case dk_nvenc_encoder::preset_lossless_default:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID;
-			break;
-		case dk_nvenc_encoder::preset_lossless_high_performance:
-			nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_HP_GUID;
-			break;
+			nvenc_initialize_param.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_MODE(_config->rc_mode);
+			nvenc_initialize_param.encodeConfig->rcParams.averageBitRate = _config->bitrate;
+			nvenc_initialize_param.encodeConfig->rcParams.maxBitRate = _config->vbv_max_bitrate;
+			nvenc_initialize_param.encodeConfig->rcParams.vbvBufferSize = _config->vbv_size;
+			nvenc_initialize_param.encodeConfig->rcParams.vbvInitialDelay = _config->vbv_size * 9 / 10;
 		}
-
-	}
-
-	nvenc_initialize_param.encodeWidth = _config->width;
-	nvenc_initialize_param.encodeHeight = _config->height;
-	nvenc_initialize_param.darWidth = _config->width;
-	nvenc_initialize_param.darHeight = _config->height;
-	nvenc_initialize_param.maxEncodeWidth = _config->width;
-	nvenc_initialize_param.maxEncodeHeight = _config->height;
-	nvenc_initialize_param.frameRateNum = _config->fps;
-	nvenc_initialize_param.frameRateDen = 1;
-#if defined(_WIN32)
-	nvenc_initialize_param.enableEncodeAsync = 1;
-#else
-	nvenc_initialize_param.enableEncodeAsync = 0;
-#endif
-	nvenc_initialize_param.enablePTD = 1;
-	nvenc_initialize_param.reportSliceOffsets = 0;
-	nvenc_initialize_param.enableSubFrameWrite = 0;
-
-	// apply preset
-	NV_ENC_PRESET_CONFIG nvenc_preset_config;
-	memset(&nvenc_preset_config, 0, sizeof(NV_ENC_PRESET_CONFIG));
-	SET_VER(nvenc_preset_config, NV_ENC_PRESET_CONFIG);
-	SET_VER(nvenc_preset_config.presetCfg, NV_ENC_CONFIG);
-
-	status = NvEncGetEncodePresetConfig(nvenc_initialize_param.encodeGUID, nvenc_initialize_param.presetGUID, &nvenc_preset_config);
-	if (status != NV_ENC_SUCCESS)
-	{
-		return dk_nvenc_encoder::err_code_fail;
-	}
-	memcpy(nvenc_initialize_param.encodeConfig, &nvenc_preset_config.presetCfg, sizeof(NV_ENC_CONFIG));
-	if (_config->keyframe_interval <= 0)
-		nvenc_initialize_param.encodeConfig->gopLength = NVENC_INFINITE_GOPLENGTH;
-	else
-		nvenc_initialize_param.encodeConfig->gopLength = _config->keyframe_interval * _config->fps;
-
-	nvenc_initialize_param.encodeConfig->frameIntervalP = _config->numb + 1;
-	nvenc_initialize_param.encodeConfig->frameFieldMode = NV_ENC_PARAMS_FRAME_FIELD_MODE(_config->frame_field_mode);
-	_config->motioin_vector_precision = NV_ENC_MV_PRECISION(_config->motioin_vector_precision);
-	if (_config->bitrate || _config->vbv_max_bitrate)
-	{
-		nvenc_initialize_param.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_MODE(_config->rc_mode);
-		nvenc_initialize_param.encodeConfig->rcParams.averageBitRate = _config->bitrate;
-		nvenc_initialize_param.encodeConfig->rcParams.maxBitRate = _config->vbv_max_bitrate;
-		nvenc_initialize_param.encodeConfig->rcParams.vbvBufferSize = _config->vbv_size;
-		nvenc_initialize_param.encodeConfig->rcParams.vbvInitialDelay = _config->vbv_size * 9 / 10;
-	}
-	else
-	{
-		nvenc_initialize_param.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
-	}
-	if (_config->rc_mode == dk_nvenc_encoder::rate_control_constant_qp)
-	{
-		nvenc_initialize_param.encodeConfig->rcParams.constQP.qpInterP = nvenc_initialize_param.presetGUID == NV_ENC_PRESET_LOSSLESS_HP_GUID ? 0 : _config->qp;
-		nvenc_initialize_param.encodeConfig->rcParams.constQP.qpInterB = nvenc_initialize_param.presetGUID == NV_ENC_PRESET_LOSSLESS_HP_GUID ? 0 : _config->qp;
-		nvenc_initialize_param.encodeConfig->rcParams.constQP.qpIntra = nvenc_initialize_param.presetGUID == NV_ENC_PRESET_LOSSLESS_HP_GUID ? 0 : _config->qp;
-	}
-
-	// set up initial QP value
-	if (_config->rc_mode == dk_nvenc_encoder::rate_control_vbr || 
-		_config->rc_mode == dk_nvenc_encoder::rate_control_vbr_min_qp ||
-		_config->rc_mode == dk_nvenc_encoder::rate_control_two_pass_vbr) 
-	{
-		nvenc_initialize_param.encodeConfig->rcParams.enableInitialRCQP = 1;
-		nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpInterP = _config->qp;
-		if (_config->i_quant_factor != 0.0 && _config->b_quant_factor != 0.0)
+		else
 		{
-			nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpIntra = (int)(_config->qp * FABS(_config->i_quant_factor) + _config->i_quant_offset);
-			nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpInterB = (int)(_config->qp * FABS(_config->b_quant_factor) + _config->b_quant_offset);
+			nvenc_initialize_param.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
 		}
-		else 
+		if (_config->rc_mode == dk_nvenc_encoder::rate_control_constant_qp)
 		{
-			nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpIntra = _config->qp;
-			nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpInterB = _config->qp;
+			nvenc_initialize_param.encodeConfig->rcParams.constQP.qpInterP = nvenc_initialize_param.presetGUID == NV_ENC_PRESET_LOSSLESS_HP_GUID ? 0 : _config->qp;
+			nvenc_initialize_param.encodeConfig->rcParams.constQP.qpInterB = nvenc_initialize_param.presetGUID == NV_ENC_PRESET_LOSSLESS_HP_GUID ? 0 : _config->qp;
+			nvenc_initialize_param.encodeConfig->rcParams.constQP.qpIntra = nvenc_initialize_param.presetGUID == NV_ENC_PRESET_LOSSLESS_HP_GUID ? 0 : _config->qp;
 		}
-	}
-	
-	if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_H264_GUID)
-	{
-		nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.chromaFormatIDC = 1;
-		nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.idrPeriod = nvenc_initialize_param.encodeConfig->gopLength;
-	}
-	else if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_HEVC_GUID)
-	{
-		nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.chromaFormatIDC = 1;
-		nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.idrPeriod = nvenc_initialize_param.encodeConfig->gopLength;
-	}
 
-	if (_config->intra_refresh_enable)
-	{
-		if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_HEVC_GUID)
+		// set up initial QP value
+		if (_config->rc_mode == dk_nvenc_encoder::rate_control_vbr ||
+			_config->rc_mode == dk_nvenc_encoder::rate_control_vbr_min_qp ||
+			_config->rc_mode == dk_nvenc_encoder::rate_control_two_pass_vbr)
 		{
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.enableIntraRefresh = 1;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.intraRefreshPeriod = _config->intra_refresh_period;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.intraRefreshCnt = _config->intra_refresh_duration;
+			nvenc_initialize_param.encodeConfig->rcParams.enableInitialRCQP = 1;
+			nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpInterP = _config->qp;
+			if (_config->i_quant_factor != 0.0 && _config->b_quant_factor != 0.0)
+			{
+				nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpIntra = (int)(_config->qp * FABS(_config->i_quant_factor) + _config->i_quant_offset);
+				nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpInterB = (int)(_config->qp * FABS(_config->b_quant_factor) + _config->b_quant_offset);
+			}
+			else
+			{
+				nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpIntra = _config->qp;
+				nvenc_initialize_param.encodeConfig->rcParams.initialRCQP.qpInterB = _config->qp;
+			}
 		}
-		else if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_H264_GUID)
-		{
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.enableIntraRefresh = 1;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.intraRefreshPeriod = _config->intra_refresh_period;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.intraRefreshCnt = _config->intra_refresh_duration;
-		}
-	}
 
-	if (_config->invalidate_reference_frames_enable)
-	{
-		if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_HEVC_GUID)
+		if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_H264_GUID)
 		{
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.maxNumRefFramesInDPB = 16;
+			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.chromaFormatIDC = 1;
+			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.idrPeriod = nvenc_initialize_param.encodeConfig->gopLength;
 		}
-		else if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_H264_GUID)
+		else if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_HEVC_GUID)
 		{
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.maxNumRefFrames = 16;
+			nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.chromaFormatIDC = 1;
+			nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.idrPeriod = nvenc_initialize_param.encodeConfig->gopLength;
 		}
-	}
 
-	status = NvEncInitializeEncoder(&nvenc_initialize_param);
+		if (_config->intra_refresh_enable)
+		{
+			if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_HEVC_GUID)
+			{
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.enableIntraRefresh = 1;
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.intraRefreshPeriod = _config->intra_refresh_period;
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.intraRefreshCnt = _config->intra_refresh_duration;
+			}
+			else if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_H264_GUID)
+			{
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.enableIntraRefresh = 1;
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.intraRefreshPeriod = _config->intra_refresh_period;
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.intraRefreshCnt = _config->intra_refresh_duration;
+			}
+		}
+
+		if (_config->invalidate_reference_frames_enable)
+		{
+			if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_HEVC_GUID)
+			{
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.hevcConfig.maxNumRefFramesInDPB = 16;
+			}
+			else if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_H264_GUID)
+			{
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.maxNumRefFrames = 16;
+			}
+		}
+
+		status = NvEncInitializeEncoder(&nvenc_initialize_param);
+		if (status != NV_ENC_SUCCESS)
+		{
+			release_nvenc_encoder();
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+				release_cuda();
+			break;
+		}
+
+		_nvenc_buffer_count = _config->numb + 4;
+		status = allocate_io_buffers(_config->width, _config->height);
+
+	} while(0);
+
 
 	if (status == NV_ENC_SUCCESS)
 		return dk_nvenc_encoder::err_code_success;
@@ -263,32 +403,89 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 
 dk_nvenc_encoder::err_code nvenc_encoder::release_encoder(void)
 {
-	dk_nvenc_encoder::err_code_success;
+	if ((_state != dk_nvenc_encoder::encoder_state_none) && (_state != dk_nvenc_encoder::encoder_state_initialized) && (_state != dk_nvenc_encoder::encoder_state_encoded))
+		return dk_nvenc_encoder::err_code_fail;
+	_state = dk_nvenc_encoder::encoder_state_releasing;
+
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+
+	if (flush_encoder() != NV_ENC_SUCCESS)
+		return dk_nvenc_encoder::err_code_fail;
+
+	if (release_io_buffers() != NV_ENC_SUCCESS)
+		return dk_nvenc_encoder::err_code_fail;
+
+	if (release_nvenc_encoder() != NV_ENC_SUCCESS)
+		return dk_nvenc_encoder::err_code_fail;
+
+	if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+	{
+		if (release_cuda() != NV_ENC_SUCCESS)
+			return dk_nvenc_encoder::err_code_fail;
+	}
+
+	return dk_nvenc_encoder::err_code_success;
 }
 
 dk_nvenc_encoder::err_code nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * input, dk_nvenc_encoder::dk_video_entity_t * bitstream)
 {
-	dk_nvenc_encoder::err_code_success;
+	if (!input || !bitstream)
+		return dk_nvenc_encoder::err_code_fail;
+
+	if (input->flush)
+	{
+		flush_encoder();
+		return dk_nvenc_encoder::err_code_success;
+	}
+
+	nvenc_buffer_t * nvenc_buffer = _nvenc_buffer_queue.get_available();
+	do
+	{
+		if (!nvenc_buffer)
+		{
+			process_output(nvenc_buffer, bitstream);
+			nvenc_buffer = _nvenc_buffer_queue.get_available();
+		}
+		else
+		{
+			break;
+		}
+		::Sleep(1);
+	} while (1);
+
+	NVENCSTATUS status = encode_frame(nvenc_buffer, input);
+	if (status != NV_ENC_SUCCESS)
+		return dk_nvenc_encoder::err_code_fail;
+	else
+		return dk_nvenc_encoder::err_code_success;
 }
 
 dk_nvenc_encoder::err_code nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * input)
 {
-	dk_nvenc_encoder::err_code_success;
+	return encode(input, NULL);
 }
 
-dk_nvenc_encoder::err_code nvenc_encoder::get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream)
+dk_nvenc_encoder::err_code nvenc_encoder::get_qeueued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream)
 {
-	dk_nvenc_encoder::err_code_success;
+	if (_front)
+	{
+		bitstream->mem_type = dk_nvenc_encoder::memory_type_host;
+		return _front->pop((uint8_t*)bitstream->data, bitstream->data_size, bitstream->timestamp);
+	}
+	else
+	{
+		return dk_nvenc_encoder::err_code_fail;
+	}
 }
 
 dk_nvenc_encoder::err_code nvenc_encoder::encode_async(dk_nvenc_encoder::dk_video_entity_t * input)
 {
-	dk_nvenc_encoder::err_code_success;
+	return dk_nvenc_encoder::err_code_success;
 }
 
 dk_nvenc_encoder::err_code nvenc_encoder::check_encoding_flnish(void)
 {
-	dk_nvenc_encoder::err_code_success;
+	return dk_nvenc_encoder::err_code_success;
 }
 
 NVENCSTATUS nvenc_encoder::initialize_cuda(uint32_t device_id)
@@ -299,14 +496,14 @@ NVENCSTATUS nvenc_encoder::initialize_cuda(uint32_t device_id)
 	int  deviceCount = 0;
 	int  SMminor = 0, SMmajor = 0;
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(WIN64)
 	typedef HMODULE CUDADRIVER;
 #else
 	typedef void *CUDADRIVER;
 #endif
 	CUDADRIVER hHandleDriver = 0;
 
-	result = cuInit(0, __CUDA_API_VERSION, hHandleDriver);
+	result = cuInit(0);// , __CUDA_API_VERSION, hHandleDriver);
 	if (result != CUDA_SUCCESS)
 	{
 		return NV_ENC_ERR_NO_ENCODE_DEVICE;
@@ -372,8 +569,8 @@ NVENCSTATUS nvenc_encoder::initialize_nvenc_encoder(void * device, NV_ENC_DEVICE
 	NVENCSTATUS status = NV_ENC_SUCCESS;
 	MYPROC nvenc_api_create_instance;
 
-#if defined(_WIN32)
-#if defined(_WIN64)
+#if defined(WIN32)
+#if defined(WIN64)
 	_nvenc_instance = ::LoadLibrary(_T("nvEncodeAPI64.dll"));
 #else
 	_nvenc_instance = ::LoadLibrary(_T("nvEncodeAPI.dll"));
@@ -385,7 +582,7 @@ NVENCSTATUS nvenc_encoder::initialize_nvenc_encoder(void * device, NV_ENC_DEVICE
 	if (_nvenc_instance == 0)
 		return NV_ENC_ERR_OUT_OF_MEMORY;
 
-#if defined(_WIN32)
+#if defined(WIN32)
 	nvenc_api_create_instance = (MYPROC)::GetProcAddress(_nvenc_instance, "NvEncodeAPICreateInstance");
 #else
 	nvenc_api_create_instance = (MYPROC)dlsym(_nvenc_instance, "NvEncodeAPICreateInstance");
@@ -406,7 +603,7 @@ NVENCSTATUS nvenc_encoder::initialize_nvenc_encoder(void * device, NV_ENC_DEVICE
 
 	__try
 	{
-		_nvenc_encoder = nullptr;
+		_nvenc_encoder = NULL;
 		status = NvEncOpenEncodeSessionEx(device, type);
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
@@ -419,26 +616,245 @@ NVENCSTATUS nvenc_encoder::initialize_nvenc_encoder(void * device, NV_ENC_DEVICE
 
 NVENCSTATUS nvenc_encoder::release_nvenc_encoder(void)
 {
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+	__try
+	{
+		status = NvEncDestroyEncoder();
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {}
 
+	if (_nvenc_api)
+	{
+		delete _nvenc_api;
+		_nvenc_api = NULL;
+	}
+
+	if (_nvenc_instance)
+	{
+#if defined(WIN32)
+		FreeLibrary(_nvenc_instance);
+#else
+		dlclose(_nvenc_instance);
+#endif
+		_nvenc_instance = NULL;
+	}
+	return status;
 }
 
+NVENCSTATUS nvenc_encoder::allocate_io_buffers(uint32_t width, uint32_t height)
+{
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+	_nvenc_buffer_queue.initialize(_nvenc_buffer, _nvenc_buffer_count);
+	for (uint32_t i = 0; i < _nvenc_buffer_count; i++)
+	{
+		status = NvEncCreateInputBuffer(width, height, &_nvenc_buffer[i].input.input_surface, false);
+		if (status != NV_ENC_SUCCESS)
+			return status;
 
+		switch (_config->cs)
+		{
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_nv12 :
+			_nvenc_buffer[i].input.buffer_format = NV_ENC_BUFFER_FORMAT_NV12_PL;
+			break;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_yv12 :
+			_nvenc_buffer[i].input.buffer_format = NV_ENC_BUFFER_FORMAT_YV12_PL;
+			break;
+		case dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_i420 :
+			_nvenc_buffer[i].input.buffer_format = NV_ENC_BUFFER_FORMAT_IYUV_PL;
+			break;
+		}
+		
+		_nvenc_buffer[i].input.width = width;
+		_nvenc_buffer[i].input.height = height;
+		status = NvEncCreateBitstreamBuffer(BITSTREAM_BUFFER_SIZE, &_nvenc_buffer[i].output.bitstream_buffer);
+		if (status != NV_ENC_SUCCESS)
+			return status;
+		_nvenc_buffer[i].output.bitstream_buffer_size = BITSTREAM_BUFFER_SIZE;
 
+#if defined(WIN32)
+		status = NvEncRegisterAsyncEvent(&_nvenc_buffer[i].output.output_event);
+		if(status!=NV_ENC_SUCCESS)
+			return status;
+		_nvenc_buffer[i].output.wait_event = true;
+#else
+		_nvenc_buffer[i].output.output_event = NULL;
+		_nvenc_buffer[i].output.wait_event = false;
+#endif
+	}
+	_nvenc_eos_output_buffer.eos = true;
 
+#if defined(WIN32)
+	status = NvEncRegisterAsyncEvent(&_nvenc_eos_output_buffer.output_event);
+	if(status!=NV_ENC_SUCCESS)
+		return status;
+#else
+	_nvenc_eos_output_buffer.output_event = NULL;
+#endif
+	return status;
+}
+
+NVENCSTATUS nvenc_encoder::release_io_buffers(void)
+{
+	for (uint32_t i = 0; i < _nvenc_buffer_count; i++)
+	{
+		NvEncDestroyInputBuffer(_nvenc_buffer[i].input.input_surface);
+		_nvenc_buffer[i].input.input_surface = NULL;
+
+		NvEncDestroyBitstreamBuffer(_nvenc_buffer[i].output.bitstream_buffer);
+		_nvenc_buffer[i].output.bitstream_buffer = NULL;
+
+#if defined(WIN32)
+		NvEncUnregisterAsyncEvent(_nvenc_buffer[i].output.output_event);
+		::CloseHandle(_nvenc_buffer[i].output.output_event);
+		_nvenc_buffer[i].output.output_event = NULL;
+#endif
+	}
+
+	if (_nvenc_eos_output_buffer.output_event)
+	{
+#if defined(WIN32)
+		NvEncUnregisterAsyncEvent(_nvenc_eos_output_buffer.output_event);
+		::CloseHandle(_nvenc_eos_output_buffer.output_event);
+		_nvenc_eos_output_buffer.output_event = NULL;
+#endif
+	}
+	return NV_ENC_SUCCESS;
+}
+
+NVENCSTATUS nvenc_encoder::flush_encoder(void)
+{
+	NVENCSTATUS status = NvEncFlushEncoderQueue(_nvenc_eos_output_buffer.output_event);
+	if (status != NV_ENC_SUCCESS)
+		return status;
+
+	nvenc_buffer_t * nvenc_buffer = _nvenc_buffer_queue.get_pending();
+	while (nvenc_buffer)
+	{
+		process_output(nvenc_buffer, NULL, true);
+		nvenc_buffer = _nvenc_buffer_queue.get_pending();
+	}
+
+#if defined(WIN32)
+	if (::WaitForSingleObject(_nvenc_eos_output_buffer.output_event, 500) != WAIT_OBJECT_0)
+		status = NV_ENC_ERR_GENERIC;
+#endif
+	return status;
+}
+
+NVENCSTATUS nvenc_encoder::encode_frame(nvenc_encoder::nvenc_buffer_t * nvenc_buffer, dk_nvenc_encoder::dk_video_entity_t * input)
+{
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+	NV_ENC_PIC_PARAMS nvenc_pic_param;
+
+	memset(&nvenc_pic_param, 0x00, sizeof(nvenc_pic_param));
+	SET_VER(nvenc_pic_param, NV_ENC_PIC_PARAMS);
+
+	nvenc_pic_param.inputBuffer = nvenc_buffer->input.input_surface;
+	nvenc_pic_param.bufferFmt = nvenc_buffer->input.buffer_format;
+	if (!input->width)
+		nvenc_pic_param.inputWidth = _config->width;
+	else
+		nvenc_pic_param.inputWidth = input->width;
+
+	if (!input->height)
+		nvenc_pic_param.inputHeight = _config->height;
+	else
+		nvenc_pic_param.inputHeight = input->height;
+
+	nvenc_pic_param.outputBitstream = nvenc_buffer->output.bitstream_buffer;
+	nvenc_pic_param.completionEvent = nvenc_buffer->output.output_event;
+	if (!input->timestamp)
+		nvenc_pic_param.inputTimeStamp = _nvenc_encode_index;
+	else
+		nvenc_pic_param.inputTimeStamp = input->timestamp;
+
+	if (_config->frame_field_mode == dk_nvenc_encoder::frame_field_mode_frame)
+		nvenc_pic_param.pictureStruct = NV_ENC_PIC_STRUCT_FRAME;
+	else
+		nvenc_pic_param.pictureStruct = NV_ENC_PIC_STRUCT_FIELD_TOP_BOTTOM; //NV_ENC_PIC_STRUCT_FIELD_BOTTOM_TOP
+
+	nvenc_pic_param.qpDeltaMap = 0;
+	nvenc_pic_param.qpDeltaMapSize = 0;
+
+	if (input->gen_spspps)
+		nvenc_pic_param.encodePicFlags |= NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
+	if (input->gen_idr)
+		nvenc_pic_param.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR;
+
+	status = NvEncEncodePicture(&nvenc_pic_param);
+	if ((status != NV_ENC_SUCCESS) && (status != NV_ENC_ERR_NEED_MORE_INPUT))
+		return status;
+	_nvenc_encode_index++;
+	return NV_ENC_SUCCESS;
+}
+
+NVENCSTATUS nvenc_encoder::process_output(const nvenc_encoder::nvenc_buffer_t * nvenc_buffer, dk_nvenc_encoder::dk_video_entity_t * bitstream, bool flush)
+{
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+	if (!nvenc_buffer->output.bitstream_buffer && !nvenc_buffer->output.eos)
+		return NV_ENC_ERR_INVALID_PARAM;
+
+	if (nvenc_buffer->output.wait_event)
+	{
+		if (nvenc_buffer->output.output_event)
+			return NV_ENC_ERR_INVALID_PARAM;
+
+#if defined(WIN32)
+		::WaitForSingleObject(nvenc_buffer->output.output_event, INFINITE);
+#endif
+	}
+
+	if (nvenc_buffer->output.eos)
+		return NV_ENC_SUCCESS;
+
+	status = NV_ENC_SUCCESS;
+	NV_ENC_LOCK_BITSTREAM lock_bitstream;
+	memset(&lock_bitstream, 0x00, sizeof(lock_bitstream));
+	SET_VER(lock_bitstream, NV_ENC_LOCK_BITSTREAM);
+	lock_bitstream.outputBitstream = nvenc_buffer->output.bitstream_buffer;
+	lock_bitstream.doNotWait = false;
+
+	status = NvEncLockBitstream(&lock_bitstream);
+	if (status == NV_ENC_SUCCESS)
+	{
+		if (!flush)
+		{
+			if (bitstream)
+			{
+				if (bitstream->mem_type != dk_nvenc_encoder::memory_type_host)
+					assert(0);
+				if (lock_bitstream.bitstreamSizeInBytes > bitstream->data_capacity)
+					bitstream->data_size = bitstream->data_capacity;
+				else
+					bitstream->data_size = lock_bitstream.bitstreamSizeInBytes;
+				bitstream->timestamp = lock_bitstream.outputTimeStamp;
+				memmove(bitstream->data, lock_bitstream.bitstreamBufferPtr, bitstream->data_size);
+			}
+			else
+			{
+				if (_front)
+				{
+					_front->push((uint8_t*)lock_bitstream.bitstreamBufferPtr, lock_bitstream.bitstreamSizeInBytes, lock_bitstream.outputTimeStamp);
+				}
+			}
+		}
+		status = NvEncUnlockBitstream(nvenc_buffer->output.bitstream_buffer);
+	}
+	return status;
+}
 
 NVENCSTATUS nvenc_encoder::NvEncInitializeEncoder(NV_ENC_INITIALIZE_PARAMS * params)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
 	status = _nvenc_api->nvEncInitializeEncoder(_nvenc_encoder, params);
 	return status;
-
 }
 
-NVENCSTATUS nvenc_encoder::NvEncOpenEncodeSession(void* device, uint32_t deviceType)
+NVENCSTATUS nvenc_encoder::NvEncOpenEncodeSession(void * device, uint32_t device_type)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
 
-	status = _nvenc_api->nvEncOpenEncodeSession(device, deviceType, &_nvenc_encoder);
+	status = _nvenc_api->nvEncOpenEncodeSession(device, device_type, &_nvenc_encoder);
 	if (status != NV_ENC_SUCCESS)
 	{
 		assert(0);
@@ -447,7 +863,7 @@ NVENCSTATUS nvenc_encoder::NvEncOpenEncodeSession(void* device, uint32_t deviceT
 	return status;
 }
 
-NVENCSTATUS nvenc_encoder::NvEncGetEncodeGUIDCount(uint32_t* encodeGUIDCount)
+NVENCSTATUS nvenc_encoder::NvEncGetEncodeGUIDCount(uint32_t * encodeGUIDCount)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
 
@@ -613,7 +1029,6 @@ NVENCSTATUS nvenc_encoder::NvEncDestroyInputBuffer(NV_ENC_INPUT_PTR inputBuffer)
 			assert(0);
 		}
 	}
-
 	return status;
 }
 
@@ -919,6 +1334,27 @@ NVENCSTATUS nvenc_encoder::NvEncUnregisterResource(NV_ENC_REGISTERED_PTR registe
 		assert(0);
 	}
 
+	return status;
+}
+
+NVENCSTATUS nvenc_encoder::NvEncFlushEncoderQueue(void * hEOSEvent)
+{
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+	if (!_nvenc_encoder)
+		return status;
+	NV_ENC_PIC_PARAMS nvenc_pic_param;
+	memset(&nvenc_pic_param, 0, sizeof(nvenc_pic_param));
+	SET_VER(nvenc_pic_param, NV_ENC_PIC_PARAMS);
+	nvenc_pic_param.encodePicFlags = NV_ENC_PIC_FLAG_EOS;
+	nvenc_pic_param.completionEvent = hEOSEvent;
+	status = _nvenc_api->nvEncEncodePicture(_nvenc_encoder, &nvenc_pic_param);
+	return status;
+}
+
+NVENCSTATUS nvenc_encoder::NvEncEncodePicture(NV_ENC_PIC_PARAMS * pic_params)
+{
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+	status = _nvenc_api->nvEncEncodePicture(_nvenc_encoder, pic_params);
 	return status;
 }
 /*

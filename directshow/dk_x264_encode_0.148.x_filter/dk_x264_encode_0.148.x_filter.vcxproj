@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{54747CD9-A165-4B29-9994-FACCCF61312D}</ProjectGuid>
+    <ProjectGuid>{A4122B87-BD57-4A80-AD47-73705B48AE3A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>dk_nvenc_encoder_601</RootNamespace>
+    <RootNamespace>dk_x264_encode_filter</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -31,7 +31,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -44,9 +43,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)x86\debug\bin\</OutDir>
     <IntDir>$(SolutionDir)x86\debug\intermediate\$(ProjectName)\</IntDir>
+    <TargetExt>.ax</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\release\bin\</OutDir>
+    <IntDir>$(SolutionDir)x86\release\intermediate\$(ProjectName)\</IntDir>
+    <TargetExt>.ax</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -54,16 +57,21 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DK_X264_ENCODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\..\..\dk_common\include;..\..\..\dk_video_base\include;..\..\..\..\buffering\dk_media_buffering\include;$(DXSDK_DIR)Include;cuda;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\baseclasses;..\..\library\video\dk_video_base\include;..\..\library\video\codec\x264\dk_x264_encoder_0.148.x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3d10.lib;d3d11.lib;dxguid.lib;dxgi.lib;dxva2.lib;cudart.lib;cuda.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;dk_x264_encoder_0.148.x.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dk_x264_encode_filter.def</ModuleDefinitionFile>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -73,31 +81,41 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DK_NVENC_ENCODER_601_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DK_X264_ENCODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\baseclasses;..\..\dk_video_base\include;..\..\library\video\codec\x264\dk_x264_encoder_0.148.x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>strmbase.lib;strmiids.lib;winmm.lib;dk_x264_encoder_0.148.x.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dk_x264_encode_filter.def</ModuleDefinitionFile>
+      <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h" />
-    <ClInclude Include="..\..\..\dk_video_base\include\dk_video_base.h" />
-    <ClInclude Include="cuda\nvEncodeAPI.h" />
-    <ClInclude Include="include\dk_nvenc_encoder.h" />
-    <ClInclude Include="include\nvenc_encoder.h" />
+    <ClInclude Include="dk_x264_encode_filter.h" />
+    <ClInclude Include="dk_x264_encode_filter_properties.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp" />
-    <ClCompile Include="..\..\..\dk_video_base\source\dk_video_base.cpp" />
-    <ClCompile Include="source\dk_nvenc_encoder.cpp" />
-    <ClCompile Include="source\nvenc_encoder.cpp" />
+    <ClCompile Include="dk_x264_encode_filter.cpp" />
+    <ClCompile Include="dk_x264_encode_filter_properties.cpp" />
+    <ClCompile Include="setup.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dk_x264_encode_filter.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dk_x264_encode_filter.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.targets" />
   </ImportGroup>
 </Project>
