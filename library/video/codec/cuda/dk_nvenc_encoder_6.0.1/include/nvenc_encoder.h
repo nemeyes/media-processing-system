@@ -33,6 +33,19 @@ public:
 		void *					nv_registered_resource;
 		NV_ENC_INPUT_PTR		input_surface;
 		NV_ENC_BUFFER_FORMAT	buffer_format;
+		_nvenc_input_buffer_t(void)
+			: width(0)
+			, height(0)
+			, nv12_surface(NULL)
+			, nv12_device_ptr(NULL)
+			, nv12_stride(0)
+			, nv12_temp_device_ptr(NULL)
+			, nv12_temp_stride(NULL)
+			, nv_registered_resource(NULL)
+			, input_surface(NULL)
+			, buffer_format(NV_ENC_BUFFER_FORMAT_YV12)
+		{}
+
 	} nvenc_input_buffer_t;
 
 	typedef struct _nvenc_output_buffer_t
@@ -42,6 +55,14 @@ public:
 		HANDLE					output_event;
 		bool					wait_event;
 		bool					eos;
+		_nvenc_output_buffer_t(void)
+			: bitstream_buffer_size(0)
+			, bitstream_buffer(NULL)
+			, output_event(INVALID_HANDLE_VALUE)
+			, wait_event(false)
+			, eos(false)
+		{}
+
 	} nvenc_output_buffer_t;
 
 	typedef struct _nvenc_buffer_t
@@ -100,6 +121,13 @@ private:
 	NVENCSTATUS encode_frame(nvenc_buffer_t * nvenc_buffer, dk_nvenc_encoder::dk_video_entity_t * input);
 	NVENCSTATUS process_output(const nvenc_buffer_t * nvenc_buffer, dk_nvenc_encoder::dk_video_entity_t * bitstream, bool flush=false);
 
+	NVENCSTATUS convert_yv12pitch_to_nv12(uint8_t * src_y, uint8_t * src_u, uint8_t * src_v,
+										  uint8_t * dst_y, uint8_t * dst_u,
+										  int32_t width, int32_t height, uint32_t src_stride, uint32_t dst_stride);
+	NVENCSTATUS convert_yv12pitch_to_yv12(uint8_t * src_y, uint8_t * src_u, uint8_t * src_v, 
+										  uint8_t * dst_y, uint8_t * dst_u, 
+										  int32_t width, int32_t height, uint32_t src_stride, uint32_t dst_stride);
+
 private:
 	NVENCSTATUS NvEncInitializeEncoder(NV_ENC_INITIALIZE_PARAMS * params);
 	NVENCSTATUS NvEncOpenEncodeSession(void* device, uint32_t device_type);
@@ -113,7 +141,7 @@ private:
 	NVENCSTATUS NvEncGetEncodePresetCount(GUID encodeGUID, uint32_t* encodePresetGUIDCount);
 	NVENCSTATUS NvEncGetEncodePresetGUIDs(GUID encodeGUID, GUID* presetGUIDs, uint32_t guidArraySize, uint32_t* encodePresetGUIDCount);
 	NVENCSTATUS NvEncGetEncodePresetConfig(GUID encodeGUID, GUID  presetGUID, NV_ENC_PRESET_CONFIG* presetConfig);
-	NVENCSTATUS NvEncCreateInputBuffer(uint32_t width, uint32_t height, void** inputBuffer, uint32_t isYuv444);
+	NVENCSTATUS NvEncCreateInputBuffer(uint32_t width, uint32_t height, NV_ENC_BUFFER_FORMAT fmt, void ** input_buffer);
 	NVENCSTATUS NvEncDestroyInputBuffer(NV_ENC_INPUT_PTR inputBuffer);
 	NVENCSTATUS NvEncCreateBitstreamBuffer(uint32_t size, void** bitstreamBuffer);
 	NVENCSTATUS NvEncDestroyBitstreamBuffer(NV_ENC_OUTPUT_PTR bitstreamBuffer);
@@ -165,6 +193,10 @@ private:
 	nvenc_buffer_t				_nvenc_buffer[MAX_ENCODE_QUEUE];
 	nvenc_queue<nvenc_buffer_t> _nvenc_buffer_queue;
 	nvenc_output_buffer_t		_nvenc_eos_output_buffer;
+
+#if defined(_DEBUG)
+	HANDLE _file;
+#endif
 
 private:
 	IDirectXVideoProcessorService * _dxva2_video_process_services;

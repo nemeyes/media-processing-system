@@ -6,18 +6,17 @@
 #define DEFAULT_I_QOFFSET 0.f
 #define DEFAULT_B_QOFFSET 1.25f
 
-
 dk_nvenc_encoder::_configuration_t::_configuration_t(void)
 	: device_id(0)
-	, max_height(0)
-	, max_width(0)
-	, preset(dk_nvenc_encoder::preset_default)
-	, rc_mode(dk_nvenc_encoder::rate_control_constant_qp)
+	, max_height(1080)
+	, max_width(1920)
+	, preset(dk_nvenc_encoder::preset_high_quality)
+	, rc_mode(dk_nvenc_encoder::rate_control_cbr)
 	, frame_field_mode(dk_nvenc_encoder::frame_field_mode_frame)
 	, motioin_vector_precision(dk_nvenc_encoder::motion_vector_precision_quarter_pel)
 	, encode_level(dk_nvenc_encoder::encode_level_autoselect)
-	, vbv_max_bitrate(0)
-	, vbv_size(0)
+	, vbv_max_bitrate(4000000)
+	, vbv_size(4000000)
 	, qp(28)
 	, i_quant_factor(DEFAULT_I_QFACTOR)
 	, b_quant_factor(DEFAULT_B_QFACTOR)

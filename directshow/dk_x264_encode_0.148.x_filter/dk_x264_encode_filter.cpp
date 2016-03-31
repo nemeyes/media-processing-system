@@ -367,6 +367,9 @@ HRESULT dk_x264_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 	hr = dst->GetPointer(&output_buffer);
 	if (FAILED(hr))
 		return S_OK;
+	output_data_size = dst->GetSize();
+	if (output_data_size <= 0)
+		return S_OK;
 
 	REFERENCE_TIME start_time, end_time;
 	if (SUCCEEDED(src->GetTime(&start_time, &end_time)))

@@ -7,7 +7,7 @@ dk_yuvsource_filter::dk_yuvsource_filter(IUnknown * unk, HRESULT * hr)
 	: CSource(g_szFilterName, unk, CLSID_DK_YUVSOURCE_FILTER)
 {
 	HRESULT hr1;
-	new dk_yuvsource_stream(&hr1, this, TEXT("input.yuv"), 1280, 720, 15);
+	new dk_yuvsource_stream(&hr1, this, TEXT("input.yuv"), 1280, 720, 30);
 }
 
 dk_yuvsource_filter::~dk_yuvsource_filter(void)
