@@ -5,7 +5,7 @@
 
 #if defined(_WIN32)
 # include <windows.h>
-# if defined(EXPORT_LIB)
+# if defined(EXPORT_RECORD_MODULE_LIB)
 #  define EXP_DLL __declspec(dllexport)
 # else
 #  define EXP_DLL __declspec(dllimport)

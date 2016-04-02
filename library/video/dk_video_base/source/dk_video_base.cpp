@@ -164,6 +164,7 @@ dk_video_encoder::_configuration_t::_configuration_t(void)
 	, fps(30)
 	, keyframe_interval(2)
 	, numb(0)
+	, entropy_coding_mode(dk_video_encoder::entropy_coding_mode_t::entropy_coding_mode_cabac)
 {}
 
 dk_video_encoder::_configuration_t::_configuration_t(const dk_video_encoder::_configuration_t & clone)
@@ -178,6 +179,7 @@ dk_video_encoder::_configuration_t::_configuration_t(const dk_video_encoder::_co
 	fps = clone.fps;
 	keyframe_interval = clone.keyframe_interval;
 	numb = clone.numb;
+	entropy_coding_mode = clone.entropy_coding_mode;
 }
 
 dk_video_encoder::_configuration_t & dk_video_encoder::_configuration_t::operator=(const dk_video_encoder::_configuration_t & clone)
@@ -192,6 +194,7 @@ dk_video_encoder::_configuration_t & dk_video_encoder::_configuration_t::operato
 	fps = clone.fps;
 	keyframe_interval = clone.keyframe_interval;
 	numb = clone.numb;
+	entropy_coding_mode = clone.entropy_coding_mode;
 	return (*this);
 }
 

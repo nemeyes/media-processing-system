@@ -214,7 +214,7 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 	{
 		if (saved_sps_size < 1 || !saved_sps)
 		{
-			write_bitstream(dk_record_module::nalu_type_sps, data, data_size, current_time);
+			//write_bitstream(dk_record_module::nalu_type_sps, data, data_size, current_time);
 			set_sps(data, data_size);
 			_recv_idr = false;
 		}
@@ -222,7 +222,7 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 		{
 			if (memcmp(saved_sps, data, saved_sps_size))
 			{
-				write_bitstream(dk_record_module::nalu_type_sps, data, data_size, current_time);
+				//write_bitstream(dk_record_module::nalu_type_sps, data, data_size, current_time);
 				set_sps(data, data_size);
 				_recv_idr = false;
 			}
@@ -232,7 +232,7 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 	{
 		if (saved_pps_size < 1 || !saved_pps)
 		{
-			write_bitstream(dk_record_module::nalu_type_pps, data, data_size, current_time);
+			//write_bitstream(dk_record_module::nalu_type_pps, data, data_size, current_time);
 			set_pps(data, data_size);
 			_recv_idr = false;
 		}
@@ -240,7 +240,7 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 		{
 			if (memcmp(saved_pps, data, saved_pps_size))
 			{
-				write_bitstream(dk_record_module::nalu_type_pps, data, data_size, current_time);
+				//write_bitstream(dk_record_module::nalu_type_pps, data, data_size, current_time);
 				set_pps(data, data_size);
 				_recv_idr = false;
 			}
@@ -250,6 +250,14 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 	{
 		if (!_recv_idr)
 			_recv_idr = true;
+
+		saved_sps = get_sps(saved_sps_size);
+		saved_pps = get_pps(saved_pps_size);
+		if((saved_sps && saved_sps_size>0) && (saved_pps && saved_pps_size>0))
+		{
+			write_bitstream(dk_record_module::nalu_type_sps, saved_sps, saved_sps_size, current_time);
+			write_bitstream(dk_record_module::nalu_type_pps, saved_pps, saved_pps_size, current_time);
+		}
 		write_bitstream(dk_record_module::nalu_type_idr, data, data_size, current_time);
 	}
 	else if (_recv_idr)
@@ -262,6 +270,7 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 
 void record_module::seek(long long seek_timestamp)
 {
+	_read_index = 0;
 	uint32_t seek_index = 2 * sizeof(long long);
 
 	void * buf = nullptr;
@@ -273,8 +282,11 @@ void record_module::seek(long long seek_timestamp)
 
 	uint32_t next_idr_index = 0;
 	long long next_idr_timestamp = 0;
+
 	do
 	{
+		record_module::set_file_position(_file, seek_index, FILE_BEGIN);
+
 		uint8_t nalu_type = 0;
 		long long nalu_timestamp = 0;
 		uint32_t nalu_size = 0;
@@ -309,14 +321,14 @@ void record_module::seek(long long seek_timestamp)
 			last_idr_timestamp = nalu_timestamp;
 		}*/
 
-		if (dk_record_module::nalu_type_idr == nalu_type)
+		if (nalu_type == dk_record_module::nalu_type_sps)
 		{
-			if (nalu_timestamp == seek_timestamp)
+			if (nalu_timestamp >= seek_timestamp)
 			{
 				_read_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
 				break;
 			}
-			else if (nalu_timestamp < seek_timestamp)
+			/*else if (nalu_timestamp < seek_timestamp)
 			{
 				prev_idr_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
 				prev_idr_timestamp = nalu_timestamp;
@@ -326,10 +338,11 @@ void record_module::seek(long long seek_timestamp)
 				next_idr_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
 				next_idr_timestamp = nalu_timestamp;
 				break;
-			}
+			}*/
 		}
 	} while (1);
 
+	/*
 	if (_read_index == 0)
 	{
 		if ((seek_timestamp - prev_idr_timestamp) <= (next_idr_timestamp - seek_timestamp))
@@ -341,6 +354,7 @@ void record_module::seek(long long seek_timestamp)
 			_read_index = next_idr_index;
 		}
 	}
+	*/
 }
 
 void record_module::read(dk_record_module::nalu_type & type, uint8_t * data, size_t & data_size, long long & timestamp)

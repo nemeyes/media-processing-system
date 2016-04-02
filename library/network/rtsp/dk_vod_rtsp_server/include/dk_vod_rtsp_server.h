@@ -15,14 +15,14 @@
 #endif
 #endif
 
-
+class RTSPServer;
 class EXP_CLASS dk_vod_rtsp_server
 {
 public:
 	dk_vod_rtsp_server(void);
 	virtual ~dk_vod_rtsp_server(void);
 
-	void start(void);
+	void start(int32_t port_number, char * username, char * password);
 	void stop(void);
 
 private:
@@ -30,8 +30,14 @@ private:
 	void process(void);
 
 private:
+	RTSPServer * _rtsp_server;
+
 	bool _bstop;
 	HANDLE _thread;
+
+	char _username[100];
+	char _password[100];
+	int32_t _port_number;
 };
 
 

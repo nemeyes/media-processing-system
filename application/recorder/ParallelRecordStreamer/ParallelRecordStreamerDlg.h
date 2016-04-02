@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <dk_vod_rtsp_server.h>
-
 // CParallelRecordStreamerDlg dialog
 #define TRAY_NOTIFY        (WM_APP + 100)
 class CParallelRecordStreamerDlg : public CDialogEx
@@ -19,10 +17,17 @@ public:
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-	LRESULT OnTrayIconClick(WPARAM wParam, LPARAM lParam);
-private:
-	dk_vod_rtsp_server _server;
 
+private:
+	void Position2Center(void);
+	void StartStreaming(void);
+	void StopStreaming(void);
+
+	LRESULT OnTrayIconClick(WPARAM wParam, LPARAM lParam);
+	void EnableTray(BOOL enable);
+
+private:
+	BOOL _is_streaming;
 // Implementation
 protected:
 	HICON m_hIcon;
@@ -37,4 +42,8 @@ public:
 	afx_msg void OnBnClickedButtonTray();
 	afx_msg void OnBnClickedButtonStart();
 	afx_msg void OnBnClickedButtonStop();
+	afx_msg void OnTrayStartStreaming();
+	afx_msg void OnTrayStopStreaming();
+	afx_msg void OnTrayExit();
+	virtual BOOL DestroyWindow();
 };

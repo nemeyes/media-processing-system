@@ -2,11 +2,13 @@
 
 #define DEFAULT_FILE_CHUNK_SIZE 1024*1024*64
 
-dk_rtsp_recorder::dk_rtsp_recorder(void)
-	: _chunk_size_bytes(DEFAULT_FILE_CHUNK_SIZE)
+dk_rtsp_recorder::dk_rtsp_recorder(int32_t chunk_size_mb)
+	: _chunk_size_bytes(chunk_size_mb*1024*1024)
 {
 	memset(_storage, 0x00, sizeof(_storage));
 	memset(_uuid, 0x00, sizeof(_uuid));
+	clear_sps();
+	clear_pps();
 }
 
 dk_rtsp_recorder::~dk_rtsp_recorder(void)
@@ -78,6 +80,8 @@ void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, u
 			}
 		} while (0);
 #else
+		set_sps(sps, spssize);
+		set_pps(pps, ppssize);
 		_file_recorder = new dk_record_module(_storage, _uuid);
 		_file_recorder->write(sps, spssize, timestamp);
 		_file_recorder->write(pps, ppssize, timestamp);
@@ -111,13 +115,58 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, false);
 		}
 #else
+		if (((data[4] & 0x1F) == 0x07)) //sps
+		{
+			size_t saved_sps_size = 0;
+			uint8_t * saved_sps = get_sps(saved_sps_size);
+			if (saved_sps_size < 1 || !saved_sps)
+			{
+				set_sps((uint8_t*)data, data_size);
+			}
+			else
+			{
+				if (memcmp(saved_sps, data, saved_sps_size))
+				{
+					set_sps((uint8_t*)data, data_size);
+				}
+			}
+		}
+		if (((data[4] & 0x1F) == 0x08)) //pps
+		{
+			size_t saved_pps_size = 0;
+			uint8_t * saved_pps = get_sps(saved_pps_size);
+			if (saved_pps_size < 1 || !saved_pps)
+			{
+				set_pps((uint8_t*)data, data_size);
+			}
+			else
+			{
+				if (memcmp(saved_pps, data, saved_pps_size))
+				{
+					set_pps((uint8_t*)data, data_size);
+				}
+			}
+		}
+
 		long long saved_chunk_size_bytes = _file_recorder->get_file_size();
 		if ((saved_chunk_size_bytes >= _chunk_size_bytes) && ((data[4] & 0x1F) == 0x05))
 		{
 			delete _file_recorder;
 			_file_recorder = nullptr;
-
 			_file_recorder = new dk_record_module(_storage, _uuid);
+
+			size_t saved_sps_size = 0;
+			uint8_t * saved_sps = get_sps(saved_sps_size);
+			if (saved_sps_size > 0 && saved_sps)
+			{
+				_file_recorder->write(saved_sps, saved_sps_size, timestamp);
+			}
+			size_t saved_pps_size = 0;
+			uint8_t * saved_pps = get_pps(saved_pps_size);
+			if (saved_pps_size > 0 && saved_pps)
+			{
+				_file_recorder->write(saved_pps, saved_pps_size, timestamp);
+			}
 		}
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
 #endif
@@ -580,4 +629,42 @@ void dk_rtsp_recorder::make_adts_header(uint8_t* data, int size, char audioObjec
 	bv.putBits(7 + size, 13);
 	bv.putBits(0x7FF, 11);
 	bv.putBits(0, 2);
+}
+
+uint8_t * dk_rtsp_recorder::get_sps(size_t & sps_size)
+{
+	sps_size = _sps_size;
+	return _sps;
+}
+
+uint8_t * dk_rtsp_recorder::get_pps(size_t & pps_size)
+{
+	pps_size = _pps_size;
+	return _pps;
+}
+
+void dk_rtsp_recorder::set_sps(uint8_t * sps, size_t sps_size)
+{
+	memset(_sps, 0x00, sizeof(_sps));
+	memcpy(_sps, sps, sps_size);
+	_sps_size = sps_size;
+}
+
+void dk_rtsp_recorder::set_pps(uint8_t * pps, size_t pps_size)
+{
+	memset(_pps, 0x00, sizeof(_pps));
+	memcpy(_pps, pps, pps_size);
+	_pps_size = pps_size;
+}
+
+void dk_rtsp_recorder::clear_sps(void)
+{
+	memset(_sps, 0x00, sizeof(_sps));
+	_sps_size = 0;
+}
+
+void dk_rtsp_recorder::clear_pps(void)
+{
+	memset(_pps, 0x00, sizeof(_pps));
+	_pps_size = 0;
 }

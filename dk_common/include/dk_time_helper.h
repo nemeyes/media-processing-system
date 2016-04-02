@@ -148,12 +148,12 @@ public:
 		memcpy(seek_second, time + index, 2);
 
 		int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-		sscanf(seek_year, "%d", &year);
-		sscanf(seek_month, "%d", &month);
-		sscanf(seek_day, "%d", &day);
-		sscanf(seek_hour, "%d", &hour);
-		sscanf(seek_minute, "%d", &minute);
-		sscanf(seek_second, "%d", &second);
+		sscanf_s(seek_year, "%d", &year);
+		sscanf_s(seek_month, "%d", &month);
+		sscanf_s(seek_day, "%d", &day);
+		sscanf_s(seek_hour, "%d", &hour);
+		sscanf_s(seek_minute, "%d", &minute);
+		sscanf_s(seek_second, "%d", &second);
 
 		SYSTEMTIME local_time = { 0 };
 		local_time.wYear = year;
@@ -194,12 +194,12 @@ public:
 		index += 2;
 		memcpy(seek_second, time + index, 2);
 
-		sscanf(seek_year, "%d", &year);
-		sscanf(seek_month, "%d", &month);
-		sscanf(seek_day, "%d", &day);
-		sscanf(seek_hour, "%d", &hour);
-		sscanf(seek_minute, "%d", &minute);
-		sscanf(seek_second, "%d", &second);
+		sscanf_s(seek_year, "%d", &year);
+		sscanf_s(seek_month, "%d", &month);
+		sscanf_s(seek_day, "%d", &day);
+		sscanf_s(seek_hour, "%d", &hour);
+		sscanf_s(seek_minute, "%d", &minute);
+		sscanf_s(seek_second, "%d", &second);
 
 		return true;
 	}

@@ -39,6 +39,9 @@
     <ClInclude Include="..\..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h">
       <Filter>buffering</Filter>
     </ClInclude>
+    <ClInclude Include="cuda\dynlink_cuda.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_nvenc_encoder.cpp">
@@ -52,6 +55,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp">
       <Filter>buffering</Filter>
+    </ClCompile>
+    <ClCompile Include="cuda\dynlink_cuda.cpp">
+      <Filter>cuda</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

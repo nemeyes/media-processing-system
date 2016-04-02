@@ -57,7 +57,7 @@ bool dk_recorder_service::start_recording(void)
 	if (::GetFileAttributesA(config_path.c_str()) == INVALID_FILE_ATTRIBUTES)
 		return false;
 
-	std::string config_filepath = config_path + "mediasources.xml";
+	std::string config_filepath = config_path + "record_server.xml";
 	if (::GetFileAttributesA(config_filepath.c_str()) == INVALID_FILE_ATTRIBUTES)
 		return false;
 
@@ -67,10 +67,19 @@ bool dk_recorder_service::start_recording(void)
 
 	TiXmlDocument document;
 	document.LoadFile(config_filepath.c_str());
-	TiXmlElement * root_elem = document.FirstChildElement("mediasources");
+
+	TiXmlElement * root_elem = document.FirstChildElement("record_server");
 	if (!root_elem)
 		return false;
-	TiXmlElement * sub_elem = root_elem->FirstChildElement("mediasource");
+
+	TiXmlElement * ms_elem = root_elem->FirstChildElement("mediasources");
+	if (!ms_elem)
+		return false;
+
+	const char * str_chunk_size = ms_elem->Attribute("chunk_size");
+	int32_t chunk_size_in_mb = atoi(str_chunk_size);
+
+	TiXmlElement * sub_elem = ms_elem->FirstChildElement("mediasource");
 	while (sub_elem)
 	{
 		TiXmlElement * url_elem = sub_elem->FirstChildElement("url");
@@ -91,7 +100,7 @@ bool dk_recorder_service::start_recording(void)
 			strncpy_s(recv_info.username, username, sizeof(recv_info.username));
 		if (password && strlen(password)>0)
 			strncpy_s(recv_info.password, password, sizeof(recv_info.password));
-		recv_info.recorder = new dk_rtsp_recorder();
+		recv_info.recorder = new dk_rtsp_recorder(chunk_size_in_mb);
 		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, dk_rtsp_recorder::rtp_over_tcp, dk_rtsp_recorder::recv_video, storage_path.c_str(), recv_info.uuid);
 		_receivers.push_back(recv_info);
 

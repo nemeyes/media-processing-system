@@ -73,6 +73,13 @@ public:
 		static const int32_t submedia_type_nv12 = 20;
 	} submedia_type_t;
 
+	typedef struct EXP_CLASS _entropy_coding_mode_t
+	{
+		static const int32_t unknown_entropy_coding_mode = -1;
+		static const int32_t entropy_coding_mode_cabac = 0;
+		static const int32_t entropy_coding_mode_cavlc = 1;
+	} entropy_coding_mode_t;
+
 	typedef enum _memory_type
 	{
 		memory_type_host = 0,
@@ -253,6 +260,7 @@ public:
 		int32_t fps;
 		int32_t keyframe_interval;
 		int32_t numb;
+		int32_t entropy_coding_mode;
 		_configuration_t(void);
 		_configuration_t(const _configuration_t & clone);
 		_configuration_t & operator=(const _configuration_t & clone);

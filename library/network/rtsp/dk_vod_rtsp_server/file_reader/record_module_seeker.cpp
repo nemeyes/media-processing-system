@@ -10,7 +10,9 @@ record_module_seeker::record_module_seeker(void)
 
 record_module_seeker::~record_module_seeker(void)
 {
-
+	if (_record_module)
+		delete _record_module;
+	_record_module = nullptr;
 }
 
 bool record_module_seeker::seek(const char * single_media_source_path, long long seek_time)

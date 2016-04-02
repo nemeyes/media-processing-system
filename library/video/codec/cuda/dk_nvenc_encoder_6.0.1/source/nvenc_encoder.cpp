@@ -174,7 +174,6 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 		NV_ENC_CONFIG nvenc_config;
 		memset(&nvenc_config, 0x00, sizeof(nvenc_config));
 		SET_VER(nvenc_config, NV_ENC_CONFIG);
-		nvenc_initialize_param.encodeConfig = &nvenc_config;
 
 		if (((_config->codec >= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264) && (_config->codec <= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_ep)) ||
 			((_config->codec >= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_sp) && (_config->codec <= dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_h264_chp)))
@@ -263,6 +262,7 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 		nvenc_initialize_param.enablePTD = 1;
 		nvenc_initialize_param.reportSliceOffsets = 0;
 		nvenc_initialize_param.enableSubFrameWrite = 0;
+		nvenc_initialize_param.encodeConfig = &nvenc_config;
 
 		// apply preset
 		NV_ENC_PRESET_CONFIG nvenc_preset_config;
@@ -371,19 +371,31 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 
 		if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_H264_GUID)
 		{
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.enableIntraRefresh = 1;
+			//nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.enableIntraRefresh = 1;
 			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.chromaFormatIDC = 1;
 			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.idrPeriod = nvenc_initialize_param.encodeConfig->gopLength;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.maxNumRefFrames = 16;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.bdirectMode = nvenc_initialize_param.encodeConfig->frameIntervalP > 1 ? NV_ENC_H264_BDIRECT_MODE_TEMPORAL : NV_ENC_H264_BDIRECT_MODE_DISABLE;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.entropyCodingMode = NV_ENC_H264_ENTROPY_CODING_MODE(_config->encode_level);
+			//nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.maxNumRefFrames = 16;
 			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.adaptiveTransformMode = NV_ENC_H264_ADAPTIVE_TRANSFORM_ENABLE;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.fmoMode = NV_ENC_H264_FMO_DISABLE;
+			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.fmoMode = NV_ENC_H264_FMO_AUTOSELECT;// NV_ENC_H264_FMO_DISABLE;
+			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.bdirectMode = NV_ENC_H264_BDIRECT_MODE_AUTOSELECT;//nvenc_initialize_param.encodeConfig->frameIntervalP > 1 ? NV_ENC_H264_BDIRECT_MODE_TEMPORAL : NV_ENC_H264_BDIRECT_MODE_DISABLE;
+			switch (_config->entropy_coding_mode)
+			{
+			case dk_nvenc_encoder::entropy_coding_mode_t::unknown_entropy_coding_mode :
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.entropyCodingMode = NV_ENC_H264_ENTROPY_CODING_MODE_AUTOSELECT;
+				break;
+			case dk_nvenc_encoder::entropy_coding_mode_t::entropy_coding_mode_cabac :
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.entropyCodingMode = NV_ENC_H264_ENTROPY_CODING_MODE_CABAC;
+				break;
+			case dk_nvenc_encoder::entropy_coding_mode_t::entropy_coding_mode_cavlc:
+				nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.entropyCodingMode = NV_ENC_H264_ENTROPY_CODING_MODE_CAVLC;
+				break;
+			}
 			//nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.disableSPSPPS = 1;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.repeatSPSPPS = 1;
+			//nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.repeatSPSPPS = 1;
 			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.sliceMode = 0;
 			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.sliceModeData = 0;
-			nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.enableVFR = 0;
+			//nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.enableVFR = 0;
+			//nvenc_initialize_param.encodeConfig->encodeCodecConfig.h264Config.level = NV_ENC_LEVEL(_config->encode_level);
 		}
 		else if (nvenc_initialize_param.encodeGUID == NV_ENC_CODEC_HEVC_GUID)
 		{
@@ -432,7 +444,25 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 			break;
 		}
 
-		_nvenc_buffer_count = _config->numb + 4;
+
+		if (_config->numb > 0)
+		{
+			_nvenc_buffer_count = _config->numb + 4; // min buffers is numb + 1 + 3 pipelining
+		}
+		else
+		{
+			int32_t numMBs = ((_config->max_height + 15) >> 4) * ((_config->max_width + 15) >> 4);
+			int32_t NumIOBuffers;
+			if (numMBs >= 32768) //4kx2k
+				NumIOBuffers = MAX_ENCODE_QUEUE / 8;
+			else if (numMBs >= 16384) // 2kx2k
+				NumIOBuffers = MAX_ENCODE_QUEUE / 4;
+			else if (numMBs >= 8160) // 1920x1080
+				NumIOBuffers = MAX_ENCODE_QUEUE / 2;
+			else
+				NumIOBuffers = MAX_ENCODE_QUEUE;
+			_nvenc_buffer_count = NumIOBuffers;
+		}
 		status = allocate_io_buffers(_config->width, _config->height);
 
 	} while(0);
@@ -534,7 +564,14 @@ NVENCSTATUS nvenc_encoder::initialize_cuda(uint32_t device_id)
 	int  deviceCount = 0;
 	int  SMminor = 0, SMmajor = 0;
 
-	result = cuInit(0);// , __CUDA_API_VERSION, hHandleDriver);
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+		typedef HMODULE CUDADRIVER;
+#else
+		typedef void *CUDADRIVER;
+#endif
+
+	CUDADRIVER driver = 0;
+	result = cuInit(0, __CUDA_API_VERSION, driver);
 	if (result != CUDA_SUCCESS)
 	{
 		return NV_ENC_ERR_NO_ENCODE_DEVICE;
@@ -830,10 +867,10 @@ NVENCSTATUS nvenc_encoder::encode_frame(nvenc_encoder::nvenc_buffer_t * nvenc_bu
 	nvenc_pic_param.qpDeltaMap = 0;
 	nvenc_pic_param.qpDeltaMapSize = 0;
 
-	//if (input->gen_spspps)
-	//	nvenc_pic_param.encodePicFlags |= NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
-	//if (input->gen_idr)
-	//	nvenc_pic_param.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR;
+	if (input->gen_spspps)
+		nvenc_pic_param.encodePicFlags |= NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
+	if (input->gen_idr)
+		nvenc_pic_param.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR;
 
 
 	status = NvEncEncodePicture(&nvenc_pic_param);

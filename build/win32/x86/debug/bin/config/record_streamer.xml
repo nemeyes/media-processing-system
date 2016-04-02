@@ -1,0 +1,8 @@
+<?xml version="1.0" standalone="yes"?>
+<record_streamer>
+	<rtsp_server>
+		<port_number>554</port_number>
+		<username>admin</username>
+		<password>root</password>
+	</rtsp_server>
+</record_streamer>

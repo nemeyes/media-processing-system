@@ -9,14 +9,12 @@
 #include <d3d10_1.h>
 #include <d3d11.h>
 #pragma warning(disable : 4996)
-#pragma warning(disable : 4005)
 #include <dxva2api.h>
-//#include "dynlink_cuda.h" // <cuda.h>
-#include <cuda.h>
+#include "dynlink_cuda.h" // <cuda.h>
 #include "nvEncodeAPI.h"
 #include "dk_nvenc_encoder.h"
 
-#define MAX_ENCODE_QUEUE 100
+#define MAX_ENCODE_QUEUE 128
 
 class nvenc_encoder
 {
