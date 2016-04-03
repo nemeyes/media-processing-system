@@ -285,6 +285,10 @@ void record_module::seek(long long seek_timestamp)
 
 	do
 	{
+		long long file_size = get_file_size();
+		if (seek_index >= file_size)
+			break;
+
 		record_module::set_file_position(_file, seek_index, FILE_BEGIN);
 
 		uint8_t nalu_type = 0;
