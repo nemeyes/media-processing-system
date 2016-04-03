@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CParallelRecordServerDlg, CDialogEx)
 	ON_COMMAND(ID_TRAY_EXIT, &CParallelRecordServerDlg::OnTrayExit)
 	ON_UPDATE_COMMAND_UI(ID_TRAY_START_RECORDING, &CParallelRecordServerDlg::OnUpdateTrayStartRecording)
 	ON_UPDATE_COMMAND_UI(ID_TRAY_STOP_RECORDING, &CParallelRecordServerDlg::OnUpdateTrayStopRecording)
+	ON_COMMAND(ID_TRAY_SHUTDOWN, &CParallelRecordServerDlg::OnTrayShutdown)
 END_MESSAGE_MAP()
 
 
@@ -337,11 +338,15 @@ void CParallelRecordServerDlg::OnTrayStopRecording()
 	StopRecording();
 }
 
+void CParallelRecordServerDlg::OnTrayShutdown()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	EndDialog(IDOK);
+}
 
 void CParallelRecordServerDlg::OnTrayExit()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	EndDialog(IDOK);
 }
 
 

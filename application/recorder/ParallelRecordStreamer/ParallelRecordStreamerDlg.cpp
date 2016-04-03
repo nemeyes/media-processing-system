@@ -71,6 +71,7 @@ BEGIN_MESSAGE_MAP(CParallelRecordStreamerDlg, CDialogEx)
 	ON_COMMAND(ID_TRAY_START_STREAMING, &CParallelRecordStreamerDlg::OnTrayStartStreaming)
 	ON_COMMAND(ID_TRAY_STOP_STREAMING, &CParallelRecordStreamerDlg::OnTrayStopStreaming)
 	ON_COMMAND(ID_TRAY_EXIT, &CParallelRecordStreamerDlg::OnTrayExit)
+	ON_COMMAND(ID_TRAY_SHUTDOWN, &CParallelRecordStreamerDlg::OnTrayShutdown)
 END_MESSAGE_MAP()
 
 
@@ -359,9 +360,13 @@ void CParallelRecordStreamerDlg::OnTrayStopStreaming()
 	StopStreaming();
 }
 
+void CParallelRecordStreamerDlg::OnTrayShutdown()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	EndDialog(IDOK);
+}
 
 void CParallelRecordStreamerDlg::OnTrayExit()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	EndDialog(IDOK);
 }

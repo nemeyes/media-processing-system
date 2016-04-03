@@ -48,4 +48,5 @@ public:
 	virtual BOOL DestroyWindow();
 	afx_msg void OnUpdateTrayStartRecording(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateTrayStopRecording(CCmdUI *pCmdUI);
+	afx_msg void OnTrayShutdown();
 };

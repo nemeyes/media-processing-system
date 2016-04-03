@@ -6,5 +6,10 @@
 			<username></username>
 			<password></password>
 		</mediasource>
+		<mediasource uuid="CH2">
+			<url>rtsp://now.iptime.org/1/stream1</url>
+			<username></username>
+			<password></password>
+		</mediasource>
 	</mediasources>
 </record_server>

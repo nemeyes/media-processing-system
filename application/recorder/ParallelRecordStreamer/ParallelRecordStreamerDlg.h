@@ -46,4 +46,5 @@ public:
 	afx_msg void OnTrayStopStreaming();
 	afx_msg void OnTrayExit();
 	virtual BOOL DestroyWindow();
+	afx_msg void OnTrayShutdown();
 };
