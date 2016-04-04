@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <vector>
 
+typedef void CURL;
 class dk_rtsp_recorder;
 class dk_recorder_service
 {
@@ -38,6 +39,7 @@ private:
 	static unsigned __stdcall backup_process_callback(void * param);
 	void backup_process(void);
 
+	void file_search_and_upload(const char * path);
 	/* parse headers for Content-Length */
 	static size_t __stdcall backup_get_content_length_callback(void *ptr, size_t size, size_t nmemb, void *stream);
 	/* discard downloaded data */

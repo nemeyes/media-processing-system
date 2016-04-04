@@ -233,76 +233,91 @@ void dk_recorder_service::backup_process(void)
 		const char * storage_path = retrieve_storage_path();
 		if (storage_path && strlen(storage_path)>0)
 		{
-			char single_media_source_search_path[260] = { 0 };
-			_snprintf_s(single_media_source_search_path, sizeof(single_media_source_search_path), "%s\\*", storage_path);
-
-			HANDLE bfind = INVALID_HANDLE_VALUE;
-			WIN32_FIND_DATAA wfd;
-			bfind = ::FindFirstFileA(single_media_source_search_path, &wfd);
-			if (bfind == INVALID_HANDLE_VALUE)
-				continue;
-			do
-			{
-				if ((wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-				{
-					if (!strcmp(".", wfd.cFileName) || !strcmp("..", wfd.cFileName))
-						continue;
-				}
-				else
-				{
-					char * recorded_file_name = &wfd.cFileName[0];
-					char single_ms[260] = { 0 };
-					_snprintf_s(single_ms, sizeof(single_ms), "%s\\%s", storage_path, recorded_file_name);
-
-					HANDLE file2backup = ::CreateFileA(single_ms, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-					if (file2backup != INVALID_HANDLE_VALUE)
-					{
-						long long stime;
-						long long etime;
-
-						void * buf = nullptr;
-						unsigned long bytes_to_read = 0;
-						unsigned long bytes_read = 0;
-
-						buf = (void*)&stime;
-						bytes_to_read = sizeof(long long);
-						bytes_read = 0;
-						::ReadFile(file2backup, buf, bytes_to_read, &bytes_read, NULL);
-
-						buf = (void*)&etime;
-						bytes_to_read = sizeof(long long);
-						bytes_read = 0;
-						::ReadFile(file2backup, buf, bytes_to_read, &bytes_read, NULL);
-
-						::CloseHandle(file2backup);
-
-						if (etime != 0 /*&& etime >= stime*/)
-						{
-							CURL * curl = NULL;
-							curl_global_init(CURL_GLOBAL_ALL);
-							curl = curl_easy_init();
-							bool result = false;
-
-							char backup_ftp_server[260] = { 0 };
-							if (_backup_username && strlen(_backup_username) > 0 && _backup_password && strlen(_backup_password) > 0)
-								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%s@%s:%d/%s/%s", _backup_username, _backup_password, _backup_url, _backup_port_number, "", recorded_file_name);
-							else
-								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%d/%s/%s", _backup_url, _backup_port_number, "", recorded_file_name);
-
-							result = backup_upload_single_file(curl, backup_ftp_server, single_ms, 0, 3);
-
-							curl_easy_cleanup(curl);
-							curl_global_cleanup();
-
-							if (result)
-								::DeleteFileA(single_ms);
-						}
-					}
-				}
-			} while (::FindNextFileA(bfind, &wfd));
-			::FindClose(bfind);
+			file_search_and_upload(storage_path);
 		}
 		::Sleep(1000);
+	}
+}
+
+
+void dk_recorder_service::file_search_and_upload(const char * path)
+{
+	WIN32_FIND_DATAA wfd;
+	char search_path[260] = { 0 };
+
+	_snprintf_s(search_path, sizeof(search_path), "%s\\*", path);
+	HANDLE hFile = ::FindFirstFileA(search_path, &wfd);
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			const char * file_name = &wfd.cFileName[0];
+
+			// It could be a directory we are looking at
+			// if so look into that dir
+			if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				if (strcmp(file_name, ".") && strcmp(file_name, ".."))
+				{
+					//subDirs->Add(strPathToSearch + strTheNameOfTheFile);
+					char sub_search_path[260] = { 0 };
+					_snprintf_s(sub_search_path, sizeof(sub_search_path), "%s\\%s", path, file_name);
+					file_search_and_upload(sub_search_path);
+				}
+			}
+			else
+			{
+				char recored_file_path[260] = { 0 };
+				_snprintf_s(recored_file_path, sizeof(recored_file_path), "%s\\%s", path, file_name);
+
+				HANDLE file2backup = ::CreateFileA(recored_file_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (file2backup != INVALID_HANDLE_VALUE)
+				{
+					long long stime;
+					long long etime;
+
+					void * buf = nullptr;
+					unsigned long bytes_to_read = 0;
+					unsigned long bytes_read = 0;
+
+					buf = (void*)&stime;
+					bytes_to_read = sizeof(long long);
+					bytes_read = 0;
+					::ReadFile(file2backup, buf, bytes_to_read, &bytes_read, NULL);
+
+					buf = (void*)&etime;
+					bytes_to_read = sizeof(long long);
+					bytes_read = 0;
+					::ReadFile(file2backup, buf, bytes_to_read, &bytes_read, NULL);
+
+					::CloseHandle(file2backup);
+
+					if (etime != 0 /*&& etime >= stime*/)
+					{
+						CURL * curl = NULL;
+						curl_global_init(CURL_GLOBAL_ALL);
+						curl = curl_easy_init();
+						bool result = false;
+
+						char backup_ftp_server[260] = { 0 };
+						if (_backup_username && strlen(_backup_username) > 0 && _backup_password && strlen(_backup_password) > 0)
+							_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%s@%s:%d/%s/%s", _backup_username, _backup_password, _backup_url, _backup_port_number, "", file_name);
+						else
+							_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%d/%s/%s", _backup_url, _backup_port_number, "", file_name);
+
+						result = backup_upload_single_file(curl, backup_ftp_server, recored_file_path, 0, 3);
+
+						curl_easy_cleanup(curl);
+						curl_global_cleanup();
+
+						if (result)
+							::DeleteFileA(recored_file_path);
+					}
+				}
+			}
+		} while (FindNextFileA(hFile, &wfd));
+
+		FindClose(hFile);
 	}
 }
 
@@ -408,68 +423,4 @@ bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * re
 		return true;
 	else
 		return false;
-}
-
-void file_search_and_upload(const char * path)
-{
-	WIN32_FIND_DATA file;
-
-	String strPathToSearch = strFilePath;
-	if (!strPathToSearch.IsEmpty())
-		strPathToSearch = IncludeTrailingPathDelimiter(strPathToSearch);
-
-	HANDLE hFile hFile = FindFirstFile((strPathToSearch + "*").c_str(), &file);
-	if (hFile != INVALID_HANDLE_VALUE)
-	{
-		std::auto_ptr<TStringList> subDirs;
-
-		do
-		{
-			String strTheNameOfTheFile = file.cFileName;
-
-			// It could be a directory we are looking at
-			// if so look into that dir
-			if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			{
-				if ((strTheNameOfTheFile != ".") && (strTheNameOfTheFile != "..") && (bRecursive))
-				{
-					if (subDirs.get() == NULL)
-						subDirs.reset(new TStringList);
-
-					subDirs->Add(strPathToSearch + strTheNameOfTheFile);
-				}
-			}
-			else
-			{
-				if (strTheNameOfTheFile == strFile)
-				{
-					strFoundFilePath = strPathToSearch + strFile;
-
-					/// TODO
-					// ADD TO COLLECTION TYPE
-
-					if (bStopWhenFound)
-						break;
-				}
-			}
-		} while (FindNextFile(hFile, &file));
-
-		FindClose(hFile);
-
-		if (!strFoundFilePath.IsEmpty() && bStopWhenFound)
-			return strFoundFilePath;
-
-		if (subDirs.get() != NULL)
-		{
-			for (int i = 0; i < subDirs->Count; ++i)
-			{
-				strFoundFilePath = SearchDrive(strFile, subDirs->Strings[i], bRecursive, bStopWhenFound);
-
-				if (!strFoundFilePath.IsEmpty() && bStopWhenFound)
-					break;
-			}
-		}
-	}
-
-	return strFoundFilePath;
 }
