@@ -1,15 +1,21 @@
 <?xml version="1.0" standalone="yes"?>
 <record_server>
-	<mediasources name="groupname" chunk_size="64">
-		<mediasource uuid="9344D189-202F-4248-905E-F02E9A2288A2">
+	<backup_server>
+		<url>127.0.0.1</url>
+		<port_number>14147</port_number>
+		<username></username>
+		<password></password>
+	</backup_server>
+	<media_sources name="groupname" chunk_size="64">
+		<media_source uuid="CH1">
 			<url>rtsp://now.iptime.org/1/stream1</url>
 			<username></username>
 			<password></password>
-		</mediasource>
-		<mediasource uuid="CH2">
-			<url>rtsp://now.iptime.org/1/stream1</url>
+		</media_source>
+		<media_source uuid="CH2">
+			<url>rtsp://now.iptime.org/2/stream1</url>
 			<username></username>
 			<password></password>
-		</mediasource>
-	</mediasources>
+		</media_source>
+	</media_sources>
 </record_server>

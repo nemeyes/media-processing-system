@@ -315,15 +315,7 @@ void record_module::seek(long long seek_timestamp)
 		bytes_read = 0;
 		::ReadFile(_file, buf, bytes_to_read, &bytes_read, NULL);
 		seek_index += bytes_read;
-
 		seek_index += nalu_size;
-
-
-		/*if (dk_record_module::nalu_type_idr == nalu_type)
-		{
-			last_idr_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
-			last_idr_timestamp = nalu_timestamp;
-		}*/
 
 		if (nalu_type == dk_record_module::nalu_type_sps)
 		{

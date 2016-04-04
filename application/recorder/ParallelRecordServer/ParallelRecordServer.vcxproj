@@ -58,14 +58,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\container\mpeg2ts\dk_ff_mpeg2ts_muxer\include;..\..\..\library\container\dk_record_module\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\container\mpeg2ts\dk_ff_mpeg2ts_muxer\include;..\..\..\library\container\dk_record_module\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dk_live_rtsp_client.lib;dk_ff_mpeg2ts_muxer.lib;tinyxml.lib;ntdll.lib;dk_record_module.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\lib;$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libcurl.lib;tinyxml.lib;ntdll.lib;dk_live_rtsp_client.lib;dk_ff_mpeg2ts_muxer.lib;dk_record_module.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\lib;..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\lib;$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>
@@ -89,15 +89,15 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\container\mpeg2ts\dk_ff_mpeg2ts_muxer\include;..\..\..\library\container\dk_record_module\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\container\mpeg2ts\dk_ff_mpeg2ts_muxer\include;..\..\..\library\container\dk_record_module\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\lib;$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dk_live_rtsp_client.lib;dk_ff_mpeg2ts_muxer.lib;tinyxml.lib;ntdll.lib;dk_record_module.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\lib;..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\lib;$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libcurl.lib;tinyxml.lib;ntdll.lib;dk_live_rtsp_client.lib;dk_ff_mpeg2ts_muxer.lib;dk_record_module.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>

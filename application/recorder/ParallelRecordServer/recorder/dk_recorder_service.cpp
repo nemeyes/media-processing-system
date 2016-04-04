@@ -4,6 +4,8 @@
 #include "dk_rtsp_recorder.h"
 #include <tinyxml.h>
 
+#include <curl/curl.h>
+
 dk_recorder_service::_recorder_receiver_information_t::_recorder_receiver_information_t(void)
 {
 	memset(uuid, 0x00, sizeof(uuid));
@@ -33,9 +35,14 @@ dk_recorder_service::_recorder_receiver_information_t dk_recorder_service::_reco
 }
 
 dk_recorder_service::dk_recorder_service(void)
+	: _backup_thread(INVALID_HANDLE_VALUE)
+	, _backup_port_number(21)
 {
 	memset(_storage_path, 0x00, sizeof(_storage_path));
 	memset(_config_path, 0x00, sizeof(_config_path));
+	memset(_backup_url, 0x00, sizeof(_backup_url));
+	memset(_backup_username, 0x00, sizeof(_backup_username));
+	memset(_backup_password, 0x00, sizeof(_backup_password));
 }
 
 dk_recorder_service::~dk_recorder_service(void)
@@ -51,6 +58,10 @@ dk_recorder_service & dk_recorder_service::instance(void)
 
 bool dk_recorder_service::start_recording(void)
 {
+	memset(_backup_url, 0x00, sizeof(_backup_url));
+	memset(_backup_username, 0x00, sizeof(_backup_username));
+	memset(_backup_password, 0x00, sizeof(_backup_password));
+
 	std::string config_path = retrieve_config_path();
 	if (config_path.size() < 1)
 		return false;
@@ -72,21 +83,55 @@ bool dk_recorder_service::start_recording(void)
 	if (!root_elem)
 		return false;
 
-	TiXmlElement * ms_elem = root_elem->FirstChildElement("mediasources");
-	if (!ms_elem)
+	const char * backup_url = nullptr;
+	const char * str_backup_port_number = nullptr;
+	const char * backup_username = nullptr;
+	const char * backup_password = nullptr;
+	TiXmlElement * backup_server_elem = root_elem->FirstChildElement("backup_server");
+	if (!backup_server_elem)
+		return false;
+	TiXmlElement * backup_url_elem = backup_server_elem->FirstChildElement("url");
+	if (backup_url_elem)
+		backup_url = backup_url_elem->GetText();
+
+	TiXmlElement * backup_port_number_elem = backup_server_elem->FirstChildElement("port_number");
+	if (backup_port_number_elem)
+	{
+		str_backup_port_number = backup_port_number_elem->GetText();
+		if (str_backup_port_number && strlen(str_backup_port_number)>0)
+			_backup_port_number = atoi(str_backup_port_number);
+	}
+
+	TiXmlElement * backup_username_elem = backup_server_elem->FirstChildElement("username");
+	if (backup_username_elem)
+		backup_username = backup_username_elem->GetText();
+
+	TiXmlElement * backup_password_elem = backup_server_elem->FirstChildElement("password");
+	if (backup_password_elem)
+		backup_password = backup_password_elem->GetText();
+	
+	if (backup_url && strlen(backup_url) > 0)
+		strncpy_s(_backup_url, backup_url, sizeof(_backup_url));
+	if (backup_username && strlen(backup_username) > 0)
+		strncpy_s(_backup_username, backup_username, sizeof(_backup_username));
+	if (backup_password && strlen(backup_password) > 0)
+		strncpy_s(_backup_password, backup_password, sizeof(_backup_password));
+
+	TiXmlElement * media_sources_elem = root_elem->FirstChildElement("media_sources");
+	if (!media_sources_elem)
 		return false;
 
-	const char * str_chunk_size = ms_elem->Attribute("chunk_size");
+	const char * str_chunk_size = media_sources_elem->Attribute("chunk_size");
 	int32_t chunk_size_in_mb = atoi(str_chunk_size);
 
-	TiXmlElement * sub_elem = ms_elem->FirstChildElement("mediasource");
-	while (sub_elem)
+	TiXmlElement * media_source_elem = media_sources_elem->FirstChildElement("media_source");
+	while (media_source_elem)
 	{
-		TiXmlElement * url_elem = sub_elem->FirstChildElement("url");
-		TiXmlElement * username_elem = sub_elem->FirstChildElement("username");
-		TiXmlElement * password_elem = sub_elem->FirstChildElement("password");
+		TiXmlElement * url_elem = media_source_elem->FirstChildElement("url");
+		TiXmlElement * username_elem = media_source_elem->FirstChildElement("username");
+		TiXmlElement * password_elem = media_source_elem->FirstChildElement("password");
 
-		const char * uuid = sub_elem->Attribute("uuid");
+		const char * uuid = media_source_elem->Attribute("uuid");
 		uuid = ::CharUpperA((char*)uuid);
 		const char * url = url_elem->GetText();
 		const char * username = username_elem->GetText();
@@ -104,43 +149,17 @@ bool dk_recorder_service::start_recording(void)
 		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, dk_rtsp_recorder::rtp_over_tcp, dk_rtsp_recorder::recv_video, storage_path.c_str(), recv_info.uuid);
 		_receivers.push_back(recv_info);
 
-		sub_elem = sub_elem->NextSiblingElement();
+		media_source_elem = media_source_elem->NextSiblingElement();
 	}
 
-	/*
-	//camera 2
-	{
-		dk_recorder_service::recorder_receiver_information_t recv_info;
-		std::string uuid = dk_misc_helper::generate_guid();
-
-		strncpy_s(recv_info.uuid, uuid.c_str(), sizeof(recv_info.uuid));
-		strncpy_s(recv_info.url, "rtsp://now.iptime.org/1/stream1", sizeof(recv_info.url));
-		strncpy_s(recv_info.username, "", sizeof(recv_info.username));
-		strncpy_s(recv_info.password, "", sizeof(recv_info.password));
-		recv_info.recorder = new dk_rtsp_recorder();
-		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, dk_rtsp_recorder::rtp_over_tcp, dk_rtsp_recorder::recv_video, storage_path.c_str(), recv_info.uuid);
-		_receivers.push_back(recv_info);
-	}
-
-	//camera 3
-	{
-		dk_recorder_service::recorder_receiver_information_t recv_info;
-		std::string uuid = dk_misc_helper::generate_guid();
-
-		strncpy_s(recv_info.uuid, uuid.c_str(), sizeof(recv_info.uuid));
-		strncpy_s(recv_info.url, "rtsp://now.iptime.org/1/stream1", sizeof(recv_info.url));
-		strncpy_s(recv_info.username, "", sizeof(recv_info.username));
-		strncpy_s(recv_info.password, "", sizeof(recv_info.password));
-		recv_info.recorder = new dk_rtsp_recorder();
-		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, dk_rtsp_recorder::rtp_over_tcp, dk_rtsp_recorder::recv_video, storage_path.c_str(), recv_info.uuid);
-		_receivers.push_back(recv_info);
-	}
-	*/
+	//return start_backup_service();
 	return true;
 }
 
 bool dk_recorder_service::stop_recording(void)
 {
+	//stop_backup_service();
+
 	std::vector<dk_recorder_service::recorder_receiver_information_t>::iterator iter;
 	for (iter = _receivers.begin(); iter != _receivers.end(); iter++)
 	{
@@ -155,8 +174,6 @@ bool dk_recorder_service::stop_recording(void)
 
 const char * dk_recorder_service::retrieve_storage_path(void)
 {
-#if 1
-	//std::string module_path = dk_misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe");
 	char * module_path = nullptr;
 	dk_misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe", &module_path);
 	if(module_path && strlen(module_path)>0)
@@ -164,32 +181,11 @@ const char * dk_recorder_service::retrieve_storage_path(void)
 		_snprintf_s(_storage_path, sizeof(_storage_path), "%s%s", module_path, "storage\\");
 		free(module_path);
 	}
-#else
-	HINSTANCE module_handle = ::GetModuleHandleA("ParallelRecordServer.exe");
-	char module_path[260] = { 0 };
-	char * module_name = module_path;
-	module_name += GetModuleFileNameA(module_handle, module_name, (sizeof(module_path) / sizeof(*module_path)) - (module_name - module_path));
-	if (module_name != module_path)
-	{
-		CHAR *slash = strrchr(module_path, '\\');
-		if (slash != NULL)
-		{
-			module_name = slash + 1;
-			_strset_s(module_name, sizeof(module_path), 0);
-		}
-		else
-		{
-			_strset_s(module_path, sizeof(module_path), 0);
-		}
-	}
-	_snprintf_s(_storage_path, sizeof(_storage_path), "%s%s", module_path, "storage\\");
-#endif
 	return _storage_path;
 }
 
 const char * dk_recorder_service::retrieve_config_path(void)
 {
-#if 1
 	char * module_path = nullptr;
 	dk_misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe", &module_path);
 	if (module_path && strlen(module_path)>0)
@@ -197,67 +193,283 @@ const char * dk_recorder_service::retrieve_config_path(void)
 		_snprintf_s(_config_path, sizeof(_config_path), "%s%s", module_path, "config\\");
 		free(module_path);
 	}
-#else
-	HINSTANCE module_handle = ::GetModuleHandleA("ParallelRecordServer.exe");
-	char module_path[260] = { 0 };
-	char * module_name = module_path;
-	module_name += GetModuleFileNameA(module_handle, module_name, (sizeof(module_path) / sizeof(*module_path)) - (module_name - module_path));
-	if (module_name != module_path)
-	{
-		char * slash = strrchr(module_path, '\\');
-		if (slash != NULL)
-		{
-			module_name = slash + 1;
-			_strset_s(module_name, sizeof(module_path), 0);
-		}
-		else
-		{
-			_strset_s(module_path, sizeof(module_path), 0);
-		}
-	}
-	_snprintf_s(_config_path, sizeof(_config_path), "%s%s", module_path, "config\\");
-#endif
 	return _config_path;
 }
 
-/*
-void dk_recorder_service::retrieve_receivers(std::vector<dk_recorder_service::recorder_receiver_information_t> * receivers)
+bool dk_recorder_service::start_backup_service(void)
 {
+	unsigned int thrd_addr;
+	_backup_thread = (HANDLE)::_beginthreadex(NULL, 0, dk_recorder_service::backup_process_callback, this, 0, &thrd_addr);
+	return true;
+}
 
-	//camera 1
+bool dk_recorder_service::stop_backup_service(void)
+{
+	if (_backup_run)
 	{
-		dk_recorder_service::recorder_receiver_information_t receiver_info;
-		std::string uuid = dk_misc_helper::generate_guid();
-
-		strncpy_s(receiver_info.uuid, uuid.c_str(), sizeof(receiver_info.uuid));
-		strncpy_s(receiver_info.url, "rtsp://now.iptime.org/1/stream1", sizeof(receiver_info.url));
-		strncpy_s(receiver_info.username, "", sizeof(receiver_info.username));
-		strncpy_s(receiver_info.password, "", sizeof(receiver_info.password));
-		receivers->push_back(receiver_info);
+		_backup_run = false;
+		::WaitForSingleObject(_backup_thread, INFINITE);
+		::CloseHandle(_backup_thread);
+		_backup_thread = INVALID_HANDLE_VALUE;
 	}
+	return true;
+}
 
-	//camera 2
+unsigned __stdcall dk_recorder_service::backup_process_callback(void * param)
+{
+	dk_recorder_service * self = static_cast<dk_recorder_service*>(param);
+	self->backup_process();
+	return 0;
+}
+
+void dk_recorder_service::backup_process(void)
+{
+	_backup_run = true;
+	while (_backup_run)
 	{
-		dk_recorder_service::recorder_receiver_information_t receiver_info;
-		std::string uuid = dk_misc_helper::generate_guid();
+		if (!_backup_url || strlen(_backup_url) < 1)
+			break;
 
-		strncpy_s(receiver_info.uuid, uuid.c_str(), sizeof(receiver_info.uuid));
-		strncpy_s(receiver_info.url, "rtsp://now.iptime.org/1/stream1", sizeof(receiver_info.url));
-		strncpy_s(receiver_info.username, "", sizeof(receiver_info.username));
-		strncpy_s(receiver_info.password, "", sizeof(receiver_info.password));
-		receivers->push_back(receiver_info);
-	}
+		const char * storage_path = retrieve_storage_path();
+		if (storage_path && strlen(storage_path)>0)
+		{
+			char single_media_source_search_path[260] = { 0 };
+			_snprintf_s(single_media_source_search_path, sizeof(single_media_source_search_path), "%s\\*", storage_path);
 
-	//camera 3
-	{
-		dk_recorder_service::recorder_receiver_information_t receiver_info;
-		std::string uuid = dk_misc_helper::generate_guid();
+			HANDLE bfind = INVALID_HANDLE_VALUE;
+			WIN32_FIND_DATAA wfd;
+			bfind = ::FindFirstFileA(single_media_source_search_path, &wfd);
+			if (bfind == INVALID_HANDLE_VALUE)
+				continue;
+			do
+			{
+				if ((wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+				{
+					if (!strcmp(".", wfd.cFileName) || !strcmp("..", wfd.cFileName))
+						continue;
+				}
+				else
+				{
+					char * recorded_file_name = &wfd.cFileName[0];
+					char single_ms[260] = { 0 };
+					_snprintf_s(single_ms, sizeof(single_ms), "%s\\%s", storage_path, recorded_file_name);
 
-		strncpy_s(receiver_info.uuid, uuid.c_str(), sizeof(receiver_info.uuid));
-		strncpy_s(receiver_info.url, "rtsp://now.iptime.org/1/stream1", sizeof(receiver_info.url));
-		strncpy_s(receiver_info.username, "", sizeof(receiver_info.username));
-		strncpy_s(receiver_info.password, "", sizeof(receiver_info.password));
-		receivers->push_back(receiver_info);
+					HANDLE file2backup = ::CreateFileA(single_ms, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+					if (file2backup != INVALID_HANDLE_VALUE)
+					{
+						long long stime;
+						long long etime;
+
+						void * buf = nullptr;
+						unsigned long bytes_to_read = 0;
+						unsigned long bytes_read = 0;
+
+						buf = (void*)&stime;
+						bytes_to_read = sizeof(long long);
+						bytes_read = 0;
+						::ReadFile(file2backup, buf, bytes_to_read, &bytes_read, NULL);
+
+						buf = (void*)&etime;
+						bytes_to_read = sizeof(long long);
+						bytes_read = 0;
+						::ReadFile(file2backup, buf, bytes_to_read, &bytes_read, NULL);
+
+						::CloseHandle(file2backup);
+
+						if (etime != 0 /*&& etime >= stime*/)
+						{
+							CURL * curl = NULL;
+							curl_global_init(CURL_GLOBAL_ALL);
+							curl = curl_easy_init();
+							bool result = false;
+
+							char backup_ftp_server[260] = { 0 };
+							if (_backup_username && strlen(_backup_username) > 0 && _backup_password && strlen(_backup_password) > 0)
+								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%s@%s:%d/%s/%s", _backup_username, _backup_password, _backup_url, _backup_port_number, "", recorded_file_name);
+							else
+								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%d/%s/%s", _backup_url, _backup_port_number, "", recorded_file_name);
+
+							result = backup_upload_single_file(curl, backup_ftp_server, single_ms, 0, 3);
+
+							curl_easy_cleanup(curl);
+							curl_global_cleanup();
+
+							if (result)
+								::DeleteFileA(single_ms);
+						}
+					}
+				}
+			} while (::FindNextFileA(bfind, &wfd));
+			::FindClose(bfind);
+		}
+		::Sleep(1000);
 	}
 }
-*/
+
+/* parse headers for Content-Length */
+size_t __stdcall dk_recorder_service::backup_get_content_length_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+{
+	int r;
+	long len = 0;
+
+	/* _snscanf() is Win32 specific */
+	r = _snscanf((char*)ptr, size * nmemb, "Content-Length: %ld\n", &len);
+
+	if (r) /* Microsoft: we don't read the specs */
+		*((long *)stream) = len;
+
+	return size * nmemb;
+}
+
+/* discard downloaded data */
+size_t __stdcall dk_recorder_service::backup_discard_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+{
+	return size * nmemb;
+}
+
+/* read data to upload */
+size_t __stdcall dk_recorder_service::backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+{
+	FILE * f = (FILE*)stream;
+	size_t n;
+
+	if (ferror(f))
+		return CURL_READFUNC_ABORT;
+
+	n = fread(ptr, size, nmemb, f) * size;
+
+	return n;
+}
+
+/* read data to upload */
+bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * remotepath, const char * localpath, long timeout, long tries)
+{
+	FILE *f;
+	long uploaded_len = 0;
+	CURLcode r = CURLE_GOT_NOTHING;
+	int c;
+
+	f = fopen(localpath, "rb");
+	if (!f)
+		return false;
+
+	curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+	curl_easy_setopt(curl, CURLOPT_URL, remotepath);
+	if (timeout)
+		curl_easy_setopt(curl, CURLOPT_FTP_RESPONSE_TIMEOUT, timeout);
+
+	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, backup_get_content_length_callback);
+	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &uploaded_len);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, backup_discard_callback);
+	curl_easy_setopt(curl, CURLOPT_READFUNCTION, backup_read_callback);
+	curl_easy_setopt(curl, CURLOPT_READDATA, f);
+	/* disable passive mode */
+	curl_easy_setopt(curl, CURLOPT_FTPPORT, "-");
+	curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
+
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+	for (c = 0; (r != CURLE_OK) && (c < tries); c++) 
+	{
+		/* are we resuming? */
+		if (c) { /* yes */
+			/* determine the length of the file already written */
+
+			/*
+			* With NOBODY and NOHEADER, libcurl will issue a SIZE
+			* command, but the only way to retrieve the result is
+			* to parse the returned Content-Length header. Thus,
+			* getcontentlengthfunc(). We need discardfunc() above
+			* because HEADER will dump the headers to stdout
+			* without it.
+			*/
+			curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+			curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
+
+			r = curl_easy_perform(curl);
+			if (r != CURLE_OK)
+				continue;
+
+			curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
+			curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
+
+			fseek(f, uploaded_len, SEEK_SET);
+
+			curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
+		}
+		else 
+		{ /* no */
+			curl_easy_setopt(curl, CURLOPT_APPEND, 0L);
+		}
+		r = curl_easy_perform(curl);
+	}
+	fclose(f);
+	if (r == CURLE_OK)
+		return true;
+	else
+		return false;
+}
+
+void file_search_and_upload(const char * path)
+{
+	WIN32_FIND_DATA file;
+
+	String strPathToSearch = strFilePath;
+	if (!strPathToSearch.IsEmpty())
+		strPathToSearch = IncludeTrailingPathDelimiter(strPathToSearch);
+
+	HANDLE hFile hFile = FindFirstFile((strPathToSearch + "*").c_str(), &file);
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		std::auto_ptr<TStringList> subDirs;
+
+		do
+		{
+			String strTheNameOfTheFile = file.cFileName;
+
+			// It could be a directory we are looking at
+			// if so look into that dir
+			if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				if ((strTheNameOfTheFile != ".") && (strTheNameOfTheFile != "..") && (bRecursive))
+				{
+					if (subDirs.get() == NULL)
+						subDirs.reset(new TStringList);
+
+					subDirs->Add(strPathToSearch + strTheNameOfTheFile);
+				}
+			}
+			else
+			{
+				if (strTheNameOfTheFile == strFile)
+				{
+					strFoundFilePath = strPathToSearch + strFile;
+
+					/// TODO
+					// ADD TO COLLECTION TYPE
+
+					if (bStopWhenFound)
+						break;
+				}
+			}
+		} while (FindNextFile(hFile, &file));
+
+		FindClose(hFile);
+
+		if (!strFoundFilePath.IsEmpty() && bStopWhenFound)
+			return strFoundFilePath;
+
+		if (subDirs.get() != NULL)
+		{
+			for (int i = 0; i < subDirs->Count; ++i)
+			{
+				strFoundFilePath = SearchDrive(strFile, subDirs->Strings[i], bRecursive, bStopWhenFound);
+
+				if (!strFoundFilePath.IsEmpty() && bStopWhenFound)
+					break;
+			}
+		}
+	}
+
+	return strFoundFilePath;
+}
