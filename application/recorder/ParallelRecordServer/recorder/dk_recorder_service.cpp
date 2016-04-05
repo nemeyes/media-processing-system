@@ -5,6 +5,11 @@
 #include <tinyxml.h>
 
 #include <curl/curl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <io.h>
 
 dk_recorder_service::_recorder_receiver_information_t::_recorder_receiver_information_t(void)
 {
@@ -43,11 +48,13 @@ dk_recorder_service::dk_recorder_service(void)
 	memset(_backup_url, 0x00, sizeof(_backup_url));
 	memset(_backup_username, 0x00, sizeof(_backup_username));
 	memset(_backup_password, 0x00, sizeof(_backup_password));
+	curl_global_init(CURL_GLOBAL_ALL);
 }
 
 dk_recorder_service::~dk_recorder_service(void)
 {
 	stop_recording();
+	curl_global_cleanup();
 }
 
 dk_recorder_service & dk_recorder_service::instance(void)
@@ -61,6 +68,7 @@ bool dk_recorder_service::start_recording(void)
 	memset(_backup_url, 0x00, sizeof(_backup_url));
 	memset(_backup_username, 0x00, sizeof(_backup_username));
 	memset(_backup_password, 0x00, sizeof(_backup_password));
+	_backup_delete_after_backup = false;
 
 	std::string config_path = retrieve_config_path();
 	if (config_path.size() < 1)
@@ -87,9 +95,17 @@ bool dk_recorder_service::start_recording(void)
 	const char * str_backup_port_number = nullptr;
 	const char * backup_username = nullptr;
 	const char * backup_password = nullptr;
+	bool backup_delete_after_backup = false;
 	TiXmlElement * backup_server_elem = root_elem->FirstChildElement("backup_server");
 	if (!backup_server_elem)
 		return false;
+
+	const char * delete_after_backup = backup_server_elem->Attribute("delete_after_backup");
+	if (!delete_after_backup || strcmp(delete_after_backup, "true"))
+		backup_delete_after_backup = false;
+	else
+		backup_delete_after_backup = true;
+	
 	TiXmlElement * backup_url_elem = backup_server_elem->FirstChildElement("url");
 	if (backup_url_elem)
 		backup_url = backup_url_elem->GetText();
@@ -116,6 +132,7 @@ bool dk_recorder_service::start_recording(void)
 		strncpy_s(_backup_username, backup_username, sizeof(_backup_username));
 	if (backup_password && strlen(backup_password) > 0)
 		strncpy_s(_backup_password, backup_password, sizeof(_backup_password));
+	_backup_delete_after_backup = backup_delete_after_backup;
 
 	TiXmlElement * media_sources_elem = root_elem->FirstChildElement("media_sources");
 	if (!media_sources_elem)
@@ -152,13 +169,13 @@ bool dk_recorder_service::start_recording(void)
 		media_source_elem = media_source_elem->NextSiblingElement();
 	}
 
-	//return start_backup_service();
-	return true;
+	return start_backup_service();
+	//return true;
 }
 
 bool dk_recorder_service::stop_recording(void)
 {
-	//stop_backup_service();
+	stop_backup_service();
 
 	std::vector<dk_recorder_service::recorder_receiver_information_t>::iterator iter;
 	for (iter = _receivers.begin(); iter != _receivers.end(); iter++)
@@ -172,13 +189,16 @@ bool dk_recorder_service::stop_recording(void)
 	return true;
 }
 
-const char * dk_recorder_service::retrieve_storage_path(void)
+const char * dk_recorder_service::retrieve_storage_path(bool file_separator)
 {
 	char * module_path = nullptr;
 	dk_misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe", &module_path);
 	if(module_path && strlen(module_path)>0)
 	{
-		_snprintf_s(_storage_path, sizeof(_storage_path), "%s%s", module_path, "storage\\");
+		if (file_separator)
+			_snprintf_s(_storage_path, sizeof(_storage_path), "%s%s", module_path, "storage\\");
+		else
+			_snprintf_s(_storage_path, sizeof(_storage_path), "%s%s", module_path, "storage");
 		free(module_path);
 	}
 	return _storage_path;
@@ -230,7 +250,7 @@ void dk_recorder_service::backup_process(void)
 		if (!_backup_url || strlen(_backup_url) < 1)
 			break;
 
-		const char * storage_path = retrieve_storage_path();
+		const char * storage_path = retrieve_storage_path(false);
 		if (storage_path && strlen(storage_path)>0)
 		{
 			file_search_and_upload(storage_path);
@@ -267,8 +287,13 @@ void dk_recorder_service::file_search_and_upload(const char * path)
 			}
 			else
 			{
+				char * slash = strrchr((char*)path, '\\');
+				if (!slash)
+					return;
+				char * backup_folder_name = slash + 1;
 				char recored_file_path[260] = { 0 };
 				_snprintf_s(recored_file_path, sizeof(recored_file_path), "%s\\%s", path, file_name);
+
 
 				HANDLE file2backup = ::CreateFileA(recored_file_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				if (file2backup != INVALID_HANDLE_VALUE)
@@ -294,24 +319,32 @@ void dk_recorder_service::file_search_and_upload(const char * path)
 
 					if (etime != 0 /*&& etime >= stime*/)
 					{
-						CURL * curl = NULL;
-						curl_global_init(CURL_GLOBAL_ALL);
-						curl = curl_easy_init();
-						bool result = false;
-
 						char backup_ftp_server[260] = { 0 };
-						if (_backup_username && strlen(_backup_username) > 0 && _backup_password && strlen(_backup_password) > 0)
-							_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%s@%s:%d/%s/%s", _backup_username, _backup_password, _backup_url, _backup_port_number, "", file_name);
-						else
-							_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%d/%s/%s", _backup_url, _backup_port_number, "", file_name);
+						bool result = false;
+						CURL * check_curl = NULL;
+						check_curl = curl_easy_init();
+						if (check_curl)
+						{
+							if (_backup_username && strlen(_backup_username) > 0 && _backup_password && strlen(_backup_password) > 0)
+								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%s@%s:%d/%s/%s", _backup_username, _backup_password, _backup_url, _backup_port_number, backup_folder_name, file_name);
+							else
+								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%d/%s/%s", _backup_url, _backup_port_number, backup_folder_name, file_name);
 
-						result = backup_upload_single_file(curl, backup_ftp_server, recored_file_path, 0, 3);
-
-						curl_easy_cleanup(curl);
-						curl_global_cleanup();
-
-						if (result)
-							::DeleteFileA(recored_file_path);
+							result = backup_check_single_file(check_curl, backup_ftp_server, recored_file_path);
+							if (result)
+							{
+								CURL * backup_curl = NULL;
+								backup_curl = curl_easy_init();
+								if (backup_curl)
+								{
+									result = backup_upload_single_file(backup_curl, backup_ftp_server, recored_file_path, 0, 3);
+									if (result && _backup_delete_after_backup)
+										::DeleteFileA(recored_file_path);
+									curl_easy_cleanup(backup_curl);
+								}
+							}
+							curl_easy_cleanup(check_curl);
+						}
 					}
 				}
 			}
@@ -321,8 +354,17 @@ void dk_recorder_service::file_search_and_upload(const char * path)
 	}
 }
 
+size_t dk_recorder_service::backup_get_content_length_callback2(void * ptr, size_t size, size_t nmemb, void * stream)
+{
+	(void)ptr;
+	(void)stream;
+	/* we are not interested in the headers itself,
+	so we only return the size we would have saved ... */
+	return (size_t)(size * nmemb);
+}
+
 /* parse headers for Content-Length */
-size_t __stdcall dk_recorder_service::backup_get_content_length_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+size_t dk_recorder_service::backup_get_content_length_callback(void * ptr, size_t size, size_t nmemb, void * stream)
 {
 	int r;
 	long len = 0;
@@ -337,13 +379,13 @@ size_t __stdcall dk_recorder_service::backup_get_content_length_callback(void * 
 }
 
 /* discard downloaded data */
-size_t __stdcall dk_recorder_service::backup_discard_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+size_t dk_recorder_service::backup_discard_callback(void * ptr, size_t size, size_t nmemb, void * stream)
 {
 	return size * nmemb;
 }
 
 /* read data to upload */
-size_t __stdcall dk_recorder_service::backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+size_t dk_recorder_service::backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream)
 {
 	FILE * f = (FILE*)stream;
 	size_t n;
@@ -356,6 +398,50 @@ size_t __stdcall dk_recorder_service::backup_read_callback(void * ptr, size_t si
 	return n;
 }
 
+bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * remotepath, const char * localpath)
+{
+	CURLcode r = CURLE_GOT_NOTHING;
+
+	if (!curl)
+		return false;
+
+	curl_off_t local_file_size;
+	curl_off_t remote_file_size;
+
+	/* get the file size of the local file */
+	struct stat file_info;
+	if (stat(localpath, &file_info))
+		return false;
+	local_file_size = (curl_off_t)file_info.st_size;
+
+	curl_easy_setopt(curl, CURLOPT_URL, remotepath);
+	curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
+	curl_easy_setopt(curl, CURLOPT_FILETIME, 1);
+	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &dk_recorder_service::backup_get_content_length_callback2);
+	curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
+
+	r = curl_easy_perform(curl);
+	if (r == CURLE_OK)
+	{
+		double file_size = 0.0;
+		r = curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &file_size);
+		if ((r == CURLE_OK) && (file_size > 0.0))
+		{
+			remote_file_size = file_size;
+			if (remote_file_size == local_file_size)
+				return false;
+			else
+				return true;
+		}
+		else
+			return true;
+	}
+	else
+	{
+		return true;
+	}
+}
+
 /* read data to upload */
 bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * remotepath, const char * localpath, long timeout, long tries)
 {
@@ -363,6 +449,16 @@ bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * re
 	long uploaded_len = 0;
 	CURLcode r = CURLE_GOT_NOTHING;
 	int c;
+
+	if (!curl)
+		return false;
+
+	/* get the file size of the local file */
+	struct stat file_info;
+	curl_off_t fsize;
+	if (stat(localpath, &file_info)) 
+		return false;
+	fsize = (curl_off_t)file_info.st_size;
 
 	f = fopen(localpath, "rb");
 	if (!f)
@@ -373,31 +469,33 @@ bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * re
 	if (timeout)
 		curl_easy_setopt(curl, CURLOPT_FTP_RESPONSE_TIMEOUT, timeout);
 
-	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, backup_get_content_length_callback);
+	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &dk_recorder_service::backup_get_content_length_callback);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &uploaded_len);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, backup_discard_callback);
-	curl_easy_setopt(curl, CURLOPT_READFUNCTION, backup_read_callback);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dk_recorder_service::backup_discard_callback);
+	curl_easy_setopt(curl, CURLOPT_READFUNCTION, &dk_recorder_service::backup_read_callback);
 	curl_easy_setopt(curl, CURLOPT_READDATA, f);
 	/* disable passive mode */
 	curl_easy_setopt(curl, CURLOPT_FTPPORT, "-");
 	curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
+	curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)fsize);
 
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-
+	//r = curl_easy_perform(curl);
 	for (c = 0; (r != CURLE_OK) && (c < tries); c++) 
 	{
-		/* are we resuming? */
-		if (c) { /* yes */
-			/* determine the length of the file already written */
+		// are we resuming?
+		if (c) 
+		{	// yes
+			// determine the length of the file already written
 
-			/*
-			* With NOBODY and NOHEADER, libcurl will issue a SIZE
-			* command, but the only way to retrieve the result is
-			* to parse the returned Content-Length header. Thus,
-			* getcontentlengthfunc(). We need discardfunc() above
-			* because HEADER will dump the headers to stdout
-			* without it.
-			*/
+			
+			//With NOBODY and NOHEADER, libcurl will issue a SIZE
+			//command, but the only way to retrieve the result is
+			//to parse the returned Content-Length header. Thus,
+			//getcontentlengthfunc(). We need discardfunc() above
+			//because HEADER will dump the headers to stdout
+			//without it.
+			
 			curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
 			curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 
@@ -413,11 +511,13 @@ bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * re
 			curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
 		}
 		else 
-		{ /* no */
+		{
 			curl_easy_setopt(curl, CURLOPT_APPEND, 0L);
 		}
+		
 		r = curl_easy_perform(curl);
 	}
+
 	fclose(f);
 	if (r == CURLE_OK)
 		return true;

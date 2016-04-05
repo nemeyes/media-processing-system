@@ -1,10 +1,10 @@
 <?xml version="1.0" standalone="yes"?>
 <record_server>
-	<backup_server>
+	<backup_server delete_after_backup="false">
 		<url>127.0.0.1</url>
-		<port_number>14147</port_number>
-		<username></username>
-		<password></password>
+		<port_number>21</port_number>
+		<username>test</username>
+		<password>1234</password>
 	</backup_server>
 	<media_sources name="groupname" chunk_size="64">
 		<media_source uuid="CH1">

@@ -27,7 +27,7 @@ public:
 	bool start_recording(void);
 	bool stop_recording(void);
 
-	const char * retrieve_storage_path(void);
+	const char * retrieve_storage_path(bool file_separator=true);
 	const char * retrieve_config_path(void);
 	
 private:
@@ -40,15 +40,17 @@ private:
 	void backup_process(void);
 
 	void file_search_and_upload(const char * path);
+	/* parse headers for size*/
+	static size_t backup_get_content_length_callback2(void * ptr, size_t size, size_t nmemb, void * stream);
 	/* parse headers for Content-Length */
-	static size_t __stdcall backup_get_content_length_callback(void *ptr, size_t size, size_t nmemb, void *stream);
+	static size_t backup_get_content_length_callback(void * ptr, size_t size, size_t nmemb, void * stream);
 	/* discard downloaded data */
-	static size_t __stdcall backup_discard_callback(void *ptr, size_t size, size_t nmemb, void *stream);
+	static size_t backup_discard_callback(void * ptr, size_t size, size_t nmemb, void * stream);
 	/* read data to upload */
-	static size_t __stdcall backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream);
+	static size_t backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream);
 
+	bool backup_check_single_file(CURL * curl, const char * remotepath, const char * localpath);
 	bool backup_upload_single_file(CURL * curl, const char * remotepath, const char * localpath, long timeout, long tries);
-	bool backup_single_file(const char * remote_url, unsigned int port_number, const char * username, const char * password, const char * remotepath, const char * filepath);
 
 private:
 	char _storage_path[260];
@@ -59,6 +61,7 @@ private:
 	unsigned int _backup_port_number;
 	char _backup_username[260];
 	char _backup_password[260];
+	bool _backup_delete_after_backup;
 	bool _backup_run;
 	HANDLE _backup_thread;
 };
