@@ -6,7 +6,6 @@
 #include <pthread.h>
 #define EXP_CLASS
 #else
-#include <winsock2.h>
 #include <windows.h>
 #if defined(EXPORT_SHARED_MEMORY_LIB)
 #define EXP_SHARED_MEMORY_CLASS __declspec(dllexport)

@@ -147,25 +147,6 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option = 1)
 		pGraph->AddFilter(pCaptureFilter, L"Capture Filter");
 		CHECK_HR(hr, L"Can't Add Capture Filter To Graph");
 
-#if 0
-		CComPtr<IBaseFilter> pColorSpaceConverter;
-		hr = pColorSpaceConverter.CoCreateInstance(CLSID_DK_COLORSPACE_CONVERT_FILTER);
-		CHECK_HR(hr, L"Can't Create ColorSpace Converter");
-		hr = pGraph->AddFilter(pColorSpaceConverter, L"ColorSpace Converter");
-		CHECK_HR(hr, L"Can't Add ColorSpace Converter To Graph");
-
-		CComPtr<IBaseFilter> pVideoRenderer;
-		hr = pVideoRenderer.CoCreateInstance(CLSID_VideoMixingRenderer9);
-		CHECK_HR(hr, L"Can't Create Video Renderer");
-		hr = pGraph->AddFilter(pVideoRenderer, L"Video Renderer");
-		CHECK_HR(hr, L"Can't Add Video Renderer To Graph");
-
-		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
-		CHECK_HR(hr, L"Can't Connect Capture Filter and ColorSpace Converter");
-
-		hr = pGraph->ConnectDirect(GetPin(pColorSpaceConverter, L"XForm Out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
-		CHECK_HR(hr, L"Can't Connect ColorSpace Converter and Video Renderer");
-#else
 		CComPtr<IBaseFilter> pVideoRenderer;
 		hr = pVideoRenderer.CoCreateInstance(CLSID_VideoMixingRenderer9);
 		CHECK_HR(hr, L"Can't Create Video Renderer");
@@ -174,7 +155,6 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option = 1)
 
 		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
 		CHECK_HR(hr, L"Can't Connect Capture Filter and ideo Renderer");
-#endif
 	}
 	else if (option == 1)
 	{
@@ -189,45 +169,6 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option = 1)
 		pGraph->AddFilter(pCaptureFilter, L"Capture Filter");
 		CHECK_HR(hr, L"Can't Add Capture Filter To Graph");
 
-
-#if 0
-		CComPtr<IBaseFilter> pColorSpaceConverter;
-		hr = pColorSpaceConverter.CoCreateInstance(CLSID_DK_COLORSPACE_CONVERT_FILTER);
-		CHECK_HR(hr, L"Can't Create ColorSpace Converter");
-		hr = pGraph->AddFilter(pColorSpaceConverter, L"ColorSpace Converter");
-		CHECK_HR(hr, L"Can't Add ColorSpace Converter To Graph");
-
-		CComPtr<IBaseFilter> pEncodeFilter;
-		hr = pEncodeFilter.CoCreateInstance(CLSID_DK_X264_ENCODE_FILTER);
-		CHECK_HR(hr, L"Can't Create Encode Filter");
-		hr = pGraph->AddFilter(pEncodeFilter, L"Encode Filter");
-		CHECK_HR(hr, L"Can't Add Encode Filter To Graph");
-
-		CComPtr<IBaseFilter> pDecodeFilter;
-		hr = pDecodeFilter.CoCreateInstance(CLSID_ffdshowVideoDecoder);
-		CHECK_HR(hr, L"Can't Create Decode Filter");
-		hr = pGraph->AddFilter(pDecodeFilter, L"Decode Filter");
-		CHECK_HR(hr, L"Can't Add Decode Filter To Graph");
-
-
-		CComPtr<IBaseFilter> pVideoRenderer;
-		hr = pVideoRenderer.CoCreateInstance(CLSID_VideoMixingRenderer9);
-		CHECK_HR(hr, L"Can't Create Video Renderer");
-		hr = pGraph->AddFilter(pVideoRenderer, L"Video Renderer");
-		CHECK_HR(hr, L"Can't Add Video Renderer To Graph");
-
-		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
-		CHECK_HR(hr, L"Can't Connect Capture Filter and ColorSpace Converter");
-
-		hr = pGraph->ConnectDirect(GetPin(pColorSpaceConverter, L"XForm Out"), GetPin(pEncodeFilter, L"XForm In"), NULL);
-		CHECK_HR(hr, L"Can't Connect ColorSpace Converter and Encode Filter");
-
-		hr = pGraph->ConnectDirect(GetPin(pEncodeFilter, L"XForm Out"), GetPin(pDecodeFilter, L"In"), NULL);
-		CHECK_HR(hr, L"Can't Connect Encode Filter and Decode Filter");
-
-		hr = pGraph->ConnectDirect(GetPin(pDecodeFilter, L"Out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
-		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
-#else
 		CComPtr<IBaseFilter> pEncodeFilter;
 		hr = pEncodeFilter.CoCreateInstance(CLSID_DK_NVENC_ENCODE_FILTER);
 		CHECK_HR(hr, L"Can't Create Encode Filter");
@@ -254,7 +195,6 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option = 1)
 
 		hr = pGraph->ConnectDirect(GetPin(pDecodeFilter, L"Out"), GetPin(pVideoRenderer, L"VMR Input0"), NULL);
 		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
-#endif
 	}
 	else if (option == 2)
 	{
@@ -269,34 +209,6 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option = 1)
 		pGraph->AddFilter(pCaptureFilter, L"Capture Filter");
 		CHECK_HR(hr, L"Can't Add Capture Filter To Graph");
 
-#if 0
-		CComPtr<IBaseFilter> pColorSpaceConverter;
-		hr = pColorSpaceConverter.CoCreateInstance(CLSID_DK_COLORSPACE_CONVERT_FILTER);
-		CHECK_HR(hr, L"Can't Create ColorSpace Converter");
-		hr = pGraph->AddFilter(pColorSpaceConverter, L"ColorSpace Converter");
-		CHECK_HR(hr, L"Can't Add ColorSpace Converter To Graph");
-
-		CComPtr<IBaseFilter> pEncodeFilter;
-		hr = pEncodeFilter.CoCreateInstance(CLSID_DK_X264_ENCODE_FILTER);
-		CHECK_HR(hr, L"Can't Create Encode Filter");
-		hr = pGraph->AddFilter(pEncodeFilter, L"Encode Filter");
-		CHECK_HR(hr, L"Can't Add Encode Filter To Graph");
-
-		CComPtr<IBaseFilter> pNullRenderer;
-		hr = pNullRenderer.CoCreateInstance(CLSID_NullRenderer);
-		CHECK_HR(hr, L"Can't Create Null Renderer");
-		hr = pGraph->AddFilter(pNullRenderer, L"Null Renderer");
-		CHECK_HR(hr, L"Can't Add Null Renderer To Graph");
-
-		hr = pGraph->ConnectDirect(GetPin(pCaptureFilter, L"out"), GetPin(pColorSpaceConverter, L"XForm In"), NULL);
-		CHECK_HR(hr, L"Can't Connect Capture Filter and ColorSpace Converter");
-
-		hr = pGraph->ConnectDirect(GetPin(pColorSpaceConverter, L"XForm Out"), GetPin(pEncodeFilter, L"XForm In"), NULL);
-		CHECK_HR(hr, L"Can't Connect ColorSpace Converter and Encode Filter");
-
-		hr = pGraph->ConnectDirect(GetPin(pEncodeFilter, L"XForm Out"), GetPin(pNullRenderer, L"In"), NULL);
-		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
-#else
 		CComPtr<IBaseFilter> pEncodeFilter;
 		hr = pEncodeFilter.CoCreateInstance(CLSID_DK_NVENC_ENCODE_FILTER);
 		CHECK_HR(hr, L"Can't Create Encode Filter");
@@ -314,7 +226,6 @@ HRESULT BuildGraph(IGraphBuilder *pGraph, int option = 1)
 
 		hr = pGraph->ConnectDirect(GetPin(pEncodeFilter, L"XForm Out"), GetPin(pNullRenderer, L"In"), NULL);
 		CHECK_HR(hr, L"Can't Connect Decode Filter and Video Renderer");
-#endif
 	}
 	return S_OK;
 }

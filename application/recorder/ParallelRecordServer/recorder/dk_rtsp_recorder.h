@@ -4,9 +4,14 @@
 #include "dk_bit_vector.h"
 #include <dk_live_rtsp_client.h>
 #if defined(WITH_MPEG2TS)
-#include "dk_mpeg2ts_recorder.h"
+ #include "dk_mpeg2ts_recorder.h"
 #else
-#include "dk_record_module.h"
+ #include "dk_record_module.h"
+#endif
+
+#if defined(WITH_RELAY_LIVE)
+ #define WITH_SERVER_PUBLISH
+ #include <dk_shared_memory.h>
 #endif
 
 class dk_rtsp_recorder : public dk_live_rtsp_client
@@ -54,6 +59,10 @@ private:
 	dk_mpeg2ts_recorder * _mpeg2ts_recorder;
 #else
 	dk_record_module * _file_recorder;
+#endif
+
+#if defined(WITH_RELAY_LIVE)
+	ic::dk_shared_memory_server * _sm_server;
 #endif
 
 	long long _chunk_size_bytes;

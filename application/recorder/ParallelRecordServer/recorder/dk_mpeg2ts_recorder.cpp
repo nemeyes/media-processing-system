@@ -1,4 +1,5 @@
 #include "dk_mpeg2ts_recorder.h"
+#if defined(WITH_MPEG2TS)
 #include <dk_time_helper.h>
 #include <dk_fileio.h>
 #include <stdio.h>
@@ -50,23 +51,4 @@ dk_mpeg2ts_recorder::ERR_CODE dk_mpeg2ts_recorder::recv_ts_stream_callback(uint8
 	::WriteFile(_file, ts, stream_size, &nbytes, NULL);
 	return dk_mpeg2ts_recorder::ERR_CODE_SUCCESS;
 }
-
-/*
-unsigned long dk_mpeg2ts_recorder::get_elapsed_utc_time(void)
-{
-	SYSTEMTIME utc_systemtime = { 0 };
-	::GetSystemTime(&utc_systemtime);
-
-	FILETIME utc_filetime = { 0 };
-	::SystemTimeToFileTime(&utc_systemtime, &utc_filetime);
-
-	LARGE_INTEGER utc_time;
-	utc_time.LowPart = utc_filetime.dwLowDateTime;
-	utc_time.HighPart = utc_filetime.dwHighDateTime;
-
-	ULONG utc_elasped_time;
-	::RtlTimeToSecondsSince1970(&utc_time, &utc_elasped_time);
-
-	return utc_elasped_time;
-}
-*/
+#endif

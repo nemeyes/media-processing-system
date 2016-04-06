@@ -1,5 +1,5 @@
 <?xml version="1.0" standalone="yes"?>
-<record_server>
+<recorder>
 	<backup_server delete_after_backup="false">
 		<url>127.0.0.1</url>
 		<port_number>21</port_number>
@@ -18,4 +18,4 @@
 			<password></password>
 		</media_source>
 	</media_sources>
-</record_server>
+</recorder>

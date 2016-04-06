@@ -7,12 +7,12 @@
 #include "H264VideoStreamDiscreteFramer.hh"
 #endif
 
-buffered_h264_sms* buffered_h264_sms::createNew(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_file_reader> reader)
+buffered_h264_sms* buffered_h264_sms::createNew(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_source_reader> reader)
 {
 	return new buffered_h264_sms(env, stream_name, reuseFirstSource, reader);
 }
 
-buffered_h264_sms::buffered_h264_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_file_reader> reader)
+buffered_h264_sms::buffered_h264_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_source_reader> reader)
 	: buffered_sms(env, stream_name, reuseFirstSource, reader)
 	, fAuxSDPLine(NULL)
 	, fDoneFlag(0)

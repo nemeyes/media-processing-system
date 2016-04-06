@@ -14,7 +14,7 @@
 #include "nvEncodeAPI.h"
 #include "dk_nvenc_encoder.h"
 
-#define MAX_ENCODE_QUEUE 128
+#define MAX_ENCODE_QUEUE 32
 
 class nvenc_encoder
 {
@@ -147,7 +147,7 @@ private:
 	NVENCSTATUS NvEncDestroyMVBuffer(NV_ENC_OUTPUT_PTR bitstreamBuffer);
 	NVENCSTATUS NvEncLockBitstream(NV_ENC_LOCK_BITSTREAM* lockBitstreamBufferParams);
 	NVENCSTATUS NvEncUnlockBitstream(NV_ENC_OUTPUT_PTR bitstreamBuffer);
-	NVENCSTATUS NvEncLockInputBuffer(void* inputBuffer, void** bufferDataPtr, uint32_t* pitch);
+	NVENCSTATUS NvEncLockInputBuffer(void * input_buffer, void ** buffer_data, uint32_t * pitch);
 	NVENCSTATUS NvEncUnlockInputBuffer(NV_ENC_INPUT_PTR inputBuffer);
 	NVENCSTATUS NvEncGetEncodeStats(NV_ENC_STAT* encodeStats);
 	NVENCSTATUS NvEncGetSequenceParams(NV_ENC_SEQUENCE_PARAM_PAYLOAD* sequenceParamPayload);
@@ -159,7 +159,7 @@ private:
 	NVENCSTATUS NvEncOpenEncodeSessionEx(void* device, NV_ENC_DEVICE_TYPE deviceType);
 	NVENCSTATUS NvEncRegisterResource(NV_ENC_INPUT_RESOURCE_TYPE resourceType, void* resourceToRegister, uint32_t width, uint32_t height, uint32_t pitch, void** registeredResource);
 	NVENCSTATUS NvEncUnregisterResource(NV_ENC_REGISTERED_PTR registeredRes);
-	NVENCSTATUS NvEncFlushEncoderQueue(void *hEOSEvent);
+	NVENCSTATUS NvEncFlushEncoderQueue(void * eos_event);
 	NVENCSTATUS NvEncEncodePicture(NV_ENC_PIC_PARAMS * pic_params);
 
 	//NVENCSTATUS NvRunMotionEstimationOnly(EncodeBuffer *pEncodeBuffer[2], MEOnlyConfig *pMEOnly);
@@ -191,10 +191,6 @@ private:
 	nvenc_buffer_t				_nvenc_buffer[MAX_ENCODE_QUEUE];
 	nvenc_queue<nvenc_buffer_t> _nvenc_buffer_queue;
 	nvenc_output_buffer_t		_nvenc_eos_output_buffer;
-
-#if defined(_DEBUG)
-	HANDLE _file;
-#endif
 
 private:
 	IDirectXVideoProcessorService * _dxva2_video_process_services;

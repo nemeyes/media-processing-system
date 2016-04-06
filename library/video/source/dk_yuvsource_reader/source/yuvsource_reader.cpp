@@ -26,7 +26,7 @@ dk_yuvsource_reader::error_code yuvsource_reader::initialize_reader(const char *
 	_frame_size = _width * _height * 1.5;
 	_file_size = file_size(_file);
 	_current_frame_index = 0;
-	_max_frame_index = _file_size / _frame_size;
+	_max_frame_index = _file_size / (long)_frame_size;
 	return dk_yuvsource_reader::error_code_success;
 }
 
@@ -42,7 +42,7 @@ dk_yuvsource_reader::error_code yuvsource_reader::read(uint8_t * yuv, int32_t st
 	uint8_t * v = y + _height * stride;
 	uint8_t * u = v + ((_height * stride) >> 2);
 
-	uint32_t file_offset = _frame_size * _current_frame_index;
+	uint64_t file_offset = _frame_size * _current_frame_index;
 	uint32_t bytes_read = 0;
 	set_file_position(_file, file_offset, FILE_BEGIN);
 	read_file(_file, y, _height * _width, &bytes_read); //copy luma plane
@@ -75,16 +75,17 @@ void yuvsource_reader::close_file(HANDLE file)
 	}
 }
 
-unsigned long yuvsource_reader::file_size(HANDLE file)
+int64_t yuvsource_reader::file_size(HANDLE file)
 {
-	unsigned long size = 0;
+	int64_t size = 0;
 	if (file != NULL && file != INVALID_HANDLE_VALUE)
 	{
-		LARGE_INTEGER filesize;
-		filesize.LowPart = ::GetFileSize(file, (LPDWORD)&filesize.HighPart);
-		//size |= filesize.HighPart << 32;
-		//size |= filesize.LowPart;
-		size = filesize.LowPart;
+		LARGE_INTEGER filesize = { 0 };
+		::GetFileSizeEx(_file, &filesize);
+
+		size = filesize.HighPart;
+		size <<= 32;
+		size |= filesize.LowPart;
 	}
 	return size;
 }
@@ -94,6 +95,14 @@ void yuvsource_reader::set_file_position(HANDLE file, uint32_t offset, uint32_t 
 	if (file != NULL && file != INVALID_HANDLE_VALUE)
 	{
 		::SetFilePointer(file, offset, NULL, flag);
+	}
+}
+
+void yuvsource_reader::set_file_position(HANDLE file, uint64_t offset, uint32_t flag)
+{
+	if (file != NULL && file != INVALID_HANDLE_VALUE)
+	{
+		::SetFilePointer(file, ((uint32_t*)&offset)[0], (PLONG)&((uint32_t*)&offset)[1], flag);
 	}
 }
 

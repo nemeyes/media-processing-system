@@ -206,7 +206,7 @@ HRESULT  dk_nvenc_encode_filter::CheckInputType(const CMediaType *type)
 					_config.height = -vih2->bmiHeader.biHeight;
 				else
 					_config.height = vih2->bmiHeader.biHeight;
-				_config.cs = dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_nv12;
+				_config.cs = dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_yv12;
 				return S_OK;
 			}
 			else if (IsEqualGUID(*(formaType), FORMAT_VideoInfo))
@@ -217,6 +217,7 @@ HRESULT  dk_nvenc_encode_filter::CheckInputType(const CMediaType *type)
 					_config.height = -vih->bmiHeader.biHeight;
 				else
 					_config.height = vih->bmiHeader.biHeight;
+				_config.cs = dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_yv12;
 				return S_OK;
 			}
 		}
@@ -397,12 +398,11 @@ HRESULT dk_nvenc_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 	dst->SetActualDataLength(bitstream.data_size);
 
 
-	//end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
-	//dst->SetTime(&start_time, &end_time);
-
-	//return S_OK;
-
-	
+#if 1
+	end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
+	dst->SetTime(&start_time, &end_time);
+	return S_OK;
+#else	
 	BOOL bSyncPoint;
 	BOOL bPreroll;
 	BOOL bDiscon;
@@ -456,6 +456,7 @@ HRESULT dk_nvenc_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 	dst->SetPreroll(FALSE);
 
 	return hr;
+#endif
 }
 
 STDMETHODIMP dk_nvenc_encode_filter::GetPages(CAUUID *pPages)

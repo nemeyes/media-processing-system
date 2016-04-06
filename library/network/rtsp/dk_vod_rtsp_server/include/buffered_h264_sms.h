@@ -6,19 +6,19 @@
 #endif
 
 #include <memory>
-#include "media_file_reader.h"
+#include "media_source_reader.h"
 
 class buffered_h264_sms : public buffered_sms
 {
 public:
-	static buffered_h264_sms * createNew(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_file_reader> reader);
+	static buffered_h264_sms * createNew(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_source_reader> reader);
 
 	// Used to implement "getAuxSDPLine()":
 	void checkForAuxSDPLine1(void);
 	void afterPlayingDummy1(void);
 
 protected:
-	buffered_h264_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_file_reader> reader);
+	buffered_h264_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_source_reader> reader);
 	virtual ~buffered_h264_sms(void);
 
 	void setDoneFlag() { fDoneFlag = ~0; }

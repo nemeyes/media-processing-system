@@ -9,11 +9,22 @@ dk_rtsp_recorder::dk_rtsp_recorder(int32_t chunk_size_mb)
 	memset(_uuid, 0x00, sizeof(_uuid));
 	clear_sps();
 	clear_pps();
+
+#if defined(WITH_RELAY_LIVE)
+	_sm_server = new ic::dk_shared_memory_server();
+#endif
 }
 
 dk_rtsp_recorder::~dk_rtsp_recorder(void)
 {
 	//stop_recording();
+#if defined(WITH_RELAY_LIVE)
+	if (_sm_server)
+	{
+		delete _sm_server;
+		_sm_server = nullptr;
+	}
+#endif
 }
 
 void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, const char * storage, const char * uuid)
@@ -23,11 +34,19 @@ void dk_rtsp_recorder::start_recording(const char * url, const char * username, 
 		strncpy_s(_storage, storage, sizeof(_storage));
 		strncpy_s(_uuid, uuid, sizeof(_uuid));
 		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 0, true);
+
+#if defined(WITH_RELAY_LIVE)
+		_sm_server->create_shared_memory(uuid);
+#endif
 	}
 }
 
 void dk_rtsp_recorder::stop_recording(void)
 {
+#if defined(WITH_RELAY_LIVE)
+	_sm_server->destroy_shared_memory();
+#endif
+
 	dk_live_rtsp_client::stop();
 #if defined(WITH_MPEG2TS)
 	if (_mpeg2ts_recorder)
@@ -46,7 +65,7 @@ void dk_rtsp_recorder::stop_recording(void)
 #endif
 }
 
-void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
+void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vps_size, uint8_t * sps, size_t sps_size, uint8_t * pps, size_t pps_size, const uint8_t * data, size_t data_size, long long timestamp)
 {
 	if (smt == dk_live_rtsp_client::vsubmedia_type_h264)
 	{
@@ -80,12 +99,21 @@ void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, u
 			}
 		} while (0);
 #else
-		set_sps(sps, spssize);
-		set_pps(pps, ppssize);
+		set_sps(sps, sps_size);
+		set_pps(pps, pps_size);
 		_file_recorder = new dk_record_module(_storage, _uuid);
-		_file_recorder->write(sps, spssize, timestamp);
-		_file_recorder->write(pps, ppssize, timestamp);
+		_file_recorder->write(sps, sps_size, timestamp);
+		_file_recorder->write(pps, pps_size, timestamp);
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
+
+#if defined(WITH_RELAY_LIVE)
+		if(_sm_server->wait_available())
+			_sm_server->write(sps, sps_size);
+		if (_sm_server->wait_available())
+			_sm_server->write(pps, pps_size);
+		if (_sm_server->wait_available())
+			_sm_server->write((void*)data, data_size);
+#endif
 #endif
 	}
 }
@@ -169,6 +197,10 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 			}
 		}
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
+#if defined(WITH_RELAY_LIVE)
+		if (_sm_server->wait_available())
+			_sm_server->write((void*)data, data_size);
+#endif
 #endif
 	}
 }

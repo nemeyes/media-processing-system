@@ -16,8 +16,9 @@ public:
 private:
 	HANDLE open_file(const char * filepath);
 	void close_file(HANDLE file);
-	unsigned long file_size(HANDLE file);
+	int64_t file_size(HANDLE file);
 	void set_file_position(HANDLE file, uint32_t offset, uint32_t flag);
+	void set_file_position(HANDLE file, uint64_t offset, uint32_t flag);
 	void read_file(HANDLE file, void * buf, uint32_t bytes_to_read, uint32_t * bytes_read);
 
 private:
@@ -26,11 +27,11 @@ private:
 	int32_t _height;
 	int32_t _fps;
 
-	int32_t _frame_size;
-	unsigned long _file_size;
+	int64_t _frame_size;
+	int64_t _file_size;
 
-	int32_t _current_frame_index;
-	int32_t _max_frame_index;
+	int64_t _current_frame_index;
+	int64_t _max_frame_index;
 };
 
 

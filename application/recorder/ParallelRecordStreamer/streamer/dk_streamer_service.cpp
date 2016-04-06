@@ -39,7 +39,7 @@ bool dk_streamer_service::start_streaming(void)
 	TiXmlDocument document;
 	document.LoadFile(config_filepath.c_str());
 
-	TiXmlElement * root_elem = document.FirstChildElement("record_streamer");
+	TiXmlElement * root_elem = document.FirstChildElement("streamer");
 	if (!root_elem)
 		return false;
 

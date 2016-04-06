@@ -1,6 +1,6 @@
 #include "buffered_sms.h"
 
-buffered_sms::buffered_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_file_reader> reader)
+buffered_sms::buffered_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<media_source_reader> reader)
 	: OnDemandServerMediaSubsession(env, reuseFirstSource)
 	, _reader(reader)
 {

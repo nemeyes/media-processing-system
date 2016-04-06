@@ -211,7 +211,7 @@ void ic::shared_memory_server::block(ic::shared_memory_block_t * blk)
 		if (::InterlockedCompareExchange(&blk->wdone, 0, 1) != 1)
 		{
 			return;
-}
+		}
 
 		::InterlockedCompareExchange(&_smb->wend, blk->next, blk_index);
 

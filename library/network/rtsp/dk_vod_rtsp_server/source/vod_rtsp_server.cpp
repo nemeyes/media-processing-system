@@ -1,7 +1,7 @@
 #include "vod_rtsp_server.h"
 #include <liveMedia.hh>
 #include <string.h>
-#include "media_file_reader.h"
+#include "media_source_reader.h"
 #include "buffered_h264_sms.h"
 #include <memory>
 
@@ -58,13 +58,13 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env, char const * st
 	ServerMediaSession* sms = NULL;
 	Boolean const reuse_source = False;
 
-	std::shared_ptr<media_file_reader> reader(new media_file_reader);
+	std::shared_ptr<media_source_reader> reader(new media_source_reader);
 
-	media_file_reader::vsubmedia_type video_type = media_file_reader::unknown_video_type;
-	media_file_reader::asubmedia_type audio_type = media_file_reader::unknown_audio_type;
+	media_source_reader::vsubmedia_type video_type = media_source_reader::unknown_video_type;
+	media_source_reader::asubmedia_type audio_type = media_source_reader::unknown_audio_type;
 	reader->open(stream_name, 0, video_type, audio_type);
 
-	if (video_type == media_file_reader::vsubmedia_type_h264)
+	if (video_type == media_source_reader::vsubmedia_type_h264)
 	{
 		NEW_SMS("H.264 Video");
 		OutPacketBuffer::maxSize = 6000000; // allow for some possibly large H.264 frames

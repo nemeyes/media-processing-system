@@ -27,9 +27,6 @@
     <ClInclude Include="include\vod_rtsp_server.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="file_reader\media_file_reader.h">
-      <Filter>file_reader</Filter>
-    </ClInclude>
     <ClInclude Include="include\buffered_h264_sms.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -51,6 +48,9 @@
     <ClInclude Include="file_reader\record_module_seeker.h">
       <Filter>file_reader</Filter>
     </ClInclude>
+    <ClInclude Include="file_reader\media_source_reader.h">
+      <Filter>file_reader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_vod_rtsp_server.cpp">
@@ -58,9 +58,6 @@
     </ClCompile>
     <ClCompile Include="source\vod_rtsp_server.cpp">
       <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="file_reader\media_file_reader.cpp">
-      <Filter>file_reader</Filter>
     </ClCompile>
     <ClCompile Include="source\buffered_sms.cpp">
       <Filter>소스 파일</Filter>
@@ -78,6 +75,9 @@
       <Filter>ffmpeg_base</Filter>
     </ClCompile>
     <ClCompile Include="file_reader\record_module_seeker.cpp">
+      <Filter>file_reader</Filter>
+    </ClCompile>
+    <ClCompile Include="file_reader\media_source_reader.cpp">
       <Filter>file_reader</Filter>
     </ClCompile>
   </ItemGroup>

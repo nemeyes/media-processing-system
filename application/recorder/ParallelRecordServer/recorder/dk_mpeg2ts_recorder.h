@@ -1,4 +1,6 @@
 #pragma once
+
+#if defined(WITH_MPEG2TS)
 #include <windows.h>
 #include <cstdint>
 #include <dk_ff_mpeg2ts_muxer.h>
@@ -19,3 +21,5 @@ private:
 	HANDLE _file;
 
 };
+
+#endif

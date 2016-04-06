@@ -1,8 +1,8 @@
 <?xml version="1.0" standalone="yes"?>
-<record_streamer>
+<streamer>
 	<rtsp_server>
 		<port_number>5554</port_number>
 		<username></username>
 		<password></password>
 	</rtsp_server>
-</record_streamer>
+</streamer>

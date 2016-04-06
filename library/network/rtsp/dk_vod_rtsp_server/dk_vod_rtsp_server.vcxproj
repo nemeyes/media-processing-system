@@ -94,7 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h" />
-    <ClInclude Include="file_reader\media_file_reader.h" />
+    <ClInclude Include="file_reader\media_source_reader.h" />
     <ClInclude Include="file_reader\record_module_seeker.h" />
     <ClInclude Include="include\buffered_byte_stream_source.h" />
     <ClInclude Include="include\buffered_framed_source.h" />
@@ -106,7 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp" />
-    <ClCompile Include="file_reader\media_file_reader.cpp" />
+    <ClCompile Include="file_reader\media_source_reader.cpp" />
     <ClCompile Include="file_reader\record_module_seeker.cpp" />
     <ClCompile Include="source\buffered_byte_stream_source.cpp" />
     <ClCompile Include="source\buffered_framed_source.cpp" />

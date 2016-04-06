@@ -87,7 +87,7 @@ bool dk_recorder_service::start_recording(void)
 	TiXmlDocument document;
 	document.LoadFile(config_filepath.c_str());
 
-	TiXmlElement * root_elem = document.FirstChildElement("record_server");
+	TiXmlElement * root_elem = document.FirstChildElement("recorder");
 	if (!root_elem)
 		return false;
 
