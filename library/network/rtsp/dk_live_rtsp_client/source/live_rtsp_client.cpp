@@ -355,7 +355,10 @@ void live_rtsp_client::setup_streams(void)
 			}
 			else if (!strcmp(media_subsession->codecName(), "H264"))
 			{
-				bs = h264_buffer_sink::createNew(_front, envir(), media_subsession->fmtp_spropparametersets(), 512 * 1024);
+				unsigned int num_spspps = 0;
+				SPropRecord * spspps = parseSPropParameterSets(media_subsession->fmtp_spropparametersets(), num_spspps);
+				bs = h264_buffer_sink::createNew(_front, envir(), (const char*)spspps[0].sPropBytes, spspps[0].sPropLength, (const char*)spspps[1].sPropBytes, spspps[1].sPropLength, 512 * 1024);
+				delete[] spspps;
 			}
 			else if (!strcmp(media_subsession->codecName(), "MP4V-ES"))
 			{

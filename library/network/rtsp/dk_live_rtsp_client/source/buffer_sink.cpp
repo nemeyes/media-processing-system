@@ -101,7 +101,6 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 				}
 
 				bool is_idr = dk_live_rtsp_client::is_idr(_vsmt, data[4] & 0x1F);
-
 				if (_change_sps || _change_pps)
 				{
 					saved_sps = _front->get_sps(saved_sps_size);
@@ -117,9 +116,14 @@ void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct time
 						}
 					}
 				}
-
-				//if (_sps_not_changed && _pps_not_changed && is_idr && !_is_first_idr_rcvd)
-				//	_is_first_idr_rcvd = true;
+				else if (saved_sps && saved_sps_size>0 && saved_pps && saved_pps_size>0)
+				{
+					if (is_idr && !_recv_idr)
+					{
+						_recv_idr = true;
+						_front->on_begin_video(_vsmt, nullptr, 0, saved_sps, saved_sps_size, saved_pps, saved_pps_size, data, data_size, 0);
+					}
+				}
 
 				if (!is_sps && !is_pps && _recv_idr)
 				{

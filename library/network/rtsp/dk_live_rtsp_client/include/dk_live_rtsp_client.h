@@ -12,7 +12,10 @@ public:
 	virtual ~dk_live_rtsp_client(void);
 	dk_live_rtsp_client::error_code play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, bool repeat = true);
 	dk_live_rtsp_client::error_code stop(void);
-	
+
+	void set_sps(uint8_t * sps, size_t sps_size);
+	void set_pps(uint8_t * pps, size_t pps_size);
+
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
 
@@ -22,10 +25,8 @@ public:
 	virtual void on_recv_audio(dk_live_rtsp_client::asubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp) = 0;
 
 	bool ignore_sdp(void);
-private:
-	void set_sps(uint8_t * sps, size_t sps_size);
-	void set_pps(uint8_t * pps, size_t pps_size);
 
+private:
 	void process( void );
 #if !defined(WIN32)
     static void* process_cb( void * param );

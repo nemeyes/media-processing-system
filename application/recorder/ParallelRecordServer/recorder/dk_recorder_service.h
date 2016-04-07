@@ -61,6 +61,7 @@ private:
 	unsigned int _backup_port_number;
 	char _backup_username[260];
 	char _backup_password[260];
+	bool _backup_enable;
 	bool _backup_delete_after_backup;
 	bool _backup_run;
 	HANDLE _backup_thread;

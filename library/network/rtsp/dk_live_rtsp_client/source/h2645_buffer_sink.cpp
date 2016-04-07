@@ -2,13 +2,34 @@
 #include "h2645_buffer_sink.h"
 #include <H264VideoRTPSource.hh>
 
-h2645_buffer_sink::h2645_buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::vsubmedia_type smt, UsageEnvironment & env, unsigned buffer_size, const char * vps, const char * sps, const char * pps)
+h2645_buffer_sink::h2645_buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::vsubmedia_type smt, UsageEnvironment & env, const char * vps, unsigned vps_size, const char * sps, unsigned sps_size, const char * pps, unsigned pps_size, unsigned buffer_size)
 	: buffer_sink(front, dk_live_rtsp_client::media_type_video, smt, env, buffer_size)
 	, _receive_first_frame(false)
 {
     _vspps[0] = vps;
     _vspps[1] = sps;
     _vspps[2] = pps;
+	_vspps_size[0] = vps_size;
+	_vspps_size[1] = sps_size;
+	_vspps_size[2] = pps_size;
+
+	if (front)
+	{
+		uint8_t start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
+		uint8_t spspps[200] = { 0 };
+		if (sps && sps_size > 0)
+		{
+			memmove(spspps, start_code, sizeof(start_code));
+			memmove(spspps + sizeof(start_code), sps, sps_size);
+			front->set_sps(spspps, sizeof(start_code) + sps_size);
+		}
+		if (pps && pps_size>0)
+		{
+			memmove(spspps, start_code, sizeof(start_code));
+			memmove(spspps + sizeof(start_code), pps, pps_size);
+			front->set_pps(spspps, sizeof(start_code) + pps_size);
+		}
+	}
 }
 
 h2645_buffer_sink::~h2645_buffer_sink(void)

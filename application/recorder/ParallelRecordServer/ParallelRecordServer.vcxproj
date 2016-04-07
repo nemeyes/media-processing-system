@@ -56,7 +56,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;WITH_RELAY_LIVE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\ipc\dk_shared_memory\include;..\..\..\library\container\dk_record_module\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>

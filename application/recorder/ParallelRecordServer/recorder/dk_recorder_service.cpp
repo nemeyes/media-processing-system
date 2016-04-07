@@ -42,6 +42,8 @@ dk_recorder_service::_recorder_receiver_information_t dk_recorder_service::_reco
 dk_recorder_service::dk_recorder_service(void)
 	: _backup_thread(INVALID_HANDLE_VALUE)
 	, _backup_port_number(21)
+	, _backup_enable(false)
+	, _backup_delete_after_backup(false)
 {
 	memset(_storage_path, 0x00, sizeof(_storage_path));
 	memset(_config_path, 0x00, sizeof(_config_path));
@@ -95,44 +97,51 @@ bool dk_recorder_service::start_recording(void)
 	const char * str_backup_port_number = nullptr;
 	const char * backup_username = nullptr;
 	const char * backup_password = nullptr;
-	bool backup_delete_after_backup = false;
 	TiXmlElement * backup_server_elem = root_elem->FirstChildElement("backup_server");
 	if (!backup_server_elem)
 		return false;
 
-	const char * delete_after_backup = backup_server_elem->Attribute("delete_after_backup");
-	if (!delete_after_backup || strcmp(delete_after_backup, "true"))
-		backup_delete_after_backup = false;
+	const char * enable_backup = backup_server_elem->Attribute("enable");
+	if (!enable_backup || strcmp(enable_backup, "true"))
+		_backup_enable = false;
 	else
-		backup_delete_after_backup = true;
-	
-	TiXmlElement * backup_url_elem = backup_server_elem->FirstChildElement("url");
-	if (backup_url_elem)
-		backup_url = backup_url_elem->GetText();
+		_backup_enable = true;
 
-	TiXmlElement * backup_port_number_elem = backup_server_elem->FirstChildElement("port_number");
-	if (backup_port_number_elem)
+	if (_backup_enable)
 	{
-		str_backup_port_number = backup_port_number_elem->GetText();
-		if (str_backup_port_number && strlen(str_backup_port_number)>0)
-			_backup_port_number = atoi(str_backup_port_number);
+		const char * delete_after_backup = backup_server_elem->Attribute("delete_after_backup");
+		if (!delete_after_backup || strcmp(delete_after_backup, "true"))
+			_backup_delete_after_backup = false;
+		else
+			_backup_delete_after_backup = true;
+
+		TiXmlElement * backup_url_elem = backup_server_elem->FirstChildElement("url");
+		if (backup_url_elem)
+			backup_url = backup_url_elem->GetText();
+
+		TiXmlElement * backup_port_number_elem = backup_server_elem->FirstChildElement("port_number");
+		if (backup_port_number_elem)
+		{
+			str_backup_port_number = backup_port_number_elem->GetText();
+			if (str_backup_port_number && strlen(str_backup_port_number) > 0)
+				_backup_port_number = atoi(str_backup_port_number);
+		}
+
+		TiXmlElement * backup_username_elem = backup_server_elem->FirstChildElement("username");
+		if (backup_username_elem)
+			backup_username = backup_username_elem->GetText();
+
+		TiXmlElement * backup_password_elem = backup_server_elem->FirstChildElement("password");
+		if (backup_password_elem)
+			backup_password = backup_password_elem->GetText();
+
+		if (backup_url && strlen(backup_url) > 0)
+			strncpy_s(_backup_url, backup_url, sizeof(_backup_url));
+		if (backup_username && strlen(backup_username) > 0)
+			strncpy_s(_backup_username, backup_username, sizeof(_backup_username));
+		if (backup_password && strlen(backup_password) > 0)
+			strncpy_s(_backup_password, backup_password, sizeof(_backup_password));
 	}
-
-	TiXmlElement * backup_username_elem = backup_server_elem->FirstChildElement("username");
-	if (backup_username_elem)
-		backup_username = backup_username_elem->GetText();
-
-	TiXmlElement * backup_password_elem = backup_server_elem->FirstChildElement("password");
-	if (backup_password_elem)
-		backup_password = backup_password_elem->GetText();
-	
-	if (backup_url && strlen(backup_url) > 0)
-		strncpy_s(_backup_url, backup_url, sizeof(_backup_url));
-	if (backup_username && strlen(backup_username) > 0)
-		strncpy_s(_backup_username, backup_username, sizeof(_backup_username));
-	if (backup_password && strlen(backup_password) > 0)
-		strncpy_s(_backup_password, backup_password, sizeof(_backup_password));
-	_backup_delete_after_backup = backup_delete_after_backup;
 
 	TiXmlElement * media_sources_elem = root_elem->FirstChildElement("media_sources");
 	if (!media_sources_elem)
@@ -169,13 +178,19 @@ bool dk_recorder_service::start_recording(void)
 		media_source_elem = media_source_elem->NextSiblingElement();
 	}
 
-	return start_backup_service();
-	//return true;
+	if (_backup_enable)
+		return start_backup_service();
+	else
+		return true;
 }
 
 bool dk_recorder_service::stop_recording(void)
 {
-	stop_backup_service();
+	if (_backup_enable)
+		stop_backup_service();
+	_backup_port_number = 21;
+	_backup_enable = false;
+	_backup_delete_after_backup = false;
 
 	std::vector<dk_recorder_service::recorder_receiver_information_t>::iterator iter;
 	for (iter = _receivers.begin(); iter != _receivers.end(); iter++)
