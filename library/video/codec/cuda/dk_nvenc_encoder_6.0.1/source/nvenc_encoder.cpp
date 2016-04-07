@@ -77,6 +77,8 @@ nvenc_encoder::nvenc_encoder(dk_nvenc_encoder * front)
 	, _nvenc_encode_index(0)
 	, _nvenc_buffer_count(0)
 {
+	front->_spspps_size = 0;
+	memset(front->_spspps, 0x00, sizeof(front->_spspps));
 }
 
 nvenc_encoder::~nvenc_encoder(void)
@@ -237,7 +239,6 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 				nvenc_initialize_param.presetGUID = NV_ENC_PRESET_LOSSLESS_HP_GUID;
 				break;
 			}
-
 		}
 
 		nvenc_initialize_param.encodeWidth = _config->width;
@@ -438,6 +439,23 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 			break;
 		}
 
+		memset(_front->_spspps, 0x00, sizeof(_front->_spspps));
+		NV_ENC_SEQUENCE_PARAM_PAYLOAD extra_data;
+		memset(&extra_data, 0x00, sizeof(NV_ENC_SEQUENCE_PARAM_PAYLOAD));
+		SET_VER(extra_data, NV_ENC_SEQUENCE_PARAM_PAYLOAD);
+		extra_data.inBufferSize = sizeof(_front->_spspps);
+		extra_data.spsppsBuffer = _front->_spspps;
+		extra_data.outSPSPPSPayloadSize = &_front->_spspps_size;
+		status = NvEncGetSequenceParams(&extra_data);
+		if (status != NV_ENC_SUCCESS)
+		{
+			release_nvenc_encoder();
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_host)
+				release_cuda();
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+				release_cuda();
+			break;
+		}
 
 		if (_config->numb > 0)
 		{
@@ -882,7 +900,7 @@ NVENCSTATUS nvenc_encoder::encode_frame(nvenc_encoder::nvenc_buffer_t * nvenc_bu
 NVENCSTATUS nvenc_encoder::process_output(const nvenc_encoder::nvenc_buffer_t * nvenc_buffer, dk_nvenc_encoder::dk_video_entity_t * bitstream, bool flush)
 {
 	NVENCSTATUS status = NV_ENC_SUCCESS;
-	if (!nvenc_buffer->output.bitstream_buffer && !nvenc_buffer->output.eos)
+	if (!nvenc_buffer || !nvenc_buffer->output.bitstream_buffer || nvenc_buffer->output.eos)
 		return NV_ENC_ERR_INVALID_PARAM;
 
 #if defined(WITH_ASYNC)
@@ -891,9 +909,9 @@ NVENCSTATUS nvenc_encoder::process_output(const nvenc_encoder::nvenc_buffer_t * 
 		if (!nvenc_buffer->output.output_event)
 			return NV_ENC_ERR_INVALID_PARAM;
 #if defined(WIN32)
-		::WaitForSingleObject(nvenc_buffer->output.output_event, 500);
-		//if (::WaitForSingleObject(nvenc_buffer->output.output_event, 500) != WAIT_OBJECT_0)
-		//	return NV_ENC_ERR_GENERIC;
+		//::WaitForSingleObject(nvenc_buffer->output.output_event, 500);
+		if (::WaitForSingleObject(nvenc_buffer->output.output_event, 500) != WAIT_OBJECT_0)
+			return NV_ENC_ERR_GENERIC;
 #endif
 	}
 #endif

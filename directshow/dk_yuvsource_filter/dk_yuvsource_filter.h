@@ -5,6 +5,7 @@
 #include <time.h>
 #include <dk_basic_type.h>
 #include <dk_media_source.h>
+#include <dk_yuvsource_reader.h>
 
 #define g_szFilterName L"DK YUV Source filter"
 
@@ -17,9 +18,11 @@ DEFINE_GUID(CLSID_DK_YUVSOURCE_FILTER_PROPERTIES,
 	0x4b3d448b, 0x152, 0x4147, 0xbd, 0xfa, 0x11, 0xc1, 0x8e, 0x4e, 0x76, 0x3e);
 
 class dk_yuvsource_filter : public CSource,
+							public IFileSourceFilter,
 							public ISpecifyPropertyPages,
 							public IYUVSource
 {
+	friend class dk_yuvsource_stream;
 public:
 	static CUnknown * WINAPI CreateInstance(IUnknown * unk, HRESULT * hr);
 
@@ -27,7 +30,9 @@ public:
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv);
 	STDMETHODIMP GetPages(CAUUID *pages);
 
-	STDMETHODIMP SetFilePath(BSTR filepath);
+	STDMETHODIMP Load(LPCOLESTR file_name, const AM_MEDIA_TYPE *type);
+	STDMETHODIMP GetCurFile(LPOLESTR *file_name, AM_MEDIA_TYPE *type);
+
 	STDMETHODIMP SetWidth(UINT width);
 	STDMETHODIMP SetHeight(UINT height);
 	STDMETHODIMP SetFPS(UINT fps);
@@ -36,4 +41,12 @@ private:
 	dk_yuvsource_filter(IUnknown * unk, HRESULT * hr);
 	~dk_yuvsource_filter(void);
 	DISALLOW_IMPLICIT_CONSTRUCTORS(dk_yuvsource_filter);
+
+
+private:
+	wchar_t _filepath[260];
+	int32_t _width;
+	int32_t _height;
+	int32_t _fps;
+	dk_yuvsource_reader _reader;
 };

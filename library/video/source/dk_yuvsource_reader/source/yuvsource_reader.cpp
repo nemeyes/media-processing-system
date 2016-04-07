@@ -2,6 +2,9 @@
 
 yuvsource_reader::yuvsource_reader(void)
 	: _file(INVALID_HANDLE_VALUE)
+	, _width(0)
+	, _height(0)
+	, _fps(0)
 {
 
 }
@@ -27,6 +30,40 @@ dk_yuvsource_reader::error_code yuvsource_reader::initialize_reader(const char *
 	_file_size = file_size(_file);
 	_current_frame_index = 0;
 	_max_frame_index = _file_size / (long)_frame_size;
+	return dk_yuvsource_reader::error_code_success;
+}
+
+dk_yuvsource_reader::error_code yuvsource_reader::initialize_reader(const char * filepath)
+{
+	_file = open_file(filepath);
+	if (_file == NULL || _file == INVALID_HANDLE_VALUE)
+		return dk_yuvsource_reader::error_code_fail;
+
+	if (_width < 1 || _height < 1 || _fps < 1)
+		return dk_yuvsource_reader::error_code_fail;
+
+	_frame_size = _width * _height * 1.5;
+	_file_size = file_size(_file);
+	_current_frame_index = 0;
+	_max_frame_index = _file_size / (long)_frame_size;
+	return dk_yuvsource_reader::error_code_success;
+}
+
+dk_yuvsource_reader::error_code yuvsource_reader::set_width(int32_t width)
+{
+	_width = width;
+	return dk_yuvsource_reader::error_code_success;
+}
+
+dk_yuvsource_reader::error_code yuvsource_reader::set_height(int32_t height)
+{
+	_height = height;
+	return dk_yuvsource_reader::error_code_success;
+}
+
+dk_yuvsource_reader::error_code yuvsource_reader::set_fps(int32_t fps)
+{
+	_fps = fps;
 	return dk_yuvsource_reader::error_code_success;
 }
 

@@ -173,8 +173,6 @@ private:
 	dk_nvenc_encoder::encoder_state _state;
 	dk_nvenc_encoder::configuration_t * _config;
 
-
-
 	//cuda and nvenc
 private:
 	void * _context;

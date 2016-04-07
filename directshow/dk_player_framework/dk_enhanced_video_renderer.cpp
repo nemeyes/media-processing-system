@@ -4,6 +4,7 @@
 #include <uuids.h>
 #include <initguid.h>
 
+
 dk_enhanced_video_renderer::dk_enhanced_video_renderer(void)
 	: _fullscreen(false)
 {

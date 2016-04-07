@@ -38,7 +38,7 @@ public:
 private:
 	int32_t _width;
 	int32_t _height;
-	dk_yuvsource_reader _reader;
+	dk_yuvsource_reader * _reader;
 	unsigned int _stride;
 
 	CRefTime _sample_time;

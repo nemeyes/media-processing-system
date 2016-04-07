@@ -5,6 +5,7 @@
 #include <omp.h>
 #include <dk_string_helper.h>
 #include "dk_yuvsource_stream.h"
+#include "dk_yuvsource_filter.h"
 
 
 // UNITS = 10 ^ 7  
@@ -34,7 +35,8 @@ dk_yuvsource_stream::dk_yuvsource_stream(HRESULT * hr, CSource * filter, LPCTSTR
 	{
 		_width = width;
 		_height = height;
-		_reader.initialize_reader(mb_filepath, width, height, fps);
+		_reader = &(static_cast<dk_yuvsource_filter*>(filter)->_reader);
+		_reader->initialize_reader(mb_filepath, width, height, fps);
 		free(mb_filepath);
 		mb_filepath = nullptr;
 	}
@@ -42,7 +44,7 @@ dk_yuvsource_stream::dk_yuvsource_stream(HRESULT * hr, CSource * filter, LPCTSTR
 
 dk_yuvsource_stream::~dk_yuvsource_stream(void)
 {
-	_reader.release_reader();
+	//_reader->release_reader();
 }
 
 STDMETHODIMP dk_yuvsource_stream::NonDelegatingQueryInterface(REFIID riid, void **ppv)
@@ -180,13 +182,13 @@ HRESULT dk_yuvsource_stream::FillBuffer(IMediaSample * ms)
 	ms->GetPointer(&dst);
 	LONG length = ms->GetSize();
 
-	_reader.read(dst, _stride);
+	_reader->read(dst, _stride);
 	REFERENCE_TIME rt_start = _frame_number * _frame_length;
 	REFERENCE_TIME rt_stop = rt_start + _frame_length;
 	_frame_number++;
 
 	ms->SetTime(&rt_start, &rt_stop);
-//	ms->SetSyncPoint(TRUE);
+	ms->SetSyncPoint(TRUE);
 	ms->SetActualDataLength(_height * _stride * 1.5);
 	return S_OK;
 }

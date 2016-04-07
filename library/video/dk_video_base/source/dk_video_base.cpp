@@ -157,10 +157,10 @@ dk_video_encoder::_configuration_t::_configuration_t(void)
 	: mem_type(dk_video_encoder::memory_type_host)
 	, d3d_device(nullptr)
 	, cs(dk_video_encoder::submedia_type_t::submedia_type_nv12)
-	, width(1280)
-	, height(720)
+	, width(3840)
+	, height(2160)
 	, codec(dk_video_encoder::submedia_type_t::submedia_type_h264_hp)
-	, bitrate(4000000)
+	, bitrate(8000000)
 	, fps(30)
 	, keyframe_interval(2)
 	, numb(0)
@@ -247,6 +247,12 @@ dk_video_encoder::err_code dk_video_encoder::encode_async(dk_video_encoder::dk_v
 dk_video_encoder::err_code dk_video_encoder::check_encoding_finish(void)
 {
 	return dk_video_encoder::err_code_encoding_under_processing;
+}
+
+uint8_t * dk_video_encoder::spspps(uint32_t & spspps_size)
+{
+	spspps_size = _spspps_size;
+	return &_spspps[0];
 }
 
 const int dk_video_encoder::next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)

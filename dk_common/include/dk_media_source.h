@@ -97,9 +97,8 @@ extern "C" {
 	DEFINE_GUID(IID_IYUVSource,
 		0x263768c3, 0x5933, 0x4d6b, 0xb2, 0xc, 0x2f, 0xd1, 0xfb, 0xe6, 0x2a, 0xa7);
 
-	DECLARE_INTERFACE_(IYUVSource, IUnknown)
+	DECLARE_INTERFACE_IID_(IYUVSource, IUnknown, "263768C3-5933-4D6B-B20C-2FD1FBE62AA7")
 	{
-		STDMETHOD(SetFilePath)(BSTR filepath) PURE;
 		STDMETHOD(SetWidth)(UINT option) PURE;
 		STDMETHOD(SetHeight)(UINT option) PURE;
 		STDMETHOD(SetFPS)(UINT option) PURE;

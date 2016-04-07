@@ -206,6 +206,37 @@ HRESULT  dk_nvenc_encode_filter::CheckInputType(const CMediaType *type)
 					_config.height = -vih2->bmiHeader.biHeight;
 				else
 					_config.height = vih2->bmiHeader.biHeight;
+
+				_config.max_width = _config.width;
+				_config.max_height = _config.height;
+				uint32_t resolution_pixels = _config.height*_config.width;
+				uint32_t sd_pixels = 800 * 600;
+				uint32_t hd_pixels = 1280 * 720;
+				uint32_t fhd_pixels = 1920 * 1080;
+				if (resolution_pixels > fhd_pixels)
+				{
+					_config.bitrate = 8000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
+				else if (resolution_pixels > hd_pixels)
+				{
+					_config.bitrate = 6000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
+				else if (resolution_pixels > sd_pixels)
+				{
+					_config.bitrate = 4000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
+				else
+				{
+					_config.bitrate = 2000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
 				_config.cs = dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_yv12;
 				return S_OK;
 			}
@@ -217,6 +248,37 @@ HRESULT  dk_nvenc_encode_filter::CheckInputType(const CMediaType *type)
 					_config.height = -vih->bmiHeader.biHeight;
 				else
 					_config.height = vih->bmiHeader.biHeight;
+
+				_config.max_width = _config.width;
+				_config.max_height = _config.height;
+				uint32_t resolution_pixels = _config.height*_config.width;
+				uint32_t sd_pixels = 800 * 600;
+				uint32_t hd_pixels = 1280 * 720;
+				uint32_t fhd_pixels = 1920 * 1080;
+				if (resolution_pixels > fhd_pixels)
+				{
+					_config.bitrate = 8000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
+				else if (resolution_pixels > hd_pixels)
+				{
+					_config.bitrate = 6000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
+				else if (resolution_pixels > sd_pixels)
+				{
+					_config.bitrate = 4000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
+				else
+				{
+					_config.bitrate = 2000000;
+					_config.vbv_max_bitrate = 0;
+					_config.vbv_size = 0;
+				}
 				_config.cs = dk_nvenc_encoder::nvenc_submedia_type_t::submedia_type_yv12;
 				return S_OK;
 			}
@@ -273,6 +335,36 @@ HRESULT  dk_nvenc_encode_filter::GetMediaType(int position, CMediaType *type)
 			return hr;
 		}
 
+#if 1
+		type->SetSubtype(&MEDIASUBTYPE_H264);
+		type->SetFormatType(&FORMAT_MPEG2_VIDEO);
+		type->SetTemporalCompression(TRUE);
+		//type->SetSampleSize(_config.width*_config.height*2);
+		type->SetVariableSize();
+
+		unsigned int spspps_size = 0;
+		unsigned char * spspps = _encoder->spspps(spspps_size);
+		MPEG2VIDEOINFO * mi = (MPEG2VIDEOINFO*)type->AllocFormatBuffer(sizeof(MPEG2VIDEOINFO) + spspps_size);
+		ZeroMemory(mi, sizeof(*mi));
+		mi->hdr.rcSource.left = 0;
+		mi->hdr.rcSource.top = 0;
+		mi->hdr.rcSource.right = _config.width;
+		mi->hdr.rcSource.bottom = _config.height;
+		mi->hdr.rcTarget = mi->hdr.rcSource;
+		mi->hdr.dwPictAspectRatioX = _config.width;
+		mi->hdr.dwPictAspectRatioY = _config.height;
+		//vih2->AvgTimePerFrame = (UNITS / MILLISECONDS)*(LONGLONG)(UNITS / FPS_30);
+		mi->hdr.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		mi->hdr.bmiHeader.biWidth = _config.width;
+		mi->hdr.bmiHeader.biHeight = _config.height;
+		mi->hdr.bmiHeader.biPlanes = 1;
+		mi->hdr.bmiHeader.biCompression = MAKEFOURCC('H', '2', '6', '4');
+		mi->hdr.bmiHeader.biSizeImage = mi->hdr.bmiHeader.biWidth*mi->hdr.bmiHeader.biHeight;
+		//mi->hdr.AvgTimePerFrame = (UNITS / MILLISECONDS) * (UNITS / 30);
+		mi->cbSequenceHeader = spspps_size;
+		BYTE * ptr_spspps = (BYTE*)&mi->dwSequenceHeader[0];
+		memcpy(ptr_spspps, spspps, spspps_size);
+#else
 		type->SetSubtype(&MEDIASUBTYPE_H264);
 		type->SetFormatType(&FORMAT_VideoInfo2);
 		type->SetTemporalCompression(TRUE);
@@ -296,8 +388,7 @@ HRESULT  dk_nvenc_encode_filter::GetMediaType(int position, CMediaType *type)
 		vih2->bmiHeader.biBitCount = 24;
 		vih2->bmiHeader.biCompression = MAKEFOURCC('H', '2', '6', '4');
 		vih2->bmiHeader.biSizeImage = vih2->bmiHeader.biWidth*vih2->bmiHeader.biHeight;
-		//vih2->bmiHeader.biSizeImage = _owidth*_oheight*1.5;
-		//		
+#endif
 	}
 	return S_OK;
 }
@@ -307,7 +398,11 @@ HRESULT  dk_nvenc_encode_filter::CheckTransform(const CMediaType *itype, const C
 	if (!IsEqualGUID(*(itype->Type()), MEDIATYPE_Video) || !IsEqualGUID(*(otype->Type()), MEDIATYPE_Video))
 		return E_FAIL;
 
+#if 1
+	MPEG2VIDEOINFO *ovi = (MPEG2VIDEOINFO*)(otype->Format());
+#else
 	VIDEOINFOHEADER2 *ovi = (VIDEOINFOHEADER2 *)(otype->Format());
+#endif
 	if (!ovi)
 		return E_FAIL;
 	return S_OK;
@@ -401,6 +496,13 @@ HRESULT dk_nvenc_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 #if 1
 	end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
 	dst->SetTime(&start_time, &end_time);
+
+	if( /*((bitstream.data[4] & 0x1F)==7) || ((bitstream.data[4] & 0x1F)==8) || */((bitstream.data[4] & 0x1F)==5))
+		dst->SetSyncPoint(TRUE);
+	else
+		dst->SetSyncPoint(FALSE);
+	//dst->SetPreroll(FALSE);
+
 	return S_OK;
 #else	
 	BOOL bSyncPoint;

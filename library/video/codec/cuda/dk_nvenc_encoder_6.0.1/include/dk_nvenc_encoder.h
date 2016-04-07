@@ -6,6 +6,7 @@
 class nvenc_encoder;
 class EXP_CLASS dk_nvenc_encoder : public dk_video_encoder
 {
+	friend class nvenc_encoder;
 public:
 	typedef struct EXP_CLASS _nvenc_submedia_type_t : public dk_nvenc_encoder::_submedia_type_t
 	{

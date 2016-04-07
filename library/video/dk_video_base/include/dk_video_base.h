@@ -278,12 +278,20 @@ public:
 	virtual dk_video_encoder::err_code encode(dk_video_encoder::dk_video_entity_t * input);
 	virtual dk_video_encoder::err_code get_queued_data(dk_video_encoder::dk_video_entity_t * input);
 
+
+
 	virtual dk_video_encoder::err_code encode_async(dk_video_encoder::dk_video_entity_t * input);
 	virtual dk_video_encoder::err_code check_encoding_finish(void);
 
 	virtual void on_acquire_bitstream(uint8_t * bistream, size_t size) = 0;
 
+	virtual uint8_t * spspps(uint32_t & spspps_size);
+
 	static const int next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
+
+protected:
+	uint8_t _spspps[260];
+	uint32_t _spspps_size;
 
 };
 

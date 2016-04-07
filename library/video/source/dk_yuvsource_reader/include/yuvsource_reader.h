@@ -10,6 +10,10 @@ public:
 	virtual ~yuvsource_reader(void);
 
 	dk_yuvsource_reader::error_code initialize_reader(const char * filepath, int32_t width, int32_t height, int32_t fps);
+	dk_yuvsource_reader::error_code initialize_reader(const char * filepath);
+	dk_yuvsource_reader::error_code set_width(int32_t width);
+	dk_yuvsource_reader::error_code set_height(int32_t height);
+	dk_yuvsource_reader::error_code set_fps(int32_t fps);
 	dk_yuvsource_reader::error_code release_reader(void);
 	dk_yuvsource_reader::error_code read(uint8_t * yuv, int32_t stride);
 
