@@ -36,19 +36,20 @@ bool ic::shared_memory_server::create_shared_memory(const char * uuid)
 		goto fail;
 	_snprintf(evt_sm, SM_MAX_ADDR, "%s_evt_sm", _uuid);
 
-	_signal = CreateEventA(NULL, FALSE, FALSE, (LPCSTR)evt_filled);
+	_signal = ::CreateEventA(NULL, FALSE, FALSE, (LPCSTR)evt_filled);
 	if (_signal == NULL || _signal == INVALID_HANDLE_VALUE)
 		goto fail;
 
-	_available = CreateEventA(NULL, FALSE, FALSE, (LPCSTR)evt_available);
+
+	_available = ::CreateEventA(NULL, FALSE, FALSE, (LPCSTR)evt_available);
 	if (_available == NULL || _available == INVALID_HANDLE_VALUE)
 		goto fail;
 
-	_map = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(shared_memory_buffer_t), (LPCSTR)evt_sm);
+	_map = ::CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(shared_memory_buffer_t), (LPCSTR)evt_sm);
 	if (_map == NULL || _map == INVALID_HANDLE_VALUE)
 		goto fail;
 
-	_smb = (shared_memory_buffer_t*)MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(shared_memory_buffer_t));
+	_smb = (shared_memory_buffer_t*)::MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(shared_memory_buffer_t));
 	if (_smb == NULL)
 		goto fail;
 	::ZeroMemory(_smb, sizeof(shared_memory_buffer_t));

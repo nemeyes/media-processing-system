@@ -2,6 +2,7 @@
 #include <process.h>
 #include <BasicUsageEnvironment.hh>
 #include "vod_rtsp_server.h"
+#include "live_media_source_entity.h"
 
 dk_vod_rtsp_server::dk_vod_rtsp_server(void)
 	: _port_number(554)
@@ -14,6 +15,16 @@ dk_vod_rtsp_server::dk_vod_rtsp_server(void)
 dk_vod_rtsp_server::~dk_vod_rtsp_server(void)
 {
 
+}
+
+bool dk_vod_rtsp_server::add_live_media_source(const char * uuid, const char * url, const char * username, const char * password)
+{
+	return live_media_source_entity::instance().add_live_media_source(uuid, url, username, password);
+}
+
+bool dk_vod_rtsp_server::remove_live_media_source(const char * uuid)
+{
+	return live_media_source_entity::instance().remove_live_media_source(uuid);
 }
 
 void dk_vod_rtsp_server::start(int32_t port_number, char * username, char * password)

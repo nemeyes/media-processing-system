@@ -494,7 +494,7 @@ HRESULT dk_nvenc_encode_filter::Transform(IMediaSample *src, IMediaSample *dst)
 
 
 #if 1
-	end_time = (REFERENCE_TIME)(start_time + (1.0 / 24) * 1e7);
+	end_time = (REFERENCE_TIME)(start_time + (1.0 / 30) * 1e7);
 	dst->SetTime(&start_time, &end_time);
 
 	if( /*((bitstream.data[4] & 0x1F)==7) || ((bitstream.data[4] & 0x1F)==8) || */((bitstream.data[4] & 0x1F)==5))

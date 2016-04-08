@@ -547,6 +547,20 @@ long long record_module::get_elapsed_msec_from_epoch(void)
 	return elapsed_millsec;
 }
 
+void record_module::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
+{
+	boost::posix_time::time_duration elapsed = boost::posix_time::microseconds(elapsed_time);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = epoch + elapsed;
+
+	struct tm current = boost::posix_time::to_tm(current_time);
+	_snprintf(time_string, time_string_size, "%.4d-%.2d-%.2d %.2d::%.2d::%.2d", 
+							current_time.date().year(),
+							current_time.date().month(),
+							current_time.date().day(),
+							current_time.date().s, );
+}
+
 void record_module::set_file_position(HANDLE file, uint32_t offset, uint32_t flag)
 {
 	if (file != NULL && file != INVALID_HANDLE_VALUE)

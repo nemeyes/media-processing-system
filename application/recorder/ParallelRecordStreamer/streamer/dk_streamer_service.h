@@ -1,6 +1,7 @@
 #ifndef _DK_STREAMER_SERVICE_H_
 #define _DK_STREAMER_SERVICE_H_
 
+#include <cstdint>
 
 class dk_vod_rtsp_server;
 class dk_streamer_service
@@ -19,8 +20,8 @@ private:
 	virtual ~dk_streamer_service(void);
 
 	char _config_path[260];
-
 	dk_vod_rtsp_server * _rtsp_server;
+	bool _is_run;
 };
 
 

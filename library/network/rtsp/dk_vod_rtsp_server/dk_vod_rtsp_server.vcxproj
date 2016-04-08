@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;WITH_RECORD_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;..\..\..\container\dk_record_module\include;file_reader;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;..\..\..\container\dk_record_module\include;media_source;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
@@ -78,7 +78,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;WITH_RECORD_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;..\..\..\container\dk_record_module\include;file_reader;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;..\..\..\container\dk_record_module\include;media_source;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
@@ -94,20 +94,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h" />
-    <ClInclude Include="file_reader\media_source_reader.h" />
-    <ClInclude Include="file_reader\record_module_seeker.h" />
     <ClInclude Include="include\buffered_byte_stream_source.h" />
     <ClInclude Include="include\buffered_framed_source.h" />
     <ClInclude Include="include\dk_vod_rtsp_server.h" />
     <ClInclude Include="include\buffered_h264_sms.h" />
     <ClInclude Include="include\buffered_sms.h" />
-    <ClInclude Include="include\scoped_lock.h" />
     <ClInclude Include="include\vod_rtsp_server.h" />
+    <ClInclude Include="media_source\live_media_source_entity.h" />
+    <ClInclude Include="media_source\media_source_reader.h" />
+    <ClInclude Include="media_source\record_module_seeker.h" />
+    <ClInclude Include="media_source\scoped_lock.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp" />
-    <ClCompile Include="file_reader\media_source_reader.cpp" />
-    <ClCompile Include="file_reader\record_module_seeker.cpp" />
+    <ClCompile Include="media_source\live_media_source_entity.cpp" />
+    <ClCompile Include="media_source\media_source_reader.cpp" />
+    <ClCompile Include="media_source\record_module_seeker.cpp" />
     <ClCompile Include="source\buffered_byte_stream_source.cpp" />
     <ClCompile Include="source\buffered_framed_source.cpp" />
     <ClCompile Include="source\buffered_h264_sms.cpp" />

@@ -13,11 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="file_reader">
-      <UniqueIdentifier>{2f8c55af-a92a-4940-8b95-3d1ee24639c1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ffmpeg_base">
       <UniqueIdentifier>{3459c584-fc21-430a-a6bb-6c1b4762b3af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="media_source">
+      <UniqueIdentifier>{2f8c55af-a92a-4940-8b95-3d1ee24639c1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,14 +42,17 @@
     <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
       <Filter>ffmpeg_base</Filter>
     </ClInclude>
-    <ClInclude Include="include\scoped_lock.h">
-      <Filter>file_reader</Filter>
+    <ClInclude Include="media_source\media_source_reader.h">
+      <Filter>media_source</Filter>
     </ClInclude>
-    <ClInclude Include="file_reader\record_module_seeker.h">
-      <Filter>file_reader</Filter>
+    <ClInclude Include="media_source\record_module_seeker.h">
+      <Filter>media_source</Filter>
     </ClInclude>
-    <ClInclude Include="file_reader\media_source_reader.h">
-      <Filter>file_reader</Filter>
+    <ClInclude Include="media_source\scoped_lock.h">
+      <Filter>media_source</Filter>
+    </ClInclude>
+    <ClInclude Include="media_source\live_media_source_entity.h">
+      <Filter>media_source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -74,11 +77,14 @@
     <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
       <Filter>ffmpeg_base</Filter>
     </ClCompile>
-    <ClCompile Include="file_reader\record_module_seeker.cpp">
-      <Filter>file_reader</Filter>
+    <ClCompile Include="media_source\media_source_reader.cpp">
+      <Filter>media_source</Filter>
     </ClCompile>
-    <ClCompile Include="file_reader\media_source_reader.cpp">
-      <Filter>file_reader</Filter>
+    <ClCompile Include="media_source\record_module_seeker.cpp">
+      <Filter>media_source</Filter>
+    </ClCompile>
+    <ClCompile Include="media_source\live_media_source_entity.cpp">
+      <Filter>media_source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,8 +1,30 @@
 <?xml version="1.0" standalone="yes"?>
 <streamer>
 	<rtsp_server>
-		<port_number>5554</port_number>
+		<port_number>554</port_number>
 		<username></username>
 		<password></password>
 	</rtsp_server>
+	<media_sources>
+		<media_source uuid="CH1">
+			<url>rtsp://now.iptime.org/1/stream1</url>
+			<username></username>
+			<password></password>
+		</media_source>
+		<media_source uuid="CH2">
+			<url>rtsp://now.iptime.org/2/stream1</url>
+			<username></username>
+			<password></password>
+		</media_source>
+		<media_source uuid="CH3">
+			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=1</url>
+			<username></username>
+			<password></password>
+		</media_source>
+		<media_source uuid="CH4">
+			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2</url>
+			<username></username>
+			<password></password>
+		</media_source>
+	</media_sources>
 </streamer>

@@ -25,6 +25,9 @@ public:
 	void start(int32_t port_number, char * username, char * password);
 	void stop(void);
 
+	bool add_live_media_source(const char * uuid, const char * url, const char * username, const char * password);
+	bool remove_live_media_source(const char * uuid);
+
 private:
 	unsigned static __stdcall process_cb(void * param);
 	void process(void);

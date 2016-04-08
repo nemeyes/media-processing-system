@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <recorder>
-	<backup_server enable="true" delete_after_backup="false">
+	<backup_server enable="false" delete_after_backup="false">
 		<url>127.0.0.1</url>
 		<port_number>21</port_number>
 		<username>test</username>
@@ -14,6 +14,16 @@
 		</media_source>
 		<media_source uuid="CH2">
 			<url>rtsp://now.iptime.org/2/stream1</url>
+			<username></username>
+			<password></password>
+		</media_source>
+		<media_source uuid="CH3">
+			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=1</url>
+			<username></username>
+			<password></password>
+		</media_source>
+		<media_source uuid="CH4">
+			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2</url>
 			<username></username>
 			<password></password>
 		</media_source>

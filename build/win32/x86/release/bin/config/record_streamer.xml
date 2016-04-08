@@ -5,16 +5,4 @@
 		<username></username>
 		<password></password>
 	</rtsp_server>
-	<media_sources>
-		<media_source uuid="CH1">
-			<url>rtsp://now.iptime.org/1/stream1</url>
-			<username></username>
-			<password></password>
-		</media_source>
-		<media_source uuid="CH2">
-			<url>rtsp://now.iptime.org/2/stream1</url>
-			<username></username>
-			<password></password>
-		</media_source>
-	</media_sources>
 </streamer>
