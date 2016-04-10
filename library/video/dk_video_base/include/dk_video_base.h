@@ -204,9 +204,21 @@ public:
 	dk_video_base(bool use_builtin_queue = true);
 	virtual ~dk_video_base(void);
 
-	err_code push(uint8_t * bs, size_t size, long long timestamp);
-	err_code pop(uint8_t * bs, size_t & size, long long & timestamp);
-	err_code init(vbuffer_t * buffer);
+	dk_video_base::err_code push(uint8_t * bs, size_t size, long long timestamp);
+	dk_video_base::err_code pop(uint8_t * bs, size_t & size, long long & timestamp);
+	dk_video_base::err_code init(vbuffer_t * buffer);
+
+	void set_extradata(uint8_t * extradata, size_t extradata_size);
+	void set_vps(uint8_t * vps, size_t vps_size);
+	void set_sps(uint8_t * sps, size_t sps_size);
+	void set_pps(uint8_t * pps, size_t pps_size);
+
+	uint8_t * get_extradata(size_t & extradata_size);
+	uint8_t * get_vps(size_t & vps_size);
+	uint8_t * get_sps(size_t & sps_size);
+	uint8_t * get_pps(size_t & pps_size);
+
+	static const int next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
 
 private:
 	bool _use_builtin_queue;
@@ -218,11 +230,40 @@ private:
 #else
 	pthread_mutex _mutex;
 #endif
+
+private:
+	uint8_t _extradata[260];
+	uint8_t _vps[260];
+	uint8_t _sps[260];
+	uint8_t _pps[260];
+	size_t _extradata_size;
+	size_t _vps_size;
+	size_t _sps_size;
+	size_t _pps_size;
 };
 
 class EXP_CLASS dk_video_decoder : public dk_video_base
 {
 public:
+	typedef struct EXP_CLASS _configuration_t
+	{
+		dk_video_decoder::memory_type mem_type;
+		void * d3d_device;
+		int32_t iwidth;
+		int32_t iheight;
+		int32_t istride;
+		int32_t owidth;
+		int32_t oheight;
+		int32_t ostride;
+		int32_t sarwidth;
+		int32_t sarheight;
+		int32_t codec;
+		int32_t cs;
+		_configuration_t(void);
+		_configuration_t(const _configuration_t & clone);
+		_configuration_t & operator=(const _configuration_t & clone);
+	} configuration_t;
+
 	dk_video_decoder(void);
 	virtual ~dk_video_decoder(void);
 
@@ -286,8 +327,6 @@ public:
 	virtual void on_acquire_bitstream(uint8_t * bistream, size_t size) = 0;
 
 	virtual uint8_t * spspps(uint32_t & spspps_size);
-
-	static const int next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end);
 
 protected:
 	uint8_t _spspps[260];

@@ -27,11 +27,11 @@
     <ClInclude Include="include\faad2_decoder.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\dk_audio_base\include\dk_audio_base.h">
-      <Filter>audio_base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h">
       <Filter>buffering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dk_audio_base\include\dk_audio_base.h">
+      <Filter>audio_base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -41,11 +41,11 @@
     <ClCompile Include="source\faad2_decoder.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\dk_audio_base\source\dk_audio_base.cpp">
-      <Filter>audio_base</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp">
       <Filter>buffering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dk_audio_base\source\dk_audio_base.cpp">
+      <Filter>audio_base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

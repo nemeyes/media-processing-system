@@ -13,13 +13,13 @@ class ffmpeg_decoder
 {
 public:
 	ffmpeg_decoder(dk_ff_video_decoder * front);
-	~ffmpeg_decoder(void);
+	virtual ~ffmpeg_decoder(void);
 
-	dk_ff_video_decoder::ERR_CODE initialize_decoder(dk_ff_video_decoder::configuration_t * config);
-	dk_ff_video_decoder::ERR_CODE release_decoder(void);
-	dk_ff_video_decoder::ERR_CODE decode(dk_ff_video_decoder::dk_video_entity_t * encoded, dk_ff_video_decoder::dk_video_entity_t * decoded);
-	dk_ff_video_decoder::ERR_CODE decode(dk_ff_video_decoder::dk_video_entity_t * encoded);
-	dk_ff_video_decoder::ERR_CODE get_queued_data(dk_ff_video_decoder::dk_video_entity_t * decoded);
+	dk_ff_video_decoder::err_code initialize_decoder(dk_ff_video_decoder::configuration_t * config);
+	dk_ff_video_decoder::err_code release_decoder(void);
+	dk_ff_video_decoder::err_code decode(dk_ff_video_decoder::dk_video_entity_t * encoded, dk_ff_video_decoder::dk_video_entity_t * decoded);
+	dk_ff_video_decoder::err_code decode(dk_ff_video_decoder::dk_video_entity_t * encoded);
+	dk_ff_video_decoder::err_code get_queued_data(dk_ff_video_decoder::dk_video_entity_t * decoded);
 
 private:
 	dk_ff_video_decoder::configuration_t * _config;

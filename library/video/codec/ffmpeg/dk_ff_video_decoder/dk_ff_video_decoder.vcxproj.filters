@@ -36,7 +36,7 @@
     <ClInclude Include="..\..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
       <Filter>ffmpeg_base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\dk_video_base\include\dk_video_base.h">
+    <ClInclude Include="..\..\..\dk_video_base\include\dk_video_base.h">
       <Filter>video_base</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClCompile Include="..\..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
       <Filter>ffmpeg_base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\dk_video_base\source\dk_video_base.cpp">
+    <ClCompile Include="..\..\..\dk_video_base\source\dk_video_base.cpp">
       <Filter>video_base</Filter>
     </ClCompile>
   </ItemGroup>

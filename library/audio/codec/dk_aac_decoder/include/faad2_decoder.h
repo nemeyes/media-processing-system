@@ -7,23 +7,16 @@
 class faad2_decoder
 {
 public:
-	faad2_decoder(void);
+	faad2_decoder(dk_aac_decoder * front);
 	~faad2_decoder(void);
 
-	dk_aac_decoder::ERR_CODE initialize_decoder(dk_aac_decoder::configuration_t * config);
-	dk_aac_decoder::ERR_CODE release_decoder(void);
-
-	dk_aac_decoder::ERR_CODE decode(dk_aac_decoder::dk_audio_entity_t * encoded, dk_aac_decoder::dk_audio_entity_t * pcm);
-
-
-	/*dk_aac_decoder::ERR_CODE initialize(dk_aac_decoder::configuration_t config, unsigned char * extra_data, int extra_data_size, int & samplerate, int & channels);
-	dk_aac_decoder::ERR_CODE release(void);
-	dk_aac_decoder::ERR_CODE decode(unsigned char * input, unsigned int isize, unsigned char * output, unsigned int & osize);*/
+	dk_aac_decoder::err_code initialize_decoder(dk_aac_decoder::configuration_t * config);
+	dk_aac_decoder::err_code release_decoder(void);
+	dk_aac_decoder::err_code decode(dk_aac_decoder::dk_audio_entity_t * encoded, dk_aac_decoder::dk_audio_entity_t * pcm);
 
 private:
+	dk_aac_decoder * _front;
 	dk_aac_decoder::configuration_t _config;
-	//unsigned char * _extra_data;
-	//int _extra_data_size;
 
 	unsigned char * _buffer;
 	unsigned long _buffer_size;
@@ -37,18 +30,5 @@ private:
 	NeAACDecConfigurationPtr _aac_config;
 	uint8_t _channels;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif

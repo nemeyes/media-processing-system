@@ -28,7 +28,7 @@ ffmpeg_decoder::~ffmpeg_decoder(void)
 
 }
 
-dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::initialize_decoder(dk_ff_video_decoder::configuration_t * config)
+dk_ff_video_decoder::err_code ffmpeg_decoder::initialize_decoder(dk_ff_video_decoder::configuration_t * config)
 {
 	release_decoder();
 	_insert_start_code = false;
@@ -39,29 +39,29 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 		_buffer4start_code = nullptr;
 	}
 #endif
-	switch (config->ismt)
+	switch (config->codec)
 	{
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_AVC:
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_avc :
 			_insert_start_code = true;
 #if 0
 			_buffer4start_code = static_cast<uint8_t*>(av_malloc(1024*1024*2)); //2MB
 #endif
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_H264:
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_H264_HP:
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_H264_MP:
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_H264_EP:
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264 :
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264_hp :
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264_mp :
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264_ep :
 		{
 			_av_codec = avcodec_find_decoder(AV_CODEC_ID_H264);
 			break;
 		}
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_MP4V:
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_MP4V_SP:
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_MP4V_ASP:
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_mp4v :
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_mp4v_sp :
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_mp4v_asp :
 		{
 			_av_codec = avcodec_find_decoder(AV_CODEC_ID_MPEG4);
 			break;
 		}
-		case dk_ff_video_decoder::SUBMEDIA_TYPE_JPEG:
+		case dk_ff_video_decoder::submedia_type_t::submedia_type_jpeg :
 		{
 			_av_codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
 			break;
@@ -71,14 +71,14 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 	if (!_av_codec)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::ERR_CODE_FAIL;
+		return dk_ff_video_decoder::err_code_fail;
 	}
 
 	_av_codec_ctx = avcodec_alloc_context3(_av_codec);
 	if (!_av_codec_ctx)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::ERR_CODE_FAIL;
+		return dk_ff_video_decoder::err_code_fail;
 	}
 	_av_codec_ctx->delay = 0;
 	if (config->extradata && (config->extradata_size>0))
@@ -91,7 +91,7 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 	if (avcodec_open2(_av_codec_ctx, _av_codec, NULL)<0)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::ERR_CODE_FAIL;
+		return dk_ff_video_decoder::err_code_fail;
 	}
 
 	_av_frame = av_frame_alloc();
@@ -99,22 +99,22 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 	if (!_av_frame || !_av_video_frame)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::ERR_CODE_FAIL;
+		return dk_ff_video_decoder::err_code_fail;
 	}
 
 	_av_packet = (AVPacket *)av_malloc(sizeof(AVPacket));
 	if (!_av_packet)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::ERR_CODE_FAIL;
+		return dk_ff_video_decoder::err_code_fail;
 	}
 	av_init_packet(_av_packet);
 
 	_config = config;
-	return dk_ff_video_decoder::ERR_CODE_SUCCESS;
+	return dk_ff_video_decoder::err_code_success;
 }
 
-dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::release_decoder(void)
+dk_ff_video_decoder::err_code ffmpeg_decoder::release_decoder(void)
 {
 	if (_av_packet)
 	{
@@ -158,12 +158,12 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::release_decoder(void)
 		av_free(_av_codec_ctx);
 		_av_codec_ctx = nullptr;
 	}
-	return dk_ff_video_decoder::ERR_CODE_SUCCESS;
+	return dk_ff_video_decoder::err_code_success;
 }
 
-dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_video_entity_t * encoded, dk_ff_video_decoder::dk_video_entity_t * decoded)
+dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_video_entity_t * encoded, dk_ff_video_decoder::dk_video_entity_t * decoded)
 {
-	int32_t value = dk_ff_video_decoder::ERR_CODE_FAIL;
+	int32_t value = dk_ff_video_decoder::err_code_fail;
 	int32_t result = -1;
 	int32_t	got_frame = 0;
 
@@ -240,7 +240,7 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 						sws_freeContext(_sws_ctx);
 						_sws_ctx = 0;
 					}
-					return dk_ff_video_decoder::ERR_CODE_FAIL;
+					return dk_ff_video_decoder::err_code_fail;
 				}
 			}
 
@@ -263,7 +263,7 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 		unsigned char * src_u_plane = frame->data[1];
 		unsigned char * src_v_plane = frame->data[2];
 
-		if ((_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_I420) || (_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_YV12))
+		if ((_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_i420) || (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_yv12))
 		{
 			unsigned char * dst_y_plane = decoded->data;
 			unsigned char * dst_u_plane = 0;
@@ -301,12 +301,12 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			osize = _decoded_buffer_size;
 #else
 			decoded->data_size = _config->ostride*y_height*1.5;
-			if (_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_I420) //4:2:0 Y U V
+			if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_i420) //4:2:0 Y U V
 			{
 				dst_u_plane = dst_y_plane + dst_y_stride*y_height;
 				dst_v_plane = dst_u_plane + dst_uv_stride*uv_height;
 			}
-			else if (_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_YV12) // 4:2:0 Y V U
+			else if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_yv12) // 4:2:0 Y V U
 			{
 				dst_v_plane = dst_y_plane + dst_y_stride*y_height;
 				dst_u_plane = dst_v_plane + dst_uv_stride*uv_height;
@@ -323,7 +323,7 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			}
 #endif
 		}
-		else if (_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB32)
+		else if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_rgb32)
 		{
 			if (_config->ostride < 1)
 				_config->ostride = _config->owidth * 4;
@@ -333,7 +333,7 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			decoded->data_size = dst_stride*y_height;
 			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
 		}
-		else if (_config->osmt == dk_ff_video_decoder::SUBMEDIA_TYPE_RGB24)
+		else if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_rgb24)
 		{
 			if (_config->ostride < 1)
 				_config->ostride = _config->owidth * 3;
@@ -343,17 +343,17 @@ dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			decoded->data_size = dst_stride*y_height;
 			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
 		}
-		return dk_ff_video_decoder::ERR_CODE_SUCCESS;
+		return dk_ff_video_decoder::err_code_success;
 	}
-	return dk_ff_video_decoder::ERR_CODE_FAIL;
+	return dk_ff_video_decoder::err_code_fail;
 }
 
-dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::decode(dk_ff_video_decoder::dk_video_entity_t * encoded)
+dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_video_entity_t * encoded)
 {
-	return dk_ff_video_decoder::ERR_CODE_SUCCESS;
+	return dk_ff_video_decoder::err_code_success;
 }
 
-dk_ff_video_decoder::ERR_CODE ffmpeg_decoder::get_queued_data(dk_ff_video_decoder::dk_video_entity_t * decoded)
+dk_ff_video_decoder::err_code ffmpeg_decoder::get_queued_data(dk_ff_video_decoder::dk_video_entity_t * decoded)
 {
-	return dk_ff_video_decoder::ERR_CODE_SUCCESS;
+	return dk_ff_video_decoder::err_code_success;
 }
