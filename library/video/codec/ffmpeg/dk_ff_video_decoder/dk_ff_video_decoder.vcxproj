@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\..\..\..\..\dk_common\include;..\..\..\dk_video_base\include;..\..\..\..\buffering\dk_media_buffering\include;..\..\..\colorspace\dk_simd_colorspace_converter\include;..\..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\..\dk_ffmpeg_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\dk_common\include;..\..\..\dk_video_base\include;..\..\..\..\buffering\dk_media_buffering\include;..\..\..\colorspace\dk_simd_colorspace_converter\include;..\..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\..\dk_ffmpeg_base\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -77,14 +77,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\dk_video_base\include;..\dk_media_buffering\include;..\dk_simd_colorspace_converter\include;..\3rdparty\ffmpeg\win32\x86\include;..\dk_ffmpeg_base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\dk_common\include;..\..\..\dk_video_base\include;..\..\..\..\buffering\dk_media_buffering\include;..\..\..\colorspace\dk_simd_colorspace_converter\include;..\..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\..\dk_ffmpeg_base\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\3rdparty\ffmpeg\win32\x86\lib;$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\3rdparty\ffmpeg\win32\x86\lib;$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>avcodec.lib;avfilter.lib;avformat.lib;avutil.lib;swscale.lib;dk_simd_colorspace_converter.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>

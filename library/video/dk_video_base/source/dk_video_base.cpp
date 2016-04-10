@@ -207,25 +207,6 @@ const int dk_video_base::next_nalu(uint8_t * bitstream, size_t size, int * nal_s
 	*nal_end = i;
 	return (*nal_end - *nal_start);
 }
-/*
-typedef struct EXP_CLASS _configuration_t
-{
-	dk_video_encoder::memory_type mem_type;
-	void * d3d_device;
-
-	int32_t input_width;
-	int32_t input_height;
-	int32_t input_stride;
-	int32_t output_width;
-	int32_t output_height;
-	int32_t output_stride;
-	int32_t sar_width;
-	int32_t sar_height;
-	dk_video_decoder::submedia_type_t input_smt;
-	dk_video_decoder::submedia_type_t output_smt;
-
-} configuration_t;
-*/
 
 dk_video_decoder::_configuration_t::_configuration_t(void)
 	: mem_type(dk_video_decoder::memory_type_host)
@@ -409,10 +390,28 @@ dk_video_encoder::err_code dk_video_encoder::check_encoding_finish(void)
 	return dk_video_encoder::err_code_encoding_under_processing;
 }
 
-uint8_t * dk_video_encoder::spspps(uint32_t & spspps_size)
+dk_video_renderer::_configuration_t::_configuration_t(void)
+	: width(0)
+	, height(0)
+	, hwnd_full(NULL)
+	, hwnd(NULL)
+{}
+
+dk_video_renderer::_configuration_t::_configuration_t(const dk_video_renderer::_configuration_t & clone)
 {
-	spspps_size = _spspps_size;
-	return &_spspps[0];
+	width = clone.width;
+	height = clone.height;
+	hwnd_full = clone.hwnd_full;
+	hwnd = clone.hwnd;
+}
+
+dk_video_renderer::_configuration_t & dk_video_renderer::_configuration_t::operator = (const dk_video_renderer::_configuration_t & clone)
+{
+	width = clone.width;
+	height = clone.height;
+	hwnd_full = clone.hwnd_full;
+	hwnd = clone.hwnd;
+	return (*this);
 }
 
 dk_video_renderer::dk_video_renderer(void)

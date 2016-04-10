@@ -1,7 +1,6 @@
 #include "mmwave_renderer.h"
 #pragma comment(lib, "winmm")
 
-
 DWORD mmwave_renderer::_volume = 30;
 
 mmwave_renderer::mmwave_renderer(void)
@@ -24,25 +23,25 @@ mmwave_renderer::~mmwave_renderer(void)
 	DeleteCriticalSection(&_cs);
 }
 
-dk_mmwave_renderer::ERR_CODE mmwave_renderer::initialize_renderer(dk_mmwave_renderer::configuration_t * config)
+dk_mmwave_renderer::err_code mmwave_renderer::initialize_renderer(dk_mmwave_renderer::configuration_t * config)
 {
-	dk_mmwave_renderer::ERR_CODE value = dk_mmwave_renderer::ERR_CODE_FAIL;
+	dk_mmwave_renderer::err_code value = dk_mmwave_renderer::err_code_fail;
 	BOOL ret = begin_audio_render(config->samplerate, config->bitdepth, config->channels);
 	if (ret)
-		value = dk_mmwave_renderer::ERR_CODE_SUCCESS;
+		value = dk_mmwave_renderer::err_code_success;
 	return value;
 }
 
-dk_mmwave_renderer::ERR_CODE mmwave_renderer::release_renderer(void)
+dk_mmwave_renderer::err_code mmwave_renderer::release_renderer(void)
 {
 	end_audio_render();
-	return dk_mmwave_renderer::ERR_CODE_SUCCESS;
+	return dk_mmwave_renderer::err_code_success;
 }
 
-dk_mmwave_renderer::ERR_CODE mmwave_renderer::render(dk_mmwave_renderer::dk_audio_entity_t * pcm)
+dk_mmwave_renderer::err_code mmwave_renderer::render(dk_mmwave_renderer::dk_audio_entity_t * pcm)
 {
 	set_buffer(pcm->data, pcm->data_size);
-	return dk_mmwave_renderer::ERR_CODE_SUCCESS;
+	return dk_mmwave_renderer::err_code_success;
 }
 
 BOOL mmwave_renderer::begin_audio_render(DWORD samplerate, WORD bitdepth, WORD channels)

@@ -94,7 +94,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\..\..\buffering\dk_media_buffering\include;..\..\..\..\dk_audio_base\include;..\..\..\..\3rdparty\celt\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\dk_common\include;..\..\dk_audio_base\include;..\..\..\buffering\dk_media_buffering\include;..\..\..\..\3rdparty\celt\win32\x86\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -134,7 +134,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;..\dk_media_buffering\include;..\dk_audio_base\include;..\3rdparty\celt\win32\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\dk_common\include;..\..\dk_audio_base\include;..\..\..\buffering\dk_media_buffering\include;..\..\..\..\3rdparty\celt\win32\x86\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -142,7 +142,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
-      <AdditionalLibraryDirectories>..\3rdparty\celt\win32\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\3rdparty\celt\win32\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opus.lib;celt.lib;silk_common.lib;silk_fixed.lib;silk_float.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -171,14 +171,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\dk_audio_base\include\dk_audio_base.h" />
     <ClInclude Include="..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h" />
+    <ClInclude Include="..\..\dk_audio_base\include\dk_audio_base.h" />
     <ClInclude Include="include\celt_decoder.h" />
     <ClInclude Include="include\dk_celt_decoder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\dk_audio_base\source\dk_audio_base.cpp" />
     <ClCompile Include="..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp" />
+    <ClCompile Include="..\..\dk_audio_base\source\dk_audio_base.cpp" />
     <ClCompile Include="source\celt_decoder.cpp" />
     <ClCompile Include="source\dk_celt_decoder.cpp" />
   </ItemGroup>

@@ -1,8 +1,9 @@
 #include "celt_decoder.h"
 
 
-celt_decoder::celt_decoder(void)
-	: _decoder(nullptr)
+celt_decoder::celt_decoder(dk_celt_decoder * front)
+	: _front(front)
+	, _decoder(nullptr)
 	, _buffer_pos(0)
 {
 	_buffer = (int16_t*)malloc(10 * 2 * 48000 * sizeof(int16_t));
@@ -17,7 +18,7 @@ celt_decoder::~celt_decoder(void)
 	}
 }
 
-dk_celt_decoder::ERR_CODE celt_decoder::initialize_decoder(dk_celt_decoder::configuration_t * config)
+dk_celt_decoder::err_code celt_decoder::initialize_decoder(dk_celt_decoder::configuration_t * config)
 {
 	release_decoder();
 	_config = *config;
@@ -27,12 +28,12 @@ dk_celt_decoder::ERR_CODE celt_decoder::initialize_decoder(dk_celt_decoder::conf
 	int32_t err;
 	_decoder = opus_decoder_create(config->samplerate, config->channels, &err);
 	if (err != OPUS_OK || _decoder == NULL)
-		return dk_celt_decoder::ERR_CODE_FAIL;
+		return dk_celt_decoder::err_code_fail;
 	
-	return dk_celt_decoder::ERR_CODE_SUCCESS;
+	return dk_celt_decoder::err_code_success;
 }
 
-dk_celt_decoder::ERR_CODE celt_decoder::decode(dk_celt_decoder::dk_audio_entity_t * encoded, dk_celt_decoder::dk_audio_entity_t * pcm)
+dk_celt_decoder::err_code celt_decoder::decode(dk_celt_decoder::dk_audio_entity_t * encoded, dk_celt_decoder::dk_audio_entity_t * pcm)
 {
 	pcm->data_capacity = pcm->data_capacity / (_config.channels * sizeof(int16_t));
 	int32_t bytes_written = opus_decode(_decoder, (uint8_t*)encoded->data, (opus_int32)encoded->data_size, (opus_int16*)pcm->data, (int)pcm->data_capacity, 0);
@@ -40,7 +41,7 @@ dk_celt_decoder::ERR_CODE celt_decoder::decode(dk_celt_decoder::dk_audio_entity_
 	{
 		pcm->data_size = bytes_written * _config.channels * sizeof(int16_t);
 	}
-	return dk_celt_decoder::ERR_CODE_SUCCESS;
+	return dk_celt_decoder::err_code_success;
 
 	/*int16_t * intermediate = (int16_t*)encoded->data;
 	size_t isamples = pcm->data_size / (sizeof(int16_t)*_config.channels);
@@ -92,12 +93,12 @@ dk_celt_decoder::ERR_CODE celt_decoder::decode(dk_celt_decoder::dk_audio_entity_
 	return dk_celt_decoder::ERR_CODE_SUCCESS;
 }*/
 
-dk_celt_decoder::ERR_CODE celt_decoder::release_decoder(void)
+dk_celt_decoder::err_code celt_decoder::release_decoder(void)
 {
 	if (_decoder)
 	{
 		opus_decoder_destroy(_decoder);
 		_decoder = nullptr;
 	}
-	return dk_celt_decoder::ERR_CODE_SUCCESS;
+	return dk_celt_decoder::err_code_success;
 }

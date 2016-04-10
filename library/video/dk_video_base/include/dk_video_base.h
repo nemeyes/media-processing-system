@@ -325,18 +325,22 @@ public:
 	virtual dk_video_encoder::err_code check_encoding_finish(void);
 
 	virtual void on_acquire_bitstream(uint8_t * bistream, size_t size) = 0;
-
-	virtual uint8_t * spspps(uint32_t & spspps_size);
-
-protected:
-	uint8_t _spspps[260];
-	uint32_t _spspps_size;
-
 };
 
 class EXP_CLASS dk_video_renderer : public dk_video_base
 {
 public:
+	typedef struct EXP_CLASS _configuration_t
+	{
+		int32_t width;
+		int32_t height;
+		HWND hwnd_full;
+		HWND hwnd;
+		_configuration_t(void);
+		_configuration_t(const _configuration_t & clone);
+		_configuration_t & operator=(const _configuration_t & clone);
+	} configuration_t;
+
 	dk_video_renderer(void);
 	virtual ~dk_video_renderer(void);
 

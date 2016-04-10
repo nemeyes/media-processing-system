@@ -30,7 +30,7 @@
     <ClInclude Include="..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h">
       <Filter>buffering</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\dk_video_base\include\dk_video_base.h">
+    <ClInclude Include="..\..\dk_video_base\include\dk_video_base.h">
       <Filter>video_base</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClCompile Include="..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp">
       <Filter>buffering</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\dk_video_base\source\dk_video_base.cpp">
+    <ClCompile Include="..\..\dk_video_base\source\dk_video_base.cpp">
       <Filter>video_base</Filter>
     </ClCompile>
   </ItemGroup>

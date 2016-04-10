@@ -7,48 +7,50 @@
 class directdraw_renderer
 {
 public:
-	directdraw_renderer(void);
+	directdraw_renderer(dk_directdraw_renderer * front);
 	~directdraw_renderer(void);
 
 	bool is_initialized(void);
 
-	dk_directdraw_renderer::ERR_CODE initialize_renderer(dk_directdraw_renderer::configuration_t * config);
-	dk_directdraw_renderer::ERR_CODE release_renderer(void);
-	dk_directdraw_renderer::ERR_CODE render(dk_directdraw_renderer::dk_video_entity_t * decoded);
+	dk_directdraw_renderer::err_code initialize_renderer(dk_directdraw_renderer::configuration_t * config);
+	dk_directdraw_renderer::err_code release_renderer(void);
+	dk_directdraw_renderer::err_code render(dk_directdraw_renderer::dk_video_entity_t * decoded);
 
-	dk_directdraw_renderer::ERR_CODE open(void);
-	dk_directdraw_renderer::ERR_CODE close(void);
+	dk_directdraw_renderer::err_code open(void);
+	dk_directdraw_renderer::err_code close(void);
 
 private:
-	dk_directdraw_renderer::ERR_CODE create(HWND hwnd, DWORD width, DWORD height, DWORD pos_x, DWORD pos_y, DWORD *rgb_bitcount = 0);
-	dk_directdraw_renderer::ERR_CODE destroy(void);
+	dk_directdraw_renderer::err_code create(HWND hwnd, DWORD width, DWORD height, DWORD pos_x, DWORD pos_y, DWORD *rgb_bitcount = 0);
+	dk_directdraw_renderer::err_code destroy(void);
 
 
-	dk_directdraw_renderer::ERR_CODE enable_time_text(bool enable = true);
-	dk_directdraw_renderer::ERR_CODE set_time_text_position(unsigned short x, unsigned short y);
-	dk_directdraw_renderer::ERR_CODE set_time_text_font_size(unsigned char size);
-	dk_directdraw_renderer::ERR_CODE set_time_text_color(unsigned char red, unsigned char green, unsigned char blue);
+	dk_directdraw_renderer::err_code enable_time_text(bool enable = true);
+	dk_directdraw_renderer::err_code set_time_text_position(unsigned short x, unsigned short y);
+	dk_directdraw_renderer::err_code set_time_text_font_size(unsigned char size);
+	dk_directdraw_renderer::err_code set_time_text_color(unsigned char red, unsigned char green, unsigned char blue);
 
-	dk_directdraw_renderer::ERR_CODE enable_osd_text(bool enable = true);
-	dk_directdraw_renderer::ERR_CODE set_osd_text(wchar_t *osd);
-	dk_directdraw_renderer::ERR_CODE set_osd_text_position(unsigned short x, unsigned short y);
-	dk_directdraw_renderer::ERR_CODE set_osd_text_font_size(unsigned char size);
-	dk_directdraw_renderer::ERR_CODE set_osd_text_color(unsigned char red, unsigned char green, unsigned char blue);
+	dk_directdraw_renderer::err_code enable_osd_text(bool enable = true);
+	dk_directdraw_renderer::err_code set_osd_text(wchar_t *osd);
+	dk_directdraw_renderer::err_code set_osd_text_position(unsigned short x, unsigned short y);
+	dk_directdraw_renderer::err_code set_osd_text_font_size(unsigned char size);
+	dk_directdraw_renderer::err_code set_osd_text_color(unsigned char red, unsigned char green, unsigned char blue);
 
-	dk_directdraw_renderer::ERR_CODE set_background_color(unsigned char red, unsigned char green, unsigned char blue);
+	dk_directdraw_renderer::err_code set_background_color(unsigned char red, unsigned char green, unsigned char blue);
 
-	dk_directdraw_renderer::ERR_CODE set_normal_screen_handle(HWND hwnd);
-	dk_directdraw_renderer::ERR_CODE set_full_screen_handle(HWND hwnd);
+	dk_directdraw_renderer::err_code set_normal_screen_handle(HWND hwnd);
+	dk_directdraw_renderer::err_code set_full_screen_handle(HWND hwnd);
 
-	dk_directdraw_renderer::ERR_CODE enable_full_screen(bool enable);
-	dk_directdraw_renderer::ERR_CODE enable_stretch(bool enable);
+	dk_directdraw_renderer::err_code enable_full_screen(bool enable);
+	dk_directdraw_renderer::err_code enable_stretch(bool enable);
 
-	dk_directdraw_renderer::ERR_CODE set_enable(bool enable);
+	dk_directdraw_renderer::err_code set_enable(bool enable);
 	bool get_enable(void);
 
-	dk_directdraw_renderer::ERR_CODE make_normal_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y);
-	dk_directdraw_renderer::ERR_CODE make_full_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y);
+	dk_directdraw_renderer::err_code make_normal_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y);
+	dk_directdraw_renderer::err_code make_full_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y);
 
+private:
+	dk_directdraw_renderer * _front;
 	dk_directdraw_renderer::configuration_t * _config;
 
 	bool _enable;

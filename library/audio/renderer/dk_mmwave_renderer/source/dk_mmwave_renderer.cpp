@@ -15,17 +15,17 @@ dk_mmwave_renderer::~dk_mmwave_renderer(void)
 	}
 }
 
-dk_mmwave_renderer::ERR_CODE dk_mmwave_renderer::initialize_renderer(void * config)
+dk_mmwave_renderer::err_code dk_mmwave_renderer::initialize_renderer(void * config)
 {
 	return _core->initialize_renderer(static_cast<dk_mmwave_renderer::configuration_t*>(config));
 }
 
-dk_mmwave_renderer::ERR_CODE dk_mmwave_renderer::release_renderer(void)
+dk_mmwave_renderer::err_code dk_mmwave_renderer::release_renderer(void)
 {
 	return _core->release_renderer();
 }
 
-dk_mmwave_renderer::ERR_CODE dk_mmwave_renderer::render(dk_mmwave_renderer::dk_audio_entity_t * pcm)
+dk_mmwave_renderer::err_code dk_mmwave_renderer::render(dk_mmwave_renderer::dk_audio_entity_t * pcm)
 {
 	return _core->render(pcm);
 }

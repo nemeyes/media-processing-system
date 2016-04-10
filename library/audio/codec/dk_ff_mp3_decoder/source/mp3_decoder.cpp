@@ -1,8 +1,9 @@
 #include "mp3_decoder.h"
 
 
-mp3_decoder::mp3_decoder(void)
-	: _codec(nullptr)
+mp3_decoder::mp3_decoder(dk_ff_mp3_decoder * front)
+	: _front(front)
+	, _codec(nullptr)
 	, _context(nullptr)
 	, _decoded_frame(nullptr)
 {
@@ -14,18 +15,19 @@ mp3_decoder::~mp3_decoder(void)
 
 }
 
-dk_ff_mp3_decoder::ERR_CODE mp3_decoder::initialize_decoder(dk_ff_mp3_decoder::configuration_t * config)
+dk_ff_mp3_decoder::err_code mp3_decoder::initialize_decoder(dk_ff_mp3_decoder::configuration_t * config)
 {
 	release_decoder();
 	_config = *config;
 
 	_codec = avcodec_find_decoder(AV_CODEC_ID_MP3);
 	if (!_codec)
-		return dk_ff_mp3_decoder::ERR_CODE_FAIL;
+		return dk_ff_mp3_decoder::err_code_fail;
 
 	_context = avcodec_alloc_context3(_codec);
 	if (!_context)
-		return dk_ff_mp3_decoder::ERR_CODE_FAIL;
+		return dk_ff_mp3_decoder::err_code_fail;
+
 	_context->channels = config->channels;
 	_context->sample_rate = config->samplerate;
 	//_context->sample_fmt = 
@@ -40,10 +42,10 @@ dk_ff_mp3_decoder::ERR_CODE mp3_decoder::initialize_decoder(dk_ff_mp3_decoder::c
 	}
 
 	av_init_packet(&_pkt);
-	return dk_ff_mp3_decoder::ERR_CODE_SUCCESS;
+	return dk_ff_mp3_decoder::err_code_success;
 }
 
-dk_ff_mp3_decoder::ERR_CODE mp3_decoder::decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm)
+dk_ff_mp3_decoder::err_code mp3_decoder::decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm)
 {
 	pcm->data_size = 0;
 	_pkt.data = static_cast<uint8_t*>(encoded->data);
@@ -58,17 +60,17 @@ dk_ff_mp3_decoder::ERR_CODE mp3_decoder::decode(dk_ff_mp3_decoder::dk_audio_enti
 		{
 			if (!(_decoded_frame = av_frame_alloc())) 
 			{
-				return dk_ff_mp3_decoder::ERR_CODE_FAIL;
+				return dk_ff_mp3_decoder::err_code_fail;
 			}
 		}
 		length  = avcodec_decode_audio4(_context, _decoded_frame, &got_frame, &_pkt);
 		if (length < 0)
-			return dk_ff_mp3_decoder::ERR_CODE_FAIL;
+			return dk_ff_mp3_decoder::err_code_fail;
 		if (got_frame)
 		{
 			int32_t data_size = av_get_bytes_per_sample(_context->sample_fmt);
 			if (data_size < 0)
-				return dk_ff_mp3_decoder::ERR_CODE_FAIL;
+				return dk_ff_mp3_decoder::err_code_fail;
 
 			for (int32_t i = 0; i < _decoded_frame->nb_samples; i++)
 			{
@@ -84,10 +86,10 @@ dk_ff_mp3_decoder::ERR_CODE mp3_decoder::decode(dk_ff_mp3_decoder::dk_audio_enti
 		_pkt.dts = AV_NOPTS_VALUE;
 		_pkt.pts = AV_NOPTS_VALUE;
 	}
-	return dk_ff_mp3_decoder::ERR_CODE_SUCCESS;
+	return dk_ff_mp3_decoder::err_code_success;
 }
 
-dk_ff_mp3_decoder::ERR_CODE mp3_decoder::release_decoder(void)
+dk_ff_mp3_decoder::err_code mp3_decoder::release_decoder(void)
 {
 	if (_context)
 	{
@@ -102,5 +104,5 @@ dk_ff_mp3_decoder::ERR_CODE mp3_decoder::release_decoder(void)
 		av_frame_free(&_decoded_frame);
 		_decoded_frame = nullptr;
 	}
-	return dk_ff_mp3_decoder::ERR_CODE_SUCCESS;
+	return dk_ff_mp3_decoder::err_code_success;
 }

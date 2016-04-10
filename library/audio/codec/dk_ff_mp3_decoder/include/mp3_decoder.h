@@ -18,16 +18,16 @@ extern "C"
 class mp3_decoder
 {
 public:
-	mp3_decoder(void);
+	mp3_decoder(dk_ff_mp3_decoder * front);
 	~mp3_decoder(void);
 
-	dk_ff_mp3_decoder::ERR_CODE initialize_decoder(dk_ff_mp3_decoder::configuration_t * config);
-	dk_ff_mp3_decoder::ERR_CODE release_decoder(void);
+	dk_ff_mp3_decoder::err_code initialize_decoder(dk_ff_mp3_decoder::configuration_t * config);
+	dk_ff_mp3_decoder::err_code release_decoder(void);
+	dk_ff_mp3_decoder::err_code decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm);
 
-	dk_ff_mp3_decoder::ERR_CODE decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm);
 private:
+	dk_ff_mp3_decoder * _front;
 	dk_ff_mp3_decoder::configuration_t _config;
-
 
 	AVCodec * _codec;
 	AVCodecContext * _context;

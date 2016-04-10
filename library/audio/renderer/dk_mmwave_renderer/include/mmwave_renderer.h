@@ -17,10 +17,9 @@ public:
 	mmwave_renderer(void);
 	~mmwave_renderer(void);
 
-	dk_mmwave_renderer::ERR_CODE initialize_renderer(dk_mmwave_renderer::configuration_t * config);
-	dk_mmwave_renderer::ERR_CODE release_renderer(void);
-	dk_mmwave_renderer::ERR_CODE render(dk_mmwave_renderer::dk_audio_entity_t * pcm);
-
+	dk_mmwave_renderer::err_code initialize_renderer(dk_mmwave_renderer::configuration_t * config);
+	dk_mmwave_renderer::err_code release_renderer(void);
+	dk_mmwave_renderer::err_code render(dk_mmwave_renderer::dk_audio_entity_t * pcm);
 
 private:
 	void init_buffer(int buffer_size, int data_size);
@@ -29,7 +28,6 @@ private:
 
 	BOOL begin_audio_render(DWORD sample_per_second, WORD bitdepth, WORD channels = 1);
 	void end_audio_render(void);
-
 
 	void set_volume(unsigned long lVolume);
 	DWORD get_volume(void);
