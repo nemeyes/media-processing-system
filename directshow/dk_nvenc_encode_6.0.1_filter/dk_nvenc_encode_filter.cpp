@@ -342,9 +342,9 @@ HRESULT  dk_nvenc_encode_filter::GetMediaType(int position, CMediaType *type)
 		//type->SetSampleSize(_config.width*_config.height*2);
 		type->SetVariableSize();
 
-		unsigned int spspps_size = 0;
-		unsigned char * spspps = _encoder->spspps(spspps_size);
-		MPEG2VIDEOINFO * mi = (MPEG2VIDEOINFO*)type->AllocFormatBuffer(sizeof(MPEG2VIDEOINFO) + spspps_size);
+		unsigned int extradata_size = 0;
+		unsigned char * extradata = _encoder->get_extradata(extradata_size);
+		MPEG2VIDEOINFO * mi = (MPEG2VIDEOINFO*)type->AllocFormatBuffer(sizeof(MPEG2VIDEOINFO) + extradata_size);
 		ZeroMemory(mi, sizeof(*mi));
 		mi->hdr.rcSource.left = 0;
 		mi->hdr.rcSource.top = 0;
@@ -361,9 +361,9 @@ HRESULT  dk_nvenc_encode_filter::GetMediaType(int position, CMediaType *type)
 		mi->hdr.bmiHeader.biCompression = MAKEFOURCC('H', '2', '6', '4');
 		mi->hdr.bmiHeader.biSizeImage = mi->hdr.bmiHeader.biWidth*mi->hdr.bmiHeader.biHeight;
 		//mi->hdr.AvgTimePerFrame = (UNITS / MILLISECONDS) * (UNITS / 30);
-		mi->cbSequenceHeader = spspps_size;
+		mi->cbSequenceHeader = extradata_size;
 		BYTE * ptr_spspps = (BYTE*)&mi->dwSequenceHeader[0];
-		memcpy(ptr_spspps, spspps, spspps_size);
+		memcpy(ptr_spspps, extradata, extradata_size);
 #else
 		type->SetSubtype(&MEDIASUBTYPE_H264);
 		type->SetFormatType(&FORMAT_VideoInfo2);
