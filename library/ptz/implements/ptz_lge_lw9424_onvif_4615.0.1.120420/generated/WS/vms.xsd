@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:tt="http://www.onvif.org/ver10/schema" 
+	   xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	   xmlns:xmime="http://www.w3.org/2005/05/xmlmime" 
+	   xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" 
+	   xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
+	   xmlns:xop="http://www.w3.org/2004/08/xop/include" 
+	   xmlns:tns1="http://www.onvif.org/ver10/topics"
+	   targetNamespace="http://www.onvif.org/ver10/topics" 
+	   elementFormDefault="unqualified"
+	   attributeFormDefault="unqualified">
+	<xs:import namespace="http://www.w3.org/2005/05/xmlmime" schemaLocation="http://www.w3.org/2005/05/xmlmime"/>
+	<xs:import namespace="http://docs.oasis-open.org/wsn/b-2" schemaLocation="http://docs.oasis-open.org/wsn/b-2.xsd"/>
+	<xs:import namespace="http://www.w3.org/2004/08/xop/include" schemaLocation="http://www.w3.org/2004/08/xop/include"/>
+
+  <xs:complexType name="RuleEngine">
+   <xs:attribute name="wstop:topic" type="xsd:boolean" />
+   <xs:sequence>
+     <xs:element name="FieldDetector" type="tns1:FieldDetector" minOccurs="0" maxOccurs="unbounded"/>
+     <xs:element name="LineDetector" type="tns1:LineDetector" minOccurs="0" maxOccurs="unbounded"/>
+   </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="FieldDetector">
+   <xs:attribute name="wstop:topic" type="xsd:boolean" />
+   <xs:sequence>
+     <xs:element name="ObjectsInside" type="tns1:ObjectsInside" minOccurs="1" maxOccurs="unbounded"/>
+   </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="LineDetector">
+   <xs:attribute name="wstop:topic" type="xsd:boolean" />
+   <xs:sequence>
+     <xs:element name="Crossed" type="tns1:Crossed" minOccurs="1" maxOccurs="unbounded"/>
+   </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ObjectsInside">
+   <xs:attribute name="wstop:topic" type="xsd:boolean" />
+   <xs:sequence>
+     <xs:element name="MessageDescription" type="tt:MessageDescription" minOccurs="1" maxOccurs="unbounded"/>
+   </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Crossed">
+   <xs:attribute name="wstop:topic" type="xsd:boolean" />
+   <xs:sequence>
+     <xs:element name="MessageDescription" type="tt:MessageDescription" minOccurs="1" maxOccurs="unbounded"/>
+   </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="SourceMode">
+   <xs:restriction base="xs:string">
+    <xs:enumeration value="Analogue"/>
+    <xs:enumeration value="SDK"/>
+    <xs:enumeration value="ONVIF"/>
+   </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="VendorType">
+   <xs:restriction base="xs:string">
+    <xs:enumeration value="Axis"/>
+    <xs:enumeration value="Hitron"/>
+    <xs:enumeration value="LGE"/>
+    <xs:enumeration value="Samsung"/>
+    <xs:enumeration value="Vivotek"/>
+    <xs:enumeration value="LGCNS"/>
+   </xs:restriction>
+  </xs:simpleType>
+  
+  
+
+ </xs:schema>

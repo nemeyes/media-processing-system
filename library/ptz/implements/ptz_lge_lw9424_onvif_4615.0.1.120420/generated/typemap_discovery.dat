@@ -1,0 +1,64 @@
+# WS4D-gSOAP - Implementation of the Devices Profile for Web Services
+# (DPWS) on top of gSOAP 
+# Copyright (C) 2007 University of Rostock
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301 USA
+
+wsa	= <http://schemas.xmlsoap.org/ws/2004/08/addressing>
+wsd     = <http://schemas.xmlsoap.org/ws/2005/04/discovery>
+
+xmlmime = <http://www.w3.org/2004/11/xmlmime>
+xop     = <http://www.w3.org/2004/08/xop/include>
+
+
+xsd__ID			= | char* /*ID*/
+
+xsd__NCName		= | char* /*NCName*/
+
+xsd__anyURI		= | char* /*URI*/
+
+xsd__QName		= | _QName | _QName
+
+xsd__integer		= | int
+
+xsd__nonNegativeInteger	= | unsigned int
+
+xsd__base64Binary	= | char* /*base64*/
+
+xsd__boolean		= enum xsd__boolean_ { _false, _true }; | enum xsd__boolean_
+
+wsd__QNameListType = extern typedef char* wsd__QNameListType; | wsd__QNameListType | wsd__QNameListType
+
+wsdp__QNameListType = extern typedef char* wsdp__QNameListType; | wsdp__QNameListType | wsdp__QNameListType
+
+_wse__NotifyTo = typedef struct wsa__EndpointReferenceType wse__NotifyTo; | wse__NotifyTo | wse__NotifyTo
+
+wsa__ReferenceParametersType =\
+typedef struct wsa__ReferenceParametersType\n\
+{\n\
+    int                                  __sizepar                     ;\n\
+    struct wsa_ReferenceParameterAny\n\
+    {\n\
+        int                              __type                        ;\n\
+        void                            *__any                         ;\n\
+    }\n\                                   *__par                      ;\n\
+} wsa__ReferenceParametersType; | wsa__ReferenceParametersType* | wsa__ReferenceParametersType*
+
+wsa__AttributedQName	= | _QName
+
+wsa__AttributedURI	= | char*
+
+wsa__ReplyAfterType	= | unsigned int

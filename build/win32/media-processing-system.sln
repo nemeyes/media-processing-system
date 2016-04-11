@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -260,6 +260,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "native", "native", "{B5737B52-C9CA-4EFB-BB8C-1DD4A2386B08}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_audio_base", "..\..\library\audio\dk_audio_base\dk_audio_base.vcxproj", "{7855CA1C-BA5C-4966-AD8E-3C4BD5284EA6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backchannel", "backchannel", "{43C6A34A-761D-4C57-801F-65A1662C77E1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "audio_backchannel_controller", "..\..\library\audio\backchannel\audio_backchannel_controller\audio_backchannel_controller.vcxproj", "{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "implements", "implements", "{C0C2DB7C-A2BC-42D4-8584-9BD36F03B010}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hanil_ueron-dvs160_socket_2.0.0s", "..\..\library\audio\backchannel\implements\audio_backchannel_hanil_ueron-dvs160_socket_2.0.0s\hanil_ueron-dvs160_socket_2.0.0s.vcxproj", "{52C7DD1E-C805-462E-AB09-97470EEB2D3B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ini_nvs-mrde1_socket_1.3", "..\..\library\audio\backchannel\implements\audio_backchannel_ini_nvs-mrde1_socket_1.3\ini_nvs-mrde1_socket_1.3.vcxproj", "{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lge_lw9424_socket_4615.0.1.130304", "..\..\library\audio\backchannel\implements\audio_backchannel_lge_lw9424_socket_4615.0.1.130304\lge_lw9424_socket_4615.0.1.130304.vcxproj", "{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -769,6 +781,36 @@ Global
 		{7855CA1C-BA5C-4966-AD8E-3C4BD5284EA6}.Release|Win32.ActiveCfg = Release|Win32
 		{7855CA1C-BA5C-4966-AD8E-3C4BD5284EA6}.Release|Win32.Build.0 = Release|Win32
 		{7855CA1C-BA5C-4966-AD8E-3C4BD5284EA6}.Release|x64.ActiveCfg = Release|Win32
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Debug|Win32.Build.0 = Debug|Win32
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Debug|x64.ActiveCfg = Debug|x64
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Debug|x64.Build.0 = Debug|x64
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Release|Win32.ActiveCfg = Release|Win32
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Release|Win32.Build.0 = Release|Win32
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Release|x64.ActiveCfg = Release|x64
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}.Release|x64.Build.0 = Release|x64
+		{52C7DD1E-C805-462E-AB09-97470EEB2D3B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{52C7DD1E-C805-462E-AB09-97470EEB2D3B}.Debug|Win32.Build.0 = Debug|Win32
+		{52C7DD1E-C805-462E-AB09-97470EEB2D3B}.Debug|x64.ActiveCfg = Debug|Win32
+		{52C7DD1E-C805-462E-AB09-97470EEB2D3B}.Release|Win32.ActiveCfg = Release|Win32
+		{52C7DD1E-C805-462E-AB09-97470EEB2D3B}.Release|Win32.Build.0 = Release|Win32
+		{52C7DD1E-C805-462E-AB09-97470EEB2D3B}.Release|x64.ActiveCfg = Release|Win32
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Debug|Win32.ActiveCfg = Debug|Win32
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Debug|Win32.Build.0 = Debug|Win32
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Debug|x64.ActiveCfg = Debug|x64
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Debug|x64.Build.0 = Debug|x64
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Release|Win32.ActiveCfg = Release|Win32
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Release|Win32.Build.0 = Release|Win32
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Release|x64.ActiveCfg = Release|x64
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529}.Release|x64.Build.0 = Release|x64
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Debug|Win32.Build.0 = Debug|Win32
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Debug|x64.ActiveCfg = Debug|x64
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Debug|x64.Build.0 = Debug|x64
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Release|Win32.ActiveCfg = Release|Win32
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Release|Win32.Build.0 = Release|Win32
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Release|x64.ActiveCfg = Release|x64
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -899,5 +941,11 @@ Global
 		{B6DCFB67-37A9-4602-A56B-85AD22221BDE} = {B5737B52-C9CA-4EFB-BB8C-1DD4A2386B08}
 		{B5737B52-C9CA-4EFB-BB8C-1DD4A2386B08} = {CC2D3C5A-8B5F-414D-AF44-99472F6A31E2}
 		{7855CA1C-BA5C-4966-AD8E-3C4BD5284EA6} = {2D4D34F3-2439-41B0-83D2-77978268E880}
+		{43C6A34A-761D-4C57-801F-65A1662C77E1} = {2D4D34F3-2439-41B0-83D2-77978268E880}
+		{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5} = {43C6A34A-761D-4C57-801F-65A1662C77E1}
+		{C0C2DB7C-A2BC-42D4-8584-9BD36F03B010} = {43C6A34A-761D-4C57-801F-65A1662C77E1}
+		{52C7DD1E-C805-462E-AB09-97470EEB2D3B} = {C0C2DB7C-A2BC-42D4-8584-9BD36F03B010}
+		{51C251C2-6AB1-4A30-A1CD-C35B7C9FF529} = {C0C2DB7C-A2BC-42D4-8584-9BD36F03B010}
+		{61F3A8CB-3C29-42CF-B3C6-39496A3CBDB6} = {C0C2DB7C-A2BC-42D4-8584-9BD36F03B010}
 	EndGlobalSection
 EndGlobal

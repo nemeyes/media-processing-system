@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{1fb56ed0-030b-4e9d-a4f0-f1466248920d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\g726">
+      <UniqueIdentifier>{fc7dc660-1ff8-428b-a1a2-b7b80f0f8456}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\g726">
+      <UniqueIdentifier>{d260e172-bb43-4344-9049-a1da8ac3230e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\g711">
+      <UniqueIdentifier>{dea1a421-d98d-4133-91a8-c0c935b10cb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\g723">
+      <UniqueIdentifier>{a0a63632-d4a3-423f-aae0-c3932d12f034}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\g721">
+      <UniqueIdentifier>{bf623757-2777-49c6-95d5-6cbf0922a7ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ffmpeg_base">
+      <UniqueIdentifier>{0bca5d7f-4cdd-46ff-bfcc-2e8ac10536e3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\file_input_source.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mmwave_input_source.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\platform.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\base_input_source.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_backchannel_controller.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_backchannel_device_info.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_backchannel_lge_device_info.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\base_audio_backchannel_controller.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\backend_audio_backchannel_controller.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_backchannel_module_mapper.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_backchannel_ini_device_info.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\g726\g72x.h">
+      <Filter>헤더 파일\g726</Filter>
+    </ClInclude>
+    <ClInclude Include="include\g726\private.h">
+      <Filter>헤더 파일\g726</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_backchannel_hanil_device_info.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h">
+      <Filter>ffmpeg_base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\file_input_source.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mmwave_input_source.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\audio_backchannel_controller.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\backend_audio_backchannel_controller.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\audio_backchannel_module_mapper.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g726\g72x.cpp">
+      <Filter>소스 파일\g726</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g726\g726_16.cpp">
+      <Filter>소스 파일\g726</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g726\g726_24.cpp">
+      <Filter>소스 파일\g726</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g726\g726_32.cpp">
+      <Filter>소스 파일\g726</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g726\g726_40.cpp">
+      <Filter>소스 파일\g726</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g726\private.cpp">
+      <Filter>소스 파일\g726</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g711\g711.c">
+      <Filter>소스 파일\g711</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g721\g721.c">
+      <Filter>소스 파일\g721</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g723\g723_24.c">
+      <Filter>소스 파일\g723</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g723\g723_40.c">
+      <Filter>소스 파일\g723</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g711\decode.c">
+      <Filter>소스 파일\g711</Filter>
+    </ClCompile>
+    <ClCompile Include="source\g711\encode.c">
+      <Filter>소스 파일\g711</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp">
+      <Filter>ffmpeg_base</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

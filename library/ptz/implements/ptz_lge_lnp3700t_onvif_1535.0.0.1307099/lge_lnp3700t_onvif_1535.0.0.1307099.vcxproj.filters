@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="source\gsoap\dom.cpp" />
+    <ClCompile Include="source\gsoap\ptzC.cpp" />
+    <ClCompile Include="source\gsoap\ptzMediaBindingProxy.cpp" />
+    <ClCompile Include="source\gsoap\ptzPTZBindingProxy.cpp" />
+    <ClCompile Include="source\gsoap\smdevp.cpp" />
+    <ClCompile Include="source\gsoap\stdsoap2.cpp" />
+    <ClCompile Include="source\gsoap\threads.cpp" />
+    <ClCompile Include="source\gsoap\wsaapi.cpp" />
+    <ClCompile Include="source\gsoap\wsseapi.cpp" />
+    <ClCompile Include="source\onvif_client.cpp" />
+    <ClCompile Include="source\onvif_fault.cpp" />
+    <ClCompile Include="source\onvif_ptz_controller.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gsoap\ptzH.h" />
+    <ClInclude Include="include\gsoap\ptzMediaBindingProxy.h" />
+    <ClInclude Include="include\gsoap\ptzPTZBindingProxy.h" />
+    <ClInclude Include="include\gsoap\ptzStub.h" />
+    <ClInclude Include="include\gsoap\smdevp.h" />
+    <ClInclude Include="include\gsoap\stdsoap2.h" />
+    <ClInclude Include="include\gsoap\threads.h" />
+    <ClInclude Include="include\gsoap\wsaapi.h" />
+    <ClInclude Include="include\gsoap\wsseapi.h" />
+    <ClInclude Include="include\onvif_client.h" />
+    <ClInclude Include="include\onvif_fault.h" />
+    <ClInclude Include="include\onvif_ptz_controller.h" />
+    <ClInclude Include="include\platform.h" />
+  </ItemGroup>
+</Project>

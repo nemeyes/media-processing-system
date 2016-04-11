@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{407F948E-02A6-4391-8B89-1A5AE453BE85}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>axis_p5522e_vapix3_5502</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)win32\bin\</OutDir>
+    <IntDir>$(SolutionDir)platform\$(Platform)\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(ProjectDir)..\..\ptz_controller\include;$(ProjectDir)..\..\..\curl\win32\include;$(ProjectDir)..\..\..\pthreads\win32\include;$(ProjectDir)..\..\..\openssl\win32;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\..\..\curl\win32\lib;$(ProjectDir)..\..\..\pthreads\win32\lib;$(ProjectDir)..\..\..\openssl\win32\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)x64\bin\</OutDir>
+    <IntDir>$(SolutionDir)platform\$(Platform)\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(ProjectDir)..\..\ptz_controller\include;$(ProjectDir)..\..\..\curl\x64\include;$(ProjectDir)..\..\..\pthreads\x64\include;$(ProjectDir)..\..\..\openssl\x64;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\..\..\curl\x64\lib;$(ProjectDir)..\..\..\pthreads\x64\lib;$(ProjectDir)..\..\..\openssl\x64\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)win32\bin\</OutDir>
+    <IntDir>$(SolutionDir)platform\$(Platform)\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(ProjectDir)..\..\ptz_controller\include;$(ProjectDir)..\..\..\curl\win32\include;$(ProjectDir)..\..\..\pthreads\win32\include;$(ProjectDir)..\..\..\openssl\win32;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\..\..\curl\win32\lib;$(ProjectDir)..\..\..\pthreads\win32\lib;$(ProjectDir)..\..\..\openssl\win32\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)x64\release\bin\</OutDir>
+    <IntDir>$(SolutionDir)platform\$(Platform)\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(ProjectDir)..\..\ptz_controller\include;$(ProjectDir)..\..\..\curl\x64\include;$(ProjectDir)..\..\..\pthreads\x64\include;$(ProjectDir)..\..\..\openssl\x64;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\..\..\curl\x64\lib;$(ProjectDir)..\..\..\pthreads\x64\lib;$(ProjectDir)..\..\..\openssl\x64\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;AXIS_P5522E_VAPIX3_5502_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;libcurl.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)ptz\ptz_controller\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)Player2xx\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticaster\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterEdge\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterClient\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)PTZEngine\win32\bin\ptz_implements\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;AXIS_P5522E_VAPIX3_5502_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;libcurl.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)ptz\ptz_controller\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)Player2xx\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticaster\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterEdge\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterClient\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)PTZEngine\x64\bin\ptz_implements\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;AXIS_P5522E_VAPIX3_5502_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;libcurl.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)ptz\ptz_controller\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)Player2xx\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticaster\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterEdge\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterClient\win32\bin\ptz_implements\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)PTZEngine\win32\bin\ptz_implements\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;AXIS_P5522E_VAPIX3_5502_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;libcurl.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)ptz\ptz_controller\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)Player2xx\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticaster\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterEdge\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)IntelliVMSMulticasterClient\x64\bin\ptz_implements\
+xcopy /y $(ProjectDir)x64\bin\$(ProjectName).dll $(SolutionDir)PTZEngine\x64\bin\ptz_implements\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="source\axis_ptz_controller.cpp" />
+    <ClCompile Include="source\http_client.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\axis_ptz_controller.h" />
+    <ClInclude Include="include\http_client.h" />
+    <ClInclude Include="include\platform.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

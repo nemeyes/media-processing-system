@@ -1,0 +1,1 @@
+wsdl2h.exe -gmys -ttypemap_discovery.da -nwsd -oimport/wsd.h WS/wsd.xsd

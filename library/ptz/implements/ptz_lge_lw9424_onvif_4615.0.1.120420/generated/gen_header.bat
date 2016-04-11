@@ -1,0 +1,1 @@
+D:\02.vms\02.onvif_dci\50.tools\gsoap_2.7.16\gsoap-2.7\gsoap\bin\win32\wsdl2h.exe -ttypemap_all.dat -d -s -o ptz.h http://www.onvif.org/onvif/ver20/ptz/wsdl/ptz.wsdl

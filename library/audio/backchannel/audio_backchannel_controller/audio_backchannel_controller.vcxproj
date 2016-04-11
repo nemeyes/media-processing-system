@@ -1,0 +1,252 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E1C70E20-A992-4BE7-AEBC-43DD7D9063E5}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>audio_backchannel_controller</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\debug\bin\</OutDir>
+    <IntDir>$(SolutionDir)x86\debug\intermediate\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <IncludePath>$(ProjectDir)..\..\VMSDefine;$(ProjectDir)..\..\pthreads\win32\include;$(ProjectDir)..\..\ffmpeg\win32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\..\pthreads\win32\lib;$(ProjectDir)..\..\ffmpeg\win32\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)x64\debug\bin\</OutDir>
+    <IntDir>$(SolutionDir)platform\$(Platform)\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <IncludePath>$(SolutionDir)pthreads\include;$(SolutionDir)ffmpeg\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)pthreads\x64\release\lib;$(SolutionDir)ffmpeg\x64\release\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)..\..\VMSDefine;$(ProjectDir)..\..\pthreads\win32\include;$(ProjectDir)..\..\ffmpeg\win32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\..\pthreads\win32\lib;$(ProjectDir)..\..\ffmpeg\win32\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)win32\bin\</OutDir>
+    <IntDir>$(SolutionDir)platform\$(Platform)\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)pthreads\include;$(SolutionDir)ffmpeg\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)pthreads\x64\release\lib;$(SolutionDir)ffmpeg\x64\release\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)x64\release\bin\</OutDir>
+    <IntDir>$(SolutionDir)platform\$(Platform)\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;EXPORT_VMS_AUDIO_BACKCHANNEL_CONTROLLER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\..\dk_common\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>winmm.lib;swscale.lib;avformat.lib;avcodec.lib;avutil.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
+      <AdditionalLibraryDirectories>..\..\..\..\3rdparty\ffmpeg\win32\x86\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(ProjectDir)win32\bin\$(ProjectName)d.dll $(SolutionDir)Player2xx\win32\bin\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName)d.dll $(SolutionDir)IntelliVMSMulticaster\win32\bin\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName)d.dll $(SolutionDir)IntelliVMSMulticasterEdge\win32\bin\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName)d.dll $(SolutionDir)IntelliVMSMulticasterClient\win32\bin\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;EXPORT_VMS_AUDIO_BACKCHANNEL_CONTROLLER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>winmm.lib;swscale.lib;avformat.lib;avcodec.lib;avutil.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(ProjectDir)x64\lib\$(ProjectName)d.lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;EXPORT_VMS_AUDIO_BACKCHANNEL_CONTROLLER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>winmm.lib;swscale.lib;avformat.lib;avcodec.lib;avutil.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(ProjectDir)win32\lib\$(ProjectName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(ProjectDir)win32\bin\$(ProjectName).dll $(SolutionDir)Player2xx\win32\bin\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName)d.dll $(SolutionDir)IntelliVMSMulticaster\win32\bin\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName)d.dll $(SolutionDir)IntelliVMSMulticasterEdge\win32\bin\
+xcopy /y $(ProjectDir)win32\bin\$(ProjectName)d.dll $(SolutionDir)IntelliVMSMulticasterClient\win32\bin\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;EXPORT_VMS_AUDIO_BACKCHANNEL_CONTROLLER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>winmm.lib;swscale.lib;avformat.lib;avcodec.lib;avutil.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(ProjectDir)x64\lib\$(ProjectName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h" />
+    <ClInclude Include="include\audio_backchannel_controller.h" />
+    <ClInclude Include="include\audio_backchannel_device_info.h" />
+    <ClInclude Include="include\audio_backchannel_hanil_device_info.h" />
+    <ClInclude Include="include\audio_backchannel_ini_device_info.h" />
+    <ClInclude Include="include\audio_backchannel_lge_device_info.h" />
+    <ClInclude Include="include\audio_backchannel_module_mapper.h" />
+    <ClInclude Include="include\backend_audio_backchannel_controller.h" />
+    <ClInclude Include="include\base_audio_backchannel_controller.h" />
+    <ClInclude Include="include\base_input_source.h" />
+    <ClInclude Include="include\file_input_source.h" />
+    <ClInclude Include="include\g726\g72x.h" />
+    <ClInclude Include="include\g726\private.h" />
+    <ClInclude Include="include\mmwave_input_source.h" />
+    <ClInclude Include="include\platform.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp" />
+    <ClCompile Include="source\audio_backchannel_controller.cpp" />
+    <ClCompile Include="source\audio_backchannel_module_mapper.cpp" />
+    <ClCompile Include="source\backend_audio_backchannel_controller.cpp" />
+    <ClCompile Include="source\file_input_source.cpp" />
+    <ClCompile Include="source\g711\decode.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\g711\encode.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\g711\g711.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\g721\g721.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\g723\g723_24.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\g723\g723_40.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="source\g726\g726_16.cpp" />
+    <ClCompile Include="source\g726\g726_24.cpp" />
+    <ClCompile Include="source\g726\g726_32.cpp" />
+    <ClCompile Include="source\g726\g726_40.cpp" />
+    <ClCompile Include="source\g726\g72x.cpp" />
+    <ClCompile Include="source\g726\private.cpp" />
+    <ClCompile Include="source\mmwave_input_source.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
