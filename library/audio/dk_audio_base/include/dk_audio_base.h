@@ -90,6 +90,16 @@ public:
 class EXP_CLASS dk_audio_encoder : public dk_audio_base
 {
 public:
+	typedef struct EXP_CLASS _configuration_t
+	{
+		int32_t samplerate;
+		int32_t channels;
+		int32_t bitrate;
+		_configuration_t(void);
+		_configuration_t(const _configuration_t & clone);
+		_configuration_t operator=(const _configuration_t & clone);
+	} configuration_t;
+
 	dk_audio_encoder(void);
 	virtual ~dk_audio_encoder(void);
 

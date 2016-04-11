@@ -267,6 +267,7 @@ void live_rtsp_client::continue_after_teardown(RTSPClient * param, int result_co
 
 void live_rtsp_client::close(void)
 {
+	//envir().taskScheduler();
 	envir().taskScheduler().triggerEvent(_kill_trigger, this);
 }
 

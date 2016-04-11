@@ -25,16 +25,16 @@ public:
 	celt_encoder(dk_celt_encoder * front);
 	~celt_encoder(void);
 
-	dk_celt_encoder::ERR_CODE initialize_encoder(dk_celt_encoder::configuration_t * config);
-	dk_celt_encoder::ERR_CODE release_encoder(void);
+	dk_celt_encoder::err_code initialize_encoder(dk_celt_encoder::configuration_t * config);
+	dk_celt_encoder::err_code release_encoder(void);
 
-	dk_celt_encoder::ERR_CODE encode(dk_celt_encoder::dk_audio_entity_t * encoded, dk_celt_encoder::dk_audio_entity_t * decoded);
-	dk_celt_encoder::ERR_CODE encode(dk_celt_encoder::dk_audio_entity_t * pcm);
-	dk_celt_encoder::ERR_CODE get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded);
+	dk_celt_encoder::err_code encode(dk_celt_encoder::dk_audio_entity_t * encoded, dk_celt_encoder::dk_audio_entity_t * decoded);
+	dk_celt_encoder::err_code encode(dk_celt_encoder::dk_audio_entity_t * pcm);
+	dk_celt_encoder::err_code get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded);
 
 private:
-	dk_celt_encoder::ERR_CODE setup_resampler(int32_t samplerate, int32_t codingrate, int32_t channels, int32_t complexity);
-	dk_celt_encoder::ERR_CODE clear_resampler(void);
+	dk_celt_encoder::err_code setup_resampler(int32_t samplerate, int32_t codingrate, int32_t channels, int32_t complexity);
+	dk_celt_encoder::err_code clear_resampler(void);
 
 
 

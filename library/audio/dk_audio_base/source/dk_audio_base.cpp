@@ -157,6 +157,28 @@ dk_audio_decoder::err_code dk_audio_decoder::decode(dk_audio_entity_t * encoded,
 	return err_code_not_implemented;
 }
 
+dk_audio_encoder::_configuration_t::_configuration_t(void)
+	: samplerate(48000)
+	, channels(2)
+	, bitrate(128000)
+{
+}
+
+dk_audio_encoder::_configuration_t::_configuration_t(const _configuration_t & clone)
+{
+	samplerate = clone.samplerate;
+	channels = clone.channels;
+	bitrate = clone.bitrate;
+}
+
+dk_audio_encoder::_configuration_t dk_audio_encoder::_configuration_t::operator=(const _configuration_t & clone)
+{
+	samplerate = clone.samplerate;
+	channels = clone.channels;
+	bitrate = clone.bitrate;
+	return (*this);
+}
+
 dk_audio_encoder::dk_audio_encoder(void)
 {
 

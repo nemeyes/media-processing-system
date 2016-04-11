@@ -22,7 +22,7 @@ celt_encoder::~celt_encoder(void)
 	}
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::initialize_encoder(dk_celt_encoder::configuration_t * config)
+dk_celt_encoder::err_code celt_encoder::initialize_encoder(dk_celt_encoder::configuration_t * config)
 {
 	release_encoder();
 	_config = *config;
@@ -31,41 +31,41 @@ dk_celt_encoder::ERR_CODE celt_encoder::initialize_encoder(dk_celt_encoder::conf
 	int32_t err;
 	_encoder = opus_encoder_create(config->codingrate, config->channels, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &err);
 	if (err != OPUS_OK || _encoder == NULL)
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_EXPERT_FRAME_DURATION(OPUS_FRAMESIZE_ARG));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_VBR(1));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_VBR_CONSTRAINT(1));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_BITRATE(_config.bitrate));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 	}
 
 	err = opus_encoder_ctl(_encoder, OPUS_SET_COMPLEXITY(_config.complexity));
 	if (err != OPUS_OK)
 	{
 		opus_encoder_destroy(_encoder);
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 	}
 
 	_buffer4queue_size = _config.bitrate >> 3;
@@ -76,10 +76,10 @@ dk_celt_encoder::ERR_CODE celt_encoder::initialize_encoder(dk_celt_encoder::conf
 		return setup_resampler(_config.samplerate, _config.codingrate, _config.channels, _config.complexity);
 	}
 
-	return dk_celt_encoder::ERR_CODE_SUCCESS;
+	return dk_celt_encoder::err_code_success;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::release_encoder(void)
+dk_celt_encoder::err_code celt_encoder::release_encoder(void)
 {
 	clear_resampler();
 
@@ -98,10 +98,10 @@ dk_celt_encoder::ERR_CODE celt_encoder::release_encoder(void)
 
 	_skip = 0;
 	_buffer_pos = 0;
-	return dk_celt_encoder::ERR_CODE_SUCCESS;
+	return dk_celt_encoder::err_code_success;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm, dk_celt_encoder::dk_audio_entity_t * encoded)
+dk_celt_encoder::err_code celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm, dk_celt_encoder::dk_audio_entity_t * encoded)
 {
 	int16_t * intermediate = (int16_t*)pcm->data;
 	size_t isamples = pcm->data_size / (sizeof(int16_t)*_config.channels);
@@ -135,10 +135,10 @@ dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_celt_encoder::dk_audio_entity_
 			memcpy(_buffer, _buffer + cur_sample, left*sizeof(int16_t));
 		_buffer_pos = left;
 	}
-	return dk_celt_encoder::ERR_CODE_SUCCESS;
+	return dk_celt_encoder::err_code_success;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm)
+dk_celt_encoder::err_code celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm)
 {
 	int16_t * intermediate = (int16_t*)pcm->data;
 	size_t isamples = pcm->data_size >> 1;
@@ -203,10 +203,10 @@ dk_celt_encoder::ERR_CODE celt_encoder::encode(dk_celt_encoder::dk_audio_entity_
 			memcpy(_buffer, _buffer + cur_sample, left*sizeof(int16_t));
 		_buffer_pos = left;
 	}
-	return dk_celt_encoder::ERR_CODE_SUCCESS;
+	return dk_celt_encoder::err_code_success;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded)
+dk_celt_encoder::err_code celt_encoder::get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded)
 {
 	if (_front)
 	{
@@ -214,81 +214,11 @@ dk_celt_encoder::ERR_CODE celt_encoder::get_queued_data(dk_celt_encoder::dk_audi
 	}
 	else
 	{
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 	}
 }
 
-/*dk_celt_encoder::ERR_CODE celt_encoder::encode(int16_t * input, size_t isize, uint8_t * output, size_t & osize)
-{
-	//resample : ex) 44100hz -> 48000hz
-	int16_t * intermediate = input;
-	if (_resampler)
-	{
-		intermediate = _resampler->outbuffers;
-
-		//uint32_t inlength = _resampler->inbuffer_pos+isize;
-		//uint32_t outlength = 0;
-		//memcpy(_resampler->inbuffers + _resampler->inbuffer_pos, input, inlength*sizeof(int16_t)*_resampler->channels);
-		//int ret = speex_resampler_process_int(_resampler->resampler, _resampler->channels, _resampler->inbuffers, &inlength, intermediate + _resampler->outbuffer_pos, &outlength);
-		//	
-		//_resampler->inbuffer_pos += isize;
-		//if (outlength == 0)
-		//{
-		//	osize = 0;
-		//	return dk_celt_encoder::ERR_CODE_SUCCESS;
-		//}
-		//_resampler->outbuffer_pos += outlength;
-
-
-
-
-		intermediate = _resampler->outbuffers;
-
-		size_t osamples = 0;
-		int16_t * pcmbuffer = _resampler->inbuffers;
-		int32_t * inbuffer = &_resampler->inbuffer_pos;
-		while (osamples < isize/2)
-		{
-			int32_t i, reading, ret;
-			uint32_t inlength, outlength;
-			outlength = isize - osamples;
-			reading = _resampler->inbuffer_size - (*inbuffer);
-			if (reading > 1024) 
-				reading = 1024;
-			if (reading > isize / 2)
-				reading = isize / 2;
-
-			memcpy(pcmbuffer, input + (*inbuffer)*_resampler->channels, reading);
-			*(inbuffer) += reading;
-			inlength = *(inbuffer);
-			speex_resampler_process_interleaved_int(_resampler->resampler, _resampler->inbuffers, &inlength, intermediate, &outlength);
-			osamples += outlength;
-			if (inlength == 0)
-			{
-				for (i = osamples*_resampler->channels; i<isize*_resampler->channels; i++)
-					intermediate[i] = 0;
-				break;
-			}
-			for (i = 0; i<_resampler->channels*(*inbuffer - (long int)inlength); i++)
-				pcmbuffer[i] = pcmbuffer[i + _resampler->channels*inlength];
-			*inbuffer -= inlength;
-		}
-	}
-
-	int32_t bytes_written = opus_encode(_encoder, intermediate, (int)_framesize, output, (int)osize);
-	osize = 0;
-	if (bytes_written > 1)
-	{
-		osize = bytes_written;
-	}
-
-	return dk_celt_encoder::ERR_CODE_SUCCESS;
-}*/
-
-
-
-
-dk_celt_encoder::ERR_CODE celt_encoder::setup_resampler(int32_t samplerate, int32_t codingrate, int32_t channels, int32_t complexity)
+dk_celt_encoder::err_code celt_encoder::setup_resampler(int32_t samplerate, int32_t codingrate, int32_t channels, int32_t complexity)
 {
 	int32_t err;
 	if (_resampler)
@@ -311,12 +241,12 @@ dk_celt_encoder::ERR_CODE celt_encoder::setup_resampler(int32_t samplerate, int3
 	_resampler->outbuffers = static_cast<int16_t*>(malloc(_resampler->outbuffer_size));
 
 	if (err != OPUS_OK)
-		return dk_celt_encoder::ERR_CODE_FAIL;
+		return dk_celt_encoder::err_code_fail;
 	else
-		return dk_celt_encoder::ERR_CODE_SUCCESS;
+		return dk_celt_encoder::err_code_success;
 }
 
-dk_celt_encoder::ERR_CODE celt_encoder::clear_resampler(void)
+dk_celt_encoder::err_code celt_encoder::clear_resampler(void)
 {
 	if (_resampler)
 	{
@@ -327,5 +257,5 @@ dk_celt_encoder::ERR_CODE celt_encoder::clear_resampler(void)
 		free(_resampler);
 		_resampler = nullptr;
 	}
-	return dk_celt_encoder::ERR_CODE_SUCCESS;
+	return dk_celt_encoder::err_code_success;
 }

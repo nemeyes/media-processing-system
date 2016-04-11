@@ -57,12 +57,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_MEDIA_PLAYER_FRAMEWORK_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\rtmp\dk_rtmp_client\include;..\..\..\library\video\dk_video_base\include;..\..\..\library\audio\dk_audio_base\include;..\..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\..\library\audio\codec\dk_aac_decoder\include;..\..\..\library\audio\codec\dk_celt_decoder\include;..\..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\..\library\audio\renderer\dk_mmwave_renderer\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\rtmp\dk_rtmp_client\include;..\..\..\library\video\dk_video_base\include;..\..\..\library\audio\dk_audio_base\include;..\..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\..\library\audio\codec\dk_aac_decoder\include;..\..\..\library\audio\codec\dk_celt_decoder\include;..\..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\..\library\audio\renderer\dk_mmwave_renderer\include;include;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dk_live_rtsp_client.lib;dk_ff_video_decoder.lib;dk_aac_decoder.lib;dk_celt_decoder.lib;dk_ff_mp3_decoder.lib;dk_directdraw_renderer.lib;dk_mmwave_renderer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dk_live_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_aac_decoder.lib;dk_celt_decoder.lib;dk_ff_mp3_decoder.lib;dk_directdraw_renderer.lib;dk_mmwave_renderer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
@@ -86,7 +86,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dk_live_rtsp_client.lib;dk_ff_video_decoder.lib;dk_aac_decoder.lib;dk_celt_decoder.lib;dk_ff_mp3_decoder.lib;dk_directdraw_renderer.lib;dk_mmwave_renderer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dk_live_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_aac_decoder.lib;dk_celt_decoder.lib;dk_ff_mp3_decoder.lib;dk_directdraw_renderer.lib;dk_mmwave_renderer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -94,18 +94,25 @@
     <ClInclude Include="include\dk_bit_vector.h" />
     <ClInclude Include="include\dk_media_player_framework.h" />
     <ClInclude Include="include\dk_rtmp_receiver.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="include\dk_rtsp_receiver.h" />
+    <ClInclude Include="include\dk_screensaver_preventor.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_base_receiver.cpp" />
     <ClCompile Include="source\dk_bit_vector.cpp" />
     <ClCompile Include="source\dk_media_player_framework.cpp" />
     <ClCompile Include="source\dk_rtmp_receiver.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="source\dk_rtsp_receiver.cpp" />
+    <ClCompile Include="source\dk_screensaver_preventor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dk_media_player_framework.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

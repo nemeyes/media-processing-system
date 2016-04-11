@@ -97,7 +97,7 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	dmpf_initialize();
+	MediaClient_Initialize(GetSafeHwnd());
 
 	index_1 = -1;
 	index_2 = -1;
@@ -105,20 +105,30 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	index_4 = -1;
 
 	HWND hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-	index_1 = dmpf_rtsp_source_add("rtsp://now.iptime.org/1/stream1", 0, 0, 1, 1, false, hwnd);
-	dmpf_rtsp_source_play(index_1);
+	index_1 = MediaClient_Add(RTSP_RECEIVER, L"rtsp://now.iptime.org/1/stream1", 0, 0, false, hwnd);
+	MediaClient_Play(index_1);
 	
 	hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO2);
-	index_2 = dmpf_rtsp_source_add("rtsp://now.iptime.org/2/stream1", 0, 0, 1, 1, false, hwnd);
-	dmpf_rtsp_source_play(index_2);
+	index_2 = MediaClient_Add(RTSP_RECEIVER, L"rtsp://now.iptime.org/2/stream1", 0, 0, false, hwnd);
+	MediaClient_Play(index_2);
+ 
+	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO3);
+	//index_3 = MediaClient_Add(RTSP_RECEIVER, L"rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=1", 0, 0, false, hwnd);
+	//MediaClient_Play(index_3);
 
-	hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO3);
-	index_3 = dmpf_rtsp_source_add("rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=1", 0, 0, 1, 1, false, hwnd);
-	dmpf_rtsp_source_play(index_3);
+	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO4);
+	//index_4 = MediaClient_Add(RTMP_RECEIVER, L"rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2", 0, 0, false, hwnd);
+	//MediaClient_Play(index_4);
 
-	hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO4);
-	index_4 = dmpf_rtsp_source_add("rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2", 0, 0, 1, 1, false, hwnd);
-	dmpf_rtsp_source_play(index_4);
+	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO3);
+	//index_3 = MediaClient_Add(RTMP_RECEIVER, L"rtmp://10.202.140.37/vod/00.flv", 0, 0, false, hwnd);
+	//MediaClient_Play(index_3);
+
+	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO4);
+	//index_4 = MediaClient_Add(RTMP_RECEIVER, L"rtmp://10.202.140.37/vod/01.flv", 0, 0, false, hwnd);
+	//MediaClient_Play(index_4);
+
+
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -128,25 +138,25 @@ BOOL CParallelRecordClientDlg::DestroyWindow()
 	// TODO: Add your specialized code here and/or call the base class
 	if (index_1 >= 0)
 	{
-		dmpf_rtsp_source_stop(index_1);
-		dmpf_rtsp_source_remove(index_1);
+		MediaClient_Stop(index_1);
+		MediaClient_Remove(index_1);
 	}
 	if (index_2 >= 0)
 	{
-		dmpf_rtsp_source_stop(index_2);
-		dmpf_rtsp_source_remove(index_2);
+		MediaClient_Stop(index_2);
+		MediaClient_Remove(index_2);
 	}
 	if (index_3 >= 0)
 	{
-		dmpf_rtsp_source_stop(index_3);
-		dmpf_rtsp_source_remove(index_3);
+		MediaClient_Stop(index_3);
+		MediaClient_Remove(index_3);
 	}
 	if (index_4 >= 0)
 	{
-		dmpf_rtsp_source_stop(index_4);
-		dmpf_rtsp_source_remove(index_4);
+		MediaClient_Stop(index_4);
+		MediaClient_Remove(index_4);
 	}
-	dmpf_release();
+	MediaClient_Release();
 
 	return CDialogEx::DestroyWindow();
 }

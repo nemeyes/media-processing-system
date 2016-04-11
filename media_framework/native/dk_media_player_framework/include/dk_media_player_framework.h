@@ -9,17 +9,19 @@
 #define EXP_MEDIA_PLAYER_FRAMEWORK_CLASS __declspec(dllimport)
 #endif
 
+#define RTSP_RECEIVER	0
+#define RTMP_RECEIVER	1
 
-void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS dmpf_initialize(void);
-void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS dmpf_release(void);
+extern "C" void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS MediaClient_Initialize(HWND hwnd);
+extern "C" void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS MediaClient_Release(void);
 
-int EXP_MEDIA_PLAYER_FRAMEWORK_CLASS dmpf_rtsp_source_add(const char * url, const char * username, const char * password, int transport_option, int recv_option, bool repeat, HWND hwnd);
-void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS dmpf_rtsp_source_remove(int id);
+extern "C" int EXP_MEDIA_PLAYER_FRAMEWORK_CLASS MediaClient_Add(int type, const wchar_t * url, const wchar_t * username, const wchar_t * password, bool repeat, HWND hwnd);
+extern "C" void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS MediaClient_Remove(int index);
 
-void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS dmpf_rtsp_source_play(int id);
-void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS dmpf_rtsp_source_stop(int id);
+extern "C" void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS MediaClient_Play(int index);
+extern "C" void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS MediaClient_Stop(int index);
 
-void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS dmpf_fullscreen(bool enable);
+extern "C" void EXP_MEDIA_PLAYER_FRAMEWORK_CLASS MediaClient_FullScreen(int index, bool enable);
 
 
 #endif

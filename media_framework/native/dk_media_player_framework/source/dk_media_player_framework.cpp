@@ -2,29 +2,22 @@
 #include "dk_rtmp_receiver.h"
 #include "dk_rtsp_receiver.h"
 #include <dk_auto_lock.h>
+#include <dk_string_helper.h>
 #include <map>
-
-typedef enum _live_source_type
-{
-	live_source_rtsp = 0,
-	live_source_rtmp,
-	live_source_hls
-} live_source_type;
+#include "resource.h"
 
 typedef struct _live_source_info_t
 {
+	int type;
 	char url[260];
 	char username[260];
 	char password[260];
-	int transport_option;
-	int recv_option;
 	HWND hwnd;
 	bool repeat;
 	bool run;
-	dk_rtsp_receiver * receiver;
+	void * receiver;
 	_live_source_info_t(void)
-		: transport_option(dk_live_rtsp_client::rtp_over_tcp)
-		, recv_option(dk_live_rtsp_client::recv_video)
+		: type(RTSP_RECEIVER)
 		, hwnd(NULL)
 		, repeat(false)
 		, run(false)
@@ -41,8 +34,6 @@ typedef struct _live_source_info_t
 		strcpy_s(username, sizeof(username), clone.username);
 		strcpy_s(password, sizeof(password), clone.password);
 
-		transport_option = clone.transport_option;
-		recv_option = clone.recv_option;
 		hwnd = clone.hwnd;
 		repeat = clone.repeat;
 		run = clone.run;
@@ -55,8 +46,6 @@ typedef struct _live_source_info_t
 		strcpy_s(username, sizeof(username), clone.username);
 		strcpy_s(password, sizeof(password), clone.password);
 
-		transport_option = clone.transport_option;
-		recv_option = clone.recv_option;
 		hwnd = clone.hwnd;
 		repeat = clone.repeat;
 		run = clone.run;
@@ -70,13 +59,45 @@ CRITICAL_SECTION g_lock;
 int32_t g_index_generator;
 std::map<int, live_source_info_t*> g_live_source_infos;
 
-void dmpf_initialize(void)
+HWND g_fullscreen_dlg = NULL;
+
+BOOL CALLBACK fullwnd_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		//SetWindowPos(dlg, HWND_TOP, 100, 100, 0, 0, SWP_NOSIZE);
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wparam))
+		{
+		case IDOK:
+		case IDCANCEL:
+			EndDialog(dlg, 0);
+			return TRUE;
+		}
+		return FALSE;
+	case WM_CLOSE:
+		PostQuitMessage(0);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+void MediaClient_Initialize(HWND hwnd)
 {
 	::InitializeCriticalSection(&g_lock);
 	g_index_generator = 0;
+
+	//g_fullscreen_dlg = CreateDialog(GetModuleHandle(L"dk_media_player_framework.dll"), MAKEINTRESOURCE(IDD_DIALOG_FULLSCREEN), hwnd, fullwnd_proc);
+	//if (g_fullscreen_dlg)
+	//{
+	//	ShowWindow(g_fullscreen_dlg, SW_SHOW);
+	//}
 }
 
-void dmpf_release(void)
+void MediaClient_Release(void)
 {
 	{
 		dk_auto_lock mutex(&g_lock);
@@ -88,12 +109,34 @@ void dmpf_release(void)
 			{
 				if (info->run)
 				{
-					info->receiver->stop();
+					if (info->type == RTSP_RECEIVER)
+					{
+						dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(info->receiver);
+						receiver->stop();
+					}
+					else if (info->type == RTMP_RECEIVER)
+					{
+						dk_rtmp_receiver * receiver = static_cast<dk_rtmp_receiver*>(info->receiver);
+						receiver->stop();
+					}
 					info->run = false;
 				}
+				if (info->type == RTSP_RECEIVER)
+				{
+					dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(info->receiver);
+					delete receiver;
+					receiver = nullptr;
+				}
+				else if (info->type == RTMP_RECEIVER)
+				{
+					dk_rtmp_receiver * receiver = static_cast<dk_rtmp_receiver*>(info->receiver);
+					delete receiver;
+					receiver = nullptr;
+				}
+				info->receiver = nullptr;
+				delete info;
+				info = nullptr;
 			}
-			delete info->receiver;
-			info->receiver = nullptr;
 		}
 		g_live_source_infos.clear();
 	}
@@ -101,34 +144,64 @@ void dmpf_release(void)
 	::DeleteCriticalSection(&g_lock);
 }
 
-int dmpf_rtsp_source_add(const char * url, const char * username, const char * password, int transport_option, int recv_option, bool repeat, HWND hwnd)
+int MediaClient_Add(int type, const wchar_t * url, const wchar_t * username, const wchar_t * password, bool repeat, HWND hwnd)
 {
-	if (!url || strlen(url) < 1)
+	if (!url || wcslen(url) < 1)
 		return -1;
+
+	char * ascii_url = 0;
+	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	if (!ascii_url || strlen(ascii_url)<1)
+		return -1;
+
+	char * ascii_username = 0;
+	if (username && wcslen(username) > 0)
+		dk_string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
+
+	char * ascii_password = 0;
+	if (password && wcslen(password) > 0)
+		dk_string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
 
 	dk_auto_lock mutex(&g_lock);
 	int index = g_index_generator;
 
 	live_source_info_t * info = new live_source_info_t();
-	strcpy_s(info->url, sizeof(info->url), url);
-	if (username && strlen(username) > 0)
-		strcpy_s(info->username, sizeof(info->username), username);
-	if (password && strlen(password) > 0)
-		strcpy_s(info->password, sizeof(info->password), password);
-	info->transport_option = transport_option;
-	info->recv_option = recv_option;
+	strcpy_s(info->url, sizeof(info->url), ascii_url);
+	if (ascii_username && strlen(ascii_username) > 0)
+		strcpy_s(info->username, sizeof(info->username), ascii_username);
+	if (ascii_password && strlen(ascii_password) > 0)
+		strcpy_s(info->password, sizeof(info->password), ascii_password);
 	info->hwnd = hwnd;
 	info->repeat = repeat;
 	info->run = false;
-	info->receiver = new dk_rtsp_receiver();
+	info->type = type;
+	if (info->type == RTSP_RECEIVER)
+		info->receiver = new dk_rtsp_receiver();
+	else if (info->type == RTMP_RECEIVER)
+		info->receiver = new dk_rtmp_receiver();
+
+	if (ascii_url)
+	{
+		free(ascii_url);
+		ascii_url = 0;
+	}
+	if (ascii_username)
+	{
+		free(ascii_username);
+		ascii_username = 0;
+	}
+	if (ascii_password)
+	{
+		free(ascii_password);
+		ascii_password = 0;
+	}
 
 	g_live_source_infos.insert(std::make_pair(index, info));
-
 	g_index_generator++;
 	return index;
 }
 
-void dmpf_rtsp_source_remove(int id)
+void MediaClient_Remove(int id)
 {
 	dk_auto_lock mutex(&g_lock);
 	std::map<int, live_source_info_t*>::iterator iter = g_live_source_infos.find(id);
@@ -139,17 +212,39 @@ void dmpf_rtsp_source_remove(int id)
 		{
 			if (info->run)
 			{
-				info->receiver->stop();
+				if (info->type == RTSP_RECEIVER)
+				{
+					dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(info->receiver);
+					receiver->stop();
+				}
+				else if (info->type == RTMP_RECEIVER)
+				{
+					dk_rtmp_receiver * receiver = static_cast<dk_rtmp_receiver*>(info->receiver);
+					receiver->stop();
+				}
 				info->run = false;
 			}
+			if (info->type == RTSP_RECEIVER)
+			{
+				dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(info->receiver);
+				delete receiver;
+				receiver = nullptr;
+			}
+			else if (info->type == RTMP_RECEIVER)
+			{
+				dk_rtmp_receiver * receiver = static_cast<dk_rtmp_receiver*>(info->receiver);
+				delete receiver;
+				receiver = nullptr;
+			}
+			info->receiver = nullptr;
+			delete info;
+			info = nullptr;
 		}
-		delete info->receiver;
-		info->receiver = nullptr;
 		g_live_source_infos.erase(id);
 	}
 }
 
-void dmpf_rtsp_source_play(int id)
+void MediaClient_Play(int id)
 {
 	dk_auto_lock mutex(&g_lock);
 	std::map<int, live_source_info_t*>::iterator iter = g_live_source_infos.find(id);
@@ -160,14 +255,23 @@ void dmpf_rtsp_source_play(int id)
 		{
 			if (!info->run)
 			{
-				info->receiver->play(info->url, info->username, info->password, info->transport_option, info->recv_option, info->repeat, info->hwnd);
+				if (info->type == RTSP_RECEIVER)
+				{
+					dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(info->receiver);
+					receiver->play(info->url, info->username, info->password, 1, 1, info->repeat, info->hwnd);
+				}
+				else if (info->type == RTMP_RECEIVER)
+				{
+					dk_rtmp_receiver * receiver = static_cast<dk_rtmp_receiver*>(info->receiver);
+					receiver->play(info->url, info->username, info->password, 2, info->hwnd);
+				}
 				info->run = true;
 			}
 		}
 	}
 }
 
-void dmpf_rtsp_source_stop(int id)
+void MediaClient_Stop(int id)
 {
 	dk_auto_lock mutex(&g_lock);
 	std::map<int, live_source_info_t*>::iterator iter = g_live_source_infos.find(id);
@@ -178,9 +282,23 @@ void dmpf_rtsp_source_stop(int id)
 		{
 			if (info->run)
 			{
-				info->receiver->stop();
+				if (info->type == RTSP_RECEIVER)
+				{
+					dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(info->receiver);
+					receiver->stop();
+				}
+				else if (info->type == RTMP_RECEIVER)
+				{
+					dk_rtmp_receiver * receiver = static_cast<dk_rtmp_receiver*>(info->receiver);
+					receiver->stop();
+				}
 				info->run = false;
 			}
 		}
 	}
+}
+
+void MediaClient_FullScreen(int index, bool enable)
+{
+
 }

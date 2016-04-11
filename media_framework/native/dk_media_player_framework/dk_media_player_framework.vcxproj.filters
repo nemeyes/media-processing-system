@@ -30,6 +30,12 @@
     <ClInclude Include="include\dk_rtsp_receiver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\dk_screensaver_preventor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_media_player_framework.cpp">
@@ -47,5 +53,13 @@
     <ClCompile Include="source\dk_rtsp_receiver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\dk_screensaver_preventor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dk_media_player_framework.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
