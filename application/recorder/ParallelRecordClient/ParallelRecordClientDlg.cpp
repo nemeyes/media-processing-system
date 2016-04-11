@@ -104,7 +104,8 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	index_3 = -1;
 	index_4 = -1;
 
-	HWND hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
+	HWND hwnd = NULL;
+	hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
 	index_1 = MediaClient_Add(RTSP_RECEIVER, L"rtsp://now.iptime.org/1/stream1", 0, 0, false, hwnd);
 	MediaClient_Play(index_1);
 	
@@ -120,13 +121,13 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	//index_4 = MediaClient_Add(RTMP_RECEIVER, L"rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2", 0, 0, false, hwnd);
 	//MediaClient_Play(index_4);
 
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO3);
-	//index_3 = MediaClient_Add(RTMP_RECEIVER, L"rtmp://10.202.140.37/vod/00.flv", 0, 0, false, hwnd);
-	//MediaClient_Play(index_3);
+	hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO3);
+	index_3 = MediaClient_Add(RTMP_RECEIVER, L"rtmp://10.202.140.37/vod/00.flv", 0, 0, false, hwnd);
+	MediaClient_Play(index_3);
 
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO4);
-	//index_4 = MediaClient_Add(RTMP_RECEIVER, L"rtmp://10.202.140.37/vod/01.flv", 0, 0, false, hwnd);
-	//MediaClient_Play(index_4);
+	hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO4);
+	index_4 = MediaClient_Add(RTMP_RECEIVER, L"rtmp://10.202.140.37/vod/01.flv", 0, 0, false, hwnd);
+	MediaClient_Play(index_4);
 
 
 

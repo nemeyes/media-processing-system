@@ -54,6 +54,8 @@ rtmp_client::rtmp_client(dk_rtmp_client * front)
 	: _front(front)
 	, _state(dk_rtmp_client::STATE_STOPPED)
 	, _rtmp(nullptr)
+	, _sb_run(false)
+	, _pb_run(false)
 {
 	WSADATA wsd;
 	WSAStartup(MAKEWORD(2, 2), &wsd);
@@ -73,7 +75,7 @@ rtmp_client::rtmp_client(dk_rtmp_client * front)
 
 rtmp_client::~rtmp_client(void)
 {
-	if (!RTMP_ctrlC)
+	if (_sb_run)
 		subscribe_end();
 
 	::DeleteCriticalSection(&_video_mutex);
@@ -187,7 +189,7 @@ dk_rtmp_client::ERR_CODE rtmp_client::subscribe_end(void)
 		return dk_rtmp_client::ERR_CODE_SUCCESS;
 
 	_repeat = false;
-	RTMP_ctrlC = true;
+	_sb_run = false;
 #if defined(WIN32)
 	while (WaitForSingleObject(_sb_worker, 100) != WAIT_OBJECT_0)
 		::Sleep(10);
@@ -220,7 +222,7 @@ dk_rtmp_client::ERR_CODE rtmp_client::publish_end(void)
 	if (_state == dk_rtmp_client::STATE_STOPPED)
 		return dk_rtmp_client::ERR_CODE_SUCCESS;
 
-	RTMP_ctrlC = true;
+	_pb_run = false;
 #if defined(WIN32)
 	::WaitForSingleObject(_pb_worker, INFINITE);
 #else
@@ -413,7 +415,7 @@ void rtmp_client::sb_process_video(const RTMPPacket * packet)
 		else //end of sequence
 		{
 			_repeat = false;
-			RTMP_ctrlC = true;
+			_sb_run = false;
 		}
 	}
 }
@@ -563,7 +565,7 @@ void rtmp_client::sb_process(void)
 		if (!RTMP_ConnectStream(_rtmp, seek))
 			break;
 
-		RTMP_ctrlC = false;
+		_sb_run = true;
 		int32_t nb_read = 0;
 		do
 		{
@@ -572,7 +574,7 @@ void rtmp_client::sb_process(void)
 			//::Sleep(1);
 			//Sleep(duration / 1000);
 
-		} while (!RTMP_ctrlC && /*(nb_read>-1) &&*/ RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
+		} while (_sb_run && /*(nb_read>-1) &&*/ RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
 
 		RTMP_Close(_rtmp);
 		RTMP_Free(_rtmp);
@@ -657,13 +659,13 @@ void rtmp_client::pb_process(void)
 			break;
 		}
 
-		RTMP_ctrlC = false;
+		_pb_run = true;
 		do
 		{
 			RTMP_Read(_rtmp, read_buffer, read_buffer_size);
 			double duration = RTMP_GetDuration(_rtmp);
 
-		} while (!RTMP_ctrlC && RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
+		} while (_pb_run && RTMP_IsConnected(_rtmp) && !RTMP_IsTimedout(_rtmp));
 
 		RTMP_DeleteStream(_rtmp);
 

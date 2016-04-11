@@ -53,6 +53,7 @@ private:
 #if !defined(WIN32)
 	pthread_t _sb_worker;
 #else
+	bool _sb_run;
 	void * _sb_worker;
 #endif
 
@@ -65,6 +66,7 @@ private:
 #if !defined(WIN32)
 	pthread_t _pb_worker;
 #else
+	bool _pb_run;
 	void * _pb_worker;
 #endif
 

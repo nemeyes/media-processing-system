@@ -14,12 +14,12 @@ dk_rtmp_receiver::~dk_rtmp_receiver(void)
 void dk_rtmp_receiver::play(const char * url, const char * username, const char * password, int32_t recv_option, HWND hwnd)
 {
 	_hwnd = hwnd;
-	dk_rtmp_client::subscribe_begin(url, username, password, recv_option, true);
+	subscribe_begin(url, username, password, recv_option, true);
 }
 
 void dk_rtmp_receiver::stop(void)
 {
-	dk_rtmp_client::subscribe_end();
+	subscribe_end();
 
 	if (_video_decoder)
 	{
