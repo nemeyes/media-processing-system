@@ -1,7 +1,7 @@
 ;===========================================================================;
 ; 
 ;===========================================================================;
-LIBRARY		dk_nvenc_encode_filter.ax
+LIBRARY		dk_nvenc_encode_6.0.1_filter.ax
 EXPORTS
 			DllRegisterServer	PRIVATE
 			DllUnregisterServer	PRIVATE

@@ -1,7 +1,7 @@
 ;===========================================================================;
 ; 
 ;===========================================================================;
-LIBRARY		dk_h264_encode_filter.ax
+LIBRARY		dk_x264_encode_0.148.x_filter.ax
 EXPORTS
 			DllRegisterServer	PRIVATE
 			DllUnregisterServer	PRIVATE

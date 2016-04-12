@@ -212,10 +212,10 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 		_subscriber.get_recv_option(recv_option);
 		if ((recv_option & DK_RECV_VIDEO) && (recv_option & DK_RECV_AUDIO))
 		{
-			dk_media_buffering::VIDEO_SUBMEDIA_TYPE vmt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
+			buffering::vsubmedia_type vmt = buffering::unknown_video_type;
 			dk_media_buffering::instance().get_video_submedia_type(vmt);
 
-			dk_media_buffering::AUDIO_SUBMEDIA_TYPE amt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
+			buffering::asubmedia_type amt = buffering::unknown_audio_type;
 			dk_media_buffering::instance().get_audio_submedia_type(amt);
 
 			int32_t video_width = 0, video_height = 0;
@@ -227,8 +227,8 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 			dk_media_buffering::instance().get_audio_bitdepth(audio_bitdepth);
 			dk_media_buffering::instance().get_audio_channels(audio_channels);
 
-			if ((vmt != dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN) &&
-				(amt != dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN) &&
+			if ((vmt != buffering::unknown_video_type) &&
+				(amt != buffering::unknown_audio_type) &&
 				(video_width > 0) && (video_height > 0) &&
 				(audio_samplerate>0) &&
 				(audio_bitdepth>0) &&
@@ -239,21 +239,21 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 		}
 		else if (recv_option & DK_RECV_VIDEO)
 		{
-			dk_media_buffering::VIDEO_SUBMEDIA_TYPE vmt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
+			buffering::vsubmedia_type vmt = buffering::unknown_video_type;
 			dk_media_buffering::instance().get_video_submedia_type(vmt);
 
 			int32_t video_width = 0, video_height = 0;
 			dk_media_buffering::instance().get_video_width(video_width);
 			dk_media_buffering::instance().get_video_height(video_height);
 
-			if ((vmt != dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN) && (video_width > 0) && (video_height > 0))
+			if ((vmt != buffering::unknown_video_type) && (video_width > 0) && (video_height > 0))
 			{
 				break;
 			}
 		}
 		else if (recv_option & DK_RECV_AUDIO)
 		{
-			dk_media_buffering::AUDIO_SUBMEDIA_TYPE amt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
+			buffering::asubmedia_type amt = buffering::unknown_audio_type;
 			dk_media_buffering::instance().get_audio_submedia_type(amt);
 
 			int32_t audio_samplerate = 0, audio_bitdepth = 0, audio_channels = 0;
@@ -261,10 +261,7 @@ STDMETHODIMP dk_rtmp_source_filter::Load(LPCOLESTR file_name, const AM_MEDIA_TYP
 			dk_media_buffering::instance().get_audio_bitdepth(audio_bitdepth);
 			dk_media_buffering::instance().get_audio_channels(audio_channels);
 
-			if ((amt != dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN) &&
-				(audio_samplerate>0) &&
-				(audio_bitdepth>0) &&
-				(audio_channels>0))
+			if ((amt != buffering::unknown_audio_type) && (audio_samplerate>0) && (audio_bitdepth>0) && (audio_channels>0))
 			{
 				break;
 			}

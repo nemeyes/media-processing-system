@@ -25,9 +25,9 @@ namespace buffering
 	typedef enum _asubmedia_type
 	{
 		unknown_audio_type = -1,
-		audio_submedia_type_aac,
-		audio_submedia_type_mp3,
-		audio_submedia_type_ac3,
-		audio_submedia_type_celt,
+		asubmedia_type_aac,
+		asubmedia_type_mp3,
+		asubmedia_type_ac3,
+		asubmedia_type_celt,
 	} asubmedia_type;
 }

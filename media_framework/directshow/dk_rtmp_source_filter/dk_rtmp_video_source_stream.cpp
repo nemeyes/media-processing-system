@@ -38,9 +38,9 @@ STDMETHODIMP dk_rtmp_video_source_stream::NonDelegatingQueryInterface(REFIID rii
 
 HRESULT dk_rtmp_video_source_stream::GetMediaType(CMediaType * type)
 {
-	dk_media_buffering::VIDEO_SUBMEDIA_TYPE mt = dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN;
+	buffering::vsubmedia_type mt = buffering::unknown_video_type;
 	dk_media_buffering::instance().get_video_submedia_type(mt);
-	if (mt == dk_media_buffering::VIDEO_SUBMEDIA_TYPE_UNKNOWN)
+	if (mt == buffering::unknown_video_type)
 		return E_UNEXPECTED;
 
 	int32_t width = 0, height = 0;
@@ -49,7 +49,7 @@ HRESULT dk_rtmp_video_source_stream::GetMediaType(CMediaType * type)
 	if (width<1 || height<1)
 		return E_UNEXPECTED;
 	
-	if (mt == dk_media_buffering::VIDEO_SUBMEDIA_TYPE_AVC)
+	if (mt == buffering::vsubmedia_type_avc)
 	{
 		type->InitMediaType();
 		type->SetType(&MEDIATYPE_Video);

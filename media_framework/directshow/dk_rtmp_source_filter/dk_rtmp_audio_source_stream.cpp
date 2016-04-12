@@ -49,9 +49,9 @@ STDMETHODIMP dk_rtmp_audio_source_stream::NonDelegatingQueryInterface(REFIID rii
 
 HRESULT dk_rtmp_audio_source_stream::GetMediaType(CMediaType * type)
 {
-	dk_media_buffering::AUDIO_SUBMEDIA_TYPE mt = dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN;
+	buffering::asubmedia_type mt = buffering::unknown_audio_type;
 	dk_media_buffering::instance().get_audio_submedia_type(mt);
-	if (mt == dk_media_buffering::AUDIO_SUBMEDIA_TYPE_UNKNOWN)
+	if (mt == buffering::unknown_audio_type)
 		return E_UNEXPECTED;
 
 	int32_t samplerate = 0, channels = 0, bitdepth = 0;
@@ -65,7 +65,7 @@ HRESULT dk_rtmp_audio_source_stream::GetMediaType(CMediaType * type)
 	size_t configstr_size = 0;
 	dk_media_buffering::instance().get_configstr(configstr, configstr_size);
 
-	if (mt == dk_media_buffering::AUDIO_SUBMEDIA_TYPE_AAC)
+	if (mt == buffering::asubmedia_type_aac)
 	{
 		type->InitMediaType();
 		type->SetType(&MEDIATYPE_Audio);
@@ -111,7 +111,7 @@ HRESULT dk_rtmp_audio_source_stream::GetMediaType(CMediaType * type)
 
 		return S_OK;
 	}
-	else if (mt == dk_media_buffering::AUDIO_SUBMEDIA_TYPE_MP3)
+	else if (mt == buffering::asubmedia_type_mp3)
 	{
 		type->InitMediaType();
 		type->SetType(&MEDIATYPE_Audio);

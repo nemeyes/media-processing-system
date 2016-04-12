@@ -83,7 +83,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\baseclasses;..\dk_dshow_base;..\..\dk_common\include;..\..\dk_video_base\include;..\..\dk_ff_video_decoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\baseclasses;..\dk_dshow_base;..\..\..\dk_common\include;..\..\..\library\video\dk_video_base\include;..\..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

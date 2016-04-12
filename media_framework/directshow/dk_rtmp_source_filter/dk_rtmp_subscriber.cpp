@@ -170,8 +170,8 @@ dk_rtmp_subscriber::ERR_CODE dk_rtmp_subscriber::get_video_height(int32_t & heig
 
 void dk_rtmp_subscriber::on_begin_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long presentation_time)
 {
-	if (smt == dk_rtmp_client::SUBMEDIA_TYPE_AVC)
-		dk_media_buffering::instance().set_video_submedia_type(dk_media_buffering::VIDEO_SUBMEDIA_TYPE_AVC);
+	if (smt == dk_rtmp_client::SUBMEDIA_TYPE_H264)
+		dk_media_buffering::instance().set_video_submedia_type(buffering::vsubmedia_type_avc);
 	else
 		return;
 
@@ -242,9 +242,9 @@ void dk_rtmp_subscriber::on_recv_video(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt
 void dk_rtmp_subscriber::on_begin_audio(dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long presentation_time)
 {
 	if (smt == dk_rtmp_client::SUBMEDIA_TYPE_AAC)
-		dk_media_buffering::instance().set_audio_submedia_type(dk_media_buffering::AUDIO_SUBMEDIA_TYPE_AAC);
+		dk_media_buffering::instance().set_audio_submedia_type(buffering::asubmedia_type_aac);
 	else if (smt==dk_rtmp_client::SUBMEDIA_TYPE_MP3)
-		dk_media_buffering::instance().set_audio_submedia_type(dk_media_buffering::AUDIO_SUBMEDIA_TYPE_MP3);
+		dk_media_buffering::instance().set_audio_submedia_type(buffering::asubmedia_type_mp3);
 	else
 		return;
 
