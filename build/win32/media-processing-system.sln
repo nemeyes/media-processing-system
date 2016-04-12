@@ -431,6 +431,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_rtmp_source_filter", "..
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_rtsp_source_filter", "..\..\media_framework\directshow\dk_rtsp_source_filter\dk_rtsp_source_filter.vcxproj", "{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "logger", "logger", "{4E9AEA7D-C35B-4A64-B6BA-C1B43A810419}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_log4cplus_logger_1.2.0", "..\..\library\logger\dk_log4cplus_logger_1.2.0\dk_log4cplus_logger_1.2.0.vcxproj", "{0423D617-75DC-4DE9-B742-BA31074F7A94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1579,6 +1583,12 @@ Global
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}.Release|Win32.ActiveCfg = Release|Win32
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}.Release|Win32.Build.0 = Release|Win32
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC}.Release|x64.ActiveCfg = Release|Win32
+		{0423D617-75DC-4DE9-B742-BA31074F7A94}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0423D617-75DC-4DE9-B742-BA31074F7A94}.Debug|Win32.Build.0 = Debug|Win32
+		{0423D617-75DC-4DE9-B742-BA31074F7A94}.Debug|x64.ActiveCfg = Debug|Win32
+		{0423D617-75DC-4DE9-B742-BA31074F7A94}.Release|Win32.ActiveCfg = Release|Win32
+		{0423D617-75DC-4DE9-B742-BA31074F7A94}.Release|Win32.Build.0 = Release|Win32
+		{0423D617-75DC-4DE9-B742-BA31074F7A94}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1794,5 +1804,7 @@ Global
 		{967A509A-CB66-4DEE-9523-082C25D672B1} = {6D4C1D99-AF19-4E30-B886-CE165AFC002F}
 		{B4C9C369-44D2-4DD5-9852-4909C018A858} = {AE90CE06-93FA-4E1F-B861-5F0CEC177F7F}
 		{E7CB45C1-F021-40DB-92B2-612B21F7E8DC} = {AE90CE06-93FA-4E1F-B861-5F0CEC177F7F}
+		{4E9AEA7D-C35B-4A64-B6BA-C1B43A810419} = {4DF1074E-DF9A-4D8F-910E-5B2AADA4150D}
+		{0423D617-75DC-4DE9-B742-BA31074F7A94} = {4E9AEA7D-C35B-4A64-B6BA-C1B43A810419}
 	EndGlobalSection
 EndGlobal

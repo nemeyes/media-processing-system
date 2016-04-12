@@ -18,6 +18,7 @@ public:
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
 
+	void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
 private:
 	dk_record_module * _record_module;
 

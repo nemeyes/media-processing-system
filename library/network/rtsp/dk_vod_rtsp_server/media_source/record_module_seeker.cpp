@@ -1,6 +1,8 @@
 #include "record_module_seeker.h"
 #include <dk_record_module.h>
 #include <string>
+#include <boost/date_time/local_time/local_time.hpp>
+#include <dk_log4cplus_logger.h>
 
 record_module_seeker::record_module_seeker(void)
 	: _record_module(nullptr)
@@ -99,6 +101,8 @@ void record_module_seeker::read(uint8_t * data, size_t &data_size, long long & t
 					long long start_time = 0, end_time = 0;
 					_record_module = new dk_record_module(single_ms);
 					_record_module->get_start_end_time(start_time, end_time);
+
+					//get_time_from_elapsed_msec_from_epoch
 					if (prev_end_time >= start_time && prev_end_time <= end_time)
 					{
 						_record_module->seek(prev_end_time);
@@ -136,4 +140,15 @@ uint8_t * record_module_seeker::get_pps(size_t & pps_size)
 		pps = _record_module->get_pps(pps_size);
 	}
 	return pps;
+}
+
+void record_module_seeker::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
+{
+	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = epoch + elapsed;
+
+	std::string tmp_time = boost::posix_time::to_simple_string(current_time);
+	//strncpy_s(time_string, time_string_size, tmp_time.c_str(), (size_t)time_string_size);
+	strcpy_s(time_string, time_string_size, tmp_time.c_str());
 }

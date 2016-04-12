@@ -1,5 +1,6 @@
 #include "record_module.h"
 #include <boost/date_time/local_time/local_time.hpp>
+#include <dk_log4cplus_logger.h>
 
 record_module::record_module(const char * storage, const char * uuid)
 	: _sps_size(0)
@@ -399,6 +400,10 @@ void record_module::write_bitstream(dk_record_module::nalu_type naltype, uint8_t
 	bytes_writes = 0;
 	::WriteFile(_file, buff, bytes_to_writes, &bytes_writes, NULL);
 	_write_index += bytes_writes;
+
+	char time[260] = { 0 };
+	get_time_from_elapsed_msec_from_epoch(timestamp, time, sizeof(time));
+	dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.recorder", time);
 }
 
 void record_module::write_header_time(long long start_time, long long end_time)
@@ -549,7 +554,7 @@ long long record_module::get_elapsed_msec_from_epoch(void)
 
 void record_module::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
 {
-	boost::posix_time::time_duration elapsed = boost::posix_time::microseconds(elapsed_time);
+	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 	boost::posix_time::ptime current_time = epoch + elapsed;
 
