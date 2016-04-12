@@ -1,0 +1,9 @@
+;===========================================================================;
+; 
+;===========================================================================;
+LIBRARY		dk_h264_encode_filter.ax
+EXPORTS
+			DllRegisterServer	PRIVATE
+			DllUnregisterServer	PRIVATE
+			DllGetClassObject	PRIVATE
+			DllCanUnloadNow		PRIVATE

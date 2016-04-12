@@ -1,6 +1,0 @@
-LIBRARY		dk_celt_decode_filter.ax
-EXPORTS
-			DllRegisterServer	PRIVATE
-			DllUnregisterServer	PRIVATE
-			DllGetClassObject	PRIVATE
-			DllCanUnloadNow		PRIVATE

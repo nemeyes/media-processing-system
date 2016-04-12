@@ -77,8 +77,8 @@ nvenc_encoder::nvenc_encoder(dk_nvenc_encoder * front)
 	, _nvenc_encode_index(0)
 	, _nvenc_buffer_count(0)
 {
-	front->_spspps_size = 0;
-	memset(front->_spspps, 0x00, sizeof(front->_spspps));
+	//front->_spspps_size = 0;
+	//memset(front->_spspps, 0x00, sizeof(front->_spspps));
 }
 
 nvenc_encoder::~nvenc_encoder(void)
@@ -439,13 +439,13 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 			break;
 		}
 
-		memset(_front->_spspps, 0x00, sizeof(_front->_spspps));
+		memset(_front->_extradata, 0x00, sizeof(_front->_extradata));
 		NV_ENC_SEQUENCE_PARAM_PAYLOAD extra_data;
 		memset(&extra_data, 0x00, sizeof(NV_ENC_SEQUENCE_PARAM_PAYLOAD));
 		SET_VER(extra_data, NV_ENC_SEQUENCE_PARAM_PAYLOAD);
-		extra_data.inBufferSize = sizeof(_front->_spspps);
-		extra_data.spsppsBuffer = _front->_spspps;
-		extra_data.outSPSPPSPayloadSize = &_front->_spspps_size;
+		extra_data.inBufferSize = sizeof(_front->_extradata);
+		extra_data.spsppsBuffer = _front->_extradata;
+		extra_data.outSPSPPSPayloadSize = &_front->_extradata_size;
 		status = NvEncGetSequenceParams(&extra_data);
 		if (status != NV_ENC_SUCCESS)
 		{

@@ -231,7 +231,7 @@ private:
 	pthread_mutex _mutex;
 #endif
 
-private:
+public:
 	uint8_t _extradata[260];
 	uint8_t _vps[260];
 	uint8_t _sps[260];

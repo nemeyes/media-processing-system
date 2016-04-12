@@ -43,6 +43,27 @@ public:
 		void * data;
 		size_t data_size;
 		size_t data_capacity;
+		_dk_audio_entity_t(void)
+			: pts(0)
+			, data(nullptr)
+			, data_size(0)
+			, data_capacity(0)
+		{}
+		_dk_audio_entity_t(const _dk_audio_entity_t & clone)
+		{
+			pts = clone.pts;
+			data = clone.data;
+			data_size = clone.data_size;
+			data_capacity = clone.data_capacity;
+		}
+		_dk_audio_entity_t & operator=(const _dk_audio_entity_t & clone)
+		{
+			pts = clone.pts;
+			data = clone.data;
+			data_size = clone.data_size;
+			data_capacity = clone.data_capacity;
+			return (*this);
+		}
 	} dk_audio_entity_t;
 
 	dk_audio_base(void);

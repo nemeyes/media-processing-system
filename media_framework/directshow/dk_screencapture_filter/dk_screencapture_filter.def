@@ -1,0 +1,10 @@
+
+;===========================================================================;
+; 
+;===========================================================================;
+LIBRARY		dk_screencapture_filter.ax
+EXPORTS
+			DllRegisterServer	PRIVATE
+			DllUnregisterServer	PRIVATE
+			DllGetClassObject	PRIVATE
+			DllCanUnloadNow		PRIVATE

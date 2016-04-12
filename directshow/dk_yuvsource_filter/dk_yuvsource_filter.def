@@ -1,9 +1,0 @@
-;===========================================================================;
-; 
-;===========================================================================;
-LIBRARY		dk_yuvsource_filter.ax
-EXPORTS
-			DllRegisterServer	PRIVATE
-			DllUnregisterServer	PRIVATE
-			DllGetClassObject	PRIVATE
-			DllCanUnloadNow		PRIVATE

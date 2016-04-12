@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BB0EC52B-0C3E-437F-9F2D-4204EB26459A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>dk_dxva2_decode_filter</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\debug\bin\</OutDir>
+    <IntDir>$(SolutionDir)x86\debug\intermediate\$(ProjectName)\</IntDir>
+    <TargetExt>.ax</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DK_DXVA2_DECODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\baseclasses;..\dsutils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;dxva2.lib;mfuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dk_dxva2_decode_filter.def</ModuleDefinitionFile>
+    </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DK_DXVA2_DECODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>regsvr32 "$(OutDir)\$(ProjectName).ax</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dsutils\css_auth.h" />
+    <ClInclude Include="..\dsutils\css_scramble.h" />
+    <ClInclude Include="..\dsutils\dk_dxva2_allocator.h" />
+    <ClInclude Include="..\dsutils\dk_dxva2_sample.h" />
+    <ClInclude Include="..\dsutils\dk_transform_input_pin.h" />
+    <ClInclude Include="..\dsutils\dk_video_decode_filter.h" />
+    <ClInclude Include="..\dsutils\dk_video_decode_input_pin.h" />
+    <ClInclude Include="..\dsutils\dk_video_decode_output_pin.h" />
+    <ClInclude Include="dk_dxva2_decode_filter.h" />
+    <ClInclude Include="dk_dxva2_decode_filter_properties.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dk_dxva2_decode_filter.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dsutils\css_auth.cpp" />
+    <ClCompile Include="..\dsutils\css_scramble.cpp" />
+    <ClCompile Include="..\dsutils\dk_dxva2_allocator.cpp" />
+    <ClCompile Include="..\dsutils\dk_dxva2_sample.cpp" />
+    <ClCompile Include="..\dsutils\dk_transform_input_pin.cpp" />
+    <ClCompile Include="..\dsutils\dk_video_decode_filter.cpp" />
+    <ClCompile Include="..\dsutils\dk_video_decode_input_pin.cpp" />
+    <ClCompile Include="..\dsutils\dk_video_decode_output_pin.cpp" />
+    <ClCompile Include="dk_dxva2_decode_filter_properties.cpp" />
+    <ClCompile Include="dk_dxva2_decode_filter.cpp" />
+    <ClCompile Include="setup.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dk_dxva2_decode_filter.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

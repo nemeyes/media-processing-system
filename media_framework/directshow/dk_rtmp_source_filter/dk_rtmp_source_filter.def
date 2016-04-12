@@ -1,0 +1,6 @@
+LIBRARY		dk_rtmp_source_filter.ax
+EXPORTS
+			DllRegisterServer	PRIVATE
+			DllUnregisterServer	PRIVATE
+			DllGetClassObject	PRIVATE
+			DllCanUnloadNow		PRIVATE

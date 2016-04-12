@@ -1,0 +1,6 @@
+LIBRARY		dk_colorspace_convert_filter.ax
+EXPORTS
+			DllRegisterServer	PRIVATE
+			DllUnregisterServer	PRIVATE
+			DllGetClassObject	PRIVATE
+			DllCanUnloadNow		PRIVATE
