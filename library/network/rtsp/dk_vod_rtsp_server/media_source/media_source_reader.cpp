@@ -7,6 +7,7 @@
 #include "media_source_reader.h"
 #include <dk_record_module.h>
 #include <boost/date_time/local_time/local_time.hpp>
+#include <dk_log4cplus_logger.h>
 
 #if defined(WITH_RECORD_SERVER)
 media_source_reader::media_source_reader(void)
@@ -52,12 +53,17 @@ bool media_source_reader::open(const char * stream_name, long long timestamp, me
 			int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
 			sscanf(seek_time, "%4d%2d%2d%2d%2d%2d", &year, &month, &day, &hour, &minute, &second);
 			char time_string[100] = { 0 };
-			_snprintf_s(time_string, sizeof(time_string), "%d-%d-%d %d:%d:%d.000", year, month, day, hour, minute, second);
+			_snprintf_s(time_string, sizeof(time_string), "%.4d-%.2d-%.2d %.2d:%.2d:%.2d.000", year, month, day, hour, minute, second);
 
 			boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			boost::posix_time::ptime pseek_time = boost::posix_time::time_from_string(time_string);
 			boost::posix_time::time_duration elapsed_seek_time = pseek_time - epoch;
 			long long elapsed_seek_time_millsec = elapsed_seek_time.total_milliseconds();
+
+			char time[260] = { 0 };
+			get_time_from_elapsed_msec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
+			dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", time);
+
 			bool result = _record_module_seeker.seek(single_media_source_path, elapsed_seek_time_millsec);
 			if (!result)
 				return false;
@@ -115,6 +121,17 @@ uint8_t * media_source_reader::get_sps(size_t & sps_size)
 uint8_t * media_source_reader::get_pps(size_t & pps_size)
 {
 	return _record_module_seeker.get_pps(pps_size);
+}
+
+void media_source_reader::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
+{
+	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = epoch + elapsed;
+
+	std::string tmp_time = boost::posix_time::to_simple_string(current_time);
+	//strncpy_s(time_string, time_string_size, tmp_time.c_str(), (size_t)time_string_size);
+	strcpy_s(time_string, time_string_size, tmp_time.c_str());
 }
 
 #else

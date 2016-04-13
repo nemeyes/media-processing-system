@@ -47,6 +47,7 @@ public:
 	uint8_t * get_sps(size_t & size);
 	uint8_t * get_pps(size_t & size);
 
+	void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
 private:
 	char _stream_name[250];
 	record_module_seeker _record_module_seeker;

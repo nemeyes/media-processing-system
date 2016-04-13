@@ -44,6 +44,13 @@ bool record_module_seeker::seek(const char * single_media_source_path, long long
 			long long start_time = 0, end_time = 0;
 			_record_module = new dk_record_module(single_ms);
 			_record_module->get_start_end_time(start_time, end_time);
+
+			char str_start_time[260] = { 0 };
+			char str_end_time[260] = { 0 };
+			get_time_from_elapsed_msec_from_epoch(start_time, str_start_time, sizeof(str_start_time));
+			get_time_from_elapsed_msec_from_epoch(end_time, str_end_time, sizeof(str_end_time));
+			dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", "start time[%s], end time[%s]", str_start_time, str_end_time);
+
 			if (seek_time >= start_time && seek_time <= end_time)
 			{
 				_record_module->seek(seek_time);
@@ -102,7 +109,12 @@ void record_module_seeker::read(uint8_t * data, size_t &data_size, long long & t
 					_record_module = new dk_record_module(single_ms);
 					_record_module->get_start_end_time(start_time, end_time);
 
-					//get_time_from_elapsed_msec_from_epoch
+
+					char str_start_time[260] = { 0 };
+					char str_end_time[260] = { 0 };
+					get_time_from_elapsed_msec_from_epoch(start_time, str_start_time, sizeof(str_start_time));
+					get_time_from_elapsed_msec_from_epoch(end_time, str_end_time, sizeof(str_end_time));
+					dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", "start time[%s], end time[%s]", str_start_time, str_end_time);
 					if (prev_end_time >= start_time && prev_end_time <= end_time)
 					{
 						_record_module->seek(prev_end_time);
