@@ -44,13 +44,13 @@ Boolean buffer_sink::continuePlaying(void)
     return True;
 }
 
-void buffer_sink::after_getting_frame(void * param, unsigned frame_size, unsigned truncated_bytes, struct timeval presentation_time, unsigned /*duration_msec*/)
+void buffer_sink::after_getting_frame(void * param, unsigned frame_size, unsigned truncated_bytes, struct timeval timestamp, unsigned /*duration_msec*/)
 {
     buffer_sink * sink = static_cast<buffer_sink*>(param);
-    sink->after_getting_frame(frame_size, truncated_bytes, presentation_time);
+	sink->after_getting_frame(frame_size, truncated_bytes, timestamp);
 }
 
-void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct timeval presentation_time)
+void buffer_sink::add_data(unsigned char * data, unsigned data_size, struct timeval timestamp)
 {
     //put data to output
 	if(_front)

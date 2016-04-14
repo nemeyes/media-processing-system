@@ -1,9 +1,9 @@
 #include "dk_record_module.h"
 #include "record_module.h"
 
-dk_record_module::dk_record_module(const char * storage, const char * uuid)
+dk_record_module::dk_record_module(const char * storage, const char * uuid, long long timestamp)
 {
-	_core = new record_module(storage, uuid);
+	_core = new record_module(storage, uuid, timestamp);
 }
 
 dk_record_module::dk_record_module(const char * filepath)

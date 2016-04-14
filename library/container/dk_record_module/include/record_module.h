@@ -7,7 +7,7 @@
 class record_module
 {
 public:
-	record_module(const char * storage, const char * uuid);
+	record_module(const char * storage, const char * uuid, long long timestamp);
 	record_module(const char * filepath);
 	virtual ~record_module(void);
 

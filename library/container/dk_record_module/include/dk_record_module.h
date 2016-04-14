@@ -26,7 +26,7 @@ public:
 		nalu_type_vcl,
 	} nalu_type;
 
-	dk_record_module(const char * storage, const char * uuid); //constructor for writing
+	dk_record_module(const char * storage, const char * uuid, long long timestamp); //constructor for writing
 	dk_record_module(const char * filepath); //constructor for reading
 	virtual ~dk_record_module(void);
 

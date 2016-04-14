@@ -59,7 +59,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DK_X264_ENCODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\baseclasses;..\..\..\library\video\dk_video_base\include;..\..\..\library\video\codec\x264\dk_x264_encoder_0.148.x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\baseclasses;..\..\..\library\video\dk_video_base\include;..\..\..\library\video\codec\x264\dk_x264_0.148.x_encoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -83,7 +83,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DK_X264_ENCODE_FILTER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\baseclasses;..\..\..\library\video\dk_video_base\include;..\..\..\library\video\codec\x264\dk_x264_encoder_0.148.x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\baseclasses;..\..\..\library\video\dk_video_base\include;..\..\..\library\video\codec\x264\dk_x264_0.148.x_encoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

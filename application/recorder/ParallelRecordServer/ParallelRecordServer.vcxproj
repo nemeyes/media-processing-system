@@ -58,14 +58,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\ipc\dk_shared_memory\include;..\..\..\library\container\dk_record_module\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\logger\dk_log4cplus_logger_1.2.0\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\ipc\dk_shared_memory\include;..\..\..\library\container\dk_record_module\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libcurl.lib;tinyxml.lib;ntdll.lib;dk_live_rtsp_client.lib;dk_shared_memory.lib;dk_record_module.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\lib;..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\lib;$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libcurl.lib;tinyxml.lib;ntdll.lib;dk_live_rtsp_client.lib;dk_shared_memory.lib;dk_record_module.lib;dk_log4cplus_logger_1.2.0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\lib;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\lib;..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\lib;$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>

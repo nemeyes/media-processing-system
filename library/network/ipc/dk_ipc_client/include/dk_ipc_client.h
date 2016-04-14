@@ -2,24 +2,14 @@
 #define _DK_IPC_CLIENT_H_
 
 #include <cstdint>
-#if !defined(WIN32)
-#include <pthread.h>
-#define EXP_CLASS
-#else
 #include <winsock2.h>
 #include <windows.h>
-#if defined(EXPORT_LIB)
-#define EXP_CLASS __declspec(dllexport)
-#else
-#define EXP_CLASS __declspec(dllimport)
-#endif
-#endif
 
 namespace ic
 {
 	class abstract_command;
 	class abstract_ipc_client;
-	class EXP_CLASS dk_ipc_client
+	class dk_ipc_client
 	{
 	public:
 		dk_ipc_client(void);

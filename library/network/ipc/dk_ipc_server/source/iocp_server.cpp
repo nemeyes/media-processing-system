@@ -258,10 +258,10 @@ void ic::iocp_server::execute(void)
 			if (io_context == NULL)
 				continue;
 		}
-		else
-		{
-			continue;
-		}
+		//else
+		//{
+		//	continue;
+		//}
 
 		try
 		{

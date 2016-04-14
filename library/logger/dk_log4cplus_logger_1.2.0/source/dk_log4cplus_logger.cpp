@@ -74,60 +74,83 @@ dk_log4cplus_logger::~dk_log4cplus_logger(void)
 void dk_log4cplus_logger::make_system_info_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
-	char * plog = log;
 	va_list args;
 	va_start(args, fmt);
+#if 1
+	char * plog = log;
 	print(&plog, fmt, args);
+#else
+	_snprintf_s(log, sizeof(log), fmt, args);
+#endif
 	LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
 void dk_log4cplus_logger::make_system_trace_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
-	char * plog = log;
 	va_list args;
 	va_start(args, fmt);
+#if 1
+	char * plog = log;
 	print(&plog, fmt, args);
+#else
+	_snprintf_s(log, sizeof(log), fmt, args);
+#endif
 	LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
 void dk_log4cplus_logger::make_system_debug_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
-	char * plog = log;
 	va_list args;
 	va_start(args, fmt);
+#if 1
 	print(&plog, fmt, args);
+#else
+	_snprintf_s(log, sizeof(log), fmt, args);
+#endif
 	LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
 void dk_log4cplus_logger::make_system_warn_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
-	char * plog = log;
 	va_list args;
 	va_start(args, fmt);
+#if 1
+	char * plog = log;
 	print(&plog, fmt, args);
+#else
+	_snprintf_s(log, sizeof(log), fmt, args);
+#endif
 	LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
 void dk_log4cplus_logger::make_system_error_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
-	char * plog = log;
 	va_list args;
 	va_start(args, fmt);
+#if 1
+	char * plog = log;
 	print(&plog, fmt, args);
+#else
+	_snprintf_s(log, sizeof(log), fmt, args);
+#endif
 	LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
 void dk_log4cplus_logger::make_system_fatal_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
-	char * plog = log;
 	va_list args;
 	va_start(args, fmt);
+#if 1
+	char * plog = log;
 	print(&plog, fmt, args);
+#else
+	_snprintf_s(log, sizeof(log), fmt, args);
+#endif
 	LOG4CPLUS_FATAL(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 

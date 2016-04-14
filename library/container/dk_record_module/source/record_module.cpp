@@ -2,7 +2,7 @@
 #include <boost/date_time/local_time/local_time.hpp>
 #include <dk_log4cplus_logger.h>
 
-record_module::record_module(const char * storage, const char * uuid)
+record_module::record_module(const char * storage, const char * uuid, long long timestamp)
 	: _sps_size(0)
 	, _pps_size(0)
 	, _change_sps(false)
@@ -23,8 +23,12 @@ record_module::record_module(const char * storage, const char * uuid)
 	if (::GetFileAttributesA(folder) == INVALID_FILE_ATTRIBUTES)
 		::CreateDirectoryA(folder, NULL);
 
-	long long elapsed_millsec = record_module::get_elapsed_msec_from_epoch();
-	_snprintf_s(filepath, MAX_PATH, "%s%s\\%lld.dat", storage, uuid, elapsed_millsec);
+	if (timestamp==0)
+		timestamp = record_module::get_elapsed_msec_from_epoch();
+
+
+
+	_snprintf_s(filepath, MAX_PATH, "%s%s\\%lld.dat", storage, uuid, timestamp);
 	_file = ::CreateFileA(filepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (_file == INVALID_HANDLE_VALUE)
 	{
@@ -191,12 +195,13 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 {
 	if (_file == NULL || _file == INVALID_HANDLE_VALUE)
 		return;
-	long long current_time = record_module::get_elapsed_msec_from_epoch();
+	if (timestamp==0)
+		timestamp = record_module::get_elapsed_msec_from_epoch();
 
 	long long file_size = get_file_size();
 	if (file_size == 0)
 	{
-		write_header_time(current_time, -1);
+		write_header_time(timestamp, -1);
 		_write_index += 2 * sizeof(long long);//skip file information header
 	}
 
@@ -256,17 +261,17 @@ void record_module::write(uint8_t * nalu, size_t nalu_size, long long timestamp)
 		saved_pps = get_pps(saved_pps_size);
 		if((saved_sps && saved_sps_size>0) && (saved_pps && saved_pps_size>0))
 		{
-			write_bitstream(dk_record_module::nalu_type_sps, saved_sps, saved_sps_size, current_time);
-			write_bitstream(dk_record_module::nalu_type_pps, saved_pps, saved_pps_size, current_time);
+			write_bitstream(dk_record_module::nalu_type_sps, saved_sps, saved_sps_size, timestamp);
+			write_bitstream(dk_record_module::nalu_type_pps, saved_pps, saved_pps_size, timestamp);
 		}
-		write_bitstream(dk_record_module::nalu_type_idr, data, data_size, current_time);
+		write_bitstream(dk_record_module::nalu_type_idr, data, data_size, timestamp);
 	}
 	else if (_recv_idr)
 	{
-		write_bitstream(dk_record_module::nalu_type_vcl, data, data_size, current_time);
+		write_bitstream(dk_record_module::nalu_type_vcl, data, data_size, timestamp);
 	}
 
-	_last_end_time = current_time;
+	_last_end_time = timestamp;
 }
 
 void record_module::seek(long long seek_timestamp)
@@ -403,7 +408,7 @@ void record_module::write_bitstream(dk_record_module::nalu_type naltype, uint8_t
 
 	char time[260] = { 0 };
 	get_time_from_elapsed_msec_from_epoch(timestamp, time, sizeof(time));
-	dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.recorder", time);
+	dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.recorder", "time is %s", time);
 }
 
 void record_module::write_header_time(long long start_time, long long end_time)

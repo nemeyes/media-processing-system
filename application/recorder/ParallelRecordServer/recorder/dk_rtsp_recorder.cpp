@@ -1,4 +1,6 @@
 #include "dk_rtsp_recorder.h"
+#include <boost/date_time/local_time/local_time.hpp>
+#include <dk_log4cplus_logger.h>
 
 #define DEFAULT_FILE_CHUNK_SIZE 1024*1024*64
 
@@ -99,9 +101,32 @@ void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, u
 			}
 		} while (0);
 #else
-		set_sps(sps, sps_size);
-		set_pps(pps, pps_size);
-		_file_recorder = new dk_record_module(_storage, _uuid);
+		timestamp = get_elapsed_msec_from_epoch();
+
+		size_t saved_sps_size = 0;
+		uint8_t * saved_sps = get_sps(saved_sps_size);
+		if (saved_sps_size < 1 || !saved_sps)
+			set_sps((uint8_t*)sps, sps_size);
+		else
+		{
+			if (memcmp(saved_sps, sps, saved_sps_size))
+				set_sps((uint8_t*)sps, sps_size);
+		}
+
+		size_t saved_pps_size = 0;
+		uint8_t * saved_pps = get_sps(saved_pps_size);
+		if (saved_pps_size < 1 || !saved_pps)
+			set_pps((uint8_t*)pps, pps_size);
+		else
+		{
+			if (memcmp(saved_pps, pps, saved_pps_size))
+				set_pps((uint8_t*)pps, pps_size);
+		}
+
+		if (!_file_recorder)
+			_file_recorder = new dk_record_module(_storage, _uuid, timestamp);
+
+
 		_file_recorder->write(sps, sps_size, timestamp);
 		_file_recorder->write(pps, pps_size, timestamp);
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
@@ -143,20 +168,18 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, false);
 		}
 #else
+		timestamp = get_elapsed_msec_from_epoch();
+
 		if (((data[4] & 0x1F) == 0x07)) //sps
 		{
 			size_t saved_sps_size = 0;
 			uint8_t * saved_sps = get_sps(saved_sps_size);
 			if (saved_sps_size < 1 || !saved_sps)
-			{
 				set_sps((uint8_t*)data, data_size);
-			}
 			else
 			{
 				if (memcmp(saved_sps, data, saved_sps_size))
-				{
 					set_sps((uint8_t*)data, data_size);
-				}
 			}
 		}
 		if (((data[4] & 0x1F) == 0x08)) //pps
@@ -164,38 +187,38 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 			size_t saved_pps_size = 0;
 			uint8_t * saved_pps = get_sps(saved_pps_size);
 			if (saved_pps_size < 1 || !saved_pps)
-			{
 				set_pps((uint8_t*)data, data_size);
-			}
 			else
 			{
 				if (memcmp(saved_pps, data, saved_pps_size))
-				{
 					set_pps((uint8_t*)data, data_size);
-				}
 			}
 		}
 
 		long long saved_chunk_size_bytes = _file_recorder->get_file_size();
 		if ((saved_chunk_size_bytes >= _chunk_size_bytes) && ((data[4] & 0x1F) == 0x05))
 		{
-			delete _file_recorder;
-			_file_recorder = nullptr;
-			_file_recorder = new dk_record_module(_storage, _uuid);
+			if (_file_recorder)
+			{
+				delete _file_recorder;
+				_file_recorder = nullptr;
+			}
+		}
 
+		if (!_file_recorder)
+		{
+			_file_recorder = new dk_record_module(_storage, _uuid, timestamp);
 			size_t saved_sps_size = 0;
 			uint8_t * saved_sps = get_sps(saved_sps_size);
 			if (saved_sps_size > 0 && saved_sps)
-			{
 				_file_recorder->write(saved_sps, saved_sps_size, timestamp);
-			}
+
 			size_t saved_pps_size = 0;
 			uint8_t * saved_pps = get_pps(saved_pps_size);
 			if (saved_pps_size > 0 && saved_pps)
-			{
 				_file_recorder->write(saved_pps, saved_pps_size, timestamp);
-			}
 		}
+
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
 #if defined(WITH_RELAY_LIVE)
 		if (_sm_server->wait_available())
@@ -699,4 +722,24 @@ void dk_rtsp_recorder::clear_pps(void)
 {
 	memset(_pps, 0x00, sizeof(_pps));
 	_pps_size = 0;
+}
+
+long long dk_rtsp_recorder::get_elapsed_msec_from_epoch(void)
+{
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::local_time();
+	boost::posix_time::time_duration elapsed = current_time - epoch;
+	long long elapsed_millsec = elapsed.total_milliseconds();
+	return elapsed_millsec;
+}
+
+void dk_rtsp_recorder::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
+{
+	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = epoch + elapsed;
+
+	std::string tmp_time = boost::posix_time::to_simple_string(current_time);
+	//strncpy_s(time_string, time_string_size, tmp_time.c_str(), (size_t)time_string_size);
+	strcpy_s(time_string, time_string_size, tmp_time.c_str());
 }
