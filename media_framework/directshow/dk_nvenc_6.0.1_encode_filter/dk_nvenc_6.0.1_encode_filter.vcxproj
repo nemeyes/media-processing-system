@@ -65,7 +65,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;dk_nvenc_encoder_6.0.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>strmbasd.lib;strmiids.lib;winmm.lib;dk_nvenc_6.0.1_encoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>dk_nvenc_encode_filter.def</ModuleDefinitionFile>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
@@ -91,7 +91,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>strmbase.lib;strmiids.lib;winmm.lib;dk_nvenc_encoder_6.0.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>strmbase.lib;strmiids.lib;winmm.lib;dk_nvenc_6.0.1_encoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>dk_nvenc_encode_filter.def</ModuleDefinitionFile>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
