@@ -64,6 +64,8 @@ dk_x264_encoder::err_code x264_encoder::initialize_encoder(dk_x264_encoder::conf
 	_param.i_fps_den = 1;
 	_param.i_slice_count = 1;
 
+	_param.i_frame_reference = 1;
+
 	_param.i_keyint_max = _config->keyframe_interval*_config->fps;
 	_param.i_keyint_min = _config->keyframe_interval*_config->fps;
 

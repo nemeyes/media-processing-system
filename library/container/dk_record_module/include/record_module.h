@@ -30,6 +30,7 @@ public:
 
 private:
 	void write_header_time(long long start_time, long long end_time);
+	void write_bitstream(uint8_t * sps, size_t sps_size, uint8_t * pps, size_t pps_size, uint8_t * nalu, size_t nalu_size, long long timestamp);
 	void write_bitstream(dk_record_module::nalu_type type, uint8_t * nalu, size_t nalu_size, long long timestamp);
 
 	void read_header_time(long long & start_time, long long & end_time);
@@ -61,6 +62,7 @@ private:
 
 
 	HANDLE _file;
+	char * _write_buffer;
 	uint32_t _write_index;
 	uint32_t _read_index;
 

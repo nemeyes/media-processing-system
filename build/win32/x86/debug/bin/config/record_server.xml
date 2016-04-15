@@ -8,9 +8,9 @@
 	</backup_server>
 	<media_sources name="groupname" chunk_size="64">
 		<media_source uuid="CH1">
-			<url>rtsp://now.iptime.org/1/stream1</url>
-			<username></username>
-			<password></password>
+			<url>rtsp://winem.iptime.org/axis-media/media.amp?camera=1</url>
+			<username>root</username>
+			<password>pass</password>
 		</media_source>
 		<!--media_source uuid="CH2">
 			<url>rtsp://now.iptime.org/2/stream1</url>

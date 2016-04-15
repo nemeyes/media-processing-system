@@ -105,6 +105,7 @@ void dk_log4cplus_logger::make_system_debug_log(const char * secion, const char 
 	va_list args;
 	va_start(args, fmt);
 #if 1
+	char * plog = log;
 	print(&plog, fmt, args);
 #else
 	_snprintf_s(log, sizeof(log), fmt, args);
