@@ -70,6 +70,7 @@ dk_yuvsource_reader::error_code yuvsource_reader::set_fps(int32_t fps)
 dk_yuvsource_reader::error_code yuvsource_reader::release_reader(void)
 {
 	close_file(_file);
+	_file = INVALID_HANDLE_VALUE;
 	return dk_yuvsource_reader::error_code_success;
 }
 
@@ -108,7 +109,6 @@ void yuvsource_reader::close_file(HANDLE file)
 	if (file != NULL && file != INVALID_HANDLE_VALUE)
 	{
 		::CloseHandle(file);
-		file = INVALID_HANDLE_VALUE;
 	}
 }
 

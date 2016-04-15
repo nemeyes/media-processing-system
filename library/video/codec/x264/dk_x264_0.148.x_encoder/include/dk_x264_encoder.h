@@ -122,7 +122,7 @@ public:
 
 	dk_x264_encoder::err_code encode(dk_video_encoder::dk_video_entity_t * input, dk_video_encoder::dk_video_entity_t * bitstream);
 	dk_x264_encoder::err_code encode(dk_video_encoder::dk_video_entity_t * input);
-	dk_x264_encoder::err_code get_queued_data(dk_video_encoder::dk_video_entity_t * input);
+	dk_x264_encoder::err_code get_queued_data(dk_video_encoder::dk_video_entity_t * bitstream);
 
 	dk_x264_encoder::err_code encode_async(dk_video_encoder::dk_video_entity_t * input);
 	dk_x264_encoder::err_code check_encoding_finish(void);

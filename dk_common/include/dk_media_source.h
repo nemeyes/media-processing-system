@@ -29,7 +29,7 @@ extern "C" {
 	DEFINE_GUID(IID_IRTSPClient, 0xc883b4c4, 0xd933, 
 								   0x47e0, 0x92, 0xe5, 0x54, 0x4d, 0x53, 0x8f, 0xf5, 0x91);
 
-	DECLARE_INTERFACE_(IRTSPClient, IUnknown)
+	DECLARE_INTERFACE_IID_(IRTSPClient, IUnknown, "C883B4C4-D933-47E0-92E5-544D538FF591")
 	{
 		STDMETHOD(SetUrl)(BSTR url) PURE;
 		STDMETHOD(SetUsername)(BSTR username) PURE;
@@ -67,7 +67,7 @@ extern "C" {
 		0x56c0869f, 0x6575, 0x4f46, 0x8d, 0xd9, 0xb3, 0xa9, 0xbd, 0xf3, 0x9f, 0x21);
 
 
-	DECLARE_INTERFACE_(IRTMPClient, IUnknown)
+	DECLARE_INTERFACE_IID_(IRTMPClient, IUnknown, "56C0869F-6575-4F46-8DD9-B3A9BDF39F21")
 	{
 		STDMETHOD(SetUrl)(BSTR url) PURE;
 		STDMETHOD(SetUsername)(BSTR username) PURE;

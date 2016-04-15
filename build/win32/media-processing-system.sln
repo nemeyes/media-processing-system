@@ -435,6 +435,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_x264_0.148.x_encoder", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_x264_0.148.x_encode_filter", "..\..\media_framework\directshow\dk_x264_0.148.x_encode_filter\dk_x264_0.148.x_encode_filter.vcxproj", "{A4122B87-BD57-4A80-AD47-73705B48AE3A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x264_0.148.x_frc_tester", "..\..\application\codec_ccu\x264_0.148.x_frc_tester\x264_0.148.x_frc_tester.vcxproj", "{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1589,6 +1591,12 @@ Global
 		{A4122B87-BD57-4A80-AD47-73705B48AE3A}.Release|Win32.ActiveCfg = Release|Win32
 		{A4122B87-BD57-4A80-AD47-73705B48AE3A}.Release|Win32.Build.0 = Release|Win32
 		{A4122B87-BD57-4A80-AD47-73705B48AE3A}.Release|x64.ActiveCfg = Release|Win32
+		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Debug|Win32.Build.0 = Debug|Win32
+		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Debug|x64.ActiveCfg = Debug|Win32
+		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Release|Win32.ActiveCfg = Release|Win32
+		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Release|Win32.Build.0 = Release|Win32
+		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1806,5 +1814,6 @@ Global
 		{34423AB2-C9DE-4FD5-8E9F-52BE3171F627} = {0FAF5728-06B3-4691-B094-375076752465}
 		{46B3BE90-DEDD-483A-A957-EEF3A32922BB} = {88E8442F-7BBA-49E5-B74B-2D2E5C48031A}
 		{A4122B87-BD57-4A80-AD47-73705B48AE3A} = {0FAF5728-06B3-4691-B094-375076752465}
+		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F} = {9E70D9C4-F055-4304-9815-4A15C54CA941}
 	EndGlobalSection
 EndGlobal
