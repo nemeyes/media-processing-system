@@ -18,7 +18,7 @@ record_module::record_module(const char * storage, const char * uuid, long long 
 	, _write_buffer(nullptr)
 	, _write_index(0)
 	, _read_index(0)
-	, _vbuffer(nullptr)
+	//, _vbuffer(nullptr)
 	, _last_end_time(0)
 {
 	memset(_sps, 0x00, sizeof(_sps));
@@ -119,15 +119,19 @@ record_module::record_module(const char * filepath)
 	, _recv_idr(false)
 	, _write_index(0)
 	, _read_index(0)
-	, _vbuffer(nullptr)
+//	, _vbuffer(nullptr)
 	, _last_end_time(0)
 {
-	_vbuffer = new dk_video_buffer();
+//	_vbuffer = new dk_video_buffer();
 	_file = ::CreateFileA(filepath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (_file == INVALID_HANDLE_VALUE)
 	{
 		DWORD err = ::GetLastError();
 	}
+
+	char * slash = (char*)strrchr(filepath, '\\');
+	char * filename = slash + 1;
+	strncpy_s(_filename, filename, sizeof(_filename));
 
 
 	uint8_t spspps[260] = { 0 };
@@ -214,9 +218,9 @@ record_module::~record_module(void)
 		free(_write_buffer);
 	_write_buffer = nullptr;
 
-	if (_vbuffer)
-		delete _vbuffer;
-	_vbuffer = nullptr;
+	//if (_vbuffer)
+	//	delete _vbuffer;
+	//_vbuffer = nullptr;
 }
 
 long long record_module::get_file_size(void)

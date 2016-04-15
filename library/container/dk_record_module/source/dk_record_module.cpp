@@ -86,3 +86,8 @@ uint8_t * dk_record_module::get_pps(size_t & pps_size)
 	pps_size = _pps_size;
 	return _pps;
 }
+
+const char * dk_record_module::get_filename(void)
+{
+	return _core->get_filename();
+}

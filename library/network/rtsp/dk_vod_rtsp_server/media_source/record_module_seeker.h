@@ -19,10 +19,12 @@ public:
 	uint8_t * get_pps(size_t & pps_size);
 
 	void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
+
 private:
 	dk_record_module * _record_module;
-
-	char _single_media_source_path[260];
+	long long _last_read_timestamp;
+	char _last_filename[MAX_PATH];
+	char _single_media_source_path[MAX_PATH];
 };
 
 

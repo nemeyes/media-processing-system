@@ -46,6 +46,8 @@ public:
 
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
+
+	const char * get_filename(void);
 private:
 	record_module * _core;
 

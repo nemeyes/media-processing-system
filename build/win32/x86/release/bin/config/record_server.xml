@@ -7,6 +7,11 @@
 		<password>1234</password>
 	</backup_server>
 	<media_sources name="groupname" chunk_size="64">
+		<!--media_source uuid="CH1">
+			<url>rtsp://winem.iptime.org/axis-media/media.amp?camera=1</url>
+			<username>root</username>
+			<password>pass</password>
+		</media_source//-->
 		<media_source uuid="CH1">
 			<url>rtsp://now.iptime.org/1/stream1</url>
 			<username></username>
@@ -17,7 +22,7 @@
 			<username></username>
 			<password></password>
 		</media_source>
-		<media_source uuid="CH3">
+		<!--media_source uuid="CH3">
 			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=1</url>
 			<username></username>
 			<password></password>
@@ -26,6 +31,6 @@
 			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2</url>
 			<username></username>
 			<password></password>
-		</media_source>
+		</media_source//-->
 	</media_sources>
 </recorder>

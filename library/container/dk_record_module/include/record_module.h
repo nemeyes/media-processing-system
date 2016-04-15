@@ -28,6 +28,8 @@ public:
 	uint8_t * get_sps(size_t & sps_size);
 	uint8_t * get_pps(size_t & pps_size);
 
+	const char * get_filename(void) { return _filename; }
+
 private:
 	void write_header_time(long long start_time, long long end_time);
 	void write_bitstream(uint8_t * sps, size_t sps_size, uint8_t * pps, size_t pps_size, uint8_t * nalu, size_t nalu_size, long long timestamp);
@@ -51,6 +53,7 @@ private:
 	void clear_pps(void);
 
 private:
+	char _filename[MAX_PATH];
 
 	uint8_t _sps[200];
 	size_t _sps_size;
@@ -68,8 +71,6 @@ private:
 
 	long long _last_end_time;
 
-private:
-	dk_video_buffer * _vbuffer;
 };
 
 #endif

@@ -1,11 +1,13 @@
 #include "record_module_seeker.h"
 #include <dk_record_module.h>
 #include <string>
+#include <map>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <dk_log4cplus_logger.h>
 
 record_module_seeker::record_module_seeker(void)
 	: _record_module(nullptr)
+	, _last_read_timestamp(0)
 {
 
 }
@@ -82,9 +84,68 @@ void record_module_seeker::read(uint8_t * data, size_t &data_size, long long & t
 		{
 			dk_record_module::nalu_type type;
 			_record_module->read(type, data, data_size, timestamp);
+
+			strncpy_s(_last_filename, _record_module->get_filename(), sizeof(_last_filename));
+			//_last_read_timestamp = timestamp;
 		}
 		else
 		{
+#if 1
+			delete _record_module;
+			_record_module = nullptr;
+
+			char single_media_source_search_path[260] = { 0 };
+			_snprintf_s(single_media_source_search_path, sizeof(single_media_source_search_path), "%s\\*", _single_media_source_path);
+			HANDLE bfind = INVALID_HANDLE_VALUE;
+			WIN32_FIND_DATAA wfd;
+			bfind = ::FindFirstFileA(single_media_source_search_path, &wfd);
+			if (bfind == INVALID_HANDLE_VALUE)
+			{
+				return;
+			}
+			else
+			{
+				char * dot = (char*)strrchr(_last_filename, '.');
+				_strset_s(dot, strlen(dot) + 1, 0x00);
+				_last_read_timestamp = atoll(_last_filename);
+
+				char recorded_filename[260] = { 0 };
+				std::map<long long, std::string, std::less<long long>> sorted_filenames;
+				do
+				{
+					if (!(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+					{
+						strncpy_s(recorded_filename, &wfd.cFileName[0], sizeof(recorded_filename));
+						if (strcmp(recorded_filename, "INDEX"))
+						{
+							dot = (char*)strrchr(recorded_filename, '.');
+							_strset_s(dot, strlen(dot) + 1, 0x00);
+
+							long long timestamp = atoll(recorded_filename);
+							if (timestamp > _last_read_timestamp)
+							{
+								sorted_filenames.insert(std::make_pair(timestamp - _last_read_timestamp, wfd.cFileName));
+							}
+						}
+					}
+				} while (::FindNextFileA(bfind, &wfd));
+				
+				std::map<long long, std::string, std::less<long long>>::iterator iter = sorted_filenames.begin();
+				if (iter != sorted_filenames.end())
+				{
+					_snprintf_s(recorded_filename, sizeof(recorded_filename), "%s\\%s", _single_media_source_path, iter->second.c_str());
+					
+					long long start_time = 0, end_time = 0;
+					_record_module = new dk_record_module(recorded_filename);
+					_record_module->get_start_end_time(start_time, end_time);
+					_record_module->seek(start_time);
+				}
+				else
+				{
+					return;
+				}
+			}
+#else
 			long long prev_end_time = _record_module->get_end_time();
 			delete _record_module;
 			_record_module = nullptr;
@@ -126,8 +187,8 @@ void record_module_seeker::read(uint8_t * data, size_t &data_size, long long & t
 					_record_module = nullptr;
 				}
 			} while (::FindNextFileA(bfind, &wfd));
-
 			::FindClose(bfind);
+#endif
 		}
 	}
 }
