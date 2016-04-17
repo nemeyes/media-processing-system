@@ -30,12 +30,9 @@ namespace ic
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_GET_YEARS_REQ_T req;
 			CMD_GET_YEARS_RES_T res;
-			memset(&req, 0x00, sizeof(req));
 			memset(&res, 0x00, sizeof(res));
-			memcpy(&req, msg, sizeof(req));
-
+			memcpy(&res, msg, sizeof(res));
 
 		}
 	};
@@ -50,12 +47,9 @@ namespace ic
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_GET_MONTHS_REQ_T req;
 			CMD_GET_MONTHS_RES_T res;
-			memset(&req, 0x00, sizeof(req));
 			memset(&res, 0x00, sizeof(res));
-			memcpy(&req, msg, sizeof(req));
-
+			memcpy(&res, msg, sizeof(res));
 
 		}
 	};
@@ -69,12 +63,9 @@ namespace ic
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_GET_DAYS_REQ_T req;
 			CMD_GET_DAYS_RES_T res;
-			memset(&req, 0x00, sizeof(req));
 			memset(&res, 0x00, sizeof(res));
-			memcpy(&req, msg, sizeof(req));
-
+			memcpy(&res, msg, sizeof(res));
 
 		}
 	};
@@ -88,11 +79,9 @@ namespace ic
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_GET_HOURS_REQ_T req;
 			CMD_GET_HOURS_RES_T res;
-			memset(&req, 0x00, sizeof(req));
 			memset(&res, 0x00, sizeof(res));
-			memcpy(&req, msg, sizeof(req));
+			memcpy(&res, msg, sizeof(res));
 
 
 		}
@@ -107,13 +96,9 @@ namespace ic
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_GET_MINUTES_REQ_T req;
 			CMD_GET_MINUTES_RES_T res;
-			memset(&req, 0x00, sizeof(req));
 			memset(&res, 0x00, sizeof(res));
-			memcpy(&req, msg, sizeof(req));
-
-
+			memcpy(&res, msg, sizeof(res));
 
 		}
 	};
@@ -127,13 +112,9 @@ namespace ic
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_GET_SECONDS_REQ_T req;
 			CMD_GET_SECONDS_RES_T res;
-			memset(&req, 0x00, sizeof(req));
 			memset(&res, 0x00, sizeof(res));
-			memcpy(&req, msg, sizeof(req));
-
-
+			memcpy(&res, msg, sizeof(res));
 
 		}
 	};

@@ -28,6 +28,7 @@ namespace ic
 	typedef struct _CMD_GET_YEARS_RES_T
 	{
 		int32_t code;
+		char uuid[64];
 		int32_t count;
 		int32_t years[10];
 	} CMD_GET_YEARS_RES_T;
@@ -41,6 +42,7 @@ namespace ic
 	typedef struct _CMD_GET_MONTHS_RES_T
 	{
 		int32_t code;
+		char uuid[64];
 		int32_t year;
 		int32_t count;
 		int32_t months[12];
@@ -56,6 +58,7 @@ namespace ic
 	typedef struct _CMD_GET_DAYS_RES_T
 	{
 		int32_t code;
+		char uuid[64];
 		int32_t year;
 		int32_t month;
 		int32_t count;
@@ -73,6 +76,7 @@ namespace ic
 	typedef struct _CMD_GET_HOURS_RES_T
 	{
 		int32_t code;
+		char uuid[64];
 		int32_t year;
 		int32_t month;
 		int32_t day;
@@ -92,6 +96,7 @@ namespace ic
 	typedef struct _CMD_GET_MINUTES_RES_T
 	{
 		int32_t code;
+		char uuid[64];
 		int32_t year;
 		int32_t month;
 		int32_t day;
@@ -113,6 +118,7 @@ namespace ic
 	typedef struct _CMD_GET_SECONDS_RES_T
 	{
 		int32_t code;
+		char uuid[64];
 		int32_t year;
 		int32_t month;
 		int32_t day;

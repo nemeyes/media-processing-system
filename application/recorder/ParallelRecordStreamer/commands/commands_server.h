@@ -36,8 +36,10 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&req, msg, sizeof(req));
 
-
-
+			res.code = CMD_ERR_CODE_SUCCESS;
+			memcpy(res.uuid, req.uuid, sizeof(res.uuid));
+			_prss->get_years(res.uuid, res.years, sizeof(res.years) / sizeof(int), res.count);
+			
 			session->push_send_packet(session->uuid(), uuid(), CMD_GET_YEARS_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
 		}
 	};
@@ -58,7 +60,11 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&req, msg, sizeof(req));
 
-
+			res.code = CMD_ERR_CODE_SUCCESS;
+			memcpy(res.uuid, req.uuid, sizeof(res.uuid));
+			res.year = req.year;
+			_prss->get_months(res.uuid, res.year, res.months, sizeof(res.months) / sizeof(int), res.count);
+			
 
 			session->push_send_packet(session->uuid(), uuid(), CMD_GET_MONTHS_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
 		}
@@ -79,7 +85,11 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&req, msg, sizeof(req));
 
-
+			res.code = CMD_ERR_CODE_SUCCESS;
+			memcpy(res.uuid, req.uuid, sizeof(res.uuid));
+			res.year = req.year;
+			res.month = req.month;
+			_prss->get_days(res.uuid, res.year, res.month, res.days, sizeof(res.days) / sizeof(int), res.count);
 
 			session->push_send_packet(session->uuid(), uuid(), CMD_GET_DAYS_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
 		}
@@ -100,7 +110,12 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&req, msg, sizeof(req));
 
-
+			res.code = CMD_ERR_CODE_SUCCESS;
+			memcpy(res.uuid, req.uuid, sizeof(res.uuid));
+			res.year = req.year;
+			res.month = req.month;
+			res.day = req.day;
+			_prss->get_hours(res.uuid, res.year, res.month, res.day, res.hours, sizeof(res.hours) / sizeof(int), res.count);
 
 			session->push_send_packet(session->uuid(), uuid(), CMD_GET_HOURS_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
 		}
@@ -121,7 +136,13 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&req, msg, sizeof(req));
 
-
+			res.code = CMD_ERR_CODE_SUCCESS;
+			memcpy(res.uuid, req.uuid, sizeof(res.uuid));
+			res.year = req.year;
+			res.month = req.month;
+			res.day = req.day;
+			res.hour = req.hour;
+			_prss->get_minutes(res.uuid, res.year, res.month, res.day, res.hour, res.minutes, sizeof(res.minutes) / sizeof(int), res.count);
 
 			session->push_send_packet(session->uuid(), uuid(), CMD_GET_MINUTES_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
 		}
@@ -142,7 +163,14 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&req, msg, sizeof(req));
 
-
+			res.code = CMD_ERR_CODE_SUCCESS;
+			memcpy(res.uuid, req.uuid, sizeof(res.uuid));
+			res.year = req.year;
+			res.month = req.month;
+			res.day = req.day;
+			res.hour = req.hour;
+			res.minute = req.minute;
+			_prss->get_seconds(res.uuid, res.year, res.month, res.day, res.hour, res.minute, res.seconds, sizeof(res.seconds) / sizeof(int), res.count);
 
 			session->push_send_packet(session->uuid(), uuid(), CMD_GET_SECONDS_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
 		}
