@@ -98,6 +98,7 @@
     <ClInclude Include="include\iocp_client.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\dk_ipc_base\source\command.cpp" />
     <ClCompile Include="..\dk_ipc_base\source\iocp_handler.cpp" />
     <ClCompile Include="..\dk_ipc_base\source\session.cpp" />
     <ClCompile Include="source\abstract_ipc_client.cpp" />

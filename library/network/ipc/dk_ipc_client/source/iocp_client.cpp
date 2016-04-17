@@ -83,7 +83,7 @@ std::shared_ptr<ic::session> ic::iocp_client::connect(const char * address, int3
 		}
 
 		std::shared_ptr<ic::session> session = allocate_session(socket);
-		if (!_iocp->associate((session)->get_fd(), reinterpret_cast<ULONG_PTR>(session.get()), &err_code))
+		if (!_iocp->associate((session)->fd(), reinterpret_cast<ULONG_PTR>(session.get()), &err_code))
 		{
 			return std::shared_ptr<ic::session>();
 		}
@@ -106,7 +106,7 @@ bool ic::iocp_client::disconnect(void)
 bool ic::iocp_client::recv_completion_callback(std::shared_ptr<ic::session> session, int32_t nbytes)
 {
 	session->push_recv_packet(session->recv_context()->buffer, nbytes);
-	if (session->get_fd() != INVALID_SOCKET && session->recv_context().get() != NULL && session->send_context().get() != NULL)
+	if (session->fd() != INVALID_SOCKET && session->recv_context().get() != NULL && session->send_context().get() != NULL)
 	{
 		bool value = post_recv(session);
 		if (!value)
@@ -134,11 +134,11 @@ bool ic::iocp_client::post_recv(std::shared_ptr<ic::session> session)
 	DWORD nbytes = 0;
 	DWORD flags = 0;
 
-	if ((session->get_fd() != INVALID_SOCKET))
+	if ((session->fd() != INVALID_SOCKET))
 	{
 		session->recv_context()->wsabuf.buf = session->recv_context()->buffer;
 		session->recv_context()->wsabuf.len = MTU;
-		int value = WSARecv(session->get_fd(), &(session->recv_context()->wsabuf), 1, &nbytes, &flags, &(session->recv_context()->overlapped), NULL);
+		int value = WSARecv(session->fd(), &(session->recv_context()->wsabuf), 1, &nbytes, &flags, &(session->recv_context()->overlapped), NULL);
 		if (SOCKET_ERROR == value)
 		{
 			int err_code = WSAGetLastError();
@@ -158,7 +158,7 @@ bool ic::iocp_client::post_send(std::shared_ptr<ic::session> session)
 	DWORD flags = 0;
 
 	bool status = true;
-	if ((session->get_fd() != INVALID_SOCKET))
+	if ((session->fd() != INVALID_SOCKET))
 	{
 		int32_t length = 0;
 		session->front_send_packet(session->send_context()->buffer, length);
@@ -166,7 +166,7 @@ bool ic::iocp_client::post_send(std::shared_ptr<ic::session> session)
 		{
 			session->send_context()->wsabuf.buf = session->send_context()->buffer;
 			session->send_context()->wsabuf.len = length;
-			int32_t value = WSASend(session->get_fd(), &(session->send_context()->wsabuf), 1, &nbytes, flags, &(session->send_context()->overlapped), NULL);
+			int32_t value = WSASend(session->fd(), &(session->send_context()->wsabuf), 1, &nbytes, flags, &(session->send_context()->overlapped), NULL);
 			if (SOCKET_ERROR == value)
 			{
 				int32_t err_code = WSAGetLastError();

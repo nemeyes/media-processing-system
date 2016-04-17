@@ -13,8 +13,11 @@ namespace ic
 	{
 	public:
 		abstract_ipc_server(dk_ipc_server * front, const char * uuid);
+		abstract_ipc_server(dk_ipc_server * front);
 		virtual ~abstract_ipc_server(void);
 
+		const char * uuid(void);
+		void uuid(const char * uuid);
 		bool start(char * address, int32_t port_number);
 		bool stop(void);
 

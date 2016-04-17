@@ -21,14 +21,14 @@ ic::dk_ipc_client::~dk_ipc_client(void)
 	_client = nullptr;
 }
 
-bool ic::dk_ipc_client::connect(char * address, int32_t port_number)
+bool ic::dk_ipc_client::connect(char * address, int32_t port_number, bool reconnection)
 {
-	return _client->connect(address, port_number);
+	return _client->connect(address, port_number, reconnection);
 }
 
 bool ic::dk_ipc_client::disconnect(void)
 {
-	return _client->disconnect();
+	return _client->disconnect(false);
 }
 
 void ic::dk_ipc_client::data_request(char * dst, int32_t command_id, char * msg, int32_t length)

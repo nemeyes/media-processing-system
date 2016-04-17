@@ -23,11 +23,13 @@ ic::abstract_ipc_client::abstract_ipc_client(dk_ipc_client * front)
 #if defined(WITH_LEAVE_CMD)
 	add_command(new leave_res_cmd(this));
 #endif
+#if defined(WITH_KEEPALIVE)
 	add_command(new keepalive_req_cmd(this));
 	add_command(new keepalive_res_cmd(this));
+#endif
 }
 
-ic::abstract_ipc_client::abstract_ipc_client(const char * uuid, dk_ipc_client * front) 
+ic::abstract_ipc_client::abstract_ipc_client(const char * uuid, dk_ipc_client * front)
 	: _front(front)
 	, _port_number(15000)
 	, _retry_connection(true)
@@ -101,7 +103,12 @@ bool ic::abstract_ipc_client::disconnect(bool retry_connection)
 	return true;
 }
 
-void ic::abstract_ipc_client::set_uuid(const char * uuid)
+const char * ic::abstract_ipc_client::uuid(void)
+{
+	return _uuid;
+}
+
+void ic::abstract_ipc_client::uuid(const char * uuid)
 {
 	strcpy_s(_uuid, uuid);
 }
@@ -111,7 +118,7 @@ void ic::abstract_ipc_client::data_indication_callback(const char * dst, const c
 	std::map<int32_t, abstract_command*>::iterator iter = _commands.find(command_id);
 	if (iter != _commands.end())
 	{
-		if (session->get_assoc_flag() || (command_id == CMD_KEEPALIVE_REQUEST) || (command_id == CMD_KEEPALIVE_RESPONSE) || (command_id == CMD_ASSOC_RESPONSE))
+		if (session->assoc_flag() || (command_id == CMD_KEEPALIVE_REQUEST) || (command_id == CMD_KEEPALIVE_RESPONSE) || (command_id == CMD_ASSOC_RESPONSE))
 		{
 			abstract_command * command = (*iter).second;
 			command->execute(dst, src, command_id, msg, length, session);
@@ -126,7 +133,7 @@ void ic::abstract_ipc_client::data_request(char * dst, int32_t command_id, char 
 
 void ic::abstract_ipc_client::data_request(char * dst, char * src, int32_t command_id, char * msg, int32_t length)
 {
-	_session->push_send_packet(command_id, msg, length);
+	_session->push_send_packet(dst, src, command_id, msg, length);
 }
 
 void ic::abstract_ipc_client::data_request(std::shared_ptr<ic::session> session)
@@ -138,6 +145,8 @@ void ic::abstract_ipc_client::add_command(abstract_command * command)
 {
 	if (command != nullptr)
 	{
+		if (command->get_processor() == nullptr)
+			command->set_processor(this);
 		_commands.insert(std::make_pair(command->command_id(), command));
 	}
 }
@@ -195,10 +204,10 @@ void ic::abstract_ipc_client::process(void)
 		_run = true;
 		while (_run && _session)
 		{
-			if(!_session->get_assoc_flag())
+			if (!_session->assoc_flag())
 			{
 				CMD_ASSOC_PAYLOAD_T payload;
-				_session->push_send_packet(CMD_ASSOC_REQUEST, reinterpret_cast<char*>(&payload), sizeof(CMD_ASSOC_PAYLOAD_T));
+				_session->push_send_packet(SERVER_UUID, _uuid, CMD_ASSOC_REQUEST, reinterpret_cast<char*>(&payload), sizeof(CMD_ASSOC_PAYLOAD_T));
 
 			}
 #if defined(WITH_KEEPALIVE)
@@ -208,7 +217,7 @@ void ic::abstract_ipc_client::process(void)
 				CMD_KEEPALIVE_PAYLOAD_T payload;
 				memset(&payload, 0x00, sizeof(CMD_KEEPALIVE_PAYLOAD_T));
 				payload.code = CMD_ERR_CODE_FAIL;
-				_session->push_send_packet(CMD_KEEPALIVE_REQUEST, reinterpret_cast<char*>(&payload), sizeof(CMD_KEEPALIVE_PAYLOAD_T));
+				_session->push_send_packet(SERVER_UUID, _uuid, CMD_KEEPALIVE_REQUEST, reinterpret_cast<char*>(&payload), sizeof(CMD_KEEPALIVE_PAYLOAD_T));
 				_session->update_hb_start_time();
 			}
 #endif

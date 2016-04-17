@@ -103,7 +103,7 @@ bool ic::session::shutdown_fd(void)
 #endif
 }
 
-void ic::session::push_send_packet(int32_t cmd, char * msg, int32_t length, bool post_send)
+void ic::session::push_send_packet(const char * dst, const char * src, int32_t cmd, char * msg, int32_t length, bool post_send)
 {
 	if (_send_queue.size()>size_t(_max_send_queue_size))
 	{
@@ -133,6 +133,8 @@ void ic::session::push_send_packet(int32_t cmd, char * msg, int32_t length, bool
 		if (i == (pkt_count - 1))//last packet			
 		{
 			pkt_payload_size = last_pkt_size;
+			strncpy_s(queue_pkt->header.dst, dst, sizeof(queue_pkt->header.dst));
+			strncpy_s(queue_pkt->header.src, src, sizeof(queue_pkt->header.src));
 			queue_pkt->header.seed = pkt_seed;
 			queue_pkt->header.seq = i;
 			queue_pkt->header.flag = FLAG_PKT_END;
@@ -143,6 +145,8 @@ void ic::session::push_send_packet(int32_t cmd, char * msg, int32_t length, bool
 		}
 		else
 		{
+			strncpy_s(queue_pkt->header.dst, dst, sizeof(queue_pkt->header.dst));
+			strncpy_s(queue_pkt->header.src, src, sizeof(queue_pkt->header.src));
 			queue_pkt->header.seed = pkt_seed;
 			queue_pkt->header.seq = i;
 			if (i == 0)
@@ -344,12 +348,12 @@ void ic::session::push_recv_packet(const char * msg, int32_t length)
 	} while (_recv_buffer_index>0);
 }
 
-SOCKET ic::session::get_fd(void)
+SOCKET ic::session::fd(void)
 {
 	return _fd;
 }
 
-void ic::session::set_fd(SOCKET fd)
+void ic::session::fd(SOCKET fd)
 {
 	_fd = fd;
 }
@@ -364,42 +368,42 @@ std::shared_ptr<ic::PER_IO_CONTEXT_T> ic::session::send_context(void)
 	return _send_context;
 }
 
-int32_t ic::session::get_mtu(void)
+int32_t ic::session::mtu(void)
 {
 	return _mtu;
 }
 
-void ic::session::set_mtu(int32_t mtu)
+void ic::session::mtu(int32_t mtu)
 {
 	_mtu = mtu;
 }
 
-const char * ic::session::get_ip(void)
+const char * ic::session::ip(void)
 {
 	return _ip;
 }
 
-const char * ic::session::get_uuid(void)
+const char * ic::session::uuid(void)
 {
 	return _uuid;
 }
 
-const char * ic::session::get_name(void)
+const char * ic::session::name(void)
 {
 	return _name;
 }
 
-void ic::session::set_ip(const char * ip)
+void ic::session::ip(const char * ip)
 {
 	strncpy_s(_ip, ip, sizeof(_ip));
 }
 
-void ic::session::set_uuid(const char * uuid)
+void ic::session::uuid(const char * uuid)
 {
 	strncpy_s(_uuid, uuid, sizeof(_uuid));
 }
 
-void ic::session::set_name(const char * name)
+void ic::session::name(const char * name)
 {
 	strncpy_s(_name, name, sizeof(_name));
 }
@@ -445,32 +449,32 @@ void ic::session::clear_recv_queue(void)
 	_recv_queue.clear();
 }
 
-bool ic::session::get_disconnect_flag(void) const
+bool ic::session::disconnect_flag(void) const
 {
 	return _disconnect;
 }
 
-void ic::session::set_disconnect_flag(bool flag)
+void ic::session::disconnect_flag(bool flag)
 {
 	_disconnect = flag;
 }
 
-bool ic::session::get_connected_flag(void) const
+bool ic::session::connected_flag(void) const
 {
 	return _connected;
 }
 
-void ic::session::set_connected_flag(bool flag)
+void ic::session::connected_flag(bool flag)
 {
 	_connected = flag;
 }
 
-bool ic::session::get_assoc_flag(void) const
+bool ic::session::assoc_flag(void) const
 {
 	return _associated;
 }
 
-void ic::session::set_assoc_flag(bool flag)
+void ic::session::assoc_flag(bool flag)
 {
 	_associated = flag;
 }
@@ -478,7 +482,7 @@ void ic::session::set_assoc_flag(bool flag)
 int32_t ic::session::get_hb_period_sec(void) const
 {
 #if defined(WIN32)
-	return _hb_period/1000;
+	return _hb_period / 1000;
 #else
 	return _hb_period;
 #endif
@@ -487,7 +491,7 @@ int32_t ic::session::get_hb_period_sec(void) const
 void ic::session::set_hb_period_sec(int32_t sec)
 {
 #if defined(WIN32)
-	_hb_period = sec*1000;
+	_hb_period = sec * 1000;
 #else
 	_hb_period = sec;
 #endif

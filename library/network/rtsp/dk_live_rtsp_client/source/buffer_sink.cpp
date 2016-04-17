@@ -159,21 +159,29 @@ void buffer_sink::after_getting_frame(unsigned frame_size, unsigned truncated_by
 			if (_vsmt == dk_live_rtsp_client::vsubmedia_type_h264)
 			{
 				const unsigned char start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
-				if (truncated_bytes > 0)
+				if ((_buffer[0] == start_code[0]) && (_buffer[1] == start_code[1]) && (_buffer[2] == start_code[2]) && (_buffer[3] == start_code[3]))
 				{
-					printf("the input frame data was too large for out buffer size\n");
-					memmove(_buffer + 4, _buffer, frame_size - 4);
+					add_data(_buffer, frame_size, timestamp);
 				}
 				else
 				{
-					truncated_bytes = (frame_size + 4) - _buffer_size;
-					if (truncated_bytes > 0 && (frame_size + 4) > _buffer_size)
-						memmove(_buffer + 4, _buffer, frame_size - truncated_bytes);
+					if (truncated_bytes > 0)
+					{
+						printf("the input frame data was too large for out buffer size\n");
+						memmove(_buffer + 4, _buffer, frame_size - 4);
+					}
 					else
-						memmove(_buffer + 4, _buffer, frame_size);
+					{
+						truncated_bytes = (frame_size + 4) - _buffer_size;
+						if (truncated_bytes > 0 && (frame_size + 4) > _buffer_size)
+							memmove(_buffer + 4, _buffer, frame_size - truncated_bytes);
+						else
+							memmove(_buffer + 4, _buffer, frame_size);
+					}
+					memmove(_buffer, start_code, sizeof(start_code));
+
+					add_data(_buffer, frame_size + sizeof(start_code), timestamp);
 				}
-				memmove(_buffer, start_code, sizeof(start_code));
-				add_data(_buffer, frame_size + sizeof(start_code), timestamp);
 			}
 		}
 		else if (_mt == dk_live_rtsp_client::media_type_audio)

@@ -9,7 +9,7 @@ public:
 	{
 		if (_lock == NULL || _lock == INVALID_HANDLE_VALUE)
 			return;
-		
+
 		::WaitForSingleObject(_lock, INFINITE);
 	}
 

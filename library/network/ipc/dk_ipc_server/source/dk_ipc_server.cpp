@@ -7,6 +7,11 @@ ic::dk_ipc_server::dk_ipc_server(const char * uuid)
 	_server = new abstract_ipc_server(this, uuid);
 }
 
+ic::dk_ipc_server::dk_ipc_server(void)
+{
+	_server = new abstract_ipc_server(this);
+}
+
 ic::dk_ipc_server::~dk_ipc_server(void)
 {
 	if (_server)
@@ -14,6 +19,11 @@ ic::dk_ipc_server::~dk_ipc_server(void)
 		delete _server;
 	}
 	_server = nullptr;
+}
+
+void ic::dk_ipc_server::uuid(const char * uuid)
+{
+	return _server->uuid(uuid);
 }
 
 bool ic::dk_ipc_server::start(char * address, int32_t port_number)

@@ -1,5 +1,10 @@
 <?xml version="1.0" standalone="yes"?>
 <streamer>
+	<control_server>
+		<port_number>15000</port_number>
+		<username></username>
+		<password></password>
+	</control_server>
 	<rtsp_server>
 		<port_number>554</port_number>
 		<username></username>

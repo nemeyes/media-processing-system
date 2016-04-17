@@ -2,9 +2,9 @@
 #include <iocp_io_context.h>
 #include <iocp_handler.h>
 #if defined(WITH_WORKING_AS_SERVER)
- #include "iocp_server.h"
+#include "iocp_server.h"
 #else
- #include "iocp_client.h"
+#include "iocp_client.h"
 #endif
 
 #if defined(WITH_WORKING_AS_SERVER)
@@ -23,7 +23,7 @@ ic::iocp_handler::iocp_handler(ic::iocp_client * client)
 
 ic::iocp_handler::~iocp_handler(void)
 {
-	if (_iocp_handle) 
+	if (_iocp_handle)
 		CloseHandle(_iocp_handle);
 
 	_iocp_handle = INVALID_HANDLE_VALUE;
@@ -82,7 +82,7 @@ bool ic::iocp_handler::post_completion_status(ULONG_PTR key, DWORD bytes_of_tran
 	{
 		*error_code = GetLastError();
 	}
-	return value?true:false;
+	return value ? true : false;
 }
 
 bool ic::iocp_handler::get_completion_status(ULONG_PTR * key, LPDWORD bytes_of_transfered, LPOVERLAPPED * overlapped, int32_t * error_code, DWORD waiting_time)
@@ -92,7 +92,7 @@ bool ic::iocp_handler::get_completion_status(ULONG_PTR * key, LPDWORD bytes_of_t
 	{
 		*error_code = GetLastError();
 	}
-	return value?true:false;
+	return value ? true : false;
 }
 
 void ic::iocp_handler::create_thread_pool(void)

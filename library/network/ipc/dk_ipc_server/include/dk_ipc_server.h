@@ -2,8 +2,19 @@
 #define _DK_IPC_SERVER_H_
 
 #include <cstdint>
+/*
+#if !defined(WIN32)
+#include <pthread.h>
+#define EXP_CLASS
+#else
 #include <winsock2.h>
 #include <windows.h>
+#if defined(EXPORT_LIB)
+#define EXP_CLASS __declspec(dllexport)
+#else
+#define EXP_CLASS __declspec(dllimport)
+#endif
+#endif*/
 
 namespace ic
 {
@@ -13,8 +24,10 @@ namespace ic
 	{
 	public:
 		dk_ipc_server(const char * uuid);
+		dk_ipc_server(void);
 		virtual ~dk_ipc_server(void);
 
+		void uuid(const char * uuid);
 		bool start(char * address, int32_t port_number);
 		bool stop(void);
 

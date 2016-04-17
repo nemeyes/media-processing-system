@@ -23,37 +23,37 @@ namespace ic
 
 		bool shutdown_fd(void);
 
-		void push_send_packet(int32_t cmd, char * msg, int32_t length, bool post_send=true);
+		void push_send_packet(const char * dst, const char * src, int32_t cmd, char * msg, int32_t length, bool post_send = true);
 		void push_front_send_packet(char * msg, int32_t length);
 		void front_send_packet(char * msg, int32_t & length);
 		void pop_front_send_packet(void);
 		void push_recv_packet(const char * msg, int32_t length);
 
-		SOCKET get_fd(void);
-		int32_t get_mtu(void);
-		void set_fd(SOCKET fd);
-		void set_mtu(int32_t mtu);
+		SOCKET fd(void);
+		int32_t mtu(void);
+		void fd(SOCKET fd);
+		void mtu(int32_t mtu);
 
 		std::shared_ptr<ic::PER_IO_CONTEXT_T> recv_context(void);
 		std::shared_ptr<ic::PER_IO_CONTEXT_T> send_context(void);
 
-		const char * get_ip(void);
-		const char * get_uuid(void);
-		const char * get_name(void);
+		const char * ip(void);
+		const char * uuid(void);
+		const char * name(void);
 
-		void set_ip(const char * ip);
-		void set_uuid(const char * uuid);
-		void set_name(const char * name);
+		void ip(const char * ip);
+		void uuid(const char * uuid);
+		void name(const char * name);
 
 		void clear_send_queue(void);
 		void clear_recv_queue(void);
 
-		bool get_disconnect_flag(void) const;
-		void set_disconnect_flag(bool flag);
-		bool get_connected_flag(void) const;
-		void set_connected_flag(bool flag);
-		bool get_assoc_flag(void) const;
-		void set_assoc_flag(bool flag);
+		bool disconnect_flag(void) const;
+		void disconnect_flag(bool flag);
+		bool connected_flag(void) const;
+		void connected_flag(bool flag);
+		bool assoc_flag(void) const;
+		void assoc_flag(bool flag);
 
 
 

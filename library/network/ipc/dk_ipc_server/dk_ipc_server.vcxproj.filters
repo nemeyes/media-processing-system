@@ -65,5 +65,8 @@
     <ClCompile Include="..\dk_ipc_base\source\session.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="..\dk_ipc_base\source\command.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -2,8 +2,6 @@
 #define _DK_IPC_CLIENT_H_
 
 #include <cstdint>
-#include <winsock2.h>
-#include <windows.h>
 
 namespace ic
 {
@@ -16,8 +14,8 @@ namespace ic
 		dk_ipc_client(const char * uuid);
 		virtual ~dk_ipc_client(void);
 
-		bool connect(char * address, int32_t port_number);
-		bool disconnect(void);
+		virtual bool connect(char * address, int32_t port_number, bool reconnection = true);
+		virtual bool disconnect(void);
 
 		void data_request(char * dst, int32_t command_id, char * msg, int32_t length);
 		void add_command(abstract_command * command);

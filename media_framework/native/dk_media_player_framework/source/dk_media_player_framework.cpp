@@ -4,7 +4,7 @@
 #include <dk_auto_lock.h>
 #include <dk_string_helper.h>
 #include <map>
-#include "resource.h"
+//#include "resource.h"
 
 typedef struct _live_source_info_t
 {

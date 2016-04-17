@@ -16,6 +16,9 @@
     <Filter Include="streamer">
       <UniqueIdentifier>{2aa71d33-3c3c-4cff-8dca-7cb96e4fa011}</UniqueIdentifier>
     </Filter>
+    <Filter Include="commands">
+      <UniqueIdentifier>{d0250091-6932-4a36-9d7c-7a46e95fd6d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -38,6 +41,12 @@
     </ClInclude>
     <ClInclude Include="streamer\dk_streamer_service.h">
       <Filter>streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ParallelRecordBase\include\commands_payload.h">
+      <Filter>commands</Filter>
+    </ClInclude>
+    <ClInclude Include="commands\commands_server.h">
+      <Filter>commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

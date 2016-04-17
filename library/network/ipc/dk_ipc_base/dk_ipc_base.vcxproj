@@ -87,6 +87,7 @@
     <ClInclude Include="include\session.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\command.cpp" />
     <ClCompile Include="source\iocp_handler.cpp" />
     <ClCompile Include="source\session.cpp" />
   </ItemGroup>

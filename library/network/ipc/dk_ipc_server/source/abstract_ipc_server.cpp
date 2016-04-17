@@ -25,8 +25,36 @@ ic::abstract_ipc_server::abstract_ipc_server(dk_ipc_server * front, const char *
 #if defined(WITH_LEAVE_CMD)
 	add_command(new leave_req_cmd(this));
 #endif
+#if defined(WITH_KEEPALIVE)
 	add_command(new keepalive_req_cmd(this));
 	add_command(new keepalive_res_cmd(this));
+#endif
+}
+
+ic::abstract_ipc_server::abstract_ipc_server(dk_ipc_server * front)
+	: _front(front)
+	, _sequence(0)
+	, _port_number(15000)
+	, _thread(INVALID_HANDLE_VALUE)
+	, _run(false)
+{
+	memset(_address, 0x00, sizeof(_address));
+
+	strcpy_s(_uuid, SERVER_UUID);
+	_server = new iocp_server(this);
+	_server->initialize();
+
+	_session_lock = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+	::SetEvent(_session_lock);
+
+	add_command(new assoc_req_cmd(this));
+#if defined(WITH_LEAVE_CMD)
+	add_command(new leave_req_cmd(this));
+#endif
+#if defined(WITH_KEEPALIVE)
+	add_command(new keepalive_req_cmd(this));
+	add_command(new keepalive_res_cmd(this));
+#endif
 }
 
 ic::abstract_ipc_server::~abstract_ipc_server(void)
@@ -42,6 +70,16 @@ ic::abstract_ipc_server::~abstract_ipc_server(void)
 	clear_command_list();
 	::CloseHandle(_session_lock);
 	_session_lock = INVALID_HANDLE_VALUE;
+}
+
+const char * ic::abstract_ipc_server::uuid(void)
+{
+	return _uuid;
+}
+
+void ic::abstract_ipc_server::uuid(const char * uuid)
+{
+	strncpy_s(_uuid, uuid, sizeof(uuid));
 }
 
 bool ic::abstract_ipc_server::start(char * address, int32_t port_number)
@@ -72,7 +110,7 @@ void ic::abstract_ipc_server::data_indication_callback(const char * dst, const c
 	std::map<int32_t, abstract_command*>::iterator iter = _commands.find(command_id);
 	if (iter != _commands.end())
 	{
-		if (session->get_assoc_flag() || (command_id == CMD_KEEPALIVE_REQUEST) || (command_id == CMD_KEEPALIVE_RESPONSE) || (command_id == CMD_ASSOC_REQUEST))
+		if (session->assoc_flag() || (command_id == CMD_KEEPALIVE_REQUEST) || (command_id == CMD_KEEPALIVE_RESPONSE) || (command_id == CMD_ASSOC_REQUEST))
 		{
 			abstract_command * command = (*iter).second;
 			command->execute(dst, src, command_id, msg, length, session);
@@ -95,8 +133,14 @@ void ic::abstract_ipc_server::data_request(char * dst, char * src, int32_t comma
 
 	if (iter != _sessions.end())
 	{
+		char src_uuid[64] = { 0 };
+		if (!strncmp(_uuid, dst, sizeof(_uuid) - 1) || !strncmp(SERVER_UUID, dst, sizeof(_uuid) - 1))
+			strncpy_s(src_uuid, _uuid, sizeof(src_uuid) - 1);
+		else
+			strncpy_s(src_uuid, dst, sizeof(src_uuid) - 1);
+
 		std::shared_ptr<ic::session> session = (*iter).second;
-		session->push_send_packet(command_id, msg, length);
+		session->push_send_packet(_uuid, src_uuid, command_id, msg, length);
 	}
 }
 
@@ -113,7 +157,7 @@ const char * ic::abstract_ipc_server::check_regstered_client(std::shared_ptr<ic:
 	for (iter = _sessions.begin(); iter != _sessions.end(); iter++)
 	{
 		std::shared_ptr<ic::session> temp = (*iter).second;
-		if (temp->get_fd() == session->get_fd())
+		if (temp->fd() == session->fd())
 		{
 			break;
 		}
@@ -187,6 +231,8 @@ void ic::abstract_ipc_server::add_command(abstract_command * command)
 {
 	if (command != nullptr)
 	{
+		if (command->get_processor() == nullptr)
+			command->set_processor(this);
 		_commands.insert(std::make_pair(command->command_id(), command));
 	}
 }
@@ -250,7 +296,7 @@ void ic::abstract_ipc_server::process(void)
 				CMD_KEEPALIVE_PAYLOAD_T payload;
 				memset(&payload, 0x00, sizeof(CMD_KEEPALIVE_PAYLOAD_T));
 				payload.code = CMD_ERR_CODE_FAIL;
-				session->push_send_packet(CMD_KEEPALIVE_REQUEST, reinterpret_cast<char*>(&payload), sizeof(CMD_KEEPALIVE_PAYLOAD_T));
+				session->push_send_packet(session->uuid(), _uuid, CMD_KEEPALIVE_REQUEST, reinterpret_cast<char*>(&payload), sizeof(CMD_KEEPALIVE_PAYLOAD_T));
 				session->update_hb_start_time();
 			}
 		}
@@ -268,7 +314,7 @@ void ic::abstract_ipc_server::process(void)
 			CMD_LEAVE_PAYLOAD_T payload;
 			memset(&payload, 0x00, sizeof(CMD_LEAVE_PAYLOAD_T));
 			payload.code = CMD_ERR_CODE_SUCCESS;
-			session->push_send_packet(CMD_LEAVE_INDICATION, reinterpret_cast<char*>(&payload), sizeof(CMD_LEAVE_PAYLOAD_T));
+			session->push_send_packet(session->uuid(), _uuid, CMD_LEAVE_INDICATION, reinterpret_cast<char*>(&payload), sizeof(CMD_LEAVE_PAYLOAD_T));
 		}
 	}
 	_server->stop();

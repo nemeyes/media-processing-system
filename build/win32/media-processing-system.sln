@@ -437,6 +437,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_x264_0.148.x_encode_filt
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x264_0.148.x_frc_tester", "..\..\application\codec_ccu\x264_0.148.x_frc_tester\x264_0.148.x_frc_tester.vcxproj", "{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordMediaClient", "..\..\application\recorder\ParallelRecordMediaClient\ParallelRecordMediaClient.vcxproj", "{31772E29-728B-47A5-B3A6-799B1251D3BE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordBase", "..\..\application\recorder\ParallelRecordBase\ParallelRecordBase.vcxproj", "{78E13706-B468-481C-B433-067460DB370F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1597,6 +1601,18 @@ Global
 		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Release|Win32.ActiveCfg = Release|Win32
 		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Release|Win32.Build.0 = Release|Win32
 		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F}.Release|x64.ActiveCfg = Release|Win32
+		{31772E29-728B-47A5-B3A6-799B1251D3BE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{31772E29-728B-47A5-B3A6-799B1251D3BE}.Debug|Win32.Build.0 = Debug|Win32
+		{31772E29-728B-47A5-B3A6-799B1251D3BE}.Debug|x64.ActiveCfg = Debug|Win32
+		{31772E29-728B-47A5-B3A6-799B1251D3BE}.Release|Win32.ActiveCfg = Release|Win32
+		{31772E29-728B-47A5-B3A6-799B1251D3BE}.Release|Win32.Build.0 = Release|Win32
+		{31772E29-728B-47A5-B3A6-799B1251D3BE}.Release|x64.ActiveCfg = Release|Win32
+		{78E13706-B468-481C-B433-067460DB370F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{78E13706-B468-481C-B433-067460DB370F}.Debug|Win32.Build.0 = Debug|Win32
+		{78E13706-B468-481C-B433-067460DB370F}.Debug|x64.ActiveCfg = Debug|Win32
+		{78E13706-B468-481C-B433-067460DB370F}.Release|Win32.ActiveCfg = Release|Win32
+		{78E13706-B468-481C-B433-067460DB370F}.Release|Win32.Build.0 = Release|Win32
+		{78E13706-B468-481C-B433-067460DB370F}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1815,5 +1831,7 @@ Global
 		{46B3BE90-DEDD-483A-A957-EEF3A32922BB} = {88E8442F-7BBA-49E5-B74B-2D2E5C48031A}
 		{A4122B87-BD57-4A80-AD47-73705B48AE3A} = {0FAF5728-06B3-4691-B094-375076752465}
 		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F} = {9E70D9C4-F055-4304-9815-4A15C54CA941}
+		{31772E29-728B-47A5-B3A6-799B1251D3BE} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
+		{78E13706-B468-481C-B433-067460DB370F} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
 	EndGlobalSection
 EndGlobal

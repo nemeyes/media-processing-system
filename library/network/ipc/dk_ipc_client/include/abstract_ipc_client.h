@@ -18,10 +18,11 @@ namespace ic
 		abstract_ipc_client(const char * uuid, dk_ipc_client * front);
 		virtual ~abstract_ipc_client(void);
 
-		bool connect(const char * address, int32_t port_number, bool retry_connection=true);
+		bool connect(const char * address, int32_t port_number, bool retry_connection = true);
 		bool disconnect(bool retry_connection = false);
 
-		void set_uuid(const char * uuid);
+		const char * uuid(void);
+		void uuid(const char * uuid);
 
 		void data_indication_callback(const char * dst, const char * src, int32_t command_id, const char * msg, size_t length, std::shared_ptr<ic::session> session);
 		void data_request(char * dst, int32_t command_id, char * msg, int32_t length);
@@ -56,7 +57,7 @@ namespace ic
 
 		bool _retry_connection;
 		bool _connected;
-		
+
 	};
 };
 
