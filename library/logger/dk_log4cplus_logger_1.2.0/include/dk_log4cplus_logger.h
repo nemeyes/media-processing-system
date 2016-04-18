@@ -11,16 +11,18 @@
 #else
 # define EXP_LOG4CPLUS_LOGGER_DLL
 #endif
+#include <string>
 
 namespace log4cplus
 {
 	class ConfigureAndWatchThread;
-};
+}
 
 class EXP_LOG4CPLUS_LOGGER_DLL dk_log4cplus_logger
 {
 public:
-	static dk_log4cplus_logger & instance(void);
+	dk_log4cplus_logger(const char * configuration_path);
+	virtual ~dk_log4cplus_logger(void);
 
 	void make_system_info_log(const char * secion, const char * fmt, ...);
 	void make_system_trace_log(const char * secion, const char * fmt, ...);
@@ -39,15 +41,8 @@ public:
 	*/
 
 private:
-	static void printchar(char ** str, int c);
-	static int prints(char ** out, const char * string, int width, int pad);
-	static int printi(char ** out, int i, int b, int sg, int width, int pad, int letbase);
-	static int print(char **out, const char *format, va_list args);
-private:
-	dk_log4cplus_logger(void);
 	dk_log4cplus_logger(const dk_log4cplus_logger & clone);
-	virtual ~dk_log4cplus_logger(void);
-
+	
 private:
 	log4cplus::ConfigureAndWatchThread * _configure_thread;
 };

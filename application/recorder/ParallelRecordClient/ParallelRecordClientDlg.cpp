@@ -60,6 +60,13 @@ void CParallelRecordClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_PARALLEL_RECORDER_PORT_NUMBER, _parallel_recorder_port_number);
 	DDX_Control(pDX, IDC_EDIT_PARALLEL_RECORDER_USERNAME, _parallel_recorder_username);
 	DDX_Control(pDX, IDC_EDIT_PARALLEL_RECORDER_PASSWORD, _parallel_recorder_password);
+	DDX_Control(pDX, IDC_EDIT_UUID, _uuid);
+	DDX_Control(pDX, IDC_COMBO_RECORDING_YEARS, _recording_years);
+	DDX_Control(pDX, IDC_COMBO_RECORDING_MONTHS, _recording_months);
+	DDX_Control(pDX, IDC_COMBO_RECORDING_DAYS, _recording_days);
+	DDX_Control(pDX, IDC_COMBO_RECORDING_HOURS, _recording_hours);
+	DDX_Control(pDX, IDC_COMBO_MINUTES, _recording_minutes);
+	DDX_Control(pDX, IDC_COMBO6, _recording_seconds);
 }
 
 BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
@@ -68,6 +75,14 @@ BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_PARALLEL_RECORDER_CONNECT, &CParallelRecordClientDlg::OnBnClickedButtonParallelRecorderConnect)
 	ON_BN_CLICKED(IDC_BUTTON_PARALLEL_RECORDER_DISCONNECT, &CParallelRecordClientDlg::OnBnClickedButtonParallelRecorderDisconnect)
+	ON_BN_CLICKED(IDC_BUTTON_GET_RECORDING_YEAR, &CParallelRecordClientDlg::OnBnClickedButtonGetRecordingYears)
+	ON_BN_CLICKED(IDC_BUTTON_START_PLAYBACK, &CParallelRecordClientDlg::OnBnClickedButtonStartPlayback)
+	ON_BN_CLICKED(IDC_BUTTON_STOP_PLAYBACK, &CParallelRecordClientDlg::OnBnClickedButtonStopPlayback)
+	ON_CBN_SELCHANGE(IDC_COMBO_RECORDING_YEARS, &CParallelRecordClientDlg::OnCbnSelchangeComboRecordingYears)
+	ON_CBN_SELCHANGE(IDC_COMBO_RECORDING_MONTHS, &CParallelRecordClientDlg::OnCbnSelchangeComboRecordingMonths)
+	ON_CBN_SELCHANGE(IDC_COMBO_RECORDING_DAYS, &CParallelRecordClientDlg::OnCbnSelchangeComboRecordingDays)
+	ON_CBN_SELCHANGE(IDC_COMBO_RECORDING_HOURS, &CParallelRecordClientDlg::OnCbnSelchangeComboRecordingHours)
+	ON_CBN_SELCHANGE(IDC_COMBO_MINUTES, &CParallelRecordClientDlg::OnCbnSelchangeComboMinutes)
 END_MESSAGE_MAP()
 
 
@@ -107,6 +122,8 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	_parallel_recorder_port_number.SetWindowText(L"15000");
 	_parallel_recorder_username.SetWindowTextW(L"root");
 	_parallel_recorder_password.SetWindowTextW(L"pass");
+
+	_uuid.SetWindowTextW(L"CH1");
 
 	PRMC_Initialize(GetSafeHwnd());
 	index_1 = -1;
@@ -295,3 +312,118 @@ void CParallelRecordClientDlg::OnBnClickedButtonParallelRecorderDisconnect()
 		wnd->EnableWindow(FALSE);
 	}
 }
+
+
+void CParallelRecordClientDlg::OnBnClickedButtonGetRecordingYears()
+{
+	// TODO: Add your control notification handler code here
+	_recording_years.ResetContent();
+
+	CString uuid;
+	_uuid.GetWindowTextW(uuid);
+
+	if (uuid.GetLength() > 0)
+	{
+		int years[10] = { 0 };
+		int size = 0;
+		PRMC_GetYears(L"127.0.0.1", (LPCWSTR)uuid, years, sizeof(years) / sizeof(int), size);
+
+		_recording_years.InsertString(0, L"Select");
+		for (int index = 0; index < size; index++)
+		{
+			wchar_t str_year[10] = { 0 };
+			_sntprintf_s(str_year, sizeof(str_year) / sizeof(wchar_t), L"%d", years[index]);
+			_recording_years.InsertString(index + 1, str_year);
+		}
+		_recording_years.SetCurSel(0);
+	}
+}
+
+void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingYears()
+{
+	// TODO: Add your control notification handler code here
+	_recording_months.ResetContent();
+	CString uuid;
+	_uuid.GetWindowTextW(uuid);
+
+	if (uuid.GetLength()>0)
+	{
+		CString str_year;
+		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
+		if (wcscmp(L"Select", str_year))
+		{
+			int year = _ttoi(str_year);
+			int months[12] = { 0 };
+			int size = 0;
+			PRMC_GetMonths(L"127.0.0.1", (LPCWSTR)uuid, year, months, sizeof(months) / sizeof(int), size);
+
+			_recording_months.InsertString(0, L"Select");
+			for (int index = 0; index < size; index++)
+			{
+				wchar_t str_month[10] = { 0 };
+				_sntprintf_s(str_month, sizeof(str_month) / sizeof(wchar_t), L"%d", months[index]);
+				_recording_months.InsertString(index + 1, str_month);
+			}
+			_recording_months.SetCurSel(0);
+		}
+	}
+}
+
+void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingMonths()
+{
+	// TODO: Add your control notification handler code here
+	_recording_days.ResetContent();
+	CString uuid;
+	_uuid.GetWindowTextW(uuid);
+
+	if (uuid.GetLength()>0)
+	{
+		CString str_year, str_month;
+		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
+		_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
+		if (wcscmp(L"Select", str_year) && wcscmp(L"Select", str_month))
+		{
+			int year = _ttoi(str_year);
+			int month = _ttoi(str_month);
+			int days[31] = { 0 };
+			int size = 0;
+			PRMC_GetDays(L"127.0.0.1", (LPCWSTR)uuid, year, month, days, sizeof(days) / sizeof(int), size);
+
+			_recording_days.InsertString(0, L"Select");
+			for (int index = 0; index < size; index++)
+			{
+				wchar_t str_day[10] = { 0 };
+				_sntprintf_s(str_day, sizeof(str_day) / sizeof(wchar_t), L"%d", days[index]);
+				_recording_days.InsertString(index + 1, str_day);
+			}
+			_recording_days.SetCurSel(0);
+		}
+	}
+}
+
+void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingDays()
+{
+	// TODO: Add your control notification handler code here
+}
+
+void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingHours()
+{
+	// TODO: Add your control notification handler code here
+}
+
+void CParallelRecordClientDlg::OnCbnSelchangeComboMinutes()
+{
+	// TODO: Add your control notification handler code here
+}
+
+void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CParallelRecordClientDlg::OnBnClickedButtonStopPlayback()
+{
+	// TODO: Add your control notification handler code here
+}
+

@@ -62,7 +62,7 @@ bool media_source_reader::open(const char * stream_name, long long timestamp, me
 
 			char time[260] = { 0 };
 			get_time_from_elapsed_msec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
-			dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", time);
+			//dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", time);
 
 			bool result = _record_module_seeker.seek(single_media_source_path, elapsed_seek_time_millsec);
 			if (!result)

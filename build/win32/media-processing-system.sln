@@ -441,6 +441,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordMediaClient",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordBase", "..\..\application\recorder\ParallelRecordBase\ParallelRecordBase.vcxproj", "{78E13706-B468-481C-B433-067460DB370F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_log4cplus_logger_1.1.2", "..\..\library\logger\dk_log4cplus_logger_1.1.2\dk_log4cplus_logger_1.1.2.vcxproj", "{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1613,6 +1615,12 @@ Global
 		{78E13706-B468-481C-B433-067460DB370F}.Release|Win32.ActiveCfg = Release|Win32
 		{78E13706-B468-481C-B433-067460DB370F}.Release|Win32.Build.0 = Release|Win32
 		{78E13706-B468-481C-B433-067460DB370F}.Release|x64.ActiveCfg = Release|Win32
+		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Debug|Win32.Build.0 = Debug|Win32
+		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Debug|x64.ActiveCfg = Debug|Win32
+		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Release|Win32.ActiveCfg = Release|Win32
+		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Release|Win32.Build.0 = Release|Win32
+		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1833,5 +1841,6 @@ Global
 		{FA6F8BC6-8E20-4BB2-B086-A2A9E076977F} = {9E70D9C4-F055-4304-9815-4A15C54CA941}
 		{31772E29-728B-47A5-B3A6-799B1251D3BE} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
 		{78E13706-B468-481C-B433-067460DB370F} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
+		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2} = {4E9AEA7D-C35B-4A64-B6BA-C1B43A810419}
 	EndGlobalSection
 EndGlobal

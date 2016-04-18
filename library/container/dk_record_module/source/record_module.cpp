@@ -587,7 +587,7 @@ void record_module::write_bitstream(dk_record_module::nalu_type naltype, uint8_t
 
 	char time[260] = { 0 };
 	get_time_from_elapsed_msec_from_epoch(timestamp, time, sizeof(time));
-	dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.recorder", "time is %s", time);
+	//dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.recorder", "time is %s", time);
 }
 
 void record_module::write_header_time(long long start_time, long long end_time)

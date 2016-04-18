@@ -34,6 +34,7 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&res, msg, sizeof(res));
 
+			_prsc->set_years(res.uuid, res.years, res.count);
 		}
 	};
 
@@ -51,6 +52,7 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&res, msg, sizeof(res));
 
+			_prsc->set_months(res.uuid, res.year, res.months, res.count);
 		}
 	};
 
@@ -67,6 +69,7 @@ namespace ic
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&res, msg, sizeof(res));
 
+			_prsc->set_days(res.uuid, res.year, res.month, res.days, res.count);
 		}
 	};
 

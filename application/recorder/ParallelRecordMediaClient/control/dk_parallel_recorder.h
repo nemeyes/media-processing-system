@@ -63,11 +63,15 @@ typedef struct _parallel_recorder_t
 	dk_parallel_recorder_controller * controller;
 	std::map<int, single_media_source_t*> media_sources;
 	bool connected;
+	bool waiting_request;
+	bool waiting_response;
 	_parallel_recorder_t(void)
 		: port_number(15000)
 		, media_source_index_generator(0)
 		, controller(nullptr)
 		, connected(false)
+		, waiting_request(false)
+		, waiting_response(false)
 	{
 		memset(url, 0x00, sizeof(url));
 		memset(username, 0x00, sizeof(username));

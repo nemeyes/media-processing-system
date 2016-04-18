@@ -7,8 +7,6 @@
 #include "ParallelRecordStreamerDlg.h"
 #include "afxdialogex.h"
 
-#include "dk_streamer_service.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -198,7 +196,7 @@ void CParallelRecordStreamerDlg::StartStreaming(void)
 {
 	if (!_is_streaming)
 	{
-		dk_streamer_service::instance().start_streaming();
+		_streamer_service.start_streaming();
 
 		CWnd *wnd = GetDlgItem(IDC_BUTTON_START);
 		wnd->EnableWindow(FALSE);
@@ -213,7 +211,7 @@ void CParallelRecordStreamerDlg::StopStreaming(void)
 {
 	if (_is_streaming)
 	{
-		dk_streamer_service::instance().stop_streaming();
+		_streamer_service.stop_streaming();
 
 		CWnd *wnd = GetDlgItem(IDC_BUTTON_START);
 		wnd->EnableWindow(TRUE);

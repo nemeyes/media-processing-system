@@ -85,11 +85,11 @@ int PRMC_Connect(const wchar_t * url, int port_number, const wchar_t * username,
 	if (!sock_connected)
 		result = PRMC_FAIL;
 
-	for (int index = 0; index < 60; index++)
+	for (int index = 0; index < 100; index++)
 	{
 		if (single_recorder_info->connected)
 			break;
-		::Sleep(100);
+		::Sleep(10);
 	}
 
 	if (!single_recorder_info->connected)
@@ -170,7 +170,7 @@ int PRMC_Disconnect(const wchar_t * url)
 				}
 			}
 			single_recorder_info->media_sources.clear();
-			if (single_recorder_info->connected)
+			if (single_recorder_info->connected && single_recorder_info->controller)
 			{
 				single_recorder_info->controller->disconnect();
 				single_recorder_info->connected = false;
@@ -206,11 +206,20 @@ int PRMC_GetYears(const wchar_t * url, const wchar_t * uuid, int years[], int ca
 	iter = g_parallel_recorders.find(ascii_url);
 	if (iter != g_parallel_recorders.end())
 	{
-		parallel_recorder_t * single_recorder_info = iter->second;
-		if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+		char * ascii_uuid = 0;
+		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
-
+			parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				single_recorder_info->controller->get_years(ascii_uuid, years, capacity, size);
+				result = PRMC_SUCCESS;
+			}
 		}
+		if (ascii_uuid)
+			free(ascii_uuid);
+		ascii_uuid = 0;
 	}
 
 	if (ascii_url)
@@ -235,11 +244,20 @@ int PRMC_GetMonths(const wchar_t * url, const wchar_t * uuid, int year, int mont
 	iter = g_parallel_recorders.find(ascii_url);
 	if (iter != g_parallel_recorders.end())
 	{
-		parallel_recorder_t * single_recorder_info = iter->second;
-		if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+		char * ascii_uuid = 0;
+		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
-
+			parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				single_recorder_info->controller->get_months(ascii_uuid, year, months, capacity, size);
+				result = PRMC_SUCCESS;
+			}
 		}
+		if (ascii_uuid)
+			free(ascii_uuid);
+		ascii_uuid = 0;
 	}
 
 	if (ascii_url)
@@ -264,11 +282,20 @@ int PRMC_GetDays(const wchar_t * url, const wchar_t * uuid, int year, int month,
 	iter = g_parallel_recorders.find(ascii_url);
 	if (iter != g_parallel_recorders.end())
 	{
-		parallel_recorder_t * single_recorder_info = iter->second;
-		if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+		char * ascii_uuid = 0;
+		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
-
+			parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				single_recorder_info->controller->get_days(ascii_uuid, year, month, days, capacity, size);
+				result = PRMC_SUCCESS;
+			}
 		}
+		if (ascii_uuid)
+			free(ascii_uuid);
+		ascii_uuid = 0;
 	}
 
 	if (ascii_url)
@@ -293,11 +320,20 @@ int PRMC_GetHours(const wchar_t * url, const wchar_t * uuid, int year, int month
 	iter = g_parallel_recorders.find(ascii_url);
 	if (iter != g_parallel_recorders.end())
 	{
-		parallel_recorder_t * single_recorder_info = iter->second;
-		if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+		char * ascii_uuid = 0;
+		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
-
+			parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				//single_recorder_info->controller->get_months(ascii_uuid, year, months, capacity, size);
+				result = PRMC_SUCCESS;
+			}
 		}
+		if (ascii_uuid)
+			free(ascii_uuid);
+		ascii_uuid = 0;
 	}
 
 	if (ascii_url)
@@ -322,11 +358,20 @@ int PRMC_GetMinute(const wchar_t * url, const wchar_t * uuid, int year, int mont
 	iter = g_parallel_recorders.find(ascii_url);
 	if (iter != g_parallel_recorders.end())
 	{
-		parallel_recorder_t * single_recorder_info = iter->second;
-		if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+		char * ascii_uuid = 0;
+		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
-
+			parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				//single_recorder_info->controller->get_months(ascii_uuid, year, months, capacity, size);
+				result = PRMC_SUCCESS;
+			}
 		}
+		if (ascii_uuid)
+			free(ascii_uuid);
+		ascii_uuid = 0;
 	}
 
 	if (ascii_url)
@@ -351,11 +396,20 @@ int PRMC_GetSecond(const wchar_t * url, const wchar_t * uuid, int year, int mont
 	iter = g_parallel_recorders.find(ascii_url);
 	if (iter != g_parallel_recorders.end())
 	{
-		parallel_recorder_t * single_recorder_info = iter->second;
-		if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+		char * ascii_uuid = 0;
+		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
-
+			parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				//single_recorder_info->controller->get_months(ascii_uuid, year, months, capacity, size);
+				result = PRMC_SUCCESS;
+			}
 		}
+		if (ascii_uuid)
+			free(ascii_uuid);
+		ascii_uuid = 0;
 	}
 
 	if (ascii_url)
@@ -382,7 +436,7 @@ int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd)
 		if (iter != g_parallel_recorders.end())
 		{
 			parallel_recorder_t * single_recorder_info = iter->second;
-			if (single_recorder_info && single_recorder_info->connected)
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				char * ascii_uuid = 0;
 				dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
@@ -508,7 +562,7 @@ int PRMC_Play(const wchar_t * url, int port_number, int index, int year, int mon
 		if (iter != g_parallel_recorders.end())
 		{
 			parallel_recorder_t * single_recorder_info = iter->second;
-			if (single_recorder_info && single_recorder_info->connected)
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
@@ -565,7 +619,7 @@ int PRMC_Stop(const wchar_t * url, int index)
 		if (iter != g_parallel_recorders.end())
 		{
 			parallel_recorder_t * single_recorder_info = iter->second;
-			if (single_recorder_info && single_recorder_info->connected)
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);

@@ -51,7 +51,7 @@ bool record_module_seeker::seek(const char * single_media_source_path, long long
 			char str_end_time[260] = { 0 };
 			get_time_from_elapsed_msec_from_epoch(start_time, str_start_time, sizeof(str_start_time));
 			get_time_from_elapsed_msec_from_epoch(end_time, str_end_time, sizeof(str_end_time));
-			dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", "start time[%s], end time[%s]", str_start_time, str_end_time);
+			//dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", "start time[%s], end time[%s]", str_start_time, str_end_time);
 
 			if (seek_time >= start_time && seek_time <= end_time)
 			{

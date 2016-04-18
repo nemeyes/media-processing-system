@@ -1,10 +1,10 @@
 <?xml version="1.0" standalone="yes"?>
 <recorder>
-	<backup_server enable="false" delete_after_backup="false">
+	<backup_server enable="true" delete_after_backup="true">
 		<url>127.0.0.1</url>
 		<port_number>21</port_number>
-		<username>test</username>
-		<password>1234</password>
+		<username>root</username>
+		<password>pass</password>
 	</backup_server>
 	<media_sources name="groupname" chunk_size="64">
 		<!--media_source uuid="CH1">

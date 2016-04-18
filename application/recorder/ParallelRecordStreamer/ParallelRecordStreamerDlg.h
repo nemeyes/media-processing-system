@@ -4,6 +4,9 @@
 
 #pragma once
 
+
+#include "dk_streamer_service.h"
+
 // CParallelRecordStreamerDlg dialog
 #define TRAY_NOTIFY        (WM_APP + 100)
 class CParallelRecordStreamerDlg : public CDialogEx
@@ -27,6 +30,7 @@ private:
 	void EnableTray(BOOL enable);
 
 private:
+	dk_streamer_service _streamer_service;
 	BOOL _is_streaming;
 // Implementation
 protected:
