@@ -126,35 +126,7 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	_uuid.SetWindowTextW(L"CH1");
 
 	PRMC_Initialize(GetSafeHwnd());
-	index_1 = -1;
-	//index_2 = -1;
-	//index_3 = -1;
-	//index_4 = -1;
-
-	//HWND hwnd = NULL;
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-	//index_1 = PRMC_Add(L"rtsp://127.0.0.1/CH1/20160416031400", 0, 0, false, hwnd);
-	//PRMC_Play(index_1);
-	
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO2);
-	//index_2 = PRMC_Add(L"rtsp://now.iptime.org/2/stream1", 0, 0, false, hwnd);
-	//PRMC_Play(index_2);
- 
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO3);
-	//index_3 = PRMC_Add(L"rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=1", 0, 0, false, hwnd);
-	//PRMC_Play(index_3);
-
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO4);
-	//index_4 = PRMC_Add(L"rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2", 0, 0, false, hwnd);
-	//PRMC_Play(index_4);
-
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO3);
-	//index_3 = PRMC_Add(L"rtmp://10.202.140.37/vod/00.flv", 0, 0, false, hwnd);
-	//PRMC_Play(index_3);
-
-	//hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO4);
-	//index_4 = PRMC_Add(L"rtmp://10.202.140.37/vod/01.flv", 0, 0, false, hwnd);
-	//PRMC_Play(index_4);
+	PRMC_index = -1;
 
 	CWnd * wnd = GetDlgItem(IDC_BUTTON_PARALLEL_RECORDER_CONNECT);
 	wnd->EnableWindow(TRUE);
@@ -168,25 +140,10 @@ BOOL CParallelRecordClientDlg::DestroyWindow()
 {
 	// TODO: Add your specialized code here and/or call the base class
 	/*
-	if (index_1 >= 0)
+	if (PRMC_index >= 0)
 	{
 		PRMC_Stop(index_1);
 		PRMC_Remove(index_1);
-	}
-	if (index_2 >= 0)
-	{
-		PRMC_Stop(index_2);
-		PRMC_Remove(index_2);
-	}
-	if (index_3 >= 0)
-	{
-		PRMC_Stop(index_3);
-		PRMC_Remove(index_3);
-	}
-	if (index_4 >= 0)
-	{
-		PRMC_Stop(index_4);
-		PRMC_Remove(index_4);
 	}
 	*/
 	PRMC_Release();
@@ -232,6 +189,15 @@ void CParallelRecordClientDlg::OnPaint()
 	}
 	else
 	{
+		CBrush brush;
+		brush.CreateSolidBrush(RGB(0, 0, 0));
+
+		CRect rect;
+		CWnd * video_view = GetDlgItem(IDC_STATIC_VIDEO1);
+		CDC * video_view_dc = video_view->GetDC();
+		video_view->GetClientRect(rect);
+		video_view_dc->FillRect(rect, &brush);
+		brush.DeleteObject();
 		CDialogEx::OnPaint();
 	}
 }
@@ -273,12 +239,6 @@ void CParallelRecordClientDlg::OnBnClickedButtonParallelRecorderConnect()
 
 		wnd = GetDlgItem(IDC_BUTTON_PARALLEL_RECORDER_DISCONNECT);
 		wnd->EnableWindow(TRUE);
-
-		HWND hwnd = NULL;
-		hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-		index_1 = PRMC_Add(L"127.0.0.1", L"CH1", hwnd);
-		if (index_1!=PRMC_FAIL)
-			PRMC_Play(L"127.0.0.1", 554, index_1, 2016, 4, 16, 3, 14, 0, false);
 	}
 }
 
@@ -286,11 +246,6 @@ void CParallelRecordClientDlg::OnBnClickedButtonParallelRecorderConnect()
 void CParallelRecordClientDlg::OnBnClickedButtonParallelRecorderDisconnect()
 {
 	// TODO: Add your control notification handler code here
-	if (index_1 != PRMC_FAIL)
-		index_1 = PRMC_Stop(L"127.0.0.1", index_1);
-	if (index_1 != PRMC_FAIL)
-		index_1 = PRMC_Remove(L"127.0.0.1", index_1);
-
 	CString recorder_address;
 	_parallel_recorder_address.GetWindowText(recorder_address);
 	int result = PRMC_Disconnect((LPCWSTR)recorder_address);
@@ -318,17 +273,24 @@ void CParallelRecordClientDlg::OnBnClickedButtonGetRecordingYears()
 {
 	// TODO: Add your control notification handler code here
 	_recording_years.ResetContent();
+	_recording_months.ResetContent();
+	_recording_days.ResetContent();
+	_recording_hours.ResetContent();
+	_recording_minutes.ResetContent();
+	_recording_seconds.ResetContent();
 
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
 	CString uuid;
 	_uuid.GetWindowTextW(uuid);
 
-	if (uuid.GetLength() > 0)
+	if (recorder_address.GetLength()>0 && uuid.GetLength() > 0)
 	{
 		int years[10] = { 0 };
 		int size = 0;
-		PRMC_GetYears(L"127.0.0.1", (LPCWSTR)uuid, years, sizeof(years) / sizeof(int), size);
+		PRMC_GetYears((LPCWSTR)recorder_address, (LPCWSTR)uuid, years, sizeof(years) / sizeof(int), size);
 
-		_recording_years.InsertString(0, L"Select");
+		_recording_years.InsertString(0, L"select");
 		for (int index = 0; index < size; index++)
 		{
 			wchar_t str_year[10] = { 0 };
@@ -343,21 +305,28 @@ void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingYears()
 {
 	// TODO: Add your control notification handler code here
 	_recording_months.ResetContent();
-	CString uuid;
-	_uuid.GetWindowTextW(uuid);
+	_recording_days.ResetContent();
+	_recording_hours.ResetContent();
+	_recording_minutes.ResetContent();
+	_recording_seconds.ResetContent();
 
-	if (uuid.GetLength()>0)
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+	CString uuid;
+	_uuid.GetWindowText(uuid);
+
+	if (recorder_address.GetLength()>0 && uuid.GetLength()>0)
 	{
 		CString str_year;
 		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
-		if (wcscmp(L"Select", str_year))
+		if (wcscmp(L"select", str_year))
 		{
 			int year = _ttoi(str_year);
 			int months[12] = { 0 };
 			int size = 0;
-			PRMC_GetMonths(L"127.0.0.1", (LPCWSTR)uuid, year, months, sizeof(months) / sizeof(int), size);
+			PRMC_GetMonths((LPCWSTR)recorder_address, (LPCWSTR)uuid, year, months, sizeof(months) / sizeof(int), size);
 
-			_recording_months.InsertString(0, L"Select");
+			_recording_months.InsertString(0, L"select");
 			for (int index = 0; index < size; index++)
 			{
 				wchar_t str_month[10] = { 0 };
@@ -373,23 +342,29 @@ void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingMonths()
 {
 	// TODO: Add your control notification handler code here
 	_recording_days.ResetContent();
+	_recording_hours.ResetContent();
+	_recording_minutes.ResetContent();
+	_recording_seconds.ResetContent();
+
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
 	CString uuid;
 	_uuid.GetWindowTextW(uuid);
 
-	if (uuid.GetLength()>0)
+	if (recorder_address.GetLength()>0 && uuid.GetLength()>0)
 	{
 		CString str_year, str_month;
 		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
 		_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
-		if (wcscmp(L"Select", str_year) && wcscmp(L"Select", str_month))
+		if (wcscmp(L"select", str_year) && wcscmp(L"select", str_month))
 		{
 			int year = _ttoi(str_year);
 			int month = _ttoi(str_month);
 			int days[31] = { 0 };
 			int size = 0;
-			PRMC_GetDays(L"127.0.0.1", (LPCWSTR)uuid, year, month, days, sizeof(days) / sizeof(int), size);
+			PRMC_GetDays((LPCWSTR)recorder_address, (LPCWSTR)uuid, year, month, days, sizeof(days) / sizeof(int), size);
 
-			_recording_days.InsertString(0, L"Select");
+			_recording_days.InsertString(0, L"select");
 			for (int index = 0; index < size; index++)
 			{
 				wchar_t str_day[10] = { 0 };
@@ -404,26 +379,180 @@ void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingMonths()
 void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingDays()
 {
 	// TODO: Add your control notification handler code here
+	_recording_hours.ResetContent();
+	_recording_minutes.ResetContent();
+	_recording_seconds.ResetContent();
+
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+	CString uuid;
+	_uuid.GetWindowTextW(uuid);
+
+	if (recorder_address.GetLength()>0 && uuid.GetLength()>0)
+	{
+		CString str_year, str_month, str_day;
+		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
+		_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
+		_recording_days.GetLBText(_recording_days.GetCurSel(), str_day);
+		if (wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day))
+		{
+			int year = _ttoi(str_year);
+			int month = _ttoi(str_month);
+			int day = _ttoi(str_day);
+			int hours[12] = { 0 };
+			int size = 0;
+			PRMC_GetHours((LPCWSTR)recorder_address, (LPCWSTR)uuid, year, month, day, hours, sizeof(hours) / sizeof(int), size);
+
+			_recording_hours.InsertString(0, L"select");
+			for (int index = 0; index < size; index++)
+			{
+				wchar_t str_hour[10] = { 0 };
+				_sntprintf_s(str_hour, sizeof(str_hour) / sizeof(wchar_t), L"%d", hours[index]);
+				_recording_hours.InsertString(index + 1, str_hour);
+			}
+			_recording_hours.SetCurSel(0);
+		}
+	}
 }
 
 void CParallelRecordClientDlg::OnCbnSelchangeComboRecordingHours()
 {
 	// TODO: Add your control notification handler code here
+	_recording_minutes.ResetContent();
+	_recording_seconds.ResetContent();
+
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+	CString uuid;
+	_uuid.GetWindowTextW(uuid);
+
+	if (recorder_address.GetLength()>0 && uuid.GetLength()>0)
+	{
+		CString str_year, str_month, str_day, str_hour;
+		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
+		_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
+		_recording_days.GetLBText(_recording_days.GetCurSel(), str_day);
+		_recording_hours.GetLBText(_recording_hours.GetCurSel(), str_hour);
+		if (wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day) && wcscmp(L"select", str_hour))
+		{
+			int year = _ttoi(str_year);
+			int month = _ttoi(str_month);
+			int day = _ttoi(str_day);
+			int hour = _ttoi(str_hour);
+			int minutes[60] = { 0 };
+			int size = 0;
+			PRMC_GetMinutes((LPCWSTR)recorder_address, (LPCWSTR)uuid, year, month, day, hour, minutes, sizeof(minutes) / sizeof(int), size);
+
+			_recording_minutes.InsertString(0, L"select");
+			for (int index = 0; index < size; index++)
+			{
+				wchar_t str_minute[10] = { 0 };
+				_sntprintf_s(str_minute, sizeof(str_minute) / sizeof(wchar_t), L"%d", minutes[index]);
+				_recording_minutes.InsertString(index + 1, str_minute);
+			}
+			_recording_minutes.SetCurSel(0);
+		}
+	}
 }
 
 void CParallelRecordClientDlg::OnCbnSelchangeComboMinutes()
 {
 	// TODO: Add your control notification handler code here
+	_recording_seconds.ResetContent();
+
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+	CString uuid;
+	_uuid.GetWindowTextW(uuid);
+
+	if (recorder_address.GetLength()>0 && uuid.GetLength()>0)
+	{
+		CString str_year, str_month, str_day, str_hour, str_minute;
+		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
+		_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
+		_recording_days.GetLBText(_recording_days.GetCurSel(), str_day);
+		_recording_hours.GetLBText(_recording_hours.GetCurSel(), str_hour);
+		_recording_minutes.GetLBText(_recording_minutes.GetCurSel(), str_minute);
+		if (wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day) && wcscmp(L"select", str_hour) && wcscmp(L"select", str_minute))
+		{
+			int year = _ttoi(str_year);
+			int month = _ttoi(str_month);
+			int day = _ttoi(str_day);
+			int hour = _ttoi(str_hour);
+			int minute = _ttoi(str_minute);
+			int seconds[60] = { 0 };
+			int size = 0;
+			PRMC_GetSeconds((LPCWSTR)recorder_address, (LPCWSTR)uuid, year, month, day, hour, minute, seconds, sizeof(seconds) / sizeof(int), size);
+
+			_recording_seconds.InsertString(0, L"select");
+			for (int index = 0; index < size; index++)
+			{
+				wchar_t str_second[10] = { 0 };
+				_sntprintf_s(str_second, sizeof(str_second) / sizeof(wchar_t), L"%d", seconds[index]);
+				_recording_seconds.InsertString(index + 1, str_second);
+			}
+			_recording_seconds.SetCurSel(0);
+		}
+	}
 }
 
 void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 {
 	// TODO: Add your control notification handler code here
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+
+	CString str_year, str_month, str_day, str_hour, str_minute, str_second;
+	_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
+	_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
+	_recording_days.GetLBText(_recording_days.GetCurSel(), str_day);
+	_recording_hours.GetLBText(_recording_hours.GetCurSel(), str_hour);
+	_recording_minutes.GetLBText(_recording_minutes.GetCurSel(), str_minute);
+	_recording_seconds.GetLBText(_recording_seconds.GetCurSel(), str_second);
+
+	if (recorder_address.GetLength()>0 && 
+		wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day) && 
+		wcscmp(L"select", str_hour) && wcscmp(L"select", str_minute) && wcscmp(L"select", str_second))
+	{
+		int year = _ttoi(str_year);
+		int month = _ttoi(str_month);
+		int day = _ttoi(str_day);
+		int hour = _ttoi(str_hour);
+		int minute = _ttoi(str_minute);
+		int second = _ttoi(str_second);
+
+		HWND hwnd = NULL;
+		hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
+		PRMC_index = PRMC_Add((LPCWSTR)recorder_address, L"CH1", hwnd);
+		if (PRMC_index != PRMC_FAIL)
+			PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, false);
+	}
 }
 
 
 void CParallelRecordClientDlg::OnBnClickedButtonStopPlayback()
 {
 	// TODO: Add your control notification handler code here
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+
+	if (recorder_address.GetLength()>0)
+	{
+		if (PRMC_index != PRMC_FAIL)
+			PRMC_index = PRMC_Stop((LPCWSTR)recorder_address, PRMC_index);
+		if (PRMC_index != PRMC_FAIL)
+			PRMC_index = PRMC_Remove((LPCWSTR)recorder_address, PRMC_index);
+	}
+
+	CBrush brush;
+	brush.CreateSolidBrush(RGB(0, 0, 0));
+	CRect rect;
+	CWnd * video_view = GetDlgItem(IDC_STATIC_VIDEO1);
+	CDC * video_view_dc = video_view->GetDC();
+	video_view->GetClientRect(rect);
+	video_view_dc->FillRect(rect, &brush);
+	brush.DeleteObject();
+
+	//InvalidateRect(rect);
 }
 

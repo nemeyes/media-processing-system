@@ -19,11 +19,11 @@ public:
 			if (slash != NULL)
 			{
 				module_name = slash + 1;
-				_strset_s(module_name, strlen(module_path), 0);
+				_strset_s(module_name, strlen(module_name)+1, 0);
 			}
 			else
 			{
-				_strset_s(module_path, strlen(module_path), 0);
+				_strset_s(module_path, strlen(module_path) + 1, 0);
 			}
 		}
 		
@@ -60,11 +60,11 @@ public:
 			if (slash != NULL)
 			{
 				module_name = slash + 1;
-				_strset_s(module_name, sizeof(module_path), 0);
+				_strset_s(module_name, strlen(module_name) + 1, 0);
 			}
 			else
 			{
-				_strset_s(module_path, sizeof(module_path), 0);
+				_strset_s(module_path, strlen(module_path) + 1, 0);
 			}
 		}
 

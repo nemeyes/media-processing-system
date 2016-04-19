@@ -62,6 +62,7 @@ typedef struct _parallel_recorder_t
 	CRITICAL_SECTION media_source_lock;
 	dk_parallel_recorder_controller * controller;
 	std::map<int, single_media_source_t*> media_sources;
+	int rtsp_server_port_number;
 	bool connected;
 	bool waiting_request;
 	bool waiting_response;
@@ -69,6 +70,7 @@ typedef struct _parallel_recorder_t
 		: port_number(15000)
 		, media_source_index_generator(0)
 		, controller(nullptr)
+		, rtsp_server_port_number(554)
 		, connected(false)
 		, waiting_request(false)
 		, waiting_response(false)

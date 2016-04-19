@@ -10,22 +10,32 @@ public:
 	dk_parallel_recorder_controller(parallel_recorder_t * parallel_recorder);
 	virtual ~dk_parallel_recorder_controller(void);
 
+	//void get_rtsp_server_port_number(int & port_number);
 	void get_years(const char * uuid, int years[], int capacity, int & size);
 	void get_months(const char * uuid, int year, int months[], int capacity, int & size);
 	void get_days(const char * uuid, int year, int month, int days[], int capacity, int & size);
+	void get_hours(const char * uuid, int year, int month, int day, int hours[], int capacity, int & size);
+	void get_minutes(const char * uuid, int year, int month, int day, int hour, int minutes[], int capacity, int & size);
+	void get_seconds(const char * uuid, int year, int month, int day, int hour, int minute, int seconds[], int capacity, int & size);
 
+	//void set_rtsp_server_port_number(int port_number);
 	void set_years(const char * uuid, int years[], int size);
 	void set_months(const char * uuid, int year, int months[], int size);
 	void set_days(const char * uuid, int year, int month, int days[], int size);
+	void set_hours(const char * uuid, int year, int month, int day, int hours[], int size);
+	void set_minutes(const char * uuid, int year, int month, int day, int hour, int minutes[], int size);
+	void set_seconds(const char * uuid, int year, int month, int day, int hour, int minute, int seconds[], int size);
 
-
+	void get_rtsp_server_port_number_callback(int port_number);
 private:
 	void assoc_completion_callback(void);
 	void leave_completion_callback(void);
+	
 
 private:
 	parallel_recorder_t * _parallel_recorder;
 
+	//int32_t _rtsp_server_port_number;
 
 	char _uuid[64];
 	int32_t _year;

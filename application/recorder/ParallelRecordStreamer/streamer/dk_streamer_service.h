@@ -23,8 +23,9 @@ public:
 	void get_minutes(const char * uuid, int year, int month, int day, int hour, int minutes[], int capacity, int & size);
 	void get_seconds(const char * uuid, int year, int month, int day, int hour, int minute, int seconds[], int capacity, int & size);
 
-	const char * retrieve_storage_path(void);
+	const char * retrieve_contents_path(void);
 	const char * retrieve_config_path(void);
+	int32_t get_rtsp_server_port_number(void);
 
 private:
 	void assoc_completion_callback(const char * uuid);
@@ -32,8 +33,9 @@ private:
 
 	void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, int & year, int & month, int & day, int & hour, int & minute, int & second);
 private:
-	char _storage_path[260];
+	char _contents_path[260];
 	char _config_path[260];
+	int32_t _rtsp_server_port_number;
 	dk_vod_rtsp_server * _rtsp_server;
 	bool _is_run;
 

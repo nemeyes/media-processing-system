@@ -340,19 +340,21 @@ void dk_recorder_service::file_search_and_upload(const char * path)
 						check_curl = curl_easy_init();
 						if (check_curl)
 						{
+				
 							if (_backup_username && strlen(_backup_username) > 0 && _backup_password && strlen(_backup_password) > 0)
 								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%s@%s:%d/%s/%s", _backup_username, _backup_password, _backup_url, _backup_port_number, backup_folder_name, file_name);
 							else
 								_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%d/%s/%s", _backup_url, _backup_port_number, backup_folder_name, file_name);
 
-							result = backup_check_single_file(check_curl, backup_ftp_server, recored_file_path);
+							//_snprintf_s(backup_ftp_server, sizeof(backup_ftp_server), "ftp://%s:%d/%s/%s", _backup_url, _backup_port_number, backup_folder_name, file_name);
+							result = backup_check_single_file(check_curl, backup_ftp_server, 0, 0, recored_file_path);
 							if (result)
 							{
 								CURL * backup_curl = NULL;
 								backup_curl = curl_easy_init();
 								if (backup_curl)
 								{
-									result = backup_upload_single_file(backup_curl, backup_ftp_server, recored_file_path, 0, 3);
+									result = backup_upload_single_file(backup_curl, backup_ftp_server, 0, 0, recored_file_path, 0, 3);
 									if (result && _backup_delete_after_backup)
 										::DeleteFileA(recored_file_path);
 									curl_easy_cleanup(backup_curl);
@@ -413,7 +415,7 @@ size_t dk_recorder_service::backup_read_callback(void * ptr, size_t size, size_t
 	return n;
 }
 
-bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * remotepath, const char * localpath)
+bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath)
 {
 	CURLcode r = CURLE_GOT_NOTHING;
 
@@ -430,6 +432,20 @@ bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * rem
 	local_file_size = (curl_off_t)file_info.st_size;
 
 	curl_easy_setopt(curl, CURLOPT_URL, remotepath);
+#if 1
+	if (username && strlen(username)>0)
+		curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+	if (password && strlen(password)>0)
+		curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
+#else
+	if ((username && strlen(username)>0) && (password && strlen(password)>0))
+	{
+		char username_password[260] = { 0 };
+		_snprintf_s(username_password, sizeof(username_password), "%s:%s", username, password);
+		curl_easy_setopt(curl, CURLOPT_USERPWD, "username:password");
+	}
+#endif
+
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
 	curl_easy_setopt(curl, CURLOPT_FILETIME, 1);
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &dk_recorder_service::backup_get_content_length_callback2);
@@ -458,7 +474,7 @@ bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * rem
 }
 
 /* read data to upload */
-bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * remotepath, const char * localpath, long timeout, long tries)
+bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath, long timeout, long tries)
 {
 	FILE *f;
 	long uploaded_len = 0;
@@ -481,6 +497,20 @@ bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * re
 
 	curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 	curl_easy_setopt(curl, CURLOPT_URL, remotepath);
+#if 1
+	if (username && strlen(username)>0)
+		curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+	if (password && strlen(password)>0)
+		curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
+#else
+	if ((username && strlen(username)>0) && (password && strlen(password)>0))
+	{
+		char username_password[260] = { 0 };
+		_snprintf_s(username_password, sizeof(username_password), "%s:%s", username, password);
+		curl_easy_setopt(curl, CURLOPT_USERPWD, "username:password");
+	}
+#endif
+
 	if (timeout)
 		curl_easy_setopt(curl, CURLOPT_FTP_RESPONSE_TIMEOUT, timeout);
 

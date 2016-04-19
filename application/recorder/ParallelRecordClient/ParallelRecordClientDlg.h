@@ -24,7 +24,7 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
-	int index_1;
+	int PRMC_index;
 	//int index_2;
 	//int index_3;
 	//int index_4;

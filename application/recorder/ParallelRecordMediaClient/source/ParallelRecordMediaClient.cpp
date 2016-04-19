@@ -327,7 +327,7 @@ int PRMC_GetHours(const wchar_t * url, const wchar_t * uuid, int year, int month
 			parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				//single_recorder_info->controller->get_months(ascii_uuid, year, months, capacity, size);
+				single_recorder_info->controller->get_hours(ascii_uuid, year, month, day, hours, capacity, size);
 				result = PRMC_SUCCESS;
 			}
 		}
@@ -343,7 +343,7 @@ int PRMC_GetHours(const wchar_t * url, const wchar_t * uuid, int year, int month
 	return result;
 }
 
-int PRMC_GetMinute(const wchar_t * url, const wchar_t * uuid, int year, int month, int day, int hour, int minutes[], int capacity, int & size)
+int PRMC_GetMinutes(const wchar_t * url, const wchar_t * uuid, int year, int month, int day, int hour, int minutes[], int capacity, int & size)
 {
 	int result = PRMC_FAIL;
 	if (!url || wcslen(url) < 1)
@@ -365,7 +365,7 @@ int PRMC_GetMinute(const wchar_t * url, const wchar_t * uuid, int year, int mont
 			parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				//single_recorder_info->controller->get_months(ascii_uuid, year, months, capacity, size);
+				single_recorder_info->controller->get_minutes(ascii_uuid, year, month, day, hour, minutes, capacity, size);
 				result = PRMC_SUCCESS;
 			}
 		}
@@ -381,7 +381,7 @@ int PRMC_GetMinute(const wchar_t * url, const wchar_t * uuid, int year, int mont
 	return result;
 }
 
-int PRMC_GetSecond(const wchar_t * url, const wchar_t * uuid, int year, int month, int day, int hour, int minute, int seconds[], int capacity, int & size)
+int PRMC_GetSeconds(const wchar_t * url, const wchar_t * uuid, int year, int month, int day, int hour, int minute, int seconds[], int capacity, int & size)
 {
 	int result = PRMC_FAIL;
 	if (!url || wcslen(url) < 1)
@@ -403,7 +403,7 @@ int PRMC_GetSecond(const wchar_t * url, const wchar_t * uuid, int year, int mont
 			parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				//single_recorder_info->controller->get_months(ascii_uuid, year, months, capacity, size);
+				single_recorder_info->controller->get_seconds(ascii_uuid, year, month, day, hour, minute, seconds, capacity, size);
 				result = PRMC_SUCCESS;
 			}
 		}
@@ -546,7 +546,7 @@ int PRMC_Remove(const wchar_t * url, int index)
 	return result;
 }
 
-int PRMC_Play(const wchar_t * url, int port_number, int index, int year, int month, int day, int hour, int minute, int second, bool repeat)
+int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int hour, int minute, int second, bool repeat)
 {
 	int result = PRMC_FAIL;
 	if (!url || wcslen(url) < 1)
@@ -576,7 +576,7 @@ int PRMC_Play(const wchar_t * url, int port_number, int index, int year, int mon
 							if (single_media_source->type == RTSP_RECEIVER)
 							{
 								char rtsp_url[260] = { 0 };
-								_snprintf_s(rtsp_url, sizeof(rtsp_url), "rtsp://%s:%d/%s/%.4d%.2d%.2d%.2d%.2d%.2d", single_recorder_info->url, port_number, single_media_source->uuid, year, month, day, hour, minute, second);
+								_snprintf_s(rtsp_url, sizeof(rtsp_url), "rtsp://%s:%d/%s/%.4d%.2d%.2d%.2d%.2d%.2d", single_recorder_info->url, single_recorder_info->rtsp_server_port_number, single_media_source->uuid, year, month, day, hour, minute, second);
 
 								dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(single_media_source->receiver);
 								receiver->play(rtsp_url, single_media_source->username, single_media_source->password, 1, 1, repeat, single_media_source->hwnd);

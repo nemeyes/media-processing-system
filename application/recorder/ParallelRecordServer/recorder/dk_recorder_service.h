@@ -49,8 +49,8 @@ private:
 	/* read data to upload */
 	static size_t backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream);
 
-	bool backup_check_single_file(CURL * curl, const char * remotepath, const char * localpath);
-	bool backup_upload_single_file(CURL * curl, const char * remotepath, const char * localpath, long timeout, long tries);
+	bool backup_check_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath);
+	bool backup_upload_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath, long timeout, long tries);
 
 private:
 	char _storage_path[260];

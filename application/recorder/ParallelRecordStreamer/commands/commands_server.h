@@ -20,6 +20,28 @@ namespace ic
 		dk_streamer_service * _prss;
 	};
 
+	//CMD_GET_RTSP_SERVER_PORT_REQUEST
+	class get_rtsp_server_port_req_cmd : public parallel_record_server_cmd
+	{
+	public:
+		get_rtsp_server_port_req_cmd(dk_streamer_service * prss)
+			: parallel_record_server_cmd(prss, CMD_GET_RTSP_SERVER_PORT_REQUEST) {}
+		virtual ~get_rtsp_server_port_req_cmd(void) {}
+
+		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
+		{
+			CMD_GET_RTSP_SERVER_PORT_REQ_T req;
+			CMD_GET_RTSP_SERVER_PORT_RES_T res;
+			memset(&req, 0x00, sizeof(req));
+			memset(&res, 0x00, sizeof(res));
+			memcpy(&req, msg, sizeof(req));
+
+			res.code = CMD_ERR_CODE_SUCCESS;
+			res.port_number = _prss->get_rtsp_server_port_number();
+
+			session->push_send_packet(session->uuid(), uuid(), CMD_GET_RTSP_SERVER_PORT_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
+		}
+	};
 
 	class get_years_req_cmd : public parallel_record_server_cmd
 	{

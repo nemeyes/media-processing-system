@@ -6,7 +6,7 @@
 		<password></password>
 	</control_server>
 	<rtsp_server>
-		<port_number>554</port_number>
+		<port_number>1554</port_number>
 		<username></username>
 		<password></password>
 	</rtsp_server>
