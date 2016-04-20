@@ -77,14 +77,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXPORT_PARALLEL_RECORD_MEDIA_CLIENT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\dk_common\include;..\..\..\library\network\ipc\dk_ipc_base\include;..\..\..\library\network\ipc\dk_ipc_client\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\rtmp\dk_rtmp_client\include;..\..\..\library\video\dk_video_base\include;..\..\..\library\audio\dk_audio_base\include;..\..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\..\library\audio\codec\dk_aac_decoder\include;..\..\..\library\audio\codec\dk_celt_decoder\include;..\..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\..\library\audio\renderer\dk_mmwave_renderer\include;..\ParallelRecordBase\include;commands;control;receiver;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\dk_common\include;..\..\..\library\network\ipc\dk_ipc_base\include;..\..\..\library\network\ipc\dk_ipc_client\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\rtmp\dk_rtmp_client\include;..\..\..\library\video\dk_video_base\include;..\..\..\library\audio\dk_audio_base\include;..\..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\..\library\audio\codec\dk_aac_decoder\include;..\..\..\library\audio\codec\dk_celt_decoder\include;..\..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\..\library\audio\renderer\dk_mmwave_renderer\include;..\..\..\library\logger\dk_log4cplus_logger_1.2.0\include;..\ParallelRecordBase\include;commands;control;receiver;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>dk_ipc_client.lib;dk_live_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_aac_decoder.lib;dk_celt_decoder.lib;dk_ff_mp3_decoder.lib;dk_directdraw_renderer.lib;dk_mmwave_renderer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dk_ipc_client.lib;dk_live_rtsp_client.lib;dk_rtmp_client.lib;dk_ff_video_decoder.lib;dk_aac_decoder.lib;dk_celt_decoder.lib;dk_ff_mp3_decoder.lib;dk_directdraw_renderer.lib;dk_mmwave_renderer.lib;dk_log4cplus_logger_1.2.0.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)x86\release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(SolutionDir)x86\release\lib\$(ProjectName).lib</ImportLibrary>
     </Link>

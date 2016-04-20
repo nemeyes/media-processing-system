@@ -7,6 +7,7 @@
 dk_parallel_recorder_controller::dk_parallel_recorder_controller(parallel_recorder_t * parallel_recorder)
 	: _parallel_recorder(parallel_recorder)
 {
+	_logger = new dk_log4cplus_logger("config\\log.properties");
 	add_command(new ic::get_rtsp_server_port_res_cmd(this));
 	add_command(new ic::get_years_res_cmd(this));
 	add_command(new ic::get_months_res_cmd(this));
@@ -56,7 +57,7 @@ void dk_parallel_recorder_controller::get_years(const char * uuid, int years[], 
 	data_request(SERVER_UUID, CMD_GET_YEARS_REQUEST, (char*)&req, sizeof(req));
 	_parallel_recorder->waiting_response = true;
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (!_parallel_recorder->waiting_response)
 			break;
@@ -84,7 +85,7 @@ void dk_parallel_recorder_controller::get_months(const char * uuid, int year, in
 	data_request(SERVER_UUID, CMD_GET_MONTHS_REQUEST, (char*)&req, sizeof(req));
 	_parallel_recorder->waiting_response = true;
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (!_parallel_recorder->waiting_response)
 			break;
@@ -113,7 +114,7 @@ void dk_parallel_recorder_controller::get_days(const char * uuid, int year, int 
 	data_request(SERVER_UUID, CMD_GET_DAYS_REQUEST, (char*)&req, sizeof(req));
 	_parallel_recorder->waiting_response = true;
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (!_parallel_recorder->waiting_response)
 			break;
@@ -143,7 +144,7 @@ void dk_parallel_recorder_controller::get_hours(const char * uuid, int year, int
 	data_request(SERVER_UUID, CMD_GET_HOURS_REQUEST, (char*)&req, sizeof(req));
 	_parallel_recorder->waiting_response = true;
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (!_parallel_recorder->waiting_response)
 			break;
@@ -174,7 +175,7 @@ void dk_parallel_recorder_controller::get_minutes(const char * uuid, int year, i
 	data_request(SERVER_UUID, CMD_GET_MINUTES_REQUEST, (char*)&req, sizeof(req));
 	_parallel_recorder->waiting_response = true;
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (!_parallel_recorder->waiting_response)
 			break;
@@ -206,7 +207,7 @@ void dk_parallel_recorder_controller::get_seconds(const char * uuid, int year, i
 	data_request(SERVER_UUID, CMD_GET_SECONDS_REQUEST, (char*)&req, sizeof(req));
 	_parallel_recorder->waiting_response = true;
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (!_parallel_recorder->waiting_response)
 			break;
@@ -317,25 +318,33 @@ void dk_parallel_recorder_controller::set_seconds(const char * uuid, int year, i
 
 void dk_parallel_recorder_controller::assoc_completion_callback(void)
 {
-	if (_parallel_recorder)
+	if (_parallel_recorder && !_parallel_recorder->connected)
 	{
 		ic::CMD_GET_RTSP_SERVER_PORT_REQ_T req;
 		data_request(SERVER_UUID, CMD_GET_RTSP_SERVER_PORT_REQUEST, (char*)&req, sizeof(req));
-		//_parallel_recorder->connected = true;
+
+		_logger->make_system_info_log("parallel.record.client", "connection completed");
+		_parallel_recorder->connected = true;
 	}
 }
 
 void dk_parallel_recorder_controller::leave_completion_callback(void)
 {
-	if (_parallel_recorder)
+	if (_parallel_recorder && _parallel_recorder->connected)
+	{
+		_logger->make_system_info_log("parallel.record.client", "disconnection completed");
 		_parallel_recorder->connected = false;
+		_parallel_recorder->rtsp_port_number_received = false;
+	}
 }
 
 void dk_parallel_recorder_controller::get_rtsp_server_port_number_callback(int port_number)
 {
-	if (_parallel_recorder)
+	if (_parallel_recorder && _parallel_recorder->connected)
 	{
 		_parallel_recorder->rtsp_server_port_number = port_number;
-		_parallel_recorder->connected = true;
+		_parallel_recorder->rtsp_port_number_received = true;
+
+		_logger->make_system_info_log("parallel.record.client", "port number[%d] callback received", _parallel_recorder->rtsp_server_port_number);
 	}
 }

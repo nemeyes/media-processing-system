@@ -64,6 +64,7 @@ typedef struct _parallel_recorder_t
 	std::map<int, single_media_source_t*> media_sources;
 	int rtsp_server_port_number;
 	bool connected;
+	bool rtsp_port_number_received;
 	bool waiting_request;
 	bool waiting_response;
 	_parallel_recorder_t(void)
@@ -72,6 +73,7 @@ typedef struct _parallel_recorder_t
 		, controller(nullptr)
 		, rtsp_server_port_number(554)
 		, connected(false)
+		, rtsp_port_number_received(false)
 		, waiting_request(false)
 		, waiting_response(false)
 	{

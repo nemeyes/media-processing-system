@@ -85,9 +85,10 @@ int PRMC_Connect(const wchar_t * url, int port_number, const wchar_t * username,
 	if (!sock_connected)
 		result = PRMC_FAIL;
 
-	for (int index = 0; index < 100; index++)
+	for (int index = 0; index < 1000; index++)
 	{
-		if (single_recorder_info->connected)
+		//_parallel_recorder->rtsp_port_number_received
+		if (single_recorder_info->rtsp_port_number_received)
 			break;
 		::Sleep(10);
 	}
