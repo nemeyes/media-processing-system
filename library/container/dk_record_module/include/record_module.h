@@ -42,6 +42,7 @@ private:
 	static void set_file_position(HANDLE file, uint32_t offset, uint32_t flag);
 	static long long get_elapsed_msec_from_epoch(void);
 	static void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
+	static void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, int & year, int & month, int & day, int & hour, int & minute, int & second);
 	static bool is_sps(uint8_t nal_unit_type);
 	static bool is_pps(uint8_t nal_unit_type);
 	static bool is_idr(uint8_t nal_unit_type);

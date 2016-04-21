@@ -2,8 +2,6 @@
 #define _DK_PARALLEL_RECORDER_CONTROLLER_H_
 
 #include <dk_ipc_client.h>
-#include <dk_log4cplus_logger.h>
-
 
 typedef struct _parallel_recorder_t parallel_recorder_t;
 class dk_parallel_recorder_controller : public ic::dk_ipc_client
@@ -36,9 +34,6 @@ private:
 
 private:
 	parallel_recorder_t * _parallel_recorder;
-	dk_log4cplus_logger * _logger;
-
-	//int32_t _rtsp_server_port_number;
 
 	char _uuid[64];
 	int32_t _year;

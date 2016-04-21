@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <dk_ipc_server.h>
 
-class dk_log4cplus_logger;
 class dk_vod_rtsp_server;
 class dk_streamer_service : public ic::dk_ipc_server
 {
@@ -38,8 +37,6 @@ private:
 	int32_t _rtsp_server_port_number;
 	dk_vod_rtsp_server * _rtsp_server;
 	bool _is_run;
-
-	dk_log4cplus_logger * _logger;
 };
 
 

@@ -159,6 +159,11 @@ bool dk_recorder_service::start_recording(void)
 
 		const char * uuid = media_source_elem->Attribute("uuid");
 		uuid = ::CharUpperA((char*)uuid);
+		const char * str_recv_timeout = media_source_elem->Attribute("recv_timeout");
+		int32_t recv_timeout = 0;
+		if (str_recv_timeout && strlen(str_recv_timeout) > 0)
+			recv_timeout = atoi(str_recv_timeout);
+
 		const char * url = url_elem->GetText();
 		const char * username = username_elem->GetText();
 		const char * password = password_elem->GetText();
@@ -172,7 +177,7 @@ bool dk_recorder_service::start_recording(void)
 		if (password && strlen(password)>0)
 			strncpy_s(recv_info.password, password, sizeof(recv_info.password));
 		recv_info.recorder = new dk_rtsp_recorder(chunk_size_in_mb);
-		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, dk_rtsp_recorder::rtp_over_tcp, dk_rtsp_recorder::recv_video, storage_path.c_str(), recv_info.uuid);
+		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, dk_rtsp_recorder::rtp_over_tcp, dk_rtsp_recorder::recv_video, recv_timeout, storage_path.c_str(), recv_info.uuid);
 		_receivers.push_back(recv_info);
 
 		media_source_elem = media_source_elem->NextSiblingElement();

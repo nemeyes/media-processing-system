@@ -1,6 +1,5 @@
 #include "record_module.h"
 #include <boost/date_time/local_time/local_time.hpp>
-#include <dk_log4cplus_logger.h>
 
 #define WRITE_BUFFER_SIZE 1024*1024*2
 
@@ -416,7 +415,7 @@ void record_module::seek(long long seek_timestamp)
 		{
 			if (nalu_timestamp >= seek_timestamp)
 			{
-				_read_index = seek_index - (sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
+				_read_index = seek_index -(sizeof(uint8_t) + sizeof(long long) + sizeof(uint32_t) + nalu_size);
 				break;
 			}
 			/*else if (nalu_timestamp < seek_timestamp)
@@ -585,8 +584,8 @@ void record_module::write_bitstream(dk_record_module::nalu_type naltype, uint8_t
 	::WriteFile(_file, buff, bytes_to_writes, &bytes_writes, NULL);
 	_write_index += bytes_writes;
 
-	char time[260] = { 0 };
-	get_time_from_elapsed_msec_from_epoch(timestamp, time, sizeof(time));
+	//char time[260] = { 0 };
+	//get_time_from_elapsed_msec_from_epoch(timestamp, time, sizeof(time));
 	//dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.recorder", "time is %s", time);
 }
 
@@ -745,6 +744,19 @@ void record_module::get_time_from_elapsed_msec_from_epoch(long long elapsed_time
 	std::string tmp_time = boost::posix_time::to_simple_string(current_time);
 	//strncpy_s(time_string, time_string_size, tmp_time.c_str(), (size_t)time_string_size);
 	strcpy_s(time_string, time_string_size, tmp_time.c_str());
+}
+
+void record_module::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, int & year, int & month, int & day, int & hour, int & minute, int & second)
+{
+	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = epoch + elapsed;
+	year = current_time.date().year();
+	month = current_time.date().month();
+	day = current_time.date().day();
+	hour = current_time.time_of_day().hours();
+	minute = current_time.time_of_day().minutes();
+	second = current_time.time_of_day().seconds();
 }
 
 void record_module::set_file_position(HANDLE file, uint32_t offset, uint32_t flag)

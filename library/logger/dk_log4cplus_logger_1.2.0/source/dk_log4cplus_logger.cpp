@@ -12,6 +12,26 @@
 #include "userenv.h"
 #include "wtsapi32.h"
 
+dk_log4cplus_logger * dk_log4cplus_logger::_instance = nullptr;
+
+void dk_log4cplus_logger::create(const char * configuration_path)
+{
+	if (!_instance)
+		_instance = new dk_log4cplus_logger(configuration_path);
+}
+
+void dk_log4cplus_logger::destroy(void)
+{
+	if (_instance)
+		delete _instance;
+	_instance = nullptr;
+}
+
+dk_log4cplus_logger * dk_log4cplus_logger::instance(void)
+{
+	return _instance;
+}
+
 dk_log4cplus_logger::dk_log4cplus_logger(const char * configuration_path)
 {
 	std::locale::global(     // set global locale
@@ -62,6 +82,85 @@ dk_log4cplus_logger::~dk_log4cplus_logger(void)
 	}
 }
 
+void dk_log4cplus_logger::make_fatal_log(const char * secion, const char * fmt, ...)
+{
+	if (_instance)
+	{
+		char log[500] = { 0 };
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(log, sizeof(log), fmt, args);
+		va_end(args);
+		LOG4CPLUS_FATAL(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
+	}
+}
+
+void dk_log4cplus_logger::make_error_log(const char * secion, const char * fmt, ...)
+{
+	if (_instance)
+	{
+		char log[500] = { 0 };
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(log, sizeof(log), fmt, args);
+		va_end(args);
+		LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
+	}
+}
+
+void dk_log4cplus_logger::make_warn_log(const char * secion, const char * fmt, ...)
+{
+	if (_instance)
+	{
+		char log[500] = { 0 };
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(log, sizeof(log), fmt, args);
+		va_end(args);
+		LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
+	}
+}
+
+void dk_log4cplus_logger::make_info_log(const char * secion, const char * fmt, ...)
+{
+	if (_instance)
+	{
+		char log[500] = { 0 };
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(log, sizeof(log), fmt, args);
+		va_end(args);
+		LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
+	}
+}
+
+void dk_log4cplus_logger::make_debug_log(const char * secion, const char * fmt, ...)
+{
+	if (_instance)
+	{
+		char log[500] = { 0 };
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(log, sizeof(log), fmt, args);
+		va_end(args);
+		LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
+	}
+}
+
+void dk_log4cplus_logger::make_trace_log(const char * secion, const char * fmt, ...)
+{
+	if (_instance)
+	{
+		char log[500] = { 0 };
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(log, sizeof(log), fmt, args);
+		va_end(args);
+		LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
+	}
+}
+
+/*
 void dk_log4cplus_logger::make_system_info_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
@@ -121,7 +220,7 @@ void dk_log4cplus_logger::make_system_fatal_log(const char * secion, const char 
 	va_end(args);
 	LOG4CPLUS_FATAL(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
-
+*/
 /*
 void dk_log4cplus_logger::make_system_info_log(const wchar_t * secion, const wchar_t * log)
 {

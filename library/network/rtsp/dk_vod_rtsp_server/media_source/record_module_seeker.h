@@ -19,7 +19,7 @@ public:
 	uint8_t * get_pps(size_t & pps_size);
 
 	void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
-
+	void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, int & year, int & month, int & day, int & hour, int & minute, int & second);
 private:
 	dk_record_module * _record_module;
 	long long _last_read_timestamp;

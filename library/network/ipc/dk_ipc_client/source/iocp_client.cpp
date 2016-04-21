@@ -203,10 +203,10 @@ void ic::iocp_client::execute(void)
 			if (io_context == NULL)
 				continue;
 		}
-		//else
-		//{
-		//	continue;
-		//}
+		else
+		{
+			continue;
+		}
 
 		try
 		{

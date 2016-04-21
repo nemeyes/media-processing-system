@@ -3,11 +3,12 @@
 #include "dk_parallel_recorder_controller.h"
 #include "dk_parallel_recorder.h"
 #include "commands_client.h"
+#include <dk_log4cplus_logger.h>
 
 dk_parallel_recorder_controller::dk_parallel_recorder_controller(parallel_recorder_t * parallel_recorder)
 	: _parallel_recorder(parallel_recorder)
 {
-	_logger = new dk_log4cplus_logger("config\\log.properties");
+	dk_log4cplus_logger::create("config\\log.properties");
 	add_command(new ic::get_rtsp_server_port_res_cmd(this));
 	add_command(new ic::get_years_res_cmd(this));
 	add_command(new ic::get_months_res_cmd(this));
@@ -19,7 +20,7 @@ dk_parallel_recorder_controller::dk_parallel_recorder_controller(parallel_record
 
 dk_parallel_recorder_controller::~dk_parallel_recorder_controller(void)
 {
-
+	dk_log4cplus_logger::destroy();
 }
 
 /*
@@ -323,7 +324,7 @@ void dk_parallel_recorder_controller::assoc_completion_callback(void)
 		ic::CMD_GET_RTSP_SERVER_PORT_REQ_T req;
 		data_request(SERVER_UUID, CMD_GET_RTSP_SERVER_PORT_REQUEST, (char*)&req, sizeof(req));
 
-		_logger->make_system_info_log("parallel.record.client", "connection completed");
+		dk_log4cplus_logger::make_info_log("parallel.record.client", "connection completed");
 		_parallel_recorder->connected = true;
 	}
 }
@@ -332,7 +333,8 @@ void dk_parallel_recorder_controller::leave_completion_callback(void)
 {
 	if (_parallel_recorder && _parallel_recorder->connected)
 	{
-		_logger->make_system_info_log("parallel.record.client", "disconnection completed");
+		dk_log4cplus_logger::make_info_log("parallel.record.client", "disconnection completed");
+
 		_parallel_recorder->connected = false;
 		_parallel_recorder->rtsp_port_number_received = false;
 	}
@@ -345,6 +347,6 @@ void dk_parallel_recorder_controller::get_rtsp_server_port_number_callback(int p
 		_parallel_recorder->rtsp_server_port_number = port_number;
 		_parallel_recorder->rtsp_port_number_received = true;
 
-		_logger->make_system_info_log("parallel.record.client", "port number[%d] callback received", _parallel_recorder->rtsp_server_port_number);
+		dk_log4cplus_logger::make_info_log("parallel.record.client", "port number[%d] callback received", _parallel_recorder->rtsp_server_port_number);
 	}
 }

@@ -87,7 +87,7 @@ void buffered_byte_stream_source::read_from_buffer(void)
 
 #if 1
 			if (timestamp==0)
-				FramedSource::afterGetting(this);
+				FramedSource::afterGetting(this);//nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);// 
 			else
 				nextTask() = envir().taskScheduler().scheduleDelayedTask(timestamp*1000, (TaskFunc*)FramedSource::afterGetting, this);
 #else

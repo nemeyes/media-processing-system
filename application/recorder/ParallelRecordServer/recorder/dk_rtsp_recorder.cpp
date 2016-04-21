@@ -29,13 +29,13 @@ dk_rtsp_recorder::~dk_rtsp_recorder(void)
 #endif
 }
 
-void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, const char * storage, const char * uuid)
+void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, const char * storage, const char * uuid)
 {
 	if (storage && uuid && strlen(storage)>0 && strlen(uuid)>0)
 	{
 		strncpy_s(_storage, storage, sizeof(_storage));
 		strncpy_s(_uuid, uuid, sizeof(_uuid));
-		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, 0, true);
+		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, recv_timeout, true);
 
 #if defined(WITH_RELAY_LIVE)
 		_sm_server->create_shared_memory(uuid);

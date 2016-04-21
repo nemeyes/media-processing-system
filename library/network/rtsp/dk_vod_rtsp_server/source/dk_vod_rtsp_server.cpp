@@ -3,6 +3,7 @@
 #include <BasicUsageEnvironment.hh>
 #include "vod_rtsp_server.h"
 #include "live_media_source_entity.h"
+#include <dk_log4cplus_logger.h>
 
 dk_vod_rtsp_server::dk_vod_rtsp_server(void)
 	: _port_number(554)
@@ -10,11 +11,12 @@ dk_vod_rtsp_server::dk_vod_rtsp_server(void)
 {
 	memset(_username, 0x00, sizeof(_username));
 	memset(_password, 0x00, sizeof(_password));
+	dk_log4cplus_logger::create("config/log.properties");
 }
 
 dk_vod_rtsp_server::~dk_vod_rtsp_server(void)
 {
-
+	dk_log4cplus_logger::destroy();
 }
 
 bool dk_vod_rtsp_server::add_live_media_source(const char * uuid, const char * url, const char * username, const char * password)

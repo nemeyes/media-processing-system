@@ -28,7 +28,7 @@ dk_streamer_service::dk_streamer_service(void)
 	add_command(new ic::get_seconds_req_cmd(this));
 
 	_rtsp_server = new dk_vod_rtsp_server();
-	_logger = new dk_log4cplus_logger("config\\log.properties");
+	dk_log4cplus_logger::create("config\\log.properties");
 	memset(_config_path, 0x00, sizeof(_config_path));
 }
 
@@ -38,9 +38,7 @@ dk_streamer_service::~dk_streamer_service(void)
 	if (_rtsp_server)
 		delete _rtsp_server;
 	_rtsp_server = nullptr;
-	if (_logger)
-		delete _logger;
-	_logger = nullptr;
+	dk_log4cplus_logger::destroy();
 }
 
 //dk_streamer_service & dk_streamer_service::instance(void)
@@ -148,13 +146,13 @@ bool dk_streamer_service::start_streaming(void)
 	}
 
 	start(nullptr, control_port_number);
-	_logger->make_system_info_log("parallel.record.streamer", "start control server[port number=%d]", control_port_number);
+	dk_log4cplus_logger::make_info_log("parallel.record.streamer", "start control server[port number=%d]", control_port_number);
 	if (rtsp_username && strlen(rtsp_username)>0 && rtsp_password && strlen(rtsp_password)>0)
 	{
 		if (_rtsp_server)
 		{
 			_rtsp_server->start(rtsp_port_number, (char*)rtsp_username, (char*)rtsp_password);
-			_logger->make_system_info_log("parallel.record.streamer", "start rtsp server[port number=%d]", rtsp_port_number);
+			dk_log4cplus_logger::make_info_log("parallel.record.streamer", "start rtsp server[port number=%d]", rtsp_port_number);
 			_rtsp_server_port_number = rtsp_port_number;
 		}
 	}
@@ -163,7 +161,7 @@ bool dk_streamer_service::start_streaming(void)
 		if (_rtsp_server)
 		{
 			_rtsp_server->start(rtsp_port_number, nullptr, nullptr);
-			_logger->make_system_info_log("parallel.record.streamer", "start rtsp server[port number=%d]", rtsp_port_number);
+			dk_log4cplus_logger::make_info_log("parallel.record.streamer", "start rtsp server[port number=%d]", rtsp_port_number);
 			_rtsp_server_port_number = rtsp_port_number;
 		}
 	}
@@ -178,10 +176,10 @@ bool dk_streamer_service::stop_streaming(void)
 	{
 		if (_rtsp_server)
 		{
-			_logger->make_system_info_log("parallel.record.streamer", "stop rtsp server");
+			dk_log4cplus_logger::make_info_log("parallel.record.streamer", "stop rtsp server");
 			_rtsp_server->stop();
 		}
-		_logger->make_system_info_log("parallel.record.streamer", "stop control server");
+		dk_log4cplus_logger::make_info_log("parallel.record.streamer", "stop control server");
 		stop();
 		_is_run = false;
 		return true;

@@ -20,7 +20,7 @@ public:
 	dk_rtsp_recorder(int32_t chunk_size_mb);
 	virtual ~dk_rtsp_recorder(void);
 
-	void start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, const char * storage, const char * uuid);
+	void start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, const char * storage, const char * uuid);
 	void stop_recording(void);
 
 	void on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp);
