@@ -205,7 +205,8 @@ void ic::iocp_client::execute(void)
 		}
 		else
 		{
-			continue;
+			if (io_context == NULL)
+				continue;
 		}
 
 		try

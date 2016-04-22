@@ -260,7 +260,8 @@ void ic::iocp_server::execute(void)
 		}
 		else
 		{
-			continue;
+			if (io_context == NULL)
+				continue;
 		}
 
 		try
