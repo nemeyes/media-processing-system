@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <recorder>
-	<backup_server enable="true" delete_after_backup="false">
+	<backup_server enable="true" delete_after_backup="true">
 		<url>10.203.141.103</url>
 		<!--url>127.0.0.1</url//-->
 		<port_number>21</port_number>
