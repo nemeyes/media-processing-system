@@ -20,7 +20,7 @@ HRESULT mf_topology_builder::create_source(const wchar_t * filepath, IMFMediaSou
 	return hr;
 }
 
-HRESULT mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topology, IMFMediaSource * media_source, DWORD stream_index, IMFPresentationDescriptor * present_descriptor, HWND hwnd, IUnknown ** device_manager)
+HRESULT mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topology, IMFMediaSource * media_source, DWORD stream_index, IMFPresentationDescriptor * present_descriptor, HWND hwnd, UINT gpu_index, IUnknown ** device_manager, IKeyEvent ** keyevent)
 {
 	HRESULT hr = S_OK;
 	ATL::CComPtr<IMFStreamDescriptor> stream_descriptor = NULL;
@@ -92,15 +92,23 @@ HRESULT mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topolo
 						hr = mf_topology_builder::create_dx11_video_renderer_activate(hwnd, &renderer_activate);
 						BREAK_ON_FAIL(hr);
 
+						ATL::CComQIPtr<IGPUSelector> gpu_selector(renderer_activate);
+						if (!gpu_selector)
+							break;
+						hr = gpu_selector->SetGPUIndex(gpu_index);
+						BREAK_ON_FAIL(hr);
+
 						ATL::CComPtr<IMFMediaSink> media_sink;
 						hr = renderer_activate->ActivateObject(IID_PPV_ARGS(&media_sink));
 						BREAK_ON_FAIL(hr);
-
 
 						ATL::CComPtr<IMFGetService> get_service;
 						hr = media_sink->QueryInterface(IID_PPV_ARGS(&get_service));
 						BREAK_ON_FAIL(hr);
 
+						ATL::CComQIPtr<IKeyEvent> key_event(media_sink);
+						if (!key_event)
+							break;
 
 						ATL::CComPtr<IMFStreamSink> stream_sink;
 						DWORD stream_sink_count = 0;

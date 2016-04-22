@@ -10,17 +10,25 @@ public:
 	virtual ~mf_player_framework(void);
 
 	// Playback control
-	dk_mf_player_framework::ERR_CODE seek(int position);
-	dk_mf_player_framework::ERR_CODE slowfoward_rate(float rate);
-	dk_mf_player_framework::ERR_CODE fastforward_rate(float rate);
+	dk_mf_player_framework::err_code seek(int position);
+	dk_mf_player_framework::err_code slowfoward_rate(float rate);
+	dk_mf_player_framework::err_code fastforward_rate(float rate);
 
 
-	dk_mf_player_framework::ERR_CODE open_file(const wchar_t * file, HWND hwnd);
-	dk_mf_player_framework::ERR_CODE play(void);
-	dk_mf_player_framework::ERR_CODE pause(void);
-	dk_mf_player_framework::ERR_CODE stop(void);
-	dk_mf_player_framework::STATE state(void) const;
+	dk_mf_player_framework::err_code open_file(const wchar_t * file, uint32_t gpu_index, HWND hwnd);
+	dk_mf_player_framework::err_code play(void);
+	dk_mf_player_framework::err_code pause(void);
+	dk_mf_player_framework::err_code stop(void);
+	dk_mf_player_framework::player_state state(void) const;
 
+	void on_keydown_right(void);
+	void on_keyup_right(void);
+	void on_keydown_left(void);
+	void on_keyup_left(void);
+	void on_keydown_up(void);
+	void on_keyup_up(void);
+	void on_keydown_down(void);
+	void on_keyup_down(void);
 
 	//IUnKnown Methods
 	STDMETHODIMP QueryInterface(REFIID riid, void ** ppv);
@@ -53,13 +61,14 @@ private:
 	volatile long _ref_count;
 
 
-	dk_mf_player_framework::STATE _state;
+	dk_mf_player_framework::player_state _state;
 	ATL::CComPtr<IMFMediaSession> _session;
 	ATL::CComPtr<IMFRateControl> _rate_control;
 	ATL::CComPtr<IMFClock> _presentation_clock;
 
 	ATL::CComQIPtr<IMFTopology> _topology;     // the topology itself
 	ATL::CComQIPtr<IMFMediaSource> _media_source;       // the MF source
+	ATL::CComPtr<IKeyEvent> _key_event;
 
 	ATL::CComPtr<IUnknown> _device_manager;
 

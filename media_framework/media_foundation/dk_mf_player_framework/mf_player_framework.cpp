@@ -5,13 +5,12 @@
 
 mf_player_framework::mf_player_framework(void)
 	: _ref_count(1)
-	, _state(dk_mf_player_framework::STATE_CLOSED)
+	, _state(dk_mf_player_framework::player_state_closed)
 	, _session(NULL)
 	, _rate_control(NULL)
 	, _presentation_clock(NULL)
 	, _duration(0)
 	, _video_display(NULL)
-//	, _hwnd(NULL)
 {
 	MFStartup(MF_VERSION);
 	_close_completion_event = ::CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -22,23 +21,33 @@ mf_player_framework::~mf_player_framework(void)
 	stop();
 	close_session();
 	shutdown_source();
+	if (_topology)
+	{
+		_topology.Release();
+		//_topology = NULL;
+	}
+	if (_video_display)
+	{
+		_video_display.Release();
+		_video_display = NULL;
+	}
 	MFShutdown();
 	::CloseHandle(_close_completion_event);
 }
 
 // Playback control
-dk_mf_player_framework::ERR_CODE mf_player_framework::seek(int position)
+dk_mf_player_framework::err_code mf_player_framework::seek(int position)
 {
-	return dk_mf_player_framework::ERR_CODE_SUCCESS;
+	return dk_mf_player_framework::err_code_success;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::slowfoward_rate(float rate)
+dk_mf_player_framework::err_code mf_player_framework::slowfoward_rate(float rate)
 {
 	HRESULT hr = S_OK;
 	BOOL thin = FALSE;
 	do
 	{
-		if (_state != dk_mf_player_framework::STATE_STARTED)
+		if (_state != dk_mf_player_framework::player_state_started)
 		{
 			hr = MF_E_INVALIDREQUEST;
 			break;
@@ -50,18 +59,18 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::slowfoward_rate(float rate
 	} while (0);
 
 	if (FAILED(hr))
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 	else
-		return dk_mf_player_framework::ERR_CODE_SUCCESS;
+		return dk_mf_player_framework::err_code_success;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::fastforward_rate(float rate)
+dk_mf_player_framework::err_code mf_player_framework::fastforward_rate(float rate)
 {
 	HRESULT hr = S_OK;
 	BOOL thin = FALSE;
 	do
 	{
-		if (_state != dk_mf_player_framework::STATE_STARTED)
+		if (_state != dk_mf_player_framework::player_state_started)
 		{
 			hr = MF_E_INVALIDREQUEST;
 			break;
@@ -73,16 +82,16 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::fastforward_rate(float rat
 	} while (0);
 
 	if (FAILED(hr))
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 	else
-		return dk_mf_player_framework::ERR_CODE_SUCCESS;
+		return dk_mf_player_framework::err_code_success;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * file, HWND hwnd)
+dk_mf_player_framework::err_code mf_player_framework::open_file(const wchar_t * file, uint32_t gpu_index, HWND hwnd)
 {
 	HRESULT hr = S_OK;
 	if (hwnd == NULL)
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 
 	do
 	{
@@ -119,7 +128,7 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 
 			for (DWORD index = 0; index < number_of_streams; index++)
 			{
-				mf_topology_builder::add_branch_to_partial_topology(_topology, _media_source, index, present_descriptor, hwnd, &_device_manager);
+				mf_topology_builder::add_branch_to_partial_topology(_topology, _media_source, index, present_descriptor, hwnd, gpu_index, &_device_manager, &_key_event);
 			}
 		} while (0);
 		BREAK_ON_FAIL(hr);
@@ -138,59 +147,59 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::open_file(const wchar_t * 
 
 		// If we've just initialized a brand new topology in step 1, set the player state 
 		// to "open pending" - not playing yet, but ready to begin.
-		if (_state == dk_mf_player_framework::STATE_READY)
+		if (_state == dk_mf_player_framework::player_state_ready)
 		{
-			_state = dk_mf_player_framework::STATE_OPEN_PENDING;
+			_state = dk_mf_player_framework::player_state_open_pending;
 		}
 	} while (0);
 
 	if (FAILED(hr))
 	{
-		_state = dk_mf_player_framework::STATE_CLOSED;
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		_state = dk_mf_player_framework::player_state_closed;
+		return dk_mf_player_framework::err_code_failed;
 	}
-	return dk_mf_player_framework::ERR_CODE_SUCCESS;
+	return dk_mf_player_framework::err_code_success;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::play(void)
+dk_mf_player_framework::err_code mf_player_framework::play(void)
 {
-	if (_state != dk_mf_player_framework::STATE_PAUSED && _state != dk_mf_player_framework::STATE_STOPPED)
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+	if (_state != dk_mf_player_framework::player_state_paused && _state != dk_mf_player_framework::player_state_stopped)
+		return dk_mf_player_framework::err_code_failed;
 
 	if (_session == NULL)
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 
 	HRESULT hr = start_playback();
 	if (SUCCEEDED(hr))
-		return dk_mf_player_framework::ERR_CODE_SUCCESS;
+		return dk_mf_player_framework::err_code_success;
 	else
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::pause(void)
+dk_mf_player_framework::err_code mf_player_framework::pause(void)
 {
-	if (_state != dk_mf_player_framework::STATE_STARTED)
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+	if (_state != dk_mf_player_framework::player_state_started)
+		return dk_mf_player_framework::err_code_failed;
 
 	if (_session == NULL)
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 
 	HRESULT hr = _session->Pause();
 	if (SUCCEEDED(hr))
 	{
-		_state = dk_mf_player_framework::STATE_PAUSED;
-		return dk_mf_player_framework::ERR_CODE_SUCCESS;
+		_state = dk_mf_player_framework::player_state_paused;
+		return dk_mf_player_framework::err_code_success;
 	}
 	else
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 }
 
-dk_mf_player_framework::ERR_CODE mf_player_framework::stop(void)
+dk_mf_player_framework::err_code mf_player_framework::stop(void)
 {
 	HRESULT hr = S_OK;
 	do
 	{
-		if (_state != dk_mf_player_framework::STATE_STARTED)
+		if (_state != dk_mf_player_framework::player_state_started)
 		{
 			hr = MF_E_INVALIDREQUEST;
 			break;
@@ -201,18 +210,66 @@ dk_mf_player_framework::ERR_CODE mf_player_framework::stop(void)
 		hr = _session->Stop();
 		BREAK_ON_FAIL(hr);
 
-		_state = dk_mf_player_framework::STATE_STOPPED;
+		_state = dk_mf_player_framework::player_state_stopped;
 	} while (0);
 
 	if (SUCCEEDED(hr))
-		return dk_mf_player_framework::ERR_CODE_SUCCESS;
+		return dk_mf_player_framework::err_code_success;
 	else
-		return dk_mf_player_framework::ERR_CODE_FAILED;
+		return dk_mf_player_framework::err_code_failed;
 }
 
-dk_mf_player_framework::STATE mf_player_framework::state(void) const 
+dk_mf_player_framework::player_state mf_player_framework::state(void) const 
 { 
 	return _state; 
+}
+
+void mf_player_framework::on_keydown_right(void)
+{
+	if (_key_event)
+		_key_event->OnKeyDownRight();
+}
+
+void mf_player_framework::on_keyup_right(void)
+{
+	if (_key_event)
+		_key_event->OnKeyUpRight();
+}
+
+void mf_player_framework::on_keydown_left(void)
+{
+	if (_key_event)
+		_key_event->OnKeyDownLeft();
+}
+
+void mf_player_framework::on_keyup_left(void)
+{
+	if (_key_event)
+		_key_event->OnKeyUpLeft();
+}
+
+void mf_player_framework::on_keydown_up(void)
+{
+	if (_key_event)
+		_key_event->OnKeyDownUp();
+}
+
+void mf_player_framework::on_keyup_up(void)
+{
+	if (_key_event)
+		_key_event->OnKeyUpUp();
+}
+
+void mf_player_framework::on_keydown_down(void)
+{
+	if (_key_event)
+		_key_event->OnKeyDownDown();
+}
+
+void mf_player_framework::on_keyup_down(void)
+{
+	if (_key_event)
+		_key_event->OnKeyUpDown();
 }
 
 HRESULT mf_player_framework::QueryInterface(REFIID riid, void ** ppv)
@@ -299,7 +356,7 @@ HRESULT mf_player_framework::Invoke(IMFAsyncResult * async_result)
 
 		// If we are in a normal state, handle the event by passing it to the HandleEvent()
 		// function.  Otherwise, if we are in the closing state, do nothing with the event.
-		if (_state != dk_mf_player_framework::STATE_CLOSING)
+		if (_state != dk_mf_player_framework::player_state_closing)
 		{
 			process_event(media_event);
 		}
@@ -382,7 +439,7 @@ HRESULT mf_player_framework::topology_ready_callback(void)
 HRESULT mf_player_framework::presentation_ended_callback(void)
 {
 	// The session puts itself into the stopped state automatically.
-	_state = dk_mf_player_framework::STATE_STOPPED;
+	_state = dk_mf_player_framework::player_state_stopped;
 	_session->Stop();
 	_session->Shutdown();
 	return S_OK;
@@ -396,13 +453,13 @@ HRESULT mf_player_framework::create_session(void)
 
 	do
 	{
-		assert(_state == dk_mf_player_framework::STATE_CLOSED);
+		assert(_state == dk_mf_player_framework::player_state_closed);
 
 		// Create the media session.
 		hr = MFCreateMediaSession(NULL, &_session);
 		BREAK_ON_FAIL(hr);
 
-		_state = dk_mf_player_framework::STATE_READY;
+		_state = dk_mf_player_framework::player_state_ready;
 
 		// designate this class as the one that will be handling events from the media 
 		hr = _session->BeginGetEvent((IMFAsyncCallback*)this, NULL);
@@ -417,16 +474,17 @@ HRESULT mf_player_framework::close_session(void)
 	HRESULT hr = S_OK;
 	DWORD wait_result = 0;
 
-	_state = dk_mf_player_framework::STATE_CLOSING;
+	_state = dk_mf_player_framework::player_state_closing;
 
 	// release the video display object
+	_video_display.Release();
 	_video_display = NULL;
 
 	// Call the asynchronous Close() method and then wait for the close
 	// operation to complete on another thread
 	if (_session != NULL)
 	{
-		_state = dk_mf_player_framework::STATE_CLOSING;
+		_state = dk_mf_player_framework::player_state_closing;
 		hr = _session->Close();
 		if (SUCCEEDED(hr))
 		{
@@ -449,7 +507,7 @@ HRESULT mf_player_framework::close_session(void)
 	}
 
 	_session = NULL;
-	_state = dk_mf_player_framework::STATE_CLOSED;
+	_state = dk_mf_player_framework::player_state_closed;
 	return hr;
 }
 
@@ -467,7 +525,7 @@ HRESULT mf_player_framework::start_playback(void)
 	HRESULT hr = _session->Start(&GUID_NULL, &var_play);
 	if (SUCCEEDED(hr))
 	{
-		_state = dk_mf_player_framework::STATE_STARTED;
+		_state = dk_mf_player_framework::player_state_started;
 	}
 
 	PropVariantClear(&var_play);

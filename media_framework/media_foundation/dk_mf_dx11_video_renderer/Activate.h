@@ -6,7 +6,7 @@
 
 namespace DX11VideoRenderer
 {
-    class CActivate : public CMFAttributesImpl<IMFActivate>, public IPersistStream, private CBase
+	class CActivate : public CMFAttributesImpl<IMFActivate>, public IPersistStream, public IGPUSelector, private CBase
     {
     public:
 
@@ -31,12 +31,16 @@ namespace DX11VideoRenderer
         // IPersist (from IPersistStream)
         STDMETHODIMP GetClassID(__RPC__out CLSID* pClassID);
 
+		// IGPUSelector
+		STDMETHODIMP SetGPUIndex(UINT index);
+
     private:
 
         CActivate(void);
         ~CActivate(void);
 
         long m_lRefCount;
+		UINT _gpu_index;
         IMFMediaSink* m_pMediaSink;
         HWND m_hwnd;
     };

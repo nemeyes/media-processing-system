@@ -6,7 +6,7 @@ class mf_topology_builder
 public:
 	static HRESULT create_source(const wchar_t * filepath, IMFMediaSource ** media_source);
 
-	static HRESULT add_branch_to_partial_topology(IMFTopology * topology, IMFMediaSource * media_source, DWORD stream_index, IMFPresentationDescriptor * present_descriptor, HWND hwnd, IUnknown ** device_manager);
+	static HRESULT add_branch_to_partial_topology(IMFTopology * topology, IMFMediaSource * media_source, DWORD stream_index, IMFPresentationDescriptor * present_descriptor, HWND hwnd, UINT gpu_index, IUnknown ** device_manager, IKeyEvent ** keyevent);
 
 	static HRESULT create_stream_source_node(IMFMediaSource * media_source, IMFPresentationDescriptor * present_descriptor, IMFStreamDescriptor * stream_descriptor, IMFTopologyNode ** node);
 	static HRESULT create_dx11_video_renderer_activate(HWND hwnd, IMFActivate ** activate);

@@ -1,4 +1,6 @@
 #include "Activate.h"
+#include <atlbase.h>
+#include <dk_gpu_selector.h>
 
 HRESULT DX11VideoRenderer::CActivate::CreateInstance(HWND hwnd, IMFActivate** ppActivate)
 {
@@ -73,6 +75,10 @@ HRESULT DX11VideoRenderer::CActivate::QueryInterface(REFIID iid, __RPC__deref_ou
     {
         *ppv = static_cast<IMFAttributes*>(this);
     }
+	else if (iid == __uuidof(IGPUSelector))
+	{
+		*ppv = static_cast<IGPUSelector*>(this);
+	}
     else
     {
         *ppv = NULL;
@@ -109,6 +115,15 @@ HRESULT DX11VideoRenderer::CActivate::ActivateObject(__RPC__in REFIID riid, __RP
             {
                 break;
             }
+
+			ATL::CComQIPtr<IGPUSelector> gpu_selector(m_pMediaSink);
+			if (!gpu_selector)
+				break;
+			hr = gpu_selector->SetGPUIndex(_gpu_index);
+			if (FAILED(hr))
+			{
+				break;
+			}
 
             hr = m_pMediaSink->QueryInterface(IID_PPV_ARGS(&pSinkGetService));
             if (FAILED(hr))
@@ -198,11 +213,18 @@ HRESULT DX11VideoRenderer::CActivate::GetClassID(__RPC__out CLSID* pClassID)
     return S_OK;
 }
 
+HRESULT DX11VideoRenderer::CActivate::SetGPUIndex(UINT index)
+{
+	_gpu_index = index;
+	return NOERROR;
+}
+
 // ctor
-DX11VideoRenderer::CActivate::CActivate(void) :
-    m_lRefCount(0),
-    m_pMediaSink(NULL),
-    m_hwnd(NULL)
+DX11VideoRenderer::CActivate::CActivate(void) 
+	: m_lRefCount(0)
+	, m_pMediaSink(NULL)
+	, m_hwnd(NULL)
+	, _gpu_index(0)
 {
 }
 
