@@ -345,6 +345,7 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
 #define RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS 500
 #endif
 
+#if 0
 Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsigned dataSize, Boolean forceSendToSucceed) {
   int sendResult = send(socketNum, (char const*)data, dataSize, 0/*flags*/);
   if (sendResult < (int)dataSize) {
@@ -387,6 +388,43 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsig
 
   return True;
 }
+
+#else
+
+//by han
+#define TCP_RETRY 5
+Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsigned dataSize, Boolean forceSendToSucceed) {
+	int i, offset = 0, sent;
+	makeSocketBlocking(socketNum);
+	for (i = 0; i<TCP_RETRY; i++)
+	{
+		sent = send(socketNum, (char const*)(data + offset), (dataSize - offset), 0/*flags*/);
+		if (sent != (int)(dataSize - offset))
+		{
+			if (!forceSendToSucceed) 
+				return False;
+
+			if (sent >= 0)
+				offset += sent;
+
+			if (sent<0 && (envir().getErrno() != EAGAIN))
+			{
+				makeSocketNonBlocking(socketNum);
+				return False;
+			}
+		}
+		else
+		{
+			makeSocketNonBlocking(socketNum);
+			return True;
+		}
+	}
+	makeSocketNonBlocking(socketNum);
+	return False;
+}
+
+
+#endif
 
 SocketDescriptor::SocketDescriptor(UsageEnvironment& env, int socketNum)
   :fEnv(env), fOurSocketNum(socketNum),
