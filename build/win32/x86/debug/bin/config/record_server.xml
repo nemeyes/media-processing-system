@@ -9,7 +9,7 @@
 	</backup_server>
 	<media_sources name="groupname" chunk_size="64">
 		<media_source uuid="CH1">
-			<url>rtsp://1.217.25.234:5054/1/stream1</url>
+			<url>rtsp://1.217.25.234:5054/8/stream1</url>
 			<username></username>
 			<password></password>
 		</media_source>		
