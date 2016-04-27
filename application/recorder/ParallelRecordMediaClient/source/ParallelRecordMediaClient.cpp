@@ -9,6 +9,11 @@
 CRITICAL_SECTION g_lock;
 std::map<std::string, parallel_recorder_t*> g_parallel_recorders;
 
+
+int g_rtsp_source_index_generator;
+CRITICAL_SECTION g_rtsp_source_lock;
+std::map<int, single_rtsp_source_t*> g_rtsp_sources;
+
 HWND g_fullscreen_dlg = NULL;
 
 BOOL CALLBACK fullwnd_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -38,6 +43,8 @@ BOOL CALLBACK fullwnd_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 int PRMC_Initialize(HWND hwnd)
 {
 	::InitializeCriticalSection(&g_lock);
+	::InitializeCriticalSection(&g_rtsp_source_lock);
+	g_rtsp_source_index_generator = 0;
 
 	//g_fullscreen_dlg = CreateDialog(GetModuleHandle(L"dk_media_player_framework.dll"), MAKEINTRESOURCE(IDD_DIALOG_FULLSCREEN), hwnd, fullwnd_proc);
 	//if (g_fullscreen_dlg)
@@ -50,7 +57,7 @@ int PRMC_Initialize(HWND hwnd)
 
 int PRMC_Release(void)
 {
-
+	::DeleteCriticalSection(&g_rtsp_source_lock);
 	::DeleteCriticalSection(&g_lock);
 	return PRMC_SUCCESS;
 }
@@ -655,6 +662,141 @@ int PRMC_Stop(const wchar_t * url, int index)
 		free(ascii_url);
 	ascii_url = nullptr;
 
+	return result;
+}
+
+
+/*
+int g_media_source_index_generator;
+CRITICAL_SECTION g_media_source_lock;
+std::map<int, single_media_source_t*> g_media_sources;
+*/
+int PRMC_RTSP_Add(const wchar_t * url, int port_number, const wchar_t * username, const wchar_t * password, HWND hwnd)
+{
+	if (!url || wcslen(url) < 1)
+		return PRMC_FAIL;
+
+	int rtsp_source_index = -1;
+
+	char * ascii_url = 0;
+	char * ascii_username = 0;
+	char * ascii_password = 0;
+
+	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	if (username && wcslen(username)>0)
+		dk_string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
+	if (password && wcslen(password)>0)
+		dk_string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
+
+	if (ascii_url && strlen(ascii_url) > 0)
+	{
+		dk_auto_lock mutext(&g_rtsp_source_lock);
+		single_rtsp_source_t * source = new single_rtsp_source_t();
+		strcpy_s(source->url, sizeof(source->url), ascii_url);
+		if (ascii_username && strlen(ascii_username) > 0)
+			strcpy_s(source->username, sizeof(source->username), ascii_username);
+		if (ascii_password && strlen(ascii_password) > 0)
+			strcpy_s(source->password, sizeof(source->password), ascii_password);
+		source->hwnd = hwnd;
+		source->run = false;
+		source->receiver = new dk_rtsp_receiver();
+
+		g_rtsp_sources.insert(std::make_pair(g_rtsp_source_index_generator, source));
+		rtsp_source_index = g_rtsp_source_index_generator;
+		g_rtsp_source_index_generator++;
+	}
+
+	if (ascii_url)
+		free(ascii_url);
+	ascii_url = nullptr;
+	if (ascii_username)
+		free(ascii_username);
+	ascii_username = nullptr;
+	if (ascii_password)
+		free(ascii_password);
+	ascii_password = nullptr;
+
+	return rtsp_source_index;
+}
+
+int PRMC_RTSP_Remove(int index)
+{
+	int result = PRMC_FAIL;
+
+	dk_auto_lock mutex(&g_rtsp_source_lock);
+	std::map<int, single_rtsp_source_t*>::iterator iter = g_rtsp_sources.find(index);
+	if (iter != g_rtsp_sources.end())
+	{
+		single_rtsp_source_t * source = iter->second;
+		if (source)
+		{
+			if (source->run)
+			{
+				dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(source->receiver);
+				receiver->stop();
+				source->run = false;
+			}
+
+			dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(source->receiver);
+			delete receiver;
+			receiver = nullptr;
+
+			source->receiver = nullptr;
+			delete source;
+			source = nullptr;
+		}
+		g_rtsp_sources.erase(iter);
+		result = PRMC_SUCCESS;
+	}
+
+	return result;
+}
+
+int PRMC_RTSP_Play(int index, bool repeat)
+{
+	int result = PRMC_FAIL;
+
+	dk_auto_lock mutex(&g_rtsp_source_lock);
+	std::map<int, single_rtsp_source_t*>::iterator iter = g_rtsp_sources.find(index);
+	if (iter != g_rtsp_sources.end())
+	{
+		single_rtsp_source_t * source = iter->second;
+		if (source)
+		{
+			if (!source->run)
+			{
+				dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(source->receiver);
+				receiver->play(source->url, source->username, source->password, 1, 1, repeat, source->hwnd);
+				source->run = true;
+			}
+
+		}
+		result = PRMC_SUCCESS;
+	}
+	return result;
+}
+
+int PRMC_RTSP_Stop(int index)
+{
+	int result = PRMC_FAIL;
+
+	dk_auto_lock mutex(&g_rtsp_source_lock);
+	std::map<int, single_rtsp_source_t*>::iterator iter = g_rtsp_sources.find(index);
+	if (iter != g_rtsp_sources.end())
+	{
+		single_rtsp_source_t * source = iter->second;
+		if (source)
+		{
+			if (source->run)
+			{
+				dk_rtsp_receiver * receiver = static_cast<dk_rtsp_receiver*>(source->receiver);
+				receiver->stop();
+				source->run = false;
+			}
+
+		}
+		result = PRMC_SUCCESS;
+	}
 	return result;
 }
 

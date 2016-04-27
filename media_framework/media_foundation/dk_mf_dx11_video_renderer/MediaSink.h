@@ -4,6 +4,8 @@
 #include "Presenter.h"
 #include "Scheduler.h"
 #include "StreamSink.h"
+#include <dk_gpu_selector.h>
+#include <dk_key_event.h>
 
 namespace DX11VideoRenderer
 {
@@ -13,6 +15,8 @@ namespace DX11VideoRenderer
         public IMFGetService,
         public IMFRateSupport,
         public IMFMediaSinkPreroll,
+		public IGPUSelector,
+		public IKeyEvent,
         private CBase
     {
     public:
@@ -53,6 +57,19 @@ namespace DX11VideoRenderer
 
         // IMFMediaSinkPreroll
         STDMETHODIMP NotifyPreroll(MFTIME hnsUpcomingStartTime);
+
+		// IGPUSelector
+		STDMETHODIMP SetGPUIndex(UINT index);
+
+		// IKeyEvent
+		STDMETHODIMP OnKeyDownRight();
+		STDMETHODIMP OnKeyUpRight();
+		STDMETHODIMP OnKeyDownLeft();
+		STDMETHODIMP OnKeyUpLeft();
+		STDMETHODIMP OnKeyDownUp();
+		STDMETHODIMP OnKeyUpUp();
+		STDMETHODIMP OnKeyDownDown();
+		STDMETHODIMP OnKeyUpDown();
 
     private:
 

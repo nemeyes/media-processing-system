@@ -49,6 +49,19 @@ namespace DX11VideoRenderer
         HRESULT SetCurrentMediaType(IMFMediaType* pMediaType);
         HRESULT Shutdown(void);
 
+		// Set GPU Index
+		void SetGPUIndex(UINT index);
+
+		///////// 360 Player ////////////////
+		void OnKeyDown_Right();
+		void OnKeyUp_Right();
+		void OnKeyDown_Left();
+		void OnKeyUp_Left();
+		void OnKeyDown_Up();
+		void OnKeyUp_Up();
+		void OnKeyDown_Down();
+		void OnKeyUp_Down();
+
     private:
 
         void    AspectRatioCorrectSize(
@@ -117,6 +130,8 @@ namespace DX11VideoRenderer
         UINT                            m_useXVP;
         UINT                            m_useDCompVisual;
         UINT                            m_useDebugLayer;
+
+		UINT							_gpu_index;
         ID3D11VideoDevice*              m_pDX11VideoDevice;
         ID3D11VideoProcessorEnumerator* m_pVideoProcessorEnum;
         ID3D11VideoProcessor*           m_pVideoProcessor;

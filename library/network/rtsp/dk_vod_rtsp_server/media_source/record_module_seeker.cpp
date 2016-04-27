@@ -5,6 +5,38 @@
 #include <boost/date_time/local_time/local_time.hpp>
 #include <dk_log4cplus_logger.h>
 
+typedef struct _record_module_seek_info_t
+{
+	long long start_time;
+	long long end_time;
+	char filename[260];
+	_record_module_seek_info_t(void)
+	{
+
+	}
+
+	_record_module_seek_info_t(const _record_module_seek_info_t & clone)
+	{
+		start_time = clone.start_time;
+		end_time = clone.end_time;
+		strncpy_s(filename, clone.filename, sizeof(filename));
+	}
+
+	_record_module_seek_info_t & operator=(const _record_module_seek_info_t & clone)
+	{
+		start_time = clone.start_time;
+		end_time = clone.end_time;
+		strncpy_s(filename, clone.filename, sizeof(filename));
+		return (*this);
+	}
+
+} record_module_seek_info_t;
+
+bool compare_object(record_module_seek_info_t first, record_module_seek_info_t second)
+{
+	return first.start_time > second.start_time;
+}
+
 record_module_seeker::record_module_seeker(void)
 	: _record_module(nullptr)
 	, _last_read_timestamp(0)
@@ -35,6 +67,12 @@ bool record_module_seeker::seek(const char * single_media_source_path, long long
 	bfind = ::FindFirstFileA(single_media_source_search_path, &wfd);
 	if (bfind == INVALID_HANDLE_VALUE)
 		return false;
+
+	std::map<std::string, record_module_seek_info_t>::iterator seek_iter;
+	std::map<std::string, record_module_seek_info_t> seek_infos;
+
+	std::vector<record_module_seek_info_t>::iterator sorted_seek_iter;
+	std::vector<record_module_seek_info_t> sorted_seek_infos;
 	do
 	{
 		if (!(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -64,6 +102,12 @@ bool record_module_seeker::seek(const char * single_media_source_path, long long
 			boost::posix_time::time_duration elapsed_end_time = end_ptime - epoch;
 			end_time = elapsed_end_time.total_milliseconds();
 
+			record_module_seek_info_t seek_info;
+			seek_info.start_time = start_time;
+			seek_info.end_time = end_time;
+			strncpy_s(seek_info.filename, recorded_file_name, sizeof(seek_info.filename));
+			//seek_infos.insert(std::make_pair(recorded_file_name, seek_info));
+			sorted_seek_infos.push_back(seek_info);
 			/*
 			char str_seek_time[260] = { 0 };
 			char str_start_time[260] = { 0 };
@@ -71,22 +115,93 @@ bool record_module_seeker::seek(const char * single_media_source_path, long long
 			get_time_from_elapsed_msec_from_epoch(seek_time, str_seek_time, sizeof(str_seek_time));
 			get_time_from_elapsed_msec_from_epoch(start_time, str_start_time, sizeof(str_start_time));
 			get_time_from_elapsed_msec_from_epoch(end_time, str_end_time, sizeof(str_end_time));
-
 			dk_log4cplus_logger::make_debug_log("parallel.record.streamer", "seek[%s], start[%s], end[%s]", str_seek_time, str_start_time, str_end_time);
 			*/
-			if (seek_time >= start_time && seek_time <= end_time)
-			{
-				_record_module->seek(seek_time);
-				break;
-			}
-
+			//if (seek_time >= start_time && seek_time <= end_time)
+			//{
+			//	_record_module->seek(seek_time);
+			//	break;
+			//}
 			if (_record_module)
 				delete _record_module;
 			_record_module = nullptr;
 		}
 	} while (::FindNextFileA(bfind, &wfd));
-
 	::FindClose(bfind);
+	std::sort(sorted_seek_infos.begin(), sorted_seek_infos.end(), compare_object);
+
+	long long min_start_time = _I64_MAX;
+	long long max_end_time = _I64_MIN;
+	for (sorted_seek_iter = sorted_seek_infos.begin(); sorted_seek_iter != sorted_seek_infos.end(); sorted_seek_iter++)
+	{
+		record_module_seek_info_t seek_info = (*sorted_seek_iter);
+		if (seek_info.start_time <= seek_time && seek_time <= seek_info.end_time)
+		{
+			char single_recorded_file[260] = { 0 };
+			_snprintf_s(single_recorded_file, sizeof(single_recorded_file), "%s\\%s", _single_media_source_path, seek_info.filename);
+
+			_record_module = new dk_record_module(single_recorded_file);
+			_record_module->seek(seek_time);
+			break;
+		}
+
+		if (min_start_time > seek_info.start_time)
+			min_start_time = seek_info.start_time;
+		if (max_end_time < seek_info.end_time)
+			max_end_time = seek_info.end_time;
+	}
+
+	if (!_record_module)
+	{
+		if (seek_time < min_start_time)
+		{
+			for (sorted_seek_iter = sorted_seek_infos.begin(); sorted_seek_iter != sorted_seek_infos.end(); sorted_seek_iter++)
+			{
+				record_module_seek_info_t seek_info = (*sorted_seek_iter);
+				if (seek_info.start_time == min_start_time)
+				{
+					char single_recorded_file[260] = { 0 };
+					_snprintf_s(single_recorded_file, sizeof(single_recorded_file), "%s\\%s", _single_media_source_path, seek_info.filename);
+
+					_record_module = new dk_record_module(single_recorded_file);
+					_record_module->seek(seek_time);
+					break;
+				}
+			}
+		}
+		else if (seek_time > max_end_time)
+		{
+			for (sorted_seek_iter = sorted_seek_infos.begin(); sorted_seek_iter != sorted_seek_infos.end(); sorted_seek_iter++)
+			{
+				record_module_seek_info_t seek_info = (*sorted_seek_iter);
+				if (seek_info.end_time == max_end_time)
+				{
+					char single_recorded_file[260] = { 0 };
+					_snprintf_s(single_recorded_file, sizeof(single_recorded_file), "%s\\%s", _single_media_source_path, seek_info.filename);
+
+					_record_module = new dk_record_module(single_recorded_file);
+					_record_module->seek(seek_time);
+					break;
+				}
+			}
+		}
+		else
+		{
+			for (sorted_seek_iter = sorted_seek_infos.begin(); sorted_seek_iter != sorted_seek_infos.end(); sorted_seek_iter++)
+			{
+				record_module_seek_info_t seek_info = (*sorted_seek_iter);
+				if (seek_info.start_time > seek_time)
+				{
+					char single_recorded_file[260] = { 0 };
+					_snprintf_s(single_recorded_file, sizeof(single_recorded_file), "%s\\%s", _single_media_source_path, seek_info.filename);
+
+					_record_module = new dk_record_module(single_recorded_file);
+					_record_module->seek(seek_time);
+					break;
+				}
+			}
+		}
+	}
 
 	if (_record_module)
 		return true;

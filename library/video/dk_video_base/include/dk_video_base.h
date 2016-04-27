@@ -83,18 +83,18 @@ public:
 	typedef enum _memory_type
 	{
 		memory_type_host = 0,
-		memory_type_dx9,
-		memory_type_dx9ex,
-		memory_type_dx10,
-		memory_type_dx10_1,
-		memory_type_dx11,
-		memory_type_dx11_1,
-		memory_type_dx11_2,
-		memory_type_dx11_3,
-		memory_type_dx12,
+		memory_type_d3d9,
+		memory_type_d3d9ex,
+		memory_type_d3d10,
+		memory_type_d3d10_1,
+		memory_type_d3d11,
+		memory_type_d3d11_1,
+		memory_type_d3d11_2,
+		memory_type_d3d11_3,
+		memory_type_d3d12,
 		memory_type_opengl,
-		memory_type_opencl,
-		memory_type_cuda,
+		//memory_type_opencl,
+		//memory_type_cuda,
 	} memory_type;
 
 	typedef enum _pic_type

@@ -5,11 +5,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <d3d9.h>
-#include <d3d10_1.h>
-#include <d3d11.h>
+//#include <d3d9.h>
+//#include <d3d10_1.h>
+//#include <d3d11.h>
+//#include <dxgi1_2.h>
+//#include <d3d11_1.h>
 #pragma warning(disable : 4996)
-#include <dxva2api.h>
+//#include <dxva2api.h>
+
+#include <atlbase.h>
+#include <dxgi1_2.h>
+#include <dxgi1_3.h>
+#include <d3d11.h>
+
 #include "dynlink_cuda.h" // <cuda.h>
 #include "nvEncodeAPI.h"
 #include "dk_nvenc_encoder.h"
@@ -109,6 +117,9 @@ private:
 	NVENCSTATUS initialize_cuda(uint32_t device_id);
 	NVENCSTATUS release_cuda(void);
 
+	NVENCSTATUS initialize_d3d11(void);
+	NVENCSTATUS release_d3d11(void);
+
 	NVENCSTATUS initialize_nvenc_encoder(void * device, NV_ENC_DEVICE_TYPE type);
 	NVENCSTATUS release_nvenc_encoder(void);
 
@@ -191,8 +202,8 @@ private:
 	nvenc_output_buffer_t		_nvenc_eos_output_buffer;
 
 private:
-	IDirectXVideoProcessorService * _dxva2_video_process_services;
-	IDirectXVideoProcessor * _dxva2_video_processor;
+	ID3D11VideoProcessorEnumerator * _video_processor_enum;
+	ID3D11VideoProcessor * _video_processor;
 
 
 

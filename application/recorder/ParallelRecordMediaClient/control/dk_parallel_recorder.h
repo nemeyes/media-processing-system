@@ -93,7 +93,47 @@ typedef struct _parallel_recorder_t
 	}
 } parallel_recorder_t;
 
+typedef struct _single_rtsp_source_t
+{
+	char url[260];
+	char username[260];
+	char password[260];
+	HWND hwnd;
+	bool run;
+	void * receiver;
+	_single_rtsp_source_t(void)
+		: hwnd(NULL)
+		, run(false)
+		, receiver(NULL)
+	{
+		memset(url, 0x00, sizeof(url));
+		memset(username, 0x00, sizeof(username));
+		memset(password, 0x00, sizeof(password));
+	}
 
+	_single_rtsp_source_t(_single_rtsp_source_t & clone)
+	{
+		strcpy_s(url, sizeof(url), clone.url);
+		strcpy_s(username, sizeof(username), clone.username);
+		strcpy_s(password, sizeof(password), clone.password);
+
+		hwnd = clone.hwnd;
+		run = clone.run;
+		receiver = clone.receiver;
+	}
+
+	_single_rtsp_source_t & operator=(_single_rtsp_source_t & clone)
+	{
+		strcpy_s(url, sizeof(url), clone.url);
+		strcpy_s(username, sizeof(username), clone.username);
+		strcpy_s(password, sizeof(password), clone.password);
+
+		hwnd = clone.hwnd;
+		run = clone.run;
+		receiver = clone.receiver;
+		return (*this);
+	}
+} single_rtsp_source_t;
 
 
 

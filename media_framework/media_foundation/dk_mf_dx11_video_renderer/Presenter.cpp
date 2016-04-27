@@ -1,5 +1,13 @@
 #include "Presenter.h"
 
+#include <atlbase.h>
+#include <dxgi1_2.h>
+#include <dxgi1_3.h>
+//#include <d3d11.h>
+
+#pragma comment(lib, "dxgi.lib")
+//#pragma comment(lib, "d3dx11.lib")
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
 // CPresenter class. - Presents samples using DX11.
@@ -13,48 +21,49 @@
 // CPresenter constructor.
 //-------------------------------------------------------------------
 
-DX11VideoRenderer::CPresenter::CPresenter(void) :
-    m_nRefCount(1),
-    m_critSec(), // default ctor
-    m_IsShutdown(FALSE),
-    m_pDXGIFactory2(NULL),
-    m_pD3D11Device(NULL),
-    m_pD3DImmediateContext(NULL),
-    m_pDXGIManager(NULL),
-    m_pDXGIOutput1(NULL),
-    m_pSampleAllocatorEx(NULL),
-    m_pDCompDevice(NULL),
-    m_pHwndTarget(NULL),
-    m_pRootVisual(NULL),
-    m_bSoftwareDXVADeviceInUse(FALSE),
-    m_hwndVideo(NULL),
-    m_pMonitors(NULL),
-    m_lpCurrMon(NULL),
-    m_DeviceResetToken(0),
-    m_DXSWSwitch(0),
-    m_useXVP(1),
-    m_useDCompVisual(0),
-    m_useDebugLayer(D3D11_CREATE_DEVICE_VIDEO_SUPPORT),
-    m_pDX11VideoDevice(NULL),
-    m_pVideoProcessorEnum(NULL),
-    m_pVideoProcessor(NULL),
-    m_pSwapChain1(NULL),
-    m_bDeviceChanged(FALSE),
-    m_bResize(TRUE),
-    m_b3DVideo(FALSE),
-	m_bStereoEnabled(FALSE),
-	m_vp3DOutput(MFVideo3DSampleFormat_BaseView),
-    m_bFullScreenState(FALSE),
-    m_bCanProcessNextSample(TRUE),
-    m_displayRect(), // default ctor
-    m_imageWidthInPixels(0),
-    m_imageHeightInPixels(0),
-    m_uiRealDisplayWidth(0),
-    m_uiRealDisplayHeight(0),
-    m_rcSrcApp(), // default ctor
-    m_rcDstApp(), // default ctor
-    m_pXVP(NULL),
-    m_pXVPControl(NULL)
+DX11VideoRenderer::CPresenter::CPresenter(void) 
+	: m_nRefCount(1)
+	, m_critSec()// default ctor
+	, m_IsShutdown(FALSE)
+	, m_pDXGIFactory2(NULL)
+	, m_pD3D11Device(NULL)
+	, m_pD3DImmediateContext(NULL)
+	, m_pDXGIManager(NULL)
+	, m_pDXGIOutput1(NULL)
+	, m_pSampleAllocatorEx(NULL)
+	, m_pDCompDevice(NULL)
+	, m_pHwndTarget(NULL)
+	, m_pRootVisual(NULL)
+	, m_bSoftwareDXVADeviceInUse(FALSE)
+	, m_hwndVideo(NULL)
+	, m_pMonitors(NULL)
+	, m_lpCurrMon(NULL)
+	, m_DeviceResetToken(0)
+	, m_DXSWSwitch(0)
+	, m_useXVP(1)
+	, m_useDCompVisual(0)
+	, m_useDebugLayer(D3D11_CREATE_DEVICE_VIDEO_SUPPORT)
+	, _gpu_index(0)
+	, m_pDX11VideoDevice(NULL)
+	, m_pVideoProcessorEnum(NULL)
+	, m_pVideoProcessor(NULL)
+	, m_pSwapChain1(NULL)
+	, m_bDeviceChanged(FALSE)
+	, m_bResize(TRUE)
+	, m_b3DVideo(FALSE)
+	, m_bStereoEnabled(FALSE)
+	, m_vp3DOutput(MFVideo3DSampleFormat_BaseView)
+	, m_bFullScreenState(FALSE)
+	, m_bCanProcessNextSample(TRUE)
+	, m_displayRect() // default ctor
+	, m_imageWidthInPixels(0)
+	, m_imageHeightInPixels(0)
+	, m_uiRealDisplayWidth(0)
+	, m_uiRealDisplayHeight(0)
+	, m_rcSrcApp() // default ctor
+	, m_rcDstApp() // default ctor
+	, m_pXVP(NULL)
+	, m_pXVPControl(NULL)
 {
     ZeroMemory(&m_rcSrcApp, sizeof(m_rcSrcApp));
     ZeroMemory(&m_rcDstApp, sizeof(m_rcDstApp));
@@ -1001,6 +1010,22 @@ HRESULT DX11VideoRenderer::CPresenter::CreateDXGIManagerAndDevice(D3D_DRIVER_TYP
         }
         else
         {
+			ATL::CComPtr<IDXGIFactory> dxgi_factory;
+			ATL::CComPtr<IDXGIAdapter> dxgi_adapter;
+			HRESULT result = CreateDXGIFactory1(__uuidof(IDXGIFactory), (void**)&dxgi_factory);
+			if (FAILED(result))
+				return result;
+
+			if (dxgi_factory)
+			{
+				HRESULT hr = dxgi_factory->EnumAdapters(_gpu_index, &dxgi_adapter);
+				if (hr == DXGI_ERROR_NOT_FOUND)
+				{
+					dxgi_adapter = NULL;
+				}
+				dxgi_factory = NULL;
+			}
+
             for (DWORD dwCount = 0; dwCount < ARRAYSIZE(featureLevels); dwCount++)
             {
                 hr = D3D11CreateDevice(NULL, DriverType, NULL, m_useDebugLayer, &featureLevels[dwCount], 1, D3D11_SDK_VERSION, &m_pD3D11Device, &featureLevel, NULL);
@@ -1108,6 +1133,56 @@ HRESULT DX11VideoRenderer::CPresenter::CreateDXGIManagerAndDevice(D3D_DRIVER_TYP
     SafeRelease(pDXGIOutput);
 
     return hr;
+}
+
+void DX11VideoRenderer::CPresenter::SetGPUIndex(UINT index)
+{
+	_gpu_index = index;
+}
+
+void DX11VideoRenderer::CPresenter::OnKeyDown_Right()
+{
+	//gRightRot = true;
+
+}
+
+void DX11VideoRenderer::CPresenter::OnKeyUp_Right()
+{
+	//gRightRot = false;
+}
+
+
+void DX11VideoRenderer::CPresenter::OnKeyDown_Left()
+{
+	//gLeftRot = true;
+
+}
+
+void DX11VideoRenderer::CPresenter::OnKeyUp_Left()
+{
+	//gLeftRot = false;
+}
+
+void DX11VideoRenderer::CPresenter::OnKeyDown_Up()
+{
+	//gUpRot = true;
+
+}
+
+void DX11VideoRenderer::CPresenter::OnKeyUp_Up()
+{
+	//gUpRot = false;
+}
+
+void DX11VideoRenderer::CPresenter::OnKeyDown_Down()
+{
+	//gDownRot = true;
+
+}
+
+void DX11VideoRenderer::CPresenter::OnKeyUp_Down()
+{
+	//gDownRot = false;
 }
 
 //-------------------------------------------------------------------

@@ -85,6 +85,14 @@ HRESULT DX11VideoRenderer::CMediaSink::QueryInterface(REFIID iid, __RPC__deref_o
     {
         *ppv = static_cast<IMFMediaSinkPreroll*>(this);
     }
+	else if (iid == __uuidof(IGPUSelector))
+	{
+		*ppv = static_cast<IGPUSelector*>(this);
+	}
+	else if (iid == __uuidof(IKeyEvent))
+	{
+		*ppv = static_cast<IKeyEvent*>(this);
+	}
     else
     {
         *ppv = NULL;
@@ -688,6 +696,71 @@ STDMETHODIMP DX11VideoRenderer::CMediaSink::NotifyPreroll(MFTIME hnsUpcomingStar
     }
 
     return hr;
+}
+
+// ICAPGPUSelector
+STDMETHODIMP DX11VideoRenderer::CMediaSink::SetGPUIndex(UINT index)
+{
+	if (m_pPresenter)
+		m_pPresenter->SetGPUIndex(index);
+	return NOERROR;
+}
+
+// ICAPKeyEvent
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyDownRight()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyDown_Right();
+	return NOERROR;
+}
+
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyUpRight()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyUp_Right();
+	return NOERROR;
+}
+
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyDownLeft()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyDown_Left();
+	return NOERROR;
+}
+
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyUpLeft()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyUp_Left();
+	return NOERROR;
+}
+
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyDownUp()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyDown_Up();
+	return NOERROR;
+}
+
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyUpUp()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyUp_Up();
+	return NOERROR;
+}
+
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyDownDown()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyDown_Down();
+	return NOERROR;
+}
+
+STDMETHODIMP DX11VideoRenderer::CMediaSink::OnKeyUpDown()
+{
+	if (m_pPresenter)
+		m_pPresenter->OnKeyUp_Down();
+	return NOERROR;
 }
 
 /// Private methods

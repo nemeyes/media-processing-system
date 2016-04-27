@@ -25,6 +25,7 @@ public:
 protected:
 	HICON m_hIcon;
 	int PRMC_index;
+	int PRMC_RTSP_index;
 	//int index_2;
 	//int index_3;
 	//int index_4;
@@ -62,4 +63,21 @@ public:
 	afx_msg void OnCbnSelchangeComboRecordingDays();
 	afx_msg void OnCbnSelchangeComboRecordingHours();
 	afx_msg void OnCbnSelchangeComboMinutes();
+private:
+	CEdit _manual_recording_year;
+	CEdit _manual_recording_month;
+	CEdit _manual_recording_day;
+	CEdit _manual_recording_hour;
+	CEdit _manual_recording_minute;
+	CEdit _manual_recording_second;
+public:
+	afx_msg void OnBnClickedButtonManualStartPlayback();
+	afx_msg void OnBnClickedButtonManualStopPlayback();
+private:
+	CEdit _rtsp_address;
+	CEdit _rtsp_username;
+	CEdit _rtsp_password;
+public:
+	afx_msg void OnBnClickedButtonRtspPlay();
+	afx_msg void OnBnClickedButtonRtspStop();
 };

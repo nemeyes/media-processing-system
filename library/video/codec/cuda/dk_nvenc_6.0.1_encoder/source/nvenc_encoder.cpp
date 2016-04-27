@@ -119,32 +119,23 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 				break;
 			}
 		}
-		else if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
-		{
-			status = initialize_cuda(_config->device_id);
-			if (status != NV_ENC_SUCCESS)
-			{
-				release_cuda();
-				break;
-			}
-			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_CUDA);
-			if (status != NV_ENC_SUCCESS)
-			{
-				release_nvenc_encoder();
-				release_cuda();
-				break;
-			}
-		}
-		else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx10)
-		{
-			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
-			if (status != NV_ENC_SUCCESS)
-			{
-				release_nvenc_encoder();
-				break;
-			}
-		}
-		else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx10)
+		//else if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+		//{
+		//	status = initialize_cuda(_config->device_id);
+		//	if (status != NV_ENC_SUCCESS)
+		//	{
+		//		release_cuda();
+		//		break;
+		//	}
+		//	status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_CUDA);
+		//	if (status != NV_ENC_SUCCESS)
+		//	{
+		//		release_nvenc_encoder();
+		//		release_cuda();
+		//		break;
+		//	}
+		//}
+		else if (_config->mem_type == dk_nvenc_encoder::memory_type_d3d9)
 		{
 			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
 			if (status != NV_ENC_SUCCESS)
@@ -153,12 +144,26 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 				break;
 			}
 		}
-		else if (_config->mem_type == dk_nvenc_encoder::memory_type_dx11)
+		else if (_config->mem_type == dk_nvenc_encoder::memory_type_d3d10)
 		{
 			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
 			if (status != NV_ENC_SUCCESS)
 			{
 				release_nvenc_encoder();
+				break;
+			}
+		}
+		else if (_config->mem_type == dk_nvenc_encoder::memory_type_d3d11)
+		{
+			status = initialize_d3d11();
+			if (status != NV_ENC_SUCCESS)
+				break;
+
+			status = initialize_nvenc_encoder(_context, NV_ENC_DEVICE_TYPE_DIRECTX);
+			if (status != NV_ENC_SUCCESS)
+			{
+				release_nvenc_encoder();
+				release_d3d11();
 				break;
 			}
 		}
@@ -269,8 +274,10 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 		if (status != NV_ENC_SUCCESS)
 		{
 			release_nvenc_encoder();
-			if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_host /*|| _config->mem_type == dk_nvenc_encoder::memory_type_cuda*/)
 				release_cuda();
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_d3d11)
+				release_d3d11();
 			break;
 		}
 		memcpy(nvenc_initialize_param.encodeConfig, &nvenc_preset_config.presetCfg, sizeof(NV_ENC_CONFIG));
@@ -432,10 +439,10 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 		if (status != NV_ENC_SUCCESS)
 		{
 			release_nvenc_encoder();
-			if (_config->mem_type == dk_nvenc_encoder::memory_type_host)
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_host /*|| _config->mem_type == dk_nvenc_encoder::memory_type_cuda*/)
 				release_cuda();
-			if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
-				release_cuda();
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_d3d11)
+				release_d3d11();
 			break;
 		}
 
@@ -450,10 +457,10 @@ dk_nvenc_encoder::err_code nvenc_encoder::initialize_encoder(dk_nvenc_encoder::c
 		if (status != NV_ENC_SUCCESS)
 		{
 			release_nvenc_encoder();
-			if (_config->mem_type == dk_nvenc_encoder::memory_type_host)
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_host  /*||_config->mem_type == dk_nvenc_encoder::memory_type_cuda*/)
 				release_cuda();
-			if (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)
-				release_cuda();
+			if (_config->mem_type == dk_nvenc_encoder::memory_type_d3d11)
+				release_d3d11();
 			break;
 		}
 
@@ -505,9 +512,14 @@ dk_nvenc_encoder::err_code nvenc_encoder::release_encoder(void)
 
 	if (_config)
 	{
-		if ((_config->mem_type == dk_nvenc_encoder::memory_type_host) || (_config->mem_type == dk_nvenc_encoder::memory_type_cuda))
+		if ((_config->mem_type == dk_nvenc_encoder::memory_type_host) /*|| (_config->mem_type == dk_nvenc_encoder::memory_type_cuda)*/)
 		{
 			if (release_cuda() != NV_ENC_SUCCESS)
+				return dk_nvenc_encoder::err_code_fail;
+		}
+		if (_config->mem_type == dk_nvenc_encoder::memory_type_d3d11)
+		{
+			if(release_d3d11() != NV_ENC_SUCCESS)
 				return dk_nvenc_encoder::err_code_fail;
 		}
 	}
@@ -643,6 +655,22 @@ NVENCSTATUS nvenc_encoder::release_cuda(void)
 	return NV_ENC_SUCCESS;
 }
 
+NVENCSTATUS nvenc_encoder::initialize_d3d11(void)
+{
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+
+	//DXVA2CreateVideoService()
+
+
+	return status;
+}
+
+NVENCSTATUS nvenc_encoder::release_d3d11(void)
+{
+	NVENCSTATUS status = NV_ENC_SUCCESS;
+
+	return status;
+}
 
 NVENCSTATUS nvenc_encoder::initialize_nvenc_encoder(void * device, NV_ENC_DEVICE_TYPE type)
 {
