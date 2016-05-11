@@ -19,6 +19,8 @@
 #define CMD_GET_MINUTES_RESPONSE			113
 #define CMD_GET_SECONDS_REQUEST				114
 #define CMD_GET_SECONDS_RESPONSE			115
+#define CMD_START_STREAMING_REQUEST			116
+#define CMD_START_STREAMING_RESPONSE		117
 
 namespace ic
 {
@@ -140,6 +142,24 @@ namespace ic
 		int32_t count;
 		int32_t seconds[60];
 	} CMD_GET_SECONDS_RES_T;
+
+	typedef struct _CMD_START_STREAMING_REQ_T
+	{
+		char uuid[64];
+		int32_t year;
+		int32_t month;
+		int32_t day;
+		int32_t hour;
+		int32_t minute;
+		int32_t second;
+	} CMD_START_STREAMING_REQ_T;
+
+	typedef struct _CMD_START_STREAMING_RES_T
+	{
+		int32_t code;
+		char uuid[64];
+		int32_t task_id;
+	} CMD_START_STREAMING_RES_T;
 };
 
 

@@ -89,7 +89,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_audio_buffer.h" />
-    <ClInclude Include="include\define.h" />
     <ClInclude Include="include\dk_circular_buffer.h" />
     <ClInclude Include="include\dk_media_buffering.h" />
     <ClInclude Include="include\dk_multiple_media_buffering.h" />

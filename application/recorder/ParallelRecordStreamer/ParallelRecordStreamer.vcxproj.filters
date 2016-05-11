@@ -39,14 +39,14 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="streamer\dk_streamer_service.h">
-      <Filter>streamer</Filter>
-    </ClInclude>
     <ClInclude Include="..\ParallelRecordBase\include\commands_payload.h">
       <Filter>commands</Filter>
     </ClInclude>
     <ClInclude Include="commands\commands_server.h">
       <Filter>commands</Filter>
+    </ClInclude>
+    <ClInclude Include="streamer\dk_record_streamer.h">
+      <Filter>streamer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -59,7 +59,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="streamer\dk_streamer_service.cpp">
+    <ClCompile Include="streamer\dk_record_streamer.cpp">
       <Filter>streamer</Filter>
     </ClCompile>
   </ItemGroup>

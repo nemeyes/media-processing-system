@@ -79,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\command.h" />
+    <ClInclude Include="include\task_scheduler.h" />
     <ClInclude Include="include\iocp_handler.h" />
     <ClInclude Include="include\iocp_io_context.h" />
     <ClInclude Include="include\packet.h" />
@@ -88,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\command.cpp" />
+    <ClCompile Include="source\task_scheduler.cpp" />
     <ClCompile Include="source\iocp_handler.cpp" />
     <ClCompile Include="source\session.cpp" />
   </ItemGroup>

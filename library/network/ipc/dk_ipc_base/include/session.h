@@ -4,6 +4,10 @@
 #include <packet.h>
 #include <iocp_io_context.h>
 
+#if defined(WITH_DELAYED_TASK)
+//#include <delayed_task_queue.h>
+#endif
+
 namespace ic
 {
 #if defined(WITH_WORKING_AS_SERVER)
@@ -114,6 +118,10 @@ namespace ic
 #endif
 		int32_t _hb_period;
 		int32_t _hb_retry_count;
+
+#if defined(WITH_DELAYED_TASK)
+		//delayed_task_queue _dt_queue;
+#endif
 	};
 
 };

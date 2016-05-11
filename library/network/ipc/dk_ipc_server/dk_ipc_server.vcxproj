@@ -56,7 +56,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_WINSOCK_DEPRECATED_NO_WARNINGS;WITH_WORKING_AS_SERVER;WITH_LEAVE_CMD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_WINSOCK_DEPRECATED_NO_WARNINGS;WITH_WORKING_AS_SERVER;WITH_LEAVE_CMD;WITH_DELAYED_TASK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\..\dk_common\include;..\dk_ipc_base\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -75,7 +75,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_WINSOCK_DEPRECATED_NO_WARNINGS;WITH_WORKING_AS_SERVER;WITH_LEAVE_CMD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_WINSOCK_DEPRECATED_NO_WARNINGS;WITH_WORKING_AS_SERVER;WITH_LEAVE_CMD;WITH_DELAYED_TASK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\..\dk_common\include;..\dk_ipc_base\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -94,6 +94,7 @@
     <ClInclude Include="..\dk_ipc_base\include\platform.h" />
     <ClInclude Include="..\dk_ipc_base\include\scoped_lock.h" />
     <ClInclude Include="..\dk_ipc_base\include\session.h" />
+    <ClInclude Include="..\dk_ipc_base\include\task_scheduler.h" />
     <ClInclude Include="include\abstract_ipc_server.h" />
     <ClInclude Include="include\dk_ipc_server.h" />
     <ClInclude Include="include\iocp_server.h" />
@@ -102,6 +103,7 @@
     <ClCompile Include="..\dk_ipc_base\source\command.cpp" />
     <ClCompile Include="..\dk_ipc_base\source\iocp_handler.cpp" />
     <ClCompile Include="..\dk_ipc_base\source\session.cpp" />
+    <ClCompile Include="..\dk_ipc_base\source\task_scheduler.cpp" />
     <ClCompile Include="source\abstract_ipc_server.cpp" />
     <ClCompile Include="source\dk_ipc_server.cpp" />
     <ClCompile Include="source\iocp_server.cpp" />

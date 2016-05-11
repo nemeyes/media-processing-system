@@ -41,10 +41,18 @@ ic::session::session(abstract_ipc_client * processor, SOCKET fd)
 
 	update_hb_start_time();
 	update_hb_end_time();
+
+#if defined(WITH_DELAYED_TASK)
+	//_dt_queue.start(1);
+#endif
 }
 
 ic::session::~session(void)
 {
+#if defined(WITH_DELAYED_TASK)
+	//_dt_queue.stop();
+#endif
+
 	::CloseHandle(_send_lock);
 	::CloseHandle(_recv_lock);
 	shutdown_fd();

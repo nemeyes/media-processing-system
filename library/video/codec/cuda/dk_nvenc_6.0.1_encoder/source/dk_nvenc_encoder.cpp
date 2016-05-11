@@ -6,15 +6,15 @@
 #define DEFAULT_I_QOFFSET 0.f
 #define DEFAULT_B_QOFFSET 1.25f
 
-dk_nvenc_encoder::_configuration_t::_configuration_t(void)
+debuggerking::nvenc_encoder::_configuration_t::_configuration_t(void)
 	: device_id(0)
 	, max_height(3840)
 	, max_width(2160)
-	, preset(dk_nvenc_encoder::preset_high_performance)
-	, rc_mode(dk_nvenc_encoder::rate_control_cbr)
-	, frame_field_mode(dk_nvenc_encoder::frame_field_mode_frame)
-	, motioin_vector_precision(dk_nvenc_encoder::motion_vector_precision_quarter_pel)
-	, encode_level(dk_nvenc_encoder::encode_level_autoselect)
+	, preset(nvenc_encoder::preset_high_performance)
+	, rc_mode(nvenc_encoder::rate_control_cbr)
+	, frame_field_mode(nvenc_encoder::frame_field_mode_frame)
+	, motioin_vector_precision(nvenc_encoder::motion_vector_precision_quarter_pel)
+	, encode_level(nvenc_encoder::encode_level_autoselect)
 	, vbv_max_bitrate(10000000)
 	, vbv_size(8000000)
 	, qp(28)
@@ -30,7 +30,7 @@ dk_nvenc_encoder::_configuration_t::_configuration_t(void)
 	
 }
 
-dk_nvenc_encoder::_configuration_t::_configuration_t(const dk_nvenc_encoder::_configuration_t & clone)
+debuggerking::nvenc_encoder::_configuration_t::_configuration_t(const nvenc_encoder::_configuration_t & clone)
 {
 	device_id = clone.device_id;
 	max_height = clone.max_height;
@@ -53,7 +53,7 @@ dk_nvenc_encoder::_configuration_t::_configuration_t(const dk_nvenc_encoder::_co
 	intra_refresh_duration = clone.intra_refresh_duration;
 }
 
-dk_nvenc_encoder::_configuration_t & dk_nvenc_encoder::_configuration_t::operator=(const _configuration_t & clone)
+debuggerking::nvenc_encoder::_configuration_t & debuggerking::nvenc_encoder::_configuration_t::operator=(const nvenc_encoder::_configuration_t & clone)
 {
 	device_id = clone.device_id;
 	max_height = clone.max_height;
@@ -77,13 +77,12 @@ dk_nvenc_encoder::_configuration_t & dk_nvenc_encoder::_configuration_t::operato
 	return (*this);
 }
 
-
-dk_nvenc_encoder::dk_nvenc_encoder(void)
+debuggerking::nvenc_encoder::nvenc_encoder(void)
 {
-	_core = new nvenc_encoder(this);
+	_core = new nvenc_core(this);
 }
 
-dk_nvenc_encoder::~dk_nvenc_encoder(void)
+debuggerking::nvenc_encoder::~nvenc_encoder(void)
 {
 	if (_core)
 	{
@@ -92,47 +91,43 @@ dk_nvenc_encoder::~dk_nvenc_encoder(void)
 	_core = nullptr;
 }
 
-dk_nvenc_encoder::encoder_state dk_nvenc_encoder::state(void)
+debuggerking::nvenc_encoder::encoder_state debuggerking::nvenc_encoder::state(void)
 {
 	return _core->state();
 }
 
-dk_nvenc_encoder::err_code dk_nvenc_encoder::initialize_encoder(void * config)
+int32_t debuggerking::nvenc_encoder::initialize_encoder(void * config)
 {
-	return _core->initialize_encoder(static_cast<dk_nvenc_encoder::configuration_t*>(config));
+	int32_t status = video_base::initialize(static_cast<video_base::configuration_t*>(config));
+	if (status != nvenc_encoder::err_code_t::success)
+		return status;
+	return _core->initialize_encoder(static_cast<nvenc_encoder::configuration_t*>(config));
 }
 
-dk_nvenc_encoder::err_code dk_nvenc_encoder::release_encoder(void)
+int32_t debuggerking::nvenc_encoder::release_encoder(void)
 {
-	return _core->release_encoder();
+	int32_t status = _core->release_encoder();
+	if (status != nvenc_encoder::err_code_t::success)
+		return status;
+	return video_base::release();
 }
 
-dk_nvenc_encoder::err_code dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * input, dk_nvenc_encoder::dk_video_entity_t * bitstream)
+int32_t debuggerking::nvenc_encoder::encode(nvenc_encoder::entity_t * input, nvenc_encoder::entity_t * bitstream)
 {
 	return _core->encode(input, bitstream);
 }
 
-dk_nvenc_encoder::err_code dk_nvenc_encoder::encode(dk_nvenc_encoder::dk_video_entity_t * input)
+int32_t debuggerking::nvenc_encoder::encode(nvenc_encoder::entity_t * input)
 {
 	return _core->encode(input);
 }
 
-dk_nvenc_encoder::err_code dk_nvenc_encoder::get_queued_data(dk_nvenc_encoder::dk_video_entity_t * bitstream)
+int32_t debuggerking::nvenc_encoder::get_queued_data(nvenc_encoder::entity_t * bitstream)
 {
 	return _core->get_qeueued_data(bitstream);
 }
 
-dk_nvenc_encoder::err_code dk_nvenc_encoder::encode_async(dk_nvenc_encoder::dk_video_entity_t * input)
-{
-	return _core->encode_async(input);
-}
-
-dk_nvenc_encoder::err_code dk_nvenc_encoder::check_encoding_flnish(void)
-{
-	return _core->check_encoding_flnish();
-}
-
-void dk_nvenc_encoder::on_acquire_bitstream(uint8_t * bistream, size_t size)
+void debuggerking::nvenc_encoder::after_encoding_callback(uint8_t * bistream, size_t size)
 {
 
 }

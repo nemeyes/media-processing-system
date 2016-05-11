@@ -139,6 +139,23 @@ namespace ic
 			_prsc->set_seconds(res.uuid, res.year, res.month, res.day, res.hour, res.minute, res.seconds, res.count);
 		}
 	};
+
+	class start_streaming_res_cmd : public parallel_record_client_cmd
+	{
+	public:
+		start_streaming_res_cmd(dk_parallel_recorder_controller * prsc)
+			: parallel_record_client_cmd(prsc, CMD_START_STREAMING_RESPONSE) {}
+		virtual ~start_streaming_res_cmd(void) {}
+
+		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
+		{
+			CMD_START_STREAMING_RES_T res;
+			memset(&res, 0x00, sizeof(res));
+			memcpy(&res, msg, sizeof(res));
+
+			//_prsc->set_seconds(res.uuid, res.year, res.month, res.day, res.hour, res.minute, res.seconds, res.count);
+		}
+	};
 };
 
 

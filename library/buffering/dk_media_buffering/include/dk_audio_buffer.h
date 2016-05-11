@@ -1,67 +1,64 @@
 #pragma once
 
-#include "define.h"
+#include <dk_basic_type.h>
+#include <windows.h>
 
-
-// 44100 (Samples) * 2 (Bytes per Sample) * 8 (channels)
-// 44100*2*8
-#define MAX_AUDIO_FRAME_SIZE 705600
-
-#include "define.h"
-
-typedef struct _dk_circular_buffer_t dk_circular_buffer_t;
-class dk_audio_buffer
+namespace debuggerking
 {
-public:
-	typedef struct _buffer_t
+	typedef struct _circular_buffer_t circular_buffer_t;
+	class audio_buffer : public foundation
 	{
-		long long pts;
-		size_t amount;
-		_buffer_t * prev;
-		_buffer_t * next;
-	} buffer_t;
+	public:
+		typedef struct _buffer_t
+		{
+			long long timestamp;
+			size_t amount;
+			_buffer_t * prev;
+			_buffer_t * next;
+		} buffer_t;
 
 
-	dk_audio_buffer(size_t buffer_size = MAX_AUDIO_FRAME_SIZE);
-	~dk_audio_buffer(void);
+		audio_buffer(size_t buffer_size = max_media_value_t::max_audio_size);
+		~audio_buffer(void);
 
-	buffering::err_code push(const uint8_t * data, size_t size, long long pts);
-	buffering::err_code pop(uint8_t * data, size_t & size, long long & pts);
+		int32_t push(const uint8_t * data, size_t size, long long pts);
+		int32_t pop(uint8_t * data, size_t & size, long long & pts);
 
-	buffering::err_code set_submedia_type(buffering::asubmedia_type mt);
-	buffering::err_code set_configstr(uint8_t * configstr, size_t size);
-	buffering::err_code set_samplerate(int32_t samplerate);
-	buffering::err_code set_bitdepth(int32_t bitdepth);
-	buffering::err_code set_channels(int32_t channels);
+		int32_t set_submedia_type(int32_t mt);
+		int32_t set_configstr(uint8_t * configstr, size_t size);
+		int32_t set_samplerate(int32_t samplerate);
+		int32_t set_bitdepth(int32_t bitdepth);
+		int32_t set_channels(int32_t channels);
 
-	buffering::err_code get_submedia_type(buffering::asubmedia_type & mt);
-	buffering::err_code get_configstr(uint8_t * configstr, size_t & size);
-	buffering::err_code get_samplerate(int32_t & samplerate);
-	buffering::err_code get_bitdepth(int32_t & bitdepth);
-	buffering::err_code get_channels(int32_t & channels);
-	
-
-private:
-	buffering::err_code init(buffer_t *  buffer);
-
-private:
-	buffering::asubmedia_type _mt;
-	uint8_t _configstr[200];
-	size_t _configstr_size;
-	int32_t _samplerate;
-	int32_t _bitdepth;
-	int32_t _channels;
-
-	buffer_t * _root;
+		int32_t get_submedia_type(int32_t & mt);
+		int32_t get_configstr(uint8_t * configstr, size_t & size);
+		int32_t get_samplerate(int32_t & samplerate);
+		int32_t get_bitdepth(int32_t & bitdepth);
+		int32_t get_channels(int32_t & channels);
 
 
-	int32_t _begin;
-	int32_t _end;
+	private:
+		int32_t init(buffer_t *  buffer);
 
-	uint8_t * _buffer;
-	int32_t _buffer_size;
+	private:
+		int32_t _mt;
+		uint8_t _configstr[200];
+		size_t _configstr_size;
+		int32_t _samplerate;
+		int32_t _bitdepth;
+		int32_t _channels;
 
-	CRITICAL_SECTION _mutex;
+		buffer_t * _root;
 
-	dk_circular_buffer_t * _cbuffer;
+
+		int32_t _begin;
+		int32_t _end;
+
+		uint8_t * _buffer;
+		int32_t _buffer_size;
+
+		CRITICAL_SECTION _mutex;
+
+		circular_buffer_t * _cbuffer;
+	};
 };

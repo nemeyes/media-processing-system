@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directshow", "directshow", "{BB87F48F-C128-495C-B40C-1DFA7C070D31}"
 EndProject
@@ -442,6 +442,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallelRecordBase", "..\..\application\recorder\ParallelRecordBase\ParallelRecordBase.vcxproj", "{78E13706-B468-481C-B433-067460DB370F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_log4cplus_logger_1.1.2", "..\..\library\logger\dk_log4cplus_logger_1.1.2\dk_log4cplus_logger_1.1.2.vcxproj", "{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_record_stream_server", "..\..\library\network\recorder\dk_record_stream_server\dk_record_stream_server.vcxproj", "{B3CF5383-9A11-4872-A8BD-8983254BCA14}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dk_recorder_module", "..\..\library\container\dk_recorder_module\dk_recorder_module.vcxproj", "{C3085735-29DD-4786-906D-8D7B912CB632}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "recorder", "recorder", "{137D82F7-D5AC-401E-BB0F-085A39D50A97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1621,6 +1627,18 @@ Global
 		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Release|Win32.ActiveCfg = Release|Win32
 		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Release|Win32.Build.0 = Release|Win32
 		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2}.Release|x64.ActiveCfg = Release|Win32
+		{B3CF5383-9A11-4872-A8BD-8983254BCA14}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3CF5383-9A11-4872-A8BD-8983254BCA14}.Debug|Win32.Build.0 = Debug|Win32
+		{B3CF5383-9A11-4872-A8BD-8983254BCA14}.Debug|x64.ActiveCfg = Debug|Win32
+		{B3CF5383-9A11-4872-A8BD-8983254BCA14}.Release|Win32.ActiveCfg = Release|Win32
+		{B3CF5383-9A11-4872-A8BD-8983254BCA14}.Release|Win32.Build.0 = Release|Win32
+		{B3CF5383-9A11-4872-A8BD-8983254BCA14}.Release|x64.ActiveCfg = Release|Win32
+		{C3085735-29DD-4786-906D-8D7B912CB632}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C3085735-29DD-4786-906D-8D7B912CB632}.Debug|Win32.Build.0 = Debug|Win32
+		{C3085735-29DD-4786-906D-8D7B912CB632}.Debug|x64.ActiveCfg = Debug|Win32
+		{C3085735-29DD-4786-906D-8D7B912CB632}.Release|Win32.ActiveCfg = Release|Win32
+		{C3085735-29DD-4786-906D-8D7B912CB632}.Release|Win32.Build.0 = Release|Win32
+		{C3085735-29DD-4786-906D-8D7B912CB632}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1842,5 +1860,8 @@ Global
 		{31772E29-728B-47A5-B3A6-799B1251D3BE} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
 		{78E13706-B468-481C-B433-067460DB370F} = {3848DC24-3D1B-4C72-BC7E-952D6EAE073E}
 		{CDC1950C-B174-48F9-8824-39DEC7DCC9A2} = {4E9AEA7D-C35B-4A64-B6BA-C1B43A810419}
+		{B3CF5383-9A11-4872-A8BD-8983254BCA14} = {137D82F7-D5AC-401E-BB0F-085A39D50A97}
+		{C3085735-29DD-4786-906D-8D7B912CB632} = {76AB79B6-833D-4D37-98D6-E17D2A7E76DE}
+		{137D82F7-D5AC-401E-BB0F-085A39D50A97} = {77B992DC-12CE-408B-B7E8-36A11EF19C38}
 	EndGlobalSection
 EndGlobal

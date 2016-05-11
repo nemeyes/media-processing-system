@@ -30,9 +30,6 @@
     <ClInclude Include="include\dk_multiple_media_buffering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\define.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_circular_buffer.cpp">

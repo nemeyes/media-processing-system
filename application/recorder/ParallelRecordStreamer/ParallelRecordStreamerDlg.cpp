@@ -196,7 +196,7 @@ void CParallelRecordStreamerDlg::StartStreaming(void)
 {
 	if (!_is_streaming)
 	{
-		_streamer_service.start_streaming();
+		_streamer.start();
 
 		CWnd *wnd = GetDlgItem(IDC_BUTTON_START);
 		wnd->EnableWindow(FALSE);
@@ -211,7 +211,7 @@ void CParallelRecordStreamerDlg::StopStreaming(void)
 {
 	if (_is_streaming)
 	{
-		_streamer_service.stop_streaming();
+		_streamer.stop();
 
 		CWnd *wnd = GetDlgItem(IDC_BUTTON_START);
 		wnd->EnableWindow(TRUE);
