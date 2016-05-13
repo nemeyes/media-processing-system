@@ -151,7 +151,8 @@ int32_t debuggerking::video_base::init(video_base::buffer_t * buffer)
 
 void debuggerking::video_base::set_extradata(uint8_t * extradata, size_t extradata_size)
 {
-	memmove(_extradata, extradata, extradata_size);
+	_extradata_size = extradata_size;
+	memmove(_extradata, extradata, _extradata_size);
 }
 
 void debuggerking::video_base::set_vps(uint8_t * vps, size_t vps_size)

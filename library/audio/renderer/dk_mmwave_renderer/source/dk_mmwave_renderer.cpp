@@ -1,12 +1,12 @@
 #include "dk_mmwave_renderer.h"
 #include "mmwave_renderer.h"
 
-dk_mmwave_renderer::dk_mmwave_renderer(void)
+debuggerking::mmwave_renderer::mmwave_renderer(void)
 {
-	_core = new mmwave_renderer();
+	_core = new mmwave_core();
 }
 
-dk_mmwave_renderer::~dk_mmwave_renderer(void)
+debuggerking::mmwave_renderer::~mmwave_renderer(void)
 {
 	if (_core)
 	{
@@ -15,17 +15,17 @@ dk_mmwave_renderer::~dk_mmwave_renderer(void)
 	}
 }
 
-dk_mmwave_renderer::err_code dk_mmwave_renderer::initialize_renderer(void * config)
+int32_t debuggerking::mmwave_renderer::initialize_renderer(void * config)
 {
-	return _core->initialize_renderer(static_cast<dk_mmwave_renderer::configuration_t*>(config));
+	return _core->initialize_renderer(static_cast<mmwave_renderer::configuration_t*>(config));
 }
 
-dk_mmwave_renderer::err_code dk_mmwave_renderer::release_renderer(void)
+int32_t debuggerking::mmwave_renderer::release_renderer(void)
 {
 	return _core->release_renderer();
 }
 
-dk_mmwave_renderer::err_code dk_mmwave_renderer::render(dk_mmwave_renderer::dk_audio_entity_t * pcm)
+int32_t debuggerking::mmwave_renderer::render(mmwave_renderer::entity_t * pcm)
 {
 	return _core->render(pcm);
 }

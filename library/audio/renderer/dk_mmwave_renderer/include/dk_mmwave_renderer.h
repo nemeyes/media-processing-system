@@ -3,20 +3,23 @@
 
 #include <dk_audio_base.h>
 
-class mmwave_renderer;
-class EXP_CLASS dk_mmwave_renderer : public dk_audio_renderer
+namespace debuggerking
 {
-public:
-	dk_mmwave_renderer(void);
-	virtual ~dk_mmwave_renderer(void);
+	class mmwave_core;
+	class EXP_CLASS mmwave_renderer : public audio_renderer
+	{
+	public:
+		mmwave_renderer(void);
+		virtual ~mmwave_renderer(void);
 
-	dk_mmwave_renderer::err_code initialize_renderer(void * config);
-	dk_mmwave_renderer::err_code release_renderer(void);
-	dk_mmwave_renderer::err_code render(dk_mmwave_renderer::dk_audio_entity_t * decoded);
+		int32_t initialize_renderer(void * config);
+		int32_t release_renderer(void);
+		int32_t render(mmwave_renderer::entity_t * decoded);
 
-private:
-	mmwave_renderer * _core;
+	private:
+		mmwave_core * _core;
 
+	};
 };
 
 

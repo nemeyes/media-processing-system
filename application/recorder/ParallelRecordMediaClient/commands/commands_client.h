@@ -11,19 +11,19 @@ namespace ic
 	class parallel_record_client_cmd : public abstract_command
 	{
 	public:
-		parallel_record_client_cmd(dk_parallel_recorder_controller * prsc, int32_t command_id)
+		parallel_record_client_cmd(debuggerking::parallel_recorder_controller * prsc, int32_t command_id)
 			: abstract_command(command_id)
 			, _prsc(prsc) {}
 		virtual ~parallel_record_client_cmd(void) {}
 
 	protected:
-		dk_parallel_recorder_controller * _prsc;
+		debuggerking::parallel_recorder_controller * _prsc;
 	};
 
 	class get_rtsp_server_port_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		get_rtsp_server_port_res_cmd(dk_parallel_recorder_controller * prsc)
+		get_rtsp_server_port_res_cmd(debuggerking::parallel_recorder_controller * prsc)
 			: parallel_record_client_cmd(prsc, CMD_GET_RTSP_SERVER_PORT_RESPONSE) {}
 		virtual ~get_rtsp_server_port_res_cmd(void) {}
 
@@ -40,7 +40,7 @@ namespace ic
 	class get_years_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		get_years_res_cmd(dk_parallel_recorder_controller * prsc)
+		get_years_res_cmd(debuggerking::parallel_recorder_controller * prsc)
 			: parallel_record_client_cmd(prsc, CMD_GET_YEARS_RESPONSE) {}
 		virtual ~get_years_res_cmd(void) {}
 
@@ -58,7 +58,7 @@ namespace ic
 	class get_months_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		get_months_res_cmd(dk_parallel_recorder_controller * prsc)
+		get_months_res_cmd(debuggerking::parallel_recorder_controller * prsc)
 			: parallel_record_client_cmd(prsc, CMD_GET_MONTHS_RESPONSE) {}
 		virtual ~get_months_res_cmd(void) {}
 
@@ -75,7 +75,7 @@ namespace ic
 	class get_days_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		get_days_res_cmd(dk_parallel_recorder_controller * prsc)
+		get_days_res_cmd(debuggerking::parallel_recorder_controller * prsc)
 			: parallel_record_client_cmd(prsc, CMD_GET_DAYS_RESPONSE) {}
 		virtual ~get_days_res_cmd(void) {}
 
@@ -92,7 +92,7 @@ namespace ic
 	class get_hours_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		get_hours_res_cmd(dk_parallel_recorder_controller * prsc)
+		get_hours_res_cmd(debuggerking::parallel_recorder_controller * prsc)
 			: parallel_record_client_cmd(prsc, CMD_GET_HOURS_RESPONSE) {}
 		virtual ~get_hours_res_cmd(void) {}
 
@@ -109,7 +109,7 @@ namespace ic
 	class get_minutes_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		get_minutes_res_cmd(dk_parallel_recorder_controller * prsc)
+		get_minutes_res_cmd(debuggerking::parallel_recorder_controller * prsc)
 			: parallel_record_client_cmd(prsc, CMD_GET_MINUTES_RESPONSE) {}
 		virtual ~get_minutes_res_cmd(void) {}
 
@@ -126,7 +126,7 @@ namespace ic
 	class get_seconds_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		get_seconds_res_cmd(dk_parallel_recorder_controller * prsc)
+		get_seconds_res_cmd(debuggerking::parallel_recorder_controller * prsc)
 			: parallel_record_client_cmd(prsc, CMD_GET_SECONDS_RESPONSE) {}
 		virtual ~get_seconds_res_cmd(void) {}
 
@@ -140,16 +140,33 @@ namespace ic
 		}
 	};
 
-	class start_streaming_res_cmd : public parallel_record_client_cmd
+	class begin_playback_res_cmd : public parallel_record_client_cmd
 	{
 	public:
-		start_streaming_res_cmd(dk_parallel_recorder_controller * prsc)
-			: parallel_record_client_cmd(prsc, CMD_START_STREAMING_RESPONSE) {}
-		virtual ~start_streaming_res_cmd(void) {}
+		begin_playback_res_cmd(debuggerking::parallel_recorder_controller * prsc)
+			: parallel_record_client_cmd(prsc, CMD_BEGIN_PLAYBACK_RESPONSE) {}
+		virtual ~begin_playback_res_cmd(void) {}
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_START_STREAMING_RES_T res;
+			CMD_BEGIN_PLAYBACK_RES_T res;
+			memset(&res, 0x00, sizeof(res));
+			memcpy(&res, msg, sizeof(res));
+
+			//_prsc->set_seconds(res.uuid, res.year, res.month, res.day, res.hour, res.minute, res.seconds, res.count);
+		}
+	};
+
+	class end_playback_res_cmd : public parallel_record_client_cmd
+	{
+	public:
+		end_playback_res_cmd(debuggerking::parallel_recorder_controller * prsc)
+			: parallel_record_client_cmd(prsc, CMD_BEGIN_PLAYBACK_RESPONSE) {}
+		virtual ~end_playback_res_cmd(void) {}
+
+		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
+		{
+			CMD_END_PLAYBACK_RES_T res;
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&res, msg, sizeof(res));
 

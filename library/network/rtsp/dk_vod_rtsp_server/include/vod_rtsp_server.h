@@ -5,18 +5,21 @@
 #include "RTSPServerSupportingHTTPStreaming.hh"
 #endif
 
-class vod_rtsp_server : public RTSPServerSupportingHTTPStreaming
+namespace debuggerking
 {
-public:
-	static vod_rtsp_server * createNew(UsageEnvironment & env, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds = 65);
+	class vod_rtsp_core : public RTSPServerSupportingHTTPStreaming
+	{
+	public:
+		static vod_rtsp_core * createNew(UsageEnvironment & env, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds = 65);
 
-protected:
-	vod_rtsp_server(UsageEnvironment & env, int ourSocket, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds);
-	// called only by createNew();
-	virtual ~vod_rtsp_server(void);
+	protected:
+		vod_rtsp_core(UsageEnvironment & env, int ourSocket, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds);
+		// called only by createNew();
+		virtual ~vod_rtsp_core(void);
 
-protected: // redefined virtual functions
-	virtual ServerMediaSession * lookupServerMediaSession(char const* streamName, Boolean isFirstLookupInSession);
+	protected: // redefined virtual functions
+		virtual ServerMediaSession * lookupServerMediaSession(char const* streamName, Boolean isFirstLookupInSession);
+	};
 };
 
 #endif

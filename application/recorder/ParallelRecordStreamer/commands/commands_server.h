@@ -11,13 +11,13 @@ namespace ic
 	class parallel_record_server_cmd : public abstract_command
 	{
 	public:
-		parallel_record_server_cmd(dk_record_streamer * prss, int32_t command_id)
+		parallel_record_server_cmd(debuggerking::record_streamer * prss, int32_t command_id)
 			: abstract_command(command_id)
 			, _prss(prss) {}
 		virtual ~parallel_record_server_cmd(void) {}
 
 	protected:
-		dk_record_streamer * _prss;
+		debuggerking::record_streamer * _prss;
 	};
 
 	//CMD_GET_RTSP_SERVER_PORT_REQUEST
@@ -25,7 +25,7 @@ namespace ic
 	class get_rtsp_server_port_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		get_rtsp_server_port_req_cmd(dk_record_streamer * prss)
+		get_rtsp_server_port_req_cmd(debuggerking::record_streamer * prss)
 			: parallel_record_server_cmd(prss, CMD_GET_RTSP_SERVER_PORT_REQUEST) {}
 		virtual ~get_rtsp_server_port_req_cmd(void) {}
 
@@ -48,7 +48,7 @@ namespace ic
 	class get_years_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		get_years_req_cmd(dk_record_streamer * prss)
+		get_years_req_cmd(debuggerking::record_streamer * prss)
 			: parallel_record_server_cmd(prss, CMD_GET_YEARS_REQUEST) {}
 		virtual ~get_years_req_cmd(void) {}
 
@@ -72,7 +72,7 @@ namespace ic
 	class get_months_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		get_months_req_cmd(dk_record_streamer * prss)
+		get_months_req_cmd(debuggerking::record_streamer * prss)
 			: parallel_record_server_cmd(prss, CMD_GET_MONTHS_REQUEST) {}
 		virtual ~get_months_req_cmd(void) {}
 
@@ -97,7 +97,7 @@ namespace ic
 	class get_days_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		get_days_req_cmd(dk_record_streamer * prss)
+		get_days_req_cmd(debuggerking::record_streamer * prss)
 			: parallel_record_server_cmd(prss, CMD_GET_DAYS_REQUEST) {}
 		virtual ~get_days_req_cmd(void) {}
 
@@ -122,7 +122,7 @@ namespace ic
 	class get_hours_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		get_hours_req_cmd(dk_record_streamer * prss)
+		get_hours_req_cmd(debuggerking::record_streamer * prss)
 			: parallel_record_server_cmd(prss, CMD_GET_HOURS_REQUEST) {}
 		virtual ~get_hours_req_cmd(void) {}
 
@@ -148,7 +148,7 @@ namespace ic
 	class get_minutes_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		get_minutes_req_cmd(dk_record_streamer * prss)
+		get_minutes_req_cmd(debuggerking::record_streamer * prss)
 			: parallel_record_server_cmd(prss, CMD_GET_MINUTES_REQUEST) {}
 		virtual ~get_minutes_req_cmd(void) {}
 
@@ -175,7 +175,7 @@ namespace ic
 	class get_seconds_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		get_seconds_req_cmd(dk_record_streamer * prss)
+		get_seconds_req_cmd(debuggerking::record_streamer * prss)
 			: parallel_record_server_cmd(prss, CMD_GET_SECONDS_REQUEST) {}
 		virtual ~get_seconds_req_cmd(void) {}
 
@@ -200,24 +200,49 @@ namespace ic
 		}
 	};
 
-	class start_streaming_req_cmd : public parallel_record_server_cmd
+	class begin_playback_req_cmd : public parallel_record_server_cmd
 	{
 	public:
-		start_streaming_req_cmd(dk_record_streamer * prss)
-			: parallel_record_server_cmd(prss, CMD_START_STREAMING_REQUEST) {}
-		virtual ~start_streaming_req_cmd(void) {}
+		begin_playback_req_cmd(debuggerking::record_streamer * prss)
+			: parallel_record_server_cmd(prss, CMD_BEGIN_PLAYBACK_REQUEST) {}
+		virtual ~begin_playback_req_cmd(void) {}
 
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 		{
-			CMD_START_STREAMING_REQ_T req;
-			CMD_START_STREAMING_RES_T res;
+			CMD_BEGIN_PLAYBACK_REQ_T req;
+			CMD_BEGIN_PLAYBACK_RES_T res;
 			memset(&req, 0x00, sizeof(req));
 			memset(&res, 0x00, sizeof(res));
 			memcpy(&req, msg, sizeof(req));
 
 			res.code = CMD_ERR_CODE_SUCCESS;
 
-			session->push_send_packet(session->uuid(), uuid(), CMD_START_STREAMING_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
+
+
+			session->push_send_packet(session->uuid(), uuid(), CMD_BEGIN_PLAYBACK_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
+		}
+	};
+
+	class end_playback_req_cmd : public parallel_record_server_cmd
+	{
+	public:
+		end_playback_req_cmd(debuggerking::record_streamer * prss)
+			: parallel_record_server_cmd(prss, CMD_END_PLAYBACK_REQUEST) {}
+		virtual ~end_playback_req_cmd(void) {}
+
+		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
+		{
+			CMD_END_PLAYBACK_REQ_T req;
+			CMD_END_PLAYBACK_RES_T res;
+			memset(&req, 0x00, sizeof(req));
+			memset(&res, 0x00, sizeof(res));
+			memcpy(&req, msg, sizeof(req));
+
+			res.code = CMD_ERR_CODE_SUCCESS;
+
+
+
+			session->push_send_packet(session->uuid(), uuid(), CMD_END_PLAYBACK_RESPONSE, reinterpret_cast<char*>(&res), sizeof(res));
 		}
 	};
 };

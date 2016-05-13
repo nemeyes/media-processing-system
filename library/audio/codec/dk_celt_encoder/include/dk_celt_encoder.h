@@ -1,38 +1,40 @@
 #ifndef _DK_CELT_ENCODER_H_
 #define _DK_CELT_ENCODER_H_
 
-#include <cstdint>
-
 #include <dk_audio_base.h>
 
-class celt_encoder;
-class EXP_CLASS dk_celt_encoder : public dk_audio_encoder
+namespace debuggerking
 {
-	friend class celt_encoder;
-public:
-	typedef struct EXP_CLASS _configuration_t : public dk_audio_encoder::configuration_t
+	class celt_core;
+	class EXP_CLASS celt_encoder : public audio_encoder
 	{
-		int32_t codingrate;
-		int32_t framesize;
-		int32_t complexity;
-		_configuration_t(void);
-		_configuration_t(const _configuration_t & clone);
-		_configuration_t operator=(const _configuration_t & clone);
-	} configuration_t;
+		friend class celt_core;
+	public:
+		typedef struct EXP_CLASS _configuration_t : public audio_encoder::configuration_t
+		{
+			int32_t codingrate;
+			int32_t framesize;
+			int32_t complexity;
+			_configuration_t(void);
+			_configuration_t(const _configuration_t & clone);
+			_configuration_t operator=(const _configuration_t & clone);
+		} configuration_t;
 
-	dk_celt_encoder(void);
-	virtual ~dk_celt_encoder(void);
+		celt_encoder(void);
+		virtual ~celt_encoder(void);
 
-	dk_celt_encoder::err_code initialize_encoder(void * config);
-	dk_celt_encoder::err_code release_encoder(void);
+		int32_t initialize_encoder(void * config);
+		int32_t release_encoder(void);
 
-	dk_celt_encoder::err_code encode(dk_celt_encoder::dk_audio_entity_t * pcm, dk_celt_encoder::dk_audio_entity_t * encoded);
-	dk_celt_encoder::err_code encode(dk_celt_encoder::dk_audio_entity_t * pcm);
-	dk_celt_encoder::err_code get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded);
-private:
-	celt_encoder * _core;
+		int32_t encode(celt_encoder::entity_t * pcm, celt_encoder::entity_t * encoded);
+		int32_t encode(celt_encoder::entity_t * pcm);
+		int32_t get_queued_data(celt_encoder::entity_t * encoded);
+		virtual void after_encoding_callback(uint8_t * bistream, size_t size);
+
+	private:
+		celt_core * _core;
+	};
 };
-
 
 
 #endif

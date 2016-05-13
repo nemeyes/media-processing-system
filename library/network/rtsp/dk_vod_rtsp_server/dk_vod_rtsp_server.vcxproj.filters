@@ -19,6 +19,9 @@
     <Filter Include="media_source">
       <UniqueIdentifier>{2f8c55af-a92a-4940-8b95-3d1ee24639c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="buffering">
+      <UniqueIdentifier>{df795882-28ca-4bc9-9d82-6d3fa48f8b86}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dk_vod_rtsp_server.h">
@@ -54,6 +57,9 @@
     <ClInclude Include="media_source\live_media_source_entity.h">
       <Filter>media_source</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\buffering\dk_media_buffering\include\dk_circular_buffer.h">
+      <Filter>buffering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dk_vod_rtsp_server.cpp">
@@ -85,6 +91,9 @@
     </ClCompile>
     <ClCompile Include="media_source\live_media_source_entity.cpp">
       <Filter>media_source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\buffering\dk_media_buffering\source\dk_circular_buffer.cpp">
+      <Filter>buffering</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

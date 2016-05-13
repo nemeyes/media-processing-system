@@ -11,11 +11,11 @@
 class buffered_framed_source : public FramedSource
 {
 protected:
-	buffered_framed_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<media_source_reader> reader); // abstract base class
+	buffered_framed_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<debuggerking::media_source_reader> reader); // abstract base class
 	virtual ~buffered_framed_source(void);
 
 	char _stream_name[100];
-	std::shared_ptr<media_source_reader> _reader;
+	std::shared_ptr<debuggerking::media_source_reader> _reader;
 };
 
 #endif

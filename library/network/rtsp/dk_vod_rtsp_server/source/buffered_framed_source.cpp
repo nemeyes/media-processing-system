@@ -1,6 +1,6 @@
 #include "buffered_framed_source.h"
 
-buffered_framed_source::buffered_framed_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<media_source_reader> reader)
+buffered_framed_source::buffered_framed_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<debuggerking::media_source_reader> reader)
 	: FramedSource(env)
 	, _reader(reader)
 {

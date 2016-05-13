@@ -1,7 +1,7 @@
 #include "buffered_byte_stream_source.h"
 #include "GroupsockHelper.hh"
 
-buffered_byte_stream_source * buffered_byte_stream_source::createNew(UsageEnvironment & env, char const * stream_name, std::shared_ptr<media_source_reader> reader, unsigned preferredFrameSize, unsigned playTimePerFrame)
+buffered_byte_stream_source * buffered_byte_stream_source::createNew(UsageEnvironment & env, char const * stream_name, std::shared_ptr<debuggerking::media_source_reader> reader, unsigned preferredFrameSize, unsigned playTimePerFrame)
 {
 	buffered_byte_stream_source * new_source = new buffered_byte_stream_source(env, stream_name, reader, preferredFrameSize, playTimePerFrame);
 	return new_source;
@@ -23,7 +23,7 @@ void buffered_byte_stream_source::seekToEnd()
 {
 }
 
-buffered_byte_stream_source::buffered_byte_stream_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<media_source_reader> reader, unsigned preferredFrameSize, unsigned playTimePerFrame)
+buffered_byte_stream_source::buffered_byte_stream_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<debuggerking::media_source_reader> reader, unsigned preferredFrameSize, unsigned playTimePerFrame)
 	: buffered_framed_source(env, stream_name, reader)
 	, fPreferredFrameSize(preferredFrameSize)
 	, fPlayTimePerFrame(playTimePerFrame)
@@ -72,12 +72,12 @@ void buffered_byte_stream_source::read_from_buffer(void)
 		size_t data_size = 0;
 		long long timestamp = 0;
 		
-		_reader->read(media_source_reader::media_type_video, fRealFrame, sizeof(fRealFrame), data_size, timestamp);
+		_reader->read(debuggerking::media_source_reader::media_type_t::video, fRealFrame, sizeof(fRealFrame), data_size, timestamp);
 
 		if (data_size > 0)
 		{
 			fFrameSize = data_size;
-			if (fFrameSize>fMaxSize)
+			if (fFrameSize > fMaxSize)
 			{
 				fNumTruncatedBytes = fFrameSize - fMaxSize;
 				fFrameSize = fMaxSize;
@@ -86,10 +86,17 @@ void buffered_byte_stream_source::read_from_buffer(void)
 			gettimeofday(&fPresentationTime, NULL);
 
 #if 1
-			if (timestamp==0)
+			if (timestamp == 0)
+			{
 				FramedSource::afterGetting(this);//nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);// 
+			}
 			else
-				nextTask() = envir().taskScheduler().scheduleDelayedTask(timestamp*1000, (TaskFunc*)FramedSource::afterGetting, this);
+			{
+				int64_t timestamp_microsec = timestamp * 1000;
+				if (_reader->get_scale() != 1.f)
+					timestamp_microsec /= _reader->get_scale();
+				nextTask() = envir().taskScheduler().scheduleDelayedTask(timestamp_microsec, (TaskFunc*)FramedSource::afterGetting, this);
+			}
 #else
 			FramedSource::afterGetting(this);
 #endif

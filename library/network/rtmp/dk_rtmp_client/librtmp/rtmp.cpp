@@ -2685,14 +2685,14 @@ static void
 HandleAudio(RTMP *r, const RTMPPacket *packet)
 {
 	if (r && r->rtmp_client_wrapper)
-		((rtmp_client*)r->rtmp_client_wrapper)->sb_process_audio(packet);
+		((debuggerking::rtmp_core*)r->rtmp_client_wrapper)->sb_process_audio(packet);
 }
 
 static void
 HandleVideo(RTMP *r, const RTMPPacket *packet)
 {
 	if (r && r->rtmp_client_wrapper)
-		((rtmp_client*)r->rtmp_client_wrapper)->sb_process_video(packet);
+		((debuggerking::rtmp_core*)r->rtmp_client_wrapper)->sb_process_video(packet);
 }
 
 static void

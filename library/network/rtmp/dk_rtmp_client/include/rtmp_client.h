@@ -5,125 +5,126 @@
 #include "dk_circular_buffer.h"
 
 typedef struct RTMPPacket RTMPPacket;
-class rtmp_client
+typedef struct RTMP RTMP;
+namespace debuggerking
 {
-public:
-	typedef struct _pb_buffer_t
+	class rtmp_core
 	{
-		size_t amount;
-		_pb_buffer_t * prev;
-		_pb_buffer_t * next;
-	} pb_buffer_t;
+	public:
+		typedef struct _pb_buffer_t
+		{
+			size_t amount;
+			_pb_buffer_t * prev;
+			_pb_buffer_t * next;
+		} pb_buffer_t;
 
-	rtmp_client(dk_rtmp_client * front);
-	~rtmp_client(void);
+		rtmp_core(rtmp_client * front);
+		~rtmp_core(void);
 
-	uint8_t * get_sps(size_t & sps_size);
-	uint8_t * get_pps(size_t & pps_size);
-	void set_sps(uint8_t * sps, size_t sps_size);
-	void set_pps(uint8_t * pps, size_t pps_size);
-	void clear_sps(void);
-	void clear_pps(void);
+		uint8_t * get_sps(size_t & sps_size);
+		uint8_t * get_pps(size_t & pps_size);
+		void set_sps(uint8_t * sps, size_t sps_size);
+		void set_pps(uint8_t * pps, size_t pps_size);
+		void clear_sps(void);
+		void clear_pps(void);
 
-	uint8_t * get_configstr(size_t & configstr_size);
-	void set_configstr(uint8_t * configstr, size_t configstr_size);
+		uint8_t * get_configstr(size_t & configstr_size);
+		void set_configstr(uint8_t * configstr, size_t configstr_size);
 
-	dk_rtmp_client::STATE_T state(void);
+		rtmp_client::rtmp_state state(void);
 
-	dk_rtmp_client::ERR_CODE subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
-	dk_rtmp_client::ERR_CODE subscribe_end(void);
-	void sb_process_video(const RTMPPacket * packet);
-	void sb_process_audio(const RTMPPacket * packet);
+		int32_t subscribe_begin(const char * url, const char * username, const char * password, int32_t recv_option, bool repeat = true);
+		int32_t subscribe_end(void);
+		//int32_t pause(void);
+		void sb_process_video(const RTMPPacket * packet);
+		void sb_process_audio(const RTMPPacket * packet);
 
-	dk_rtmp_client::ERR_CODE publish_begin(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T vsmt, dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T asmt, const char * url, const char * username, const char * password);
-	dk_rtmp_client::ERR_CODE publish_end(void);
-	dk_rtmp_client::ERR_CODE publish_video(uint8_t * bitstream, size_t nb);
-	dk_rtmp_client::ERR_CODE publish_audio(uint8_t * bitstream, size_t nb);
+		int32_t publish_begin(int32_t vsmt, int32_t asmt, const char * url, const char * username, const char * password);
+		int32_t publish_video(uint8_t * bitstream, size_t nb, long long timestamp);
+		int32_t publish_audio(uint8_t * bitstream, size_t nb, bool configstr, long long timestamp);
+		int32_t publish_end(void);
 
-
-
-private:
-
-	void sb_process(void);
+	private:
+		void sb_process(void);
 #if !defined(WIN32)
-	static void* sb_process_cb(void * param);
+		static void* sb_process_cb(void * param);
 #else
-	static unsigned __stdcall sb_process_cb(void * param);
+		static unsigned __stdcall sb_process_cb(void * param);
 #endif
 #if !defined(WIN32)
-	pthread_t _sb_worker;
+		pthread_t _sb_worker;
 #else
-	bool _sb_run;
-	void * _sb_worker;
+		void * _sb_worker;
 #endif
 
-	void pb_process(void);
+		void pb_process(void);
 #if !defined(WIN32)
-	static void* pb_process_cb(void * param);
+		static void* pb_process_cb(void * param);
 #else
-	static unsigned __stdcall pb_process_cb(void * param);
+		static unsigned __stdcall pb_process_cb(void * param);
 #endif
 #if !defined(WIN32)
-	pthread_t _pb_worker;
+		pthread_t _pb_worker;
 #else
-	bool _pb_run;
-	void * _pb_worker;
+		void * _pb_worker;
 #endif
 
-	dk_rtmp_client::ERR_CODE push_video_send_packet(uint8_t * bs, size_t size);
-	dk_rtmp_client::ERR_CODE pop_video_send_packet(uint8_t * bs, size_t & size);
+		static void set_bitstream_size(char * nalu, int32_t nalu_size);
+		static void get_bitstream_size(char * nalu, int32_t & nalu_size);
 
-	dk_rtmp_client::ERR_CODE push_audio_send_packet(uint8_t * bs, size_t size);
-	dk_rtmp_client::ERR_CODE pop_audio_send_packet(uint8_t * bs, size_t & size);
+		int32_t push_video_send_packet(uint8_t * bs, size_t size);
+		int32_t pop_video_send_packet(uint8_t * bs, size_t & size);
 
-	dk_rtmp_client::ERR_CODE init_pb_buffer(pb_buffer_t * buffer);
-	
+		int32_t push_audio_send_packet(uint8_t * bs, size_t size);
+		int32_t pop_audio_send_packet(uint8_t * bs, size_t & size);
 
-private:
-	dk_rtmp_client * _front;
-	dk_rtmp_client::STATE_T _state;
-
-	struct RTMP * _rtmp;
-
-	char _url[260];
-	char _username[260];
-	char _password[260];
-	int32_t _recv_option;
-	bool _repeat;
-
-	uint8_t _sps[100];
-	uint8_t _pps[100];
-	int32_t _sps_size;
-	int32_t _pps_size;
-
-	//char * _recv_buffer;
-	//int32_t _recv_buffer_size;
-
-	char * _video_send_buffer;
-	char * _audio_send_buffer;
-	int32_t _video_send_buffer_size;
-	int32_t _audio_send_buffer_size;
-
-	bool _rcv_first_idr;
-	bool _change_sps;
-	bool _change_pps;
+		int32_t init_pb_buffer(pb_buffer_t * buffer);
 
 
-	uint8_t _configstr[100];
-	int32_t _configstr_size;
-	bool _rcv_first_audio;
+	private:
+		rtmp_client * _front;
+		rtmp_client::rtmp_state _state;
 
-	dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T _vsmt;
-	dk_rtmp_client::AUDIO_SUBMEDIA_TYPE_T _asmt;
-	pb_buffer_t * _audio_root;
-	dk_circular_buffer_t * _audio_queue;
-	CRITICAL_SECTION _audio_mutex;
+		RTMP * _rtmp;
 
-	pb_buffer_t * _video_root;
-	dk_circular_buffer_t * _video_queue;
-	CRITICAL_SECTION _video_mutex;
+		char _url[MAX_PATH];
+		char _username[MAX_PATH];
+		char _password[MAX_PATH];
+		int32_t _recv_option;
+		bool _repeat;
+
+		uint8_t _sps[100];
+		uint8_t _pps[100];
+		int32_t _sps_size;
+		int32_t _pps_size;
+
+		//char * _recv_buffer;
+		//int32_t _recv_buffer_size;
+
+		char * _video_send_buffer;
+		char * _audio_send_buffer;
+		int32_t _video_send_buffer_size;
+		int32_t _audio_send_buffer_size;
+
+		bool _rcv_first_idr;
+		bool _change_sps;
+		bool _change_pps;
 
 
+		uint8_t _configstr[100];
+		int32_t _configstr_size;
+		bool _rcv_first_audio;
+
+		int32_t _vsmt;
+		int32_t _asmt;
+		pb_buffer_t * _audio_root;
+		circular_buffer_t * _audio_queue;
+		CRITICAL_SECTION _audio_mutex;
+
+		pb_buffer_t * _video_root;
+		circular_buffer_t * _video_queue;
+		CRITICAL_SECTION _video_mutex;
+	};
 };
 
 #endif // _DK_RTMP_CLIENT_H_

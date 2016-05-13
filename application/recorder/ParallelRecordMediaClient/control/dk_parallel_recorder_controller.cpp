@@ -5,11 +5,15 @@
 #include "commands_client.h"
 #include <dk_log4cplus_logger.h>
 
-dk_parallel_recorder_controller::dk_parallel_recorder_controller(parallel_recorder_t * parallel_recorder)
+debuggerking::parallel_recorder_controller::parallel_recorder_controller(parallel_recorder_t * parallel_recorder)
 	: _parallel_recorder(parallel_recorder)
 {
-	dk_log4cplus_logger::create("config\\log.properties");
+#if defined(WITH_RTSP_SERVER)
 	add_command(new ic::get_rtsp_server_port_res_cmd(this));
+#else
+	add_command(new ic::begin_playback_res_cmd(this));
+	add_command(new ic::end_playback_res_cmd(this));
+#endif
 	add_command(new ic::get_years_res_cmd(this));
 	add_command(new ic::get_months_res_cmd(this));
 	add_command(new ic::get_days_res_cmd(this));
@@ -18,9 +22,9 @@ dk_parallel_recorder_controller::dk_parallel_recorder_controller(parallel_record
 	add_command(new ic::get_seconds_res_cmd(this));
 }
 
-dk_parallel_recorder_controller::~dk_parallel_recorder_controller(void)
+debuggerking::parallel_recorder_controller::~parallel_recorder_controller(void)
 {
-	dk_log4cplus_logger::destroy();
+
 }
 
 /*
@@ -45,7 +49,7 @@ void dk_parallel_recorder_controller::get_rtsp_server_port_number(int & port_num
 }
 */
 
-void dk_parallel_recorder_controller::get_years(const char * uuid, int years[], int capacity, int & size)
+void debuggerking::parallel_recorder_controller::get_years(const char * uuid, int years[], int capacity, int & size)
 {
 	if (_parallel_recorder->waiting_response)
 		return;
@@ -72,7 +76,7 @@ void dk_parallel_recorder_controller::get_years(const char * uuid, int years[], 
 	}
 }
 
-void dk_parallel_recorder_controller::get_months(const char * uuid, int year, int months[], int capacity, int & size)
+void debuggerking::parallel_recorder_controller::get_months(const char * uuid, int year, int months[], int capacity, int & size)
 {
 	if (_parallel_recorder->waiting_response)
 		return;
@@ -100,7 +104,7 @@ void dk_parallel_recorder_controller::get_months(const char * uuid, int year, in
 	}
 }
 
-void dk_parallel_recorder_controller::get_days(const char * uuid, int year, int month, int days[], int capacity, int & size)
+void debuggerking::parallel_recorder_controller::get_days(const char * uuid, int year, int month, int days[], int capacity, int & size)
 {
 	if (_parallel_recorder->waiting_response)
 		return;
@@ -129,7 +133,7 @@ void dk_parallel_recorder_controller::get_days(const char * uuid, int year, int 
 	}
 }
 
-void dk_parallel_recorder_controller::get_hours(const char * uuid, int year, int month, int day, int hours[], int capacity, int & size)
+void debuggerking::parallel_recorder_controller::get_hours(const char * uuid, int year, int month, int day, int hours[], int capacity, int & size)
 {
 	if (_parallel_recorder->waiting_response)
 		return;
@@ -159,7 +163,7 @@ void dk_parallel_recorder_controller::get_hours(const char * uuid, int year, int
 	}
 }
 
-void dk_parallel_recorder_controller::get_minutes(const char * uuid, int year, int month, int day, int hour, int minutes[], int capacity, int & size)
+void debuggerking::parallel_recorder_controller::get_minutes(const char * uuid, int year, int month, int day, int hour, int minutes[], int capacity, int & size)
 {
 	if (_parallel_recorder->waiting_response)
 		return;
@@ -190,7 +194,7 @@ void dk_parallel_recorder_controller::get_minutes(const char * uuid, int year, i
 	}
 }
 
-void dk_parallel_recorder_controller::get_seconds(const char * uuid, int year, int month, int day, int hour, int minute, int seconds[], int capacity, int & size)
+void debuggerking::parallel_recorder_controller::get_seconds(const char * uuid, int year, int month, int day, int hour, int minute, int seconds[], int capacity, int & size)
 {
 	if (_parallel_recorder->waiting_response)
 		return;
@@ -230,7 +234,7 @@ void dk_parallel_recorder_controller::set_rtsp_server_port_number(int port_numbe
 }
 */
 
-void dk_parallel_recorder_controller::set_years(const char * uuid, int years[], int size)
+void debuggerking::parallel_recorder_controller::set_years(const char * uuid, int years[], int size)
 {
 	memcpy(_uuid, uuid, sizeof(uuid));
 
@@ -242,7 +246,7 @@ void dk_parallel_recorder_controller::set_years(const char * uuid, int years[], 
 	_parallel_recorder->waiting_response = false;
 }
 
-void dk_parallel_recorder_controller::set_months(const char * uuid, int year, int months[], int size)
+void debuggerking::parallel_recorder_controller::set_months(const char * uuid, int year, int months[], int size)
 {
 	memcpy(_uuid, uuid, sizeof(uuid));
 	_year = year;
@@ -255,7 +259,7 @@ void dk_parallel_recorder_controller::set_months(const char * uuid, int year, in
 	_parallel_recorder->waiting_response = false;
 }
 
-void dk_parallel_recorder_controller::set_days(const char * uuid, int year, int month, int days[], int size)
+void debuggerking::parallel_recorder_controller::set_days(const char * uuid, int year, int month, int days[], int size)
 {
 	memcpy(_uuid, uuid, sizeof(uuid));
 	_year = year;
@@ -269,7 +273,7 @@ void dk_parallel_recorder_controller::set_days(const char * uuid, int year, int 
 	_parallel_recorder->waiting_response = false;
 }
 
-void dk_parallel_recorder_controller::set_hours(const char * uuid, int year, int month, int day, int hours[], int size)
+void debuggerking::parallel_recorder_controller::set_hours(const char * uuid, int year, int month, int day, int hours[], int size)
 {
 	memcpy(_uuid, uuid, sizeof(uuid));
 	_year = year;
@@ -284,7 +288,7 @@ void dk_parallel_recorder_controller::set_hours(const char * uuid, int year, int
 	_parallel_recorder->waiting_response = false;
 }
 
-void dk_parallel_recorder_controller::set_minutes(const char * uuid, int year, int month, int day, int hour, int minutes[], int size)
+void debuggerking::parallel_recorder_controller::set_minutes(const char * uuid, int year, int month, int day, int hour, int minutes[], int size)
 {
 	memcpy(_uuid, uuid, sizeof(uuid));
 	_year = year;
@@ -300,7 +304,7 @@ void dk_parallel_recorder_controller::set_minutes(const char * uuid, int year, i
 	_parallel_recorder->waiting_response = false;
 }
 
-void dk_parallel_recorder_controller::set_seconds(const char * uuid, int year, int month, int day, int hour, int minute, int seconds[], int size)
+void debuggerking::parallel_recorder_controller::set_seconds(const char * uuid, int year, int month, int day, int hour, int minute, int seconds[], int size)
 {
 	memcpy(_uuid, uuid, sizeof(uuid));
 	_year = year;
@@ -317,7 +321,7 @@ void dk_parallel_recorder_controller::set_seconds(const char * uuid, int year, i
 	_parallel_recorder->waiting_response = false;
 }
 
-void dk_parallel_recorder_controller::assoc_completion_callback(void)
+void debuggerking::parallel_recorder_controller::assoc_completion_callback(void)
 {
 	if (_parallel_recorder && !_parallel_recorder->connected)
 	{
@@ -329,7 +333,7 @@ void dk_parallel_recorder_controller::assoc_completion_callback(void)
 	}
 }
 
-void dk_parallel_recorder_controller::leave_completion_callback(void)
+void debuggerking::parallel_recorder_controller::leave_completion_callback(void)
 {
 	if (_parallel_recorder && _parallel_recorder->connected)
 	{
@@ -340,7 +344,7 @@ void dk_parallel_recorder_controller::leave_completion_callback(void)
 	}
 }
 
-void dk_parallel_recorder_controller::get_rtsp_server_port_number_callback(int port_number)
+void debuggerking::parallel_recorder_controller::get_rtsp_server_port_number_callback(int port_number)
 {
 	if (_parallel_recorder && _parallel_recorder->connected)
 	{

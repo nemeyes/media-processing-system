@@ -7,10 +7,10 @@
 class h265_buffer_sink : public h2645_buffer_sink
 {
 public:
-	static h265_buffer_sink * createNew(dk_live_rtsp_client * front, UsageEnvironment & env, const char * vps, unsigned vps_size, const char * sps, unsigned sps_size, const char * pps, unsigned pps_size, unsigned buffer_size);
+	static h265_buffer_sink * createNew(debuggerking::live_rtsp_client * front, UsageEnvironment & env, const char * vps, unsigned vps_size, const char * sps, unsigned sps_size, const char * pps, unsigned pps_size, unsigned buffer_size);
 
 protected:
-	h265_buffer_sink(dk_live_rtsp_client * front, UsageEnvironment & env, const char * vps, unsigned vps_size, const char * sps, unsigned sps_size, const char * pps, unsigned pps_size, unsigned buffer_size);
+	h265_buffer_sink(debuggerking::live_rtsp_client * front, UsageEnvironment & env, const char * vps, unsigned vps_size, const char * sps, unsigned sps_size, const char * pps, unsigned pps_size, unsigned buffer_size);
     virtual ~h265_buffer_sink(void);
 };
 

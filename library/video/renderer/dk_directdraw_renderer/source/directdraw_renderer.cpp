@@ -9,7 +9,7 @@ typedef HRESULT(WINAPI * DIRECTDRAWCREATEEX)(GUID*, void**, REFIID, IUnknown*);
 #define banollim(x,dig) (floor(float(x)*pow(10.0f,float(dig))+0.5f)/pow(10.0f,float(dig)))
 #define _RGB16BIT565(r,g,b) ((b%32) + ((g%64) << 6) + ((r%32) << 11)) 
 
-directdraw_renderer::directdraw_renderer(dk_directdraw_renderer * front)
+debuggerking::directdraw_core::directdraw_core(directdraw_renderer * front)
 	: _front(front)
 	, _draw(0)
 	, _display_width(0)
@@ -47,127 +47,127 @@ directdraw_renderer::directdraw_renderer(dk_directdraw_renderer * front)
 	wcscpy_s(_osd, _T(""));
 }
 
-directdraw_renderer::~directdraw_renderer(void)
+debuggerking::directdraw_core::~directdraw_core(void)
 {
 
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::enable_time_text(bool enable)
+int32_t debuggerking::directdraw_core::enable_time_text(bool enable)
 {
 	_enable_time_text = enable;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_time_text_position(unsigned short x, unsigned short y)
+int32_t debuggerking::directdraw_core::set_time_text_position(unsigned short x, unsigned short y)
 {
 	_time_text_position_x = x;
 	_time_text_position_y = y;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_time_text_font_size(unsigned char size)
+int32_t debuggerking::directdraw_core::set_time_text_font_size(unsigned char size)
 {
 	_time_text_font_size = size;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_time_text_color(unsigned char red, unsigned char green, unsigned char blue)
+int32_t debuggerking::directdraw_core::set_time_text_color(unsigned char red, unsigned char green, unsigned char blue)
 {
 	_time_text_color_red = red;
 	_time_text_color_green = green;
 	_time_text_color_blue = blue;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::enable_osd_text(bool enable)
+int32_t debuggerking::directdraw_core::enable_osd_text(bool enable)
 {
 	_enable_osd_text = enable;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_osd_text(wchar_t * osd)
+int32_t debuggerking::directdraw_core::set_osd_text(wchar_t * osd)
 {
 	wcscpy_s(_osd, osd);
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_osd_text_position(unsigned short x, unsigned short y)
+int32_t debuggerking::directdraw_core::set_osd_text_position(unsigned short x, unsigned short y)
 {
 	_osd_text_position_x = x;
 	_osd_text_position_y = y;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_osd_text_font_size(unsigned char size)
+int32_t debuggerking::directdraw_core::set_osd_text_font_size(unsigned char size)
 {
 	_osd_text_font_size = size;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_osd_text_color(unsigned char red, unsigned char green, unsigned char blue)
+int32_t debuggerking::directdraw_core::set_osd_text_color(unsigned char red, unsigned char green, unsigned char blue)
 {
 	_osd_text_color_red = red;
 	_osd_text_color_green = green;
 	_osd_text_color_blue = blue;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_background_color(unsigned char red, unsigned char green, unsigned char blue)
+int32_t debuggerking::directdraw_core::set_background_color(unsigned char red, unsigned char green, unsigned char blue)
 {
 	_background_red = red;
 	_background_green = green;
 	_background_blue = blue;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_normal_screen_handle(HWND hwnd)
+int32_t debuggerking::directdraw_core::set_normal_screen_handle(HWND hwnd)
 {
 	_noraml_screen_hwnd = hwnd;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_full_screen_handle(HWND hwnd)
+int32_t debuggerking::directdraw_core::set_full_screen_handle(HWND hwnd)
 {
 	_full_screen_hwnd = hwnd;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::enable_full_screen(bool enable)
+int32_t debuggerking::directdraw_core::enable_full_screen(bool enable)
 {
 	_is_video_fullscreen = enable;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::enable_stretch(bool enable)
+int32_t debuggerking::directdraw_core::enable_stretch(bool enable)
 {
 	_is_video_stretch = enable;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::set_enable(bool enable)
+int32_t debuggerking::directdraw_core::set_enable(bool enable)
 {
 	_enable = enable;
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-bool directdraw_renderer::get_enable(void)
+bool debuggerking::directdraw_core::get_enable(void)
 {
 	return _enable;
 }
 
-bool directdraw_renderer::is_initialized(void)
+bool debuggerking::directdraw_core::is_initialized(void)
 {
 	return _is_initialized;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::initialize_renderer(dk_directdraw_renderer::configuration_t * config)
+int32_t debuggerking::directdraw_core::initialize_renderer(directdraw_renderer::configuration_t * config)
 {
 	release_renderer();
 	_config = config;
 	_full_screen_hwnd = _config->hwnd_full;
 	_noraml_screen_hwnd = _config->hwnd;
 
-	dk_directdraw_renderer::err_code value = dk_directdraw_renderer::err_code_fail;
+	int32_t value = directdraw_renderer::err_code_t::fail;
 	HWND hwnd = 0;
 
 	if (_config->height>0 && _config->width>0)
@@ -183,15 +183,15 @@ dk_directdraw_renderer::err_code directdraw_renderer::initialize_renderer(dk_dir
 	return value;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::release_renderer(void)
+int32_t debuggerking::directdraw_core::release_renderer(void)
 {
 	return close();
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::open(void)
+int32_t debuggerking::directdraw_core::open(void)
 {
 	HRESULT hr = NO_ERROR;
-	dk_directdraw_renderer::err_code value = dk_directdraw_renderer::err_code_fail;
+	int32_t value = directdraw_renderer::err_code_t::fail;
 	HWND hwnd = 0;
 
 
@@ -270,20 +270,20 @@ dk_directdraw_renderer::err_code directdraw_renderer::open(void)
 					else
 					{
 						_draw = hwnd;
-						value = dk_directdraw_renderer::err_code_success;
+						value = directdraw_renderer::err_code_t::success;
 					}
 				}
 			}
 		}
 	}
-	if (value != dk_directdraw_renderer::err_code_success)
+	if (value != directdraw_renderer::err_code_t::success)
 	{
 		close();
 	}
 	return value;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::close(void)
+int32_t debuggerking::directdraw_core::close(void)
 {
 	DDSAFE_RELEASE(_pdd_rgb)
 		DDSAFE_RELEASE(_pdd_video)
@@ -298,12 +298,12 @@ dk_directdraw_renderer::err_code directdraw_renderer::close(void)
 		::FreeLibrary(_library);
 		_library = 0;
 	}
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_renderer::dk_video_entity_t * p)
+int32_t debuggerking::directdraw_core::render(directdraw_renderer::entity_t * p)
 {
-	dk_directdraw_renderer::err_code value = dk_directdraw_renderer::err_code_fail;
+	int32_t value = directdraw_renderer::err_code_t::fail;
 	int32_t display_width = 0, display_height = 0, display_x = 0, display_y = 0;
 
 	if ((_pdd) && (_config->height>0) && (_config->width>0))
@@ -329,7 +329,7 @@ dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_rende
 		else
 			value = make_normal_screen_display_size(display_width, display_height, display_x, display_y);
 
-		if (value == dk_directdraw_renderer::err_code_success)
+		if (value == directdraw_renderer::err_code_t::success)
 		{
 			if ((!_pdd_rgb) && ((_display_width != display_width) || (_display_height != display_height)))
 			{
@@ -353,7 +353,7 @@ dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_rende
 				}
 
 				if (hr != DD_OK)
-					return dk_directdraw_renderer::err_code_fail;
+					return directdraw_renderer::err_code_t::fail;
 
 				_display_width = display_width;
 				_display_height = display_height;
@@ -379,7 +379,7 @@ dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_rende
 				_pdd_primary->Restore();
 
 				_pdd_video->Unlock(0);
-				value = dk_directdraw_renderer::err_code_fail;
+				value = directdraw_renderer::err_code_t::fail;
 			}
 			else
 			{
@@ -405,17 +405,17 @@ dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_rende
 				__except (EXCEPTION_EXECUTE_HANDLER)
 				{
 					_pdd_video->Unlock(0);
-					return dk_directdraw_renderer::err_code_fail;
+					return directdraw_renderer::err_code_t::fail;
 				}
 
 				_pdd_video->Unlock(0);
 				HRESULT hr;
 				if (!_pdd_primary)
-					return dk_directdraw_renderer::err_code_fail;
+					return directdraw_renderer::err_code_t::fail;
 				if (!_pdd_rgb)
-					return dk_directdraw_renderer::err_code_fail;
+					return directdraw_renderer::err_code_t::fail;
 				if (!_pdd_video)
-					return dk_directdraw_renderer::err_code_fail;
+					return directdraw_renderer::err_code_t::fail;
 
 				while (_pdd_rgb->Blt(0, _pdd_video, 0, DDBLT_WAIT, 0) == DDERR_SURFACEBUSY)
 					Sleep(0);
@@ -498,7 +498,7 @@ dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_rende
 						hr = _pdd_video->Restore();
 						hr = _pdd_rgb->Restore();
 						hr = _pdd_primary->Restore();
-						return dk_directdraw_renderer::ERR_CODE_FAIL;
+						return dk_debuggerking::directdraw_renderer::ERR_CODE_FAIL;
 					}
 				} while (hr == DDERR_SURFACEBUSY);*/
 
@@ -511,12 +511,12 @@ dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_rende
 						hr = _pdd_rgb->Restore();
 						hr = _pdd_primary->Restore();
 
-						return dk_directdraw_renderer::err_code_fail;
+						return directdraw_renderer::err_code_t::fail;
 					}
 
 				} while (hr == DDERR_SURFACEBUSY);
 
-				value = dk_directdraw_renderer::err_code_success;
+				value = directdraw_renderer::err_code_t::success;
 			}
 		}
 	}
@@ -524,13 +524,13 @@ dk_directdraw_renderer::err_code directdraw_renderer::render(dk_directdraw_rende
 }
 
 
-dk_directdraw_renderer::err_code directdraw_renderer::make_normal_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
+int32_t debuggerking::directdraw_core::make_normal_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
 {
 	RECT dst_rect = { 0 };
 	if (_noraml_screen_hwnd)
 		::GetClientRect(_noraml_screen_hwnd, &dst_rect);
 	else
-		return dk_directdraw_renderer::err_code_fail;
+		return directdraw_renderer::err_code_t::fail;
 
 
 	unsigned int iwidth = _config->width;
@@ -571,10 +571,10 @@ dk_directdraw_renderer::err_code directdraw_renderer::make_normal_screen_display
 			display_y = 0;
 		}
 	}
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }
 
-dk_directdraw_renderer::err_code directdraw_renderer::make_full_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
+int32_t debuggerking::directdraw_core::make_full_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
 {
 	RECT dst_rect;
 	::GetClientRect(_full_screen_hwnd, &dst_rect);
@@ -617,5 +617,5 @@ dk_directdraw_renderer::err_code directdraw_renderer::make_full_screen_display_s
 			display_y = 0;
 		}
 	}
-	return dk_directdraw_renderer::err_code_success;
+	return directdraw_renderer::err_code_t::success;
 }

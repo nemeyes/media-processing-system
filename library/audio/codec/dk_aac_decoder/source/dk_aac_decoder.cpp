@@ -1,22 +1,22 @@
 #include "dk_aac_decoder.h"
 #include "faad2_decoder.h"
 
-dk_aac_decoder::_configuration_t::_configuration_t(void)
-	: object_type(dk_aac_decoder::aac_object_type_ssr)
-	, input_format(dk_aac_decoder::format_type_raw)
-	, output_format(dk_aac_decoder::format_type_16bit)
+debuggerking::aac_decoder::_configuration_t::_configuration_t(void)
+	: object_type(aac_decoder::aac_object_type_ssr)
+	, input_format(aac_decoder::format_type_raw)
+	, output_format(aac_decoder::format_type_16bit)
 	, mix_down(false)
 {
 }
 
-dk_aac_decoder::_configuration_t::_configuration_t(const _configuration_t & clone)
+debuggerking::aac_decoder::_configuration_t::_configuration_t(const aac_decoder::_configuration_t & clone)
 {
 	object_type = clone.object_type;
 	input_format = clone.input_format;
 	output_format = clone.output_format;
 }
 
-dk_aac_decoder::_configuration_t dk_aac_decoder::_configuration_t::operator=(const _configuration_t & clone)
+debuggerking::aac_decoder::_configuration_t debuggerking::aac_decoder::_configuration_t::operator=(const aac_decoder::_configuration_t & clone)
 {
 	object_type = clone.object_type;
 	input_format = clone.input_format;
@@ -24,12 +24,12 @@ dk_aac_decoder::_configuration_t dk_aac_decoder::_configuration_t::operator=(con
 	return (*this);
 }
 
-dk_aac_decoder::dk_aac_decoder(void)
+debuggerking::aac_decoder::aac_decoder(void)
 {
 	_core = new faad2_decoder(this);
 }
 
-dk_aac_decoder::~dk_aac_decoder(void)
+debuggerking::aac_decoder::~aac_decoder(void)
 {
 	if (_core)
 	{
@@ -38,17 +38,38 @@ dk_aac_decoder::~dk_aac_decoder(void)
 	}
 }
 
-dk_aac_decoder::err_code dk_aac_decoder::initialize_decoder(void * config)
+int32_t debuggerking::aac_decoder::initialize_decoder(void * config)
 {
-	return _core->initialize_decoder(static_cast<dk_aac_decoder::configuration_t*>(config));
+	int32_t status = aac_decoder::initialize(static_cast<audio_base::configuration_t*>(config));
+	if (status != aac_decoder::err_code_t::success)
+		return status;
+	return _core->initialize_decoder(static_cast<aac_decoder::configuration_t*>(config));
 }
 
-dk_aac_decoder::err_code dk_aac_decoder::release_decoder(void)
+int32_t debuggerking::aac_decoder::release_decoder(void)
 {
-	return _core->release_decoder();
+	int32_t status = _core->release_decoder();
+	if (status != aac_decoder::err_code_t::success)
+		return status;
+	return audio_base::release();
 }
 
-dk_aac_decoder::err_code dk_aac_decoder::decode(dk_aac_decoder::dk_audio_entity_t * encoded, dk_aac_decoder::dk_audio_entity_t * pcm)
+int32_t debuggerking::aac_decoder::decode(aac_decoder::entity_t * encoded, aac_decoder::entity_t * pcm)
 {
 	return _core->decode(encoded, pcm);
+}
+
+int32_t debuggerking::aac_decoder::decode(audio_decoder::entity_t * encoded)
+{
+	return _core->decode(encoded);
+}
+
+int32_t debuggerking::aac_decoder::get_queued_data(audio_decoder::entity_t * pcm)
+{
+	return _core->get_queued_data(pcm);
+}
+
+void debuggerking::aac_decoder::after_decoding_callback(uint8_t * decoded, size_t size)
+{
+
 }

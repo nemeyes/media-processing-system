@@ -1,28 +1,28 @@
 #include "dk_celt_decoder.h"
 #include "celt_decoder.h"
 
-dk_celt_decoder::_configuration_t::_configuration_t(void)
+debuggerking::celt_decoder::_configuration_t::_configuration_t(void)
 	: framesize(20)
 {
 }
 
-dk_celt_decoder::_configuration_t::_configuration_t(const _configuration_t & clone)
+debuggerking::celt_decoder::_configuration_t::_configuration_t(const celt_decoder::_configuration_t & clone)
 {
 	framesize = clone.framesize;
 }
 
-dk_celt_decoder::_configuration_t dk_celt_decoder::_configuration_t::operator = (const _configuration_t & clone)
+debuggerking::celt_decoder::_configuration_t debuggerking::celt_decoder::_configuration_t::operator = (const celt_decoder::_configuration_t & clone)
 {
 	framesize = clone.framesize;
 	return (*this);
 }
 
-dk_celt_decoder::dk_celt_decoder(void)
+debuggerking::celt_decoder::celt_decoder(void)
 {
-	_core = new celt_decoder(this);
+	_core = new celt_core(this);
 }
 
-dk_celt_decoder::~dk_celt_decoder(void)
+debuggerking::celt_decoder::~celt_decoder(void)
 {
 	if (_core)
 	{
@@ -31,17 +31,40 @@ dk_celt_decoder::~dk_celt_decoder(void)
 	}
 }
 
-dk_celt_decoder::err_code dk_celt_decoder::initialize_decoder(void * config)
+int32_t debuggerking::celt_decoder::initialize_decoder(void * config)
 {
-	return _core->initialize_decoder(static_cast<dk_celt_decoder::configuration_t*>(config));
+	int32_t status = celt_decoder::initialize(static_cast<audio_base::configuration_t*>(config));
+	if (status != celt_decoder::err_code_t::success)
+		return status;
+	return _core->initialize_decoder(static_cast<celt_decoder::configuration_t*>(config));
 }
 
-dk_celt_decoder::err_code dk_celt_decoder::decode(dk_celt_decoder::dk_audio_entity_t * encoded, dk_celt_decoder::dk_audio_entity_t * pcm)
+
+int32_t debuggerking::celt_decoder::release_decoder(void)
+{
+	int32_t status = _core->release_decoder();
+	if (status != celt_decoder::err_code_t::success)
+		return status;
+	return audio_base::release();
+}
+
+int32_t debuggerking::celt_decoder::decode(celt_decoder::entity_t * encoded, celt_decoder::entity_t * pcm)
 {
 	return _core->decode(encoded, pcm);
 }
 
-dk_celt_decoder::err_code dk_celt_decoder::release_decoder(void)
+int32_t debuggerking::celt_decoder::decode(celt_decoder::entity_t * encoded)
 {
-	return _core->release_decoder();
+	return _core->decode(encoded);
 }
+
+int32_t debuggerking::celt_decoder::get_queued_data(celt_decoder::entity_t * pcm)
+{
+	return _core->get_queued_data(pcm);
+}
+
+void debuggerking::celt_decoder::after_decoding_callback(uint8_t * decoded, size_t size)
+{
+
+}
+

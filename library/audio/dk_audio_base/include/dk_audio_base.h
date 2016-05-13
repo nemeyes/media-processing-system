@@ -1,6 +1,8 @@
 #ifndef _DK_AUDIO_BASE_H_
 #define _DK_AUDIO_BASE_H_
 
+#include <dk_basic_type.h>
+
 #if defined(WIN32)
 #include <windows.h>
 #if defined(EXPORT_LIB)
@@ -18,142 +20,168 @@
 #include <cstdint>
 #include <memory>
 
-typedef struct _dk_circular_buffer_t dk_circular_buffer_t;
-class EXP_CLASS dk_audio_base
+namespace debuggerking
 {
-public:
-	typedef struct _abuffer_t
+	typedef struct _circular_buffer_t circular_buffer_t;
+	class EXP_CLASS audio_base : public foundation
 	{
-		long long pts;
-		size_t amount;
-		_abuffer_t * prev;
-		_abuffer_t * next;
-	} abuffer_t;
-
-	typedef enum _err_code
-	{
-		err_code_success,
-		err_code_fail,
-		err_code_not_implemented,
-	} err_code;
-
-	typedef struct _dk_audio_entity_t
-	{
-		long long pts;
-		void * data;
-		size_t data_size;
-		size_t data_capacity;
-		_dk_audio_entity_t(void)
-			: pts(0)
-			, data(nullptr)
-			, data_size(0)
-			, data_capacity(0)
-		{}
-		_dk_audio_entity_t(const _dk_audio_entity_t & clone)
+	public:
+		typedef struct _buffer_t
 		{
-			pts = clone.pts;
-			data = clone.data;
-			data_size = clone.data_size;
-			data_capacity = clone.data_capacity;
-		}
-		_dk_audio_entity_t & operator=(const _dk_audio_entity_t & clone)
+			long long timestamp;
+			size_t amount;
+			_buffer_t * prev;
+			_buffer_t * next;
+		} buffer_t;
+
+		typedef struct _mode_t
 		{
-			pts = clone.pts;
-			data = clone.data;
-			data_size = clone.data_size;
-			data_capacity = clone.data_capacity;
-			return (*this);
-		}
-	} dk_audio_entity_t;
+			static const int32_t none = 0;
+			static const int32_t sync = 1;
+			static const int32_t async = 2;
+		} mode_t;
 
-	dk_audio_base(void);
-	virtual ~dk_audio_base(void);
 
-	dk_audio_base::err_code push(uint8_t * bs, size_t size, long long pts);
-	dk_audio_base::err_code pop(uint8_t * bs, size_t & size, long long & pts);
-	dk_audio_base::err_code init(abuffer_t * buffer);
+		typedef struct EXP_CLASS _configuration_t
+		{
+			int32_t mode;
+			size_t	buffer_size;
+			_configuration_t(void);
+			_configuration_t(const _configuration_t & clone);
+			_configuration_t & operator=(const _configuration_t & clone);
+		} configuration_t;
 
-private:
-	abuffer_t * _root;
-	dk_circular_buffer_t * _aqueue;
+		typedef struct _entity_t
+		{
+			long long timestamp;
+			void * data;
+			size_t data_size;
+			size_t data_capacity;
+			_entity_t(void)
+				: timestamp(0)
+				, data(nullptr)
+				, data_size(0)
+				, data_capacity(0)
+			{}
+			_entity_t(const _entity_t & clone)
+			{
+				timestamp = clone.timestamp;
+				data = clone.data;
+				data_size = clone.data_size;
+				data_capacity = clone.data_capacity;
+			}
+			_entity_t & operator=(const _entity_t & clone)
+			{
+				timestamp = clone.timestamp;
+				data = clone.data;
+				data_size = clone.data_size;
+				data_capacity = clone.data_capacity;
+				return (*this);
+			}
+		} entity_t;
+
+		audio_base(void);
+		virtual ~audio_base(void);
+
+		virtual int32_t initialize(configuration_t * config);
+		virtual int32_t release(void);
+
+		int32_t push(uint8_t * bs, size_t size, long long timestamp);
+		int32_t pop(uint8_t * bs, size_t & size, long long & timestamp);
+		int32_t init(buffer_t * buffer);
+
+		void set_extradata(uint8_t * extradata, size_t extradata_size);
+		uint8_t * get_extradata(size_t & extradata_size);
+	private:
+		configuration_t * _config;
+		buffer_t * _root;
+		circular_buffer_t * _queue;
 
 #if defined(WIN32)
-	CRITICAL_SECTION _mutex;
+		CRITICAL_SECTION _mutex;
 #else
-	pthread_mutex _mutex;
+		pthread_mutex _mutex;
 #endif
-};
 
-class EXP_CLASS dk_audio_decoder : public dk_audio_base
-{
-public:
-	typedef struct EXP_CLASS _configuration_t
+	protected:
+		uint8_t _extradata[260];
+		size_t _extradata_size;
+	};
+
+	class EXP_CLASS audio_decoder : public audio_base
 	{
-		unsigned long samplerate;
-		unsigned char channels;
-		unsigned int bitdepth;
-		unsigned int bitrate;
-		uint8_t extradata[100];
-		size_t extradata_size;
-		_configuration_t(void);
-		_configuration_t(const _configuration_t & clone);
-		_configuration_t operator=(const _configuration_t & clone);
-	} configuration_t;
+	public:
+		typedef struct EXP_CLASS _configuration_t : public audio_base::configuration_t
+		{
+			unsigned long samplerate;
+			unsigned char channels;
+			unsigned int bitdepth;
+			unsigned int bitrate;
+			uint8_t extradata[100];
+			size_t extradata_size;
+			_configuration_t(void);
+			_configuration_t(const _configuration_t & clone);
+			_configuration_t operator=(const _configuration_t & clone);
+		} configuration_t;
 
-	dk_audio_decoder(void);
-	virtual ~dk_audio_decoder(void);
+		audio_decoder(void);
+		virtual ~audio_decoder(void);
 
-	virtual dk_audio_decoder::err_code initialize_decoder(void * config);
-	virtual dk_audio_decoder::err_code release_decoder(void);
-	virtual dk_audio_decoder::err_code decode(dk_audio_decoder::dk_audio_entity_t * encoded, dk_audio_decoder::dk_audio_entity_t * pcm);
-};
+		virtual int32_t initialize_decoder(void * config);
+		virtual int32_t release_decoder(void);
+		virtual int32_t decode(audio_decoder::entity_t * encoded, audio_decoder::entity_t * pcm);
+		virtual int32_t decode(audio_decoder::entity_t * encoded);
+		virtual int32_t get_queued_data(audio_decoder::entity_t * pcm);
+		virtual void after_decoding_callback(uint8_t * pcm, size_t size) = 0;
+	};
 
-class EXP_CLASS dk_audio_encoder : public dk_audio_base
-{
-public:
-	typedef struct EXP_CLASS _configuration_t
+	class EXP_CLASS audio_encoder : public audio_base
 	{
-		int32_t samplerate;
-		int32_t channels;
-		int32_t bitrate;
-		_configuration_t(void);
-		_configuration_t(const _configuration_t & clone);
-		_configuration_t operator=(const _configuration_t & clone);
-	} configuration_t;
+	public:
+		typedef struct EXP_CLASS _configuration_t : public audio_base::configuration_t
+		{
+			int32_t samplerate;
+			int32_t channels;
+			int32_t bitrate;
+			_configuration_t(void);
+			_configuration_t(const _configuration_t & clone);
+			_configuration_t operator=(const _configuration_t & clone);
+		} configuration_t;
 
-	dk_audio_encoder(void);
-	virtual ~dk_audio_encoder(void);
+		audio_encoder(void);
+		virtual ~audio_encoder(void);
 
-	virtual dk_audio_encoder::err_code initialize_encoder(void * config);
-	virtual dk_audio_encoder::err_code release_encoder(void);
-	virtual dk_audio_encoder::err_code encode(dk_audio_encoder::dk_audio_entity_t * pcm, dk_audio_encoder::dk_audio_entity_t * encoded);
-	virtual dk_audio_encoder::err_code encode(dk_audio_encoder::dk_audio_entity_t * pcm);
-	virtual dk_audio_encoder::err_code get_queued_data(dk_audio_encoder::dk_audio_entity_t * encoded);
+		virtual int32_t initialize_encoder(void * config);
+		virtual int32_t release_encoder(void);
+		virtual int32_t encode(audio_encoder::entity_t * pcm, audio_encoder::entity_t * encoded);
+		virtual int32_t encode(audio_encoder::entity_t * pcm);
+		virtual int32_t get_queued_data(audio_encoder::entity_t * encoded);
+		virtual void after_encoding_callback(uint8_t * bistream, size_t size) = 0;
+	};
 
-	virtual uint8_t * extradata(void);
-	virtual size_t extradata_size(void);
-};
-
-class EXP_CLASS dk_audio_renderer : public dk_audio_base
-{
-public:
-	typedef struct EXP_CLASS _configuration_t
+	class EXP_CLASS audio_renderer : public audio_base
 	{
-		int32_t samplerate;
-		int32_t bitdepth;
-		int32_t channels;
-		_configuration_t(void);
-		_configuration_t(const _configuration_t & clone);
-		_configuration_t & operator=(const _configuration_t & clone);
-	} configuration_t;
+	public:
+		typedef struct EXP_CLASS _configuration_t
+		{
+			int32_t samplerate;
+			int32_t bitdepth;
+			int32_t channels;
+			_configuration_t(void);
+			_configuration_t(const _configuration_t & clone);
+			_configuration_t & operator=(const _configuration_t & clone);
+		} configuration_t;
 
-	dk_audio_renderer(void);
-	virtual ~dk_audio_renderer(void);
+		audio_renderer(void);
+		virtual ~audio_renderer(void);
 
-	virtual dk_audio_renderer::err_code initialize_renderer(void * config);
-	virtual dk_audio_renderer::err_code release_renderer(void);
-	virtual dk_audio_renderer::err_code render(dk_audio_renderer::dk_audio_entity_t * pcm);
+		virtual int32_t initialize_renderer(void * config);
+		virtual int32_t release_renderer(void);
+		virtual int32_t render(audio_renderer::entity_t * pcm);
+	};
 };
+
+
 
 
 

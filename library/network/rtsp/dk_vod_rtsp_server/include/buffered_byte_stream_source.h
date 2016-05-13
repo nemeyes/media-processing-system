@@ -12,7 +12,7 @@
 class buffered_byte_stream_source : public buffered_framed_source
 {
 public:
-	static buffered_byte_stream_source * createNew(UsageEnvironment & env, char const * stream_name, std::shared_ptr<media_source_reader> reader, unsigned preferredFrameSize = 0, unsigned playTimePerFrame = 0);
+	static buffered_byte_stream_source * createNew(UsageEnvironment & env, char const * stream_name, std::shared_ptr<debuggerking::media_source_reader> reader, unsigned preferredFrameSize = 0, unsigned playTimePerFrame = 0);
 	// "preferredFrameSize" == 0 means 'no preference'
 	// "playTimePerFrame" is in microseconds
 
@@ -34,7 +34,7 @@ public:
 	//int get_pps_size() { return _pps_size; }
 
 protected:
-	buffered_byte_stream_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<media_source_reader> reader, unsigned preferredFrameSize, unsigned playTimePerFrame);
+	buffered_byte_stream_source(UsageEnvironment & env, char const * stream_name, std::shared_ptr<debuggerking::media_source_reader> reader, unsigned preferredFrameSize, unsigned playTimePerFrame);
 	virtual ~buffered_byte_stream_source(void);
 
 	//void			doReadFromFile();

@@ -9,37 +9,25 @@
 #include <dk_directdraw_renderer.h>
 #include <dk_mmwave_renderer.h>
 
-class dk_rtsp_receiver : public dk_base_receiver, public dk_live_rtsp_client
+namespace debuggerking
 {
-public:
-	dk_rtsp_receiver(void);
-	virtual ~dk_rtsp_receiver(void);
+	class rtsp_receiver : public base_receiver, public live_rtsp_client
+	{
+	public:
+		rtsp_receiver(void);
+		virtual ~rtsp_receiver(void);
 
-	void play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, bool repeat, HWND hwnd);
-	void stop(void);
+		int32_t play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd);
+		int32_t stop(void);
 
-	void on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp);
-	void on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp);
-	void on_begin_audio(dk_live_rtsp_client::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp);
-	void on_recv_audio(dk_live_rtsp_client::asubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp);
+		void on_begin_video(int32_t smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp);
+		void on_recv_video(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp);
+		void on_begin_audio(int32_t smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp);
+		void on_recv_audio(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp);
 
-private:
-	int64_t _frame_count;
+	private:
+		int64_t _frame_count;
+	};
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif

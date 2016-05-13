@@ -19,8 +19,11 @@
 #define CMD_GET_MINUTES_RESPONSE			113
 #define CMD_GET_SECONDS_REQUEST				114
 #define CMD_GET_SECONDS_RESPONSE			115
-#define CMD_START_STREAMING_REQUEST			116
-#define CMD_START_STREAMING_RESPONSE		117
+#define CMD_BEGIN_PLAYBACK_REQUEST			116
+#define CMD_BEGIN_PLAYBACK_RESPONSE			117
+#define CMD_END_PLAYBACK_REQUEST			118
+#define CMD_END_PLAYBACK_RESPONSE			119
+#define CMD_RECV_PLAYBACK_NOTIFICATION		120
 
 namespace ic
 {
@@ -143,7 +146,7 @@ namespace ic
 		int32_t seconds[60];
 	} CMD_GET_SECONDS_RES_T;
 
-	typedef struct _CMD_START_STREAMING_REQ_T
+	typedef struct _CMD_BEGIN_PLAYBACK_REQ_T
 	{
 		char uuid[64];
 		int32_t year;
@@ -152,14 +155,29 @@ namespace ic
 		int32_t hour;
 		int32_t minute;
 		int32_t second;
-	} CMD_START_STREAMING_REQ_T;
+	} CMD_BEGIN_PLAYBACK_REQ_T;
 
-	typedef struct _CMD_START_STREAMING_RES_T
+	typedef struct _CMD_BEGIN_PLAYBACK_RES_T
 	{
 		int32_t code;
-		char uuid[64];
-		int32_t task_id;
-	} CMD_START_STREAMING_RES_T;
+		char sid[64];
+	} CMD_BEGIN_PLAYBACK_RES_T;
+
+	typedef struct _CMD_END_PLAYBACK_REQ_T
+	{
+		char sid[64];
+	} CMD_END_PLAYBACK_REQ_T;
+
+	typedef struct _CMD_END_PLAYBACK_RES_T
+	{
+		int32_t code;
+	} CMD_END_PLAYBACK_RES_T;
+
+	typedef struct _CMD_RECV_PLAYBACK_NOTIFICATION_T
+	{
+		char sid[64];
+		char * data;
+	} CMD_RECV_PLAYBACK_NOTIFICATION_T;
 };
 
 

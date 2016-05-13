@@ -1,24 +1,34 @@
+#ifndef _CELT_DECODER_H_
+#define _CELT_DECODER_H_
+
 #include "dk_celt_decoder.h"
 
 #include <opus.h>
 
-class celt_decoder
+namespace debuggerking
 {
-public:
-	celt_decoder(dk_celt_decoder * front);
-	~celt_decoder(void);
+	class celt_core
+	{
+	public:
+		celt_core(celt_decoder * front);
+		~celt_core(void);
 
-	dk_celt_decoder::err_code initialize_decoder(dk_celt_decoder::configuration_t * config);
-	dk_celt_decoder::err_code release_decoder(void);
-	dk_celt_decoder::err_code decode(dk_celt_decoder::dk_audio_entity_t * encoded, dk_celt_decoder::dk_audio_entity_t * pcm);
+		int32_t initialize_decoder(celt_decoder::configuration_t * config);
+		int32_t release_decoder(void);
+		int32_t decode(celt_decoder::entity_t * encoded, celt_decoder::entity_t * pcm);
+		int32_t decode(celt_decoder::entity_t * encoded);
+		int32_t get_queued_data(celt_decoder::entity_t * pcm);
 
-private:
-	dk_celt_decoder * _front;
-	dk_celt_decoder::configuration_t _config;
-	OpusDecoder * _decoder;
-	unsigned long _framesize;
+	private:
+		celt_decoder * _front;
+		celt_decoder::configuration_t _config;
+		OpusDecoder * _decoder;
+		unsigned long _framesize;
 
-	int16_t * _buffer;
-	size_t _buffer_pos;
+		int16_t * _buffer;
+		size_t _buffer_pos;
 
+	};
 };
+
+#endif

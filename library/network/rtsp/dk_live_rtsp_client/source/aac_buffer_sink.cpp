@@ -2,8 +2,8 @@
 #include "aac_buffer_sink.h"
 #include <H264VideoRTPSource.hh>
 
-aac_buffer_sink::aac_buffer_sink(dk_live_rtsp_client * front, UsageEnvironment & env, unsigned buffer_size, int32_t channels, int32_t samplerate, int32_t bitrate, char * configstr, size_t configstr_size)
-	: buffer_sink(front, dk_live_rtsp_client::media_type_audio, dk_live_rtsp_client::asubmedia_type_aac, env, buffer_size)
+aac_buffer_sink::aac_buffer_sink(debuggerking::live_rtsp_client * front, UsageEnvironment & env, unsigned buffer_size, int32_t channels, int32_t samplerate, int32_t bitrate, char * configstr, size_t configstr_size)
+	: buffer_sink(front, debuggerking::live_rtsp_client::media_type_t::audio, debuggerking::live_rtsp_client::audio_submedia_type_t::aac, env, buffer_size)
 	, _channels(channels)
 	, _samplerate(samplerate)
 	, _bitrate(bitrate)

@@ -1,25 +1,28 @@
 #ifndef _DK_FF_MP3_DECODER_H_
 #define _DK_FF_MP3_DECODER_H_
 
-#include <cstdint>
-
 #include <dk_audio_base.h>
 
-class mp3_decoder;
-class EXP_CLASS dk_ff_mp3_decoder : public dk_audio_decoder
+namespace debuggerking
 {
-public:
-	dk_ff_mp3_decoder(void);
-	virtual ~dk_ff_mp3_decoder(void);
+	class ffmpeg_core;
+	class EXP_CLASS ff_mp3_decoder : public audio_decoder
+	{
+	public:
+		ff_mp3_decoder(void);
+		virtual ~ff_mp3_decoder(void);
 
-	dk_ff_mp3_decoder::err_code initialize_decoder(void* config);
-	dk_ff_mp3_decoder::err_code release_decoder(void);
-	dk_ff_mp3_decoder::err_code decode(dk_ff_mp3_decoder::dk_audio_entity_t * encoded, dk_ff_mp3_decoder::dk_audio_entity_t * pcm);
+		int32_t initialize_decoder(void* config);
+		int32_t release_decoder(void);
+		int32_t decode(ff_mp3_decoder::entity_t * encoded, ff_mp3_decoder::entity_t * pcm);
+		int32_t decode(audio_decoder::entity_t * encoded);
+		int32_t get_queued_data(audio_decoder::entity_t * pcm);
+		virtual void after_decoding_callback(uint8_t * pcm, size_t size);
 
-private:
-	mp3_decoder * _core;
+	private:
+		ffmpeg_core * _core;
+	};
 };
-
 
 
 #endif

@@ -5,26 +5,26 @@
 #include "buffered_h264_sms.h"
 #include <memory>
 
-vod_rtsp_server * vod_rtsp_server::createNew(UsageEnvironment & env, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds)
+debuggerking::vod_rtsp_core * debuggerking::vod_rtsp_core::createNew(UsageEnvironment & env, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds)
 {
 	int ourSocket = setUpOurSocket(env, ourPort);
 	if (ourSocket == -1)
 		return NULL;
-	return new vod_rtsp_server(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds);
+	return new vod_rtsp_core(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds);
 }
 
-vod_rtsp_server::vod_rtsp_server(UsageEnvironment & env, int ourSocket, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds)
+debuggerking::vod_rtsp_core::vod_rtsp_core(UsageEnvironment & env, int ourSocket, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds)
 	: RTSPServerSupportingHTTPStreaming(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds)
 {
 }
 
-vod_rtsp_server::~vod_rtsp_server(void)
+debuggerking::vod_rtsp_core::~vod_rtsp_core(void)
 {
 }
 
 static ServerMediaSession * createNewSMS(UsageEnvironment & env, char const * stream_name); // forward
 
-ServerMediaSession * vod_rtsp_server::lookupServerMediaSession(char const * stream_name, Boolean isFirstLookupInSession)
+ServerMediaSession * debuggerking::vod_rtsp_core::lookupServerMediaSession(char const * stream_name, Boolean isFirstLookupInSession)
 {
 	ServerMediaSession* sms = RTSPServer::lookupServerMediaSession(stream_name);
 	Boolean smsExists = sms != NULL;
@@ -58,13 +58,13 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env, char const * st
 	ServerMediaSession* sms = NULL;
 	Boolean const reuse_source = False;
 
-	std::shared_ptr<media_source_reader> reader(new media_source_reader);
+	std::shared_ptr<debuggerking::media_source_reader> reader(new debuggerking::media_source_reader);
 
-	media_source_reader::vsubmedia_type video_type = media_source_reader::unknown_video_type;
-	media_source_reader::asubmedia_type audio_type = media_source_reader::unknown_audio_type;
+	int32_t video_type = debuggerking::media_source_reader::video_submedia_type_t::unknown;
+	int32_t audio_type = debuggerking::media_source_reader::audio_submedia_type_t::unknown;
 	reader->open(stream_name, 0, video_type, audio_type);
 
-	if (video_type == media_source_reader::vsubmedia_type_h264)
+	if (video_type == debuggerking::media_source_reader::video_submedia_type_t::h264)
 	{
 		NEW_SMS("H.264 Video");
 		OutPacketBuffer::maxSize = 6000000; // allow for some possibly large H.264 frames

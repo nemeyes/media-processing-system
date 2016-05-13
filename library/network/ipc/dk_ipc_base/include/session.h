@@ -4,10 +4,6 @@
 #include <packet.h>
 #include <iocp_io_context.h>
 
-#if defined(WITH_DELAYED_TASK)
-//#include <delayed_task_queue.h>
-#endif
-
 namespace ic
 {
 #if defined(WITH_WORKING_AS_SERVER)
@@ -26,6 +22,9 @@ namespace ic
 		virtual ~session(void);
 
 		bool shutdown_fd(void);
+
+		char * schedule_delayed_task(const char * uuid, uint32_t interval, const char * dst, int32_t cmd, char * msg, int32_t length, bool post_send = true);
+		void unschedule_delayed_task(const char * id);
 
 		void push_send_packet(const char * dst, const char * src, int32_t cmd, char * msg, int32_t length, bool post_send = true);
 		void push_front_send_packet(char * msg, int32_t length);
@@ -87,6 +86,7 @@ namespace ic
 		HANDLE _recv_lock;
 
 #if defined(WITH_WORKING_AS_SERVER)
+		HANDLE _timer_queue;
 		abstract_ipc_server * _processor;
 #else
 		abstract_ipc_client * _processor;
@@ -118,10 +118,6 @@ namespace ic
 #endif
 		int32_t _hb_period;
 		int32_t _hb_retry_count;
-
-#if defined(WITH_DELAYED_TASK)
-		//delayed_task_queue _dt_queue;
-#endif
 	};
 
 };

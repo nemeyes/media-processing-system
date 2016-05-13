@@ -1,59 +1,78 @@
 #ifndef _MEDIA_SOURCE_READER_H_
 #define _MEDIA_SOURCE_READER_H_
 
-#include <cstdint>
+#include <dk_basic_type.h>
 #if defined(WITH_RECORD_SERVER)
+#if defined(WITH_RECORD_MODULE)
+ #include <dk_recorder_module.h>
+#else
+ #include "record_module_seeker.h"
+#endif
 
-#include "record_module_seeker.h"
+#include <dk_circular_buffer.h>
 
-class media_source_reader
+namespace debuggerking
 {
-public:
-	typedef enum _media_type
+	class media_source_reader : public foundation
 	{
-		media_type_video = 0,
-		media_type_audio
-	} media_type;
+	public:
 
-	typedef enum _vsubmedia_type
-	{
-		unknown_video_type = -1,
-		vsubmedia_type_jpeg = 0,
-		vsubmedia_type_mpeg4,
-		vsubmedia_type_h264,
-		vsubmedia_type_hevc,
-	} vsubmedia_type;
+#if defined(WITH_RECORD_MODULE)
+		typedef struct _video_buffer_t
+		{
+			long long	timestamp;
+			size_t		amount;
+			uint8_t		nalu_type;
+			_video_buffer_t * prev;
+			_video_buffer_t * next;
+		} video_buffer_t;
+#endif
 
-	typedef enum _asubmedia_type
-	{
-		unknown_audio_type = -1,
-		asubmedia_type_mp3 = 0,
-		asubmedia_type_aac,
-	} asubmedia_type;
 
-	typedef enum _err_code
-	{
-		err_code_success = 0,
-		err_code_fail
-	} err_code;
+		media_source_reader(void);
+		virtual ~media_source_reader(void);
 
-	media_source_reader(void);
-	virtual ~media_source_reader(void);
+		void set_scale(float scale) { _scale = scale; }
+		float get_scale(void) { return _scale; }
 
-	bool open(const char * stream_name, long long timestamp, media_source_reader::vsubmedia_type & vsubmedia_type, media_source_reader::asubmedia_type & asubmedia_type);
-	bool close(void);
-	bool read(media_source_reader::media_type mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & timestamp);
+		bool open(const char * stream_name, long long timestamp, int32_t & vsmt, int32_t & asmt);
+		bool close(void);
+		bool read(int32_t mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & timestamp);
 
-	uint8_t * get_sps(size_t & size);
-	uint8_t * get_pps(size_t & size);
+		const uint8_t * get_sps(size_t & size);
+		const uint8_t * get_pps(size_t & size);
 
-	void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
-private:
-	char _stream_name[250];
-	record_module_seeker _record_module_seeker;
+	private:
+		int32_t push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long timestamp);
+		int32_t pop_video(uint8_t * bs, size_t & size, uint8_t & nalu_type, long long & timestamp);
+		int32_t init_video(video_buffer_t * buffer);
 
-	media_source_reader::vsubmedia_type _vsubmedia_type;
-	media_source_reader::asubmedia_type _asubmedia_type;
+#if defined(WITH_RECORD_MODULE)
+		unsigned static __stdcall video_process_callback(void * param);
+		void video_process(void);
+#else
+		void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
+#endif
+	private:
+		char _stream_name[250];
+#if defined(WITH_RECORD_MODULE)
+		recorder_module _record_module;
+		CRITICAL_SECTION _video_mutex;
+		bool _video_run;
+		HANDLE _video_thread;
+
+		video_buffer_t * _video_root;
+		circular_buffer_t * _video_queue;
+		uint64_t _video_queue_count;
+		uint8_t * _video_buffer;
+		size_t _video_buffer_size;
+#else
+		record_module_seeker _record_module_seeker;
+#endif
+		float _scale;
+		int32_t _vsmt;
+		int32_t _asmt;
+	};
 };
 
 #else

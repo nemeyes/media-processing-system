@@ -5,7 +5,7 @@
 #include "live_media_source_entity.h"
 #include <dk_log4cplus_logger.h>
 
-dk_vod_rtsp_server::dk_vod_rtsp_server(void)
+debuggerking::vod_rtsp_server::vod_rtsp_server(void)
 	: _port_number(554)
 	, _thread(INVALID_HANDLE_VALUE)
 {
@@ -14,22 +14,22 @@ dk_vod_rtsp_server::dk_vod_rtsp_server(void)
 	dk_log4cplus_logger::create("config/log.properties");
 }
 
-dk_vod_rtsp_server::~dk_vod_rtsp_server(void)
+debuggerking::vod_rtsp_server::~vod_rtsp_server(void)
 {
 	dk_log4cplus_logger::destroy();
 }
 
-bool dk_vod_rtsp_server::add_live_media_source(const char * uuid, const char * url, const char * username, const char * password)
+int32_t debuggerking::vod_rtsp_server::add_live_media_source(const char * uuid, const char * url, const char * username, const char * password)
 {
 	return live_media_source_entity::instance().add_live_media_source(uuid, url, username, password);
 }
 
-bool dk_vod_rtsp_server::remove_live_media_source(const char * uuid)
+int32_t debuggerking::vod_rtsp_server::remove_live_media_source(const char * uuid)
 {
 	return live_media_source_entity::instance().remove_live_media_source(uuid);
 }
 
-void dk_vod_rtsp_server::start(int32_t port_number, char * username, char * password)
+int32_t debuggerking::vod_rtsp_server::start(int32_t port_number, char * username, char * password)
 {
 	stop();
 	_port_number = port_number;
@@ -40,12 +40,13 @@ void dk_vod_rtsp_server::start(int32_t port_number, char * username, char * pass
 
 	unsigned int thrd_addr;
 	_bstop = false;
-	_thread = (HANDLE)::_beginthreadex(NULL, 0, &dk_vod_rtsp_server::process_cb, this, CREATE_SUSPENDED, &thrd_addr);
+	_thread = (HANDLE)::_beginthreadex(NULL, 0, &vod_rtsp_server::process_cb, this, CREATE_SUSPENDED, &thrd_addr);
 	//::SetThreadPriority(_thread, THREAD_PRIORITY_HIGHEST);
 	::ResumeThread(_thread);
+	return vod_rtsp_server::err_code_t::success;
 }
 
-void dk_vod_rtsp_server::stop(void)
+int32_t debuggerking::vod_rtsp_server::stop(void)
 {
 	if (_thread != INVALID_HANDLE_VALUE)
 	{
@@ -62,16 +63,17 @@ void dk_vod_rtsp_server::stop(void)
 		//Medium::close(_rtsp_server);
 #endif
 	}
+	return vod_rtsp_server::err_code_t::success;
 }
 
-unsigned dk_vod_rtsp_server::process_cb(void * param)
+unsigned debuggerking::vod_rtsp_server::process_cb(void * param)
 {
-	dk_vod_rtsp_server * self = static_cast<dk_vod_rtsp_server*>(param);
+	vod_rtsp_server * self = static_cast<vod_rtsp_server*>(param);
 	self->process();
 	return 0;
 }
 
-void dk_vod_rtsp_server::process(void)
+void debuggerking::vod_rtsp_server::process(void)
 {
 	TaskScheduler * scheduler = BasicTaskScheduler::createNew();
 	UsageEnvironment * env = BasicUsageEnvironment::createNew(*scheduler);
@@ -83,7 +85,7 @@ void dk_vod_rtsp_server::process(void)
 	}
 
 	portNumBits rtspServerPortNum = _port_number;
-	_rtsp_server = vod_rtsp_server::createNew(*env, rtspServerPortNum, auth);
+	_rtsp_server = vod_rtsp_core::createNew(*env, rtspServerPortNum, auth);
 	if (_rtsp_server == NULL)
 		return;
 

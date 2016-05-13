@@ -1,9 +1,9 @@
 #include "mmwave_renderer.h"
 #pragma comment(lib, "winmm")
 
-DWORD mmwave_renderer::_volume = 30;
+DWORD debuggerking::mmwave_core::_volume = 30;
 
-mmwave_renderer::mmwave_renderer(void)
+debuggerking::mmwave_core::mmwave_core(void)
 {
 	_wave_out = nullptr;
 	_waveout_device_id = WAVE_MAPPER;
@@ -16,35 +16,35 @@ mmwave_renderer::mmwave_renderer(void)
 	ZeroMemory(&_wfx, sizeof(_wfx));
 }
 
-mmwave_renderer::~mmwave_renderer(void)
+debuggerking::mmwave_core::~mmwave_core(void)
 {
 	end_audio_render();
 	clear_buffer();
 	DeleteCriticalSection(&_cs);
 }
 
-dk_mmwave_renderer::err_code mmwave_renderer::initialize_renderer(dk_mmwave_renderer::configuration_t * config)
+int32_t debuggerking::mmwave_core::initialize_renderer(mmwave_renderer::configuration_t * config)
 {
-	dk_mmwave_renderer::err_code value = dk_mmwave_renderer::err_code_fail;
+	int32_t value = mmwave_renderer::err_code_t::fail;
 	BOOL ret = begin_audio_render(config->samplerate, config->bitdepth, config->channels);
 	if (ret)
-		value = dk_mmwave_renderer::err_code_success;
+		value = mmwave_renderer::err_code_t::success;
 	return value;
 }
 
-dk_mmwave_renderer::err_code mmwave_renderer::release_renderer(void)
+int32_t debuggerking::mmwave_core::release_renderer(void)
 {
 	end_audio_render();
-	return dk_mmwave_renderer::err_code_success;
+	return mmwave_renderer::err_code_t::success;
 }
 
-dk_mmwave_renderer::err_code mmwave_renderer::render(dk_mmwave_renderer::dk_audio_entity_t * pcm)
+int32_t debuggerking::mmwave_core::render(mmwave_renderer::entity_t * pcm)
 {
 	set_buffer(pcm->data, pcm->data_size);
-	return dk_mmwave_renderer::err_code_success;
+	return mmwave_renderer::err_code_t::success;
 }
 
-BOOL mmwave_renderer::begin_audio_render(DWORD samplerate, WORD bitdepth, WORD channels)
+BOOL debuggerking::mmwave_core::begin_audio_render(DWORD samplerate, WORD bitdepth, WORD channels)
 {
 	if (samplerate == 0 || bitdepth == 0)
 		return FALSE;
@@ -70,7 +70,7 @@ BOOL mmwave_renderer::begin_audio_render(DWORD samplerate, WORD bitdepth, WORD c
 	return bResult;
 }
 
-void mmwave_renderer::end_audio_render(void)
+void debuggerking::mmwave_core::end_audio_render(void)
 {
 	if (!_wave_out)
 		return;
@@ -100,7 +100,7 @@ void mmwave_renderer::end_audio_render(void)
 	}
 }
 
-void mmwave_renderer::init_buffer(int buffer_size, int data_size)
+void debuggerking::mmwave_core::init_buffer(int buffer_size, int data_size)
 {
 	clear_buffer();
 	_wave_hdr = new AUDIOSINK_WAVEHDR_T[buffer_size];
@@ -117,7 +117,7 @@ void mmwave_renderer::init_buffer(int buffer_size, int data_size)
 	_per_data_size = data_size;
 }
 
-void mmwave_renderer::clear_buffer(void)
+void debuggerking::mmwave_core::clear_buffer(void)
 {
 	AUDIOSINK_WAVEHDR_T *phdr;
 	if (_buffer_size>0)
@@ -133,7 +133,7 @@ void mmwave_renderer::clear_buffer(void)
 	}
 }
 
-void mmwave_renderer::set_buffer(void *data, DWORD size)
+void debuggerking::mmwave_core::set_buffer(void *data, DWORD size)
 {
 	__try
 	{
@@ -182,7 +182,7 @@ void mmwave_renderer::set_buffer(void *data, DWORD size)
 	}
 }
 
-void mmwave_renderer::set_volume(unsigned long lVolume)
+void debuggerking::mmwave_core::set_volume(unsigned long lVolume)
 {
 	if (!_wave_out)
 		return;
@@ -196,7 +196,7 @@ void mmwave_renderer::set_volume(unsigned long lVolume)
 	_volume = lVolume;
 }
 
-DWORD mmwave_renderer::get_volume(void)
+DWORD debuggerking::mmwave_core::get_volume(void)
 {
 	if (_wave_out)
 	{
@@ -207,7 +207,7 @@ DWORD mmwave_renderer::get_volume(void)
 	return _volume;
 }
 
-void CALLBACK mmwave_renderer::speaker_callback(HWAVEOUT wave_out, UINT msg, DWORD instance, DWORD param1, DWORD param2)
+void CALLBACK debuggerking::mmwave_core::speaker_callback(HWAVEOUT wave_out, UINT msg, DWORD instance, DWORD param1, DWORD param2)
 {
 	AUDIOSINK_WAVEHDR_T *phdr;
 	switch (msg)

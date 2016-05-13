@@ -55,7 +55,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_PARALLEL_RECORD_MEDIA_CLIENT_LIB;WITH_LEAVE_CMD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXPORT_PARALLEL_RECORD_MEDIA_CLIENT_LIB;WITH_LEAVE_CMD;WITH_RTSP_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\dk_common\include;..\..\..\library\network\ipc\dk_ipc_base\include;..\..\..\library\network\ipc\dk_ipc_client\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_live_rtsp_client\include;..\..\..\library\network\rtmp\dk_rtmp_client\include;..\..\..\library\video\dk_video_base\include;..\..\..\library\audio\dk_audio_base\include;..\..\..\library\video\codec\ffmpeg\dk_ff_video_decoder\include;..\..\..\library\audio\codec\dk_aac_decoder\include;..\..\..\library\audio\codec\dk_celt_decoder\include;..\..\..\library\audio\codec\dk_ff_mp3_decoder\include;..\..\..\library\video\renderer\dk_directdraw_renderer\include;..\..\..\library\audio\renderer\dk_mmwave_renderer\include;..\..\..\library\logger\dk_log4cplus_logger_1.2.0\include;..\ParallelRecordBase\include;commands;control;receiver;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>

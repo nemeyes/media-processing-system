@@ -1,9 +1,9 @@
 #include "dk_aac_encoder.h"
 #include "faac_encoder.h"
 
-dk_aac_encoder::_configuration_t::_configuration_t(void)
-	: mpeg_version(dk_aac_encoder::version_type_mpeg4)
-	, object_type(dk_aac_encoder::aac_object_type_low)
+debuggerking::aac_encoder::_configuration_t::_configuration_t(void)
+	: mpeg_version(debuggerking::aac_encoder::version_type_mpeg4)
+	, object_type(debuggerking::aac_encoder::aac_object_type_low)
 	, allow_midside(0)
 	, use_lfe(0)
 	, use_tns(0)
@@ -13,12 +13,12 @@ dk_aac_encoder::_configuration_t::_configuration_t(void)
 	, bandwidth(0)
 	, quantization_quality(100)
 	, shortctl(block_type_normal)
-	, input_format(dk_aac_encoder::format_type_16bit)
-	, output_format(dk_aac_encoder::format_type_raw)
+	, input_format(debuggerking::aac_encoder::format_type_16bit)
+	, output_format(debuggerking::aac_encoder::format_type_raw)
 {
 }
 
-dk_aac_encoder::_configuration_t::_configuration_t(const _configuration_t & clone)
+debuggerking::aac_encoder::_configuration_t::_configuration_t(const _configuration_t & clone)
 {
 	mpeg_version = clone.mpeg_version;
 	object_type = clone.object_type;
@@ -35,7 +35,7 @@ dk_aac_encoder::_configuration_t::_configuration_t(const _configuration_t & clon
 	output_format = clone.output_format;
 }
 
-dk_aac_encoder::_configuration_t dk_aac_encoder::_configuration_t::operator = (const _configuration_t & clone)
+debuggerking::aac_encoder::_configuration_t debuggerking::aac_encoder::_configuration_t::operator = (const _configuration_t & clone)
 {
 	mpeg_version = clone.mpeg_version;
 	object_type = clone.object_type;
@@ -53,12 +53,12 @@ dk_aac_encoder::_configuration_t dk_aac_encoder::_configuration_t::operator = (c
 	return (*this);
 }
 
-dk_aac_encoder::dk_aac_encoder(void)
+debuggerking::aac_encoder::aac_encoder(void)
 {
 	_core = new faac_encoder(this);
 }
 
-dk_aac_encoder::~dk_aac_encoder(void)
+debuggerking::aac_encoder::~aac_encoder(void)
 {
 	if (_core)
 	{
@@ -67,39 +67,38 @@ dk_aac_encoder::~dk_aac_encoder(void)
 	}
 }
 
-dk_aac_encoder::err_code dk_aac_encoder::initialize_encoder(void * config)
+int32_t debuggerking::aac_encoder::initialize_encoder(void * config)
 {
-	return _core->initialize_encoder(static_cast<dk_aac_encoder::configuration_t*>(config));
+	int32_t status = audio_base::initialize(static_cast<audio_base::configuration_t*>(config));
+	if (status != aac_encoder::err_code_t::success)
+		return status;
+	return _core->initialize_encoder(static_cast<aac_encoder::configuration_t*>(config));
 }
 
-dk_aac_encoder::err_code dk_aac_encoder::release_encoder(void)
+int32_t debuggerking::aac_encoder::release_encoder(void)
 {
-	return _core->release_encoder();
+	int32_t status = _core->release_encoder();
+	if (status != aac_encoder::err_code_t::success)
+		return status;
+	return audio_base::release();
 }
 
-dk_aac_encoder::err_code dk_aac_encoder::encode(dk_aac_encoder::dk_audio_entity_t * pcm, dk_aac_encoder::dk_audio_entity_t * encoded)
+int32_t debuggerking::aac_encoder::encode(aac_encoder::entity_t * pcm, aac_encoder::entity_t * encoded)
 {
 	return _core->encode(pcm, encoded);
 }
 
-dk_aac_encoder::err_code dk_aac_encoder::encode(dk_aac_encoder::dk_audio_entity_t * pcm)
+int32_t debuggerking::aac_encoder::encode(aac_encoder::entity_t * pcm)
 {
 	return _core->encode(pcm);
 }
 
-dk_aac_encoder::err_code dk_aac_encoder::get_queued_data(dk_aac_encoder::dk_audio_entity_t * encoded)
+int32_t debuggerking::aac_encoder::get_queued_data(aac_encoder::entity_t * encoded)
 {
 	return _core->get_queued_data(encoded);
 }
 
-uint8_t * dk_aac_encoder::extradata(void)
+void debuggerking::aac_encoder::after_encoding_callback(uint8_t * bistream, size_t size)
 {
-	return _core->extradata();
+
 }
-
-size_t dk_aac_encoder::extradata_size(void)
-{
-	return _core->extradata_size();
-}
-
-

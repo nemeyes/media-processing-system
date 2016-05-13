@@ -76,6 +76,7 @@ void CParallelRecordClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_RTSP_ADDRESS, _rtsp_address);
 	DDX_Control(pDX, IDC_EDIT_RTSP_USERNAME, _rtsp_username);
 	DDX_Control(pDX, IDC_EDIT9_RTSP_PASSWORD, _rtsp_password);
+	DDX_Control(pDX, IDC_EDIT_RECORDING_PLAY_SCALE, _recording_play_scale);
 }
 
 BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
@@ -139,10 +140,12 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	_rtsp_address.SetWindowTextW(L"rtsp://1.217.25.234:5054/8/stream1");
 
 	_uuid.SetWindowTextW(L"CH1");
+	_recording_play_scale.SetWindowTextW(L"1");
 
 	PRMC_Initialize(GetSafeHwnd());
 	PRMC_index = -1;
 	PRMC_RTSP_index = -1;
+
 
 	CWnd * wnd = GetDlgItem(IDC_BUTTON_PARALLEL_RECORDER_CONNECT);
 	wnd->EnableWindow(TRUE);
@@ -515,13 +518,18 @@ void CParallelRecordClientDlg::OnCbnSelchangeComboMinutes()
 void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 {
 	// TODO: Add your control notification handler code here
-	int stauts = PRMC_FAIL;
+	int status = PRMC_FAIL;
 
 	CString recorder_address;
 	_parallel_recorder_address.GetWindowText(recorder_address);
 
 	CString uuid;
 	_uuid.GetWindowText(uuid);
+
+	CString play_scale;
+	float scale = 1.0f;
+	_recording_play_scale.GetWindowText(play_scale);
+	scale = _ttof(play_scale);
 
 	CString str_year, str_month, str_day, str_hour, str_minute, str_second;
 	_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
@@ -546,7 +554,9 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 		hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
 		PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
 		if (PRMC_index != PRMC_FAIL)
-			stauts = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, false);
+		{
+			status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
+		}
 	}
 }
 
@@ -557,13 +567,13 @@ void CParallelRecordClientDlg::OnBnClickedButtonStopPlayback()
 	CString recorder_address;
 	_parallel_recorder_address.GetWindowText(recorder_address);
 
-	int stauts = PRMC_FAIL;
+	int status = PRMC_FAIL;
 	if (recorder_address.GetLength()>0)
 	{
 		if (PRMC_index != PRMC_FAIL)
-			stauts = PRMC_Stop((LPCWSTR)recorder_address, PRMC_index);
-		if (stauts != PRMC_FAIL)
-			stauts = PRMC_Remove((LPCWSTR)recorder_address, PRMC_index);
+			status = PRMC_Stop((LPCWSTR)recorder_address, PRMC_index);
+		if (status == PRMC_SUCCESS)
+			status = PRMC_Remove((LPCWSTR)recorder_address, PRMC_index);
 	}
 
 	CBrush brush;
@@ -583,13 +593,18 @@ void CParallelRecordClientDlg::OnBnClickedButtonStopPlayback()
 void CParallelRecordClientDlg::OnBnClickedButtonManualStartPlayback()
 {
 	// TODO: Add your control notification handler code here
-	int stauts = PRMC_FAIL;
+	int status = PRMC_FAIL;
 	 
 	CString recorder_address;
 	_parallel_recorder_address.GetWindowText(recorder_address);
 
 	CString uuid;
 	_uuid.GetWindowText(uuid);
+
+	CString play_scale;
+	float scale = 1.0f;
+	_recording_play_scale.GetWindowText(play_scale);
+	scale = _ttof(play_scale);
 
 	CString str_year, str_month, str_day, str_hour, str_minute, str_second;
 	_manual_recording_year.GetWindowTextW(str_year);
@@ -614,7 +629,9 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStartPlayback()
 		hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
 		PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
 		if (PRMC_index != PRMC_FAIL)
-			stauts = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, false);
+		{
+			status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
+		}
 	}
 }
 
@@ -625,13 +642,13 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback()
 	CString recorder_address;
 	_parallel_recorder_address.GetWindowText(recorder_address);
 
-	int stauts = PRMC_FAIL;
+	int status = PRMC_FAIL;
 	if (recorder_address.GetLength()>0)
 	{
 		if (PRMC_index != PRMC_FAIL)
-			stauts = PRMC_Stop((LPCWSTR)recorder_address, PRMC_index);
-		if (stauts != PRMC_FAIL)
-			stauts = PRMC_Remove((LPCWSTR)recorder_address, PRMC_index);
+			status = PRMC_Stop((LPCWSTR)recorder_address, PRMC_index);
+		if (status == PRMC_SUCCESS)
+			status = PRMC_Remove((LPCWSTR)recorder_address, PRMC_index);
 	}
 	PRMC_index = -1;
 
@@ -644,7 +661,6 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback()
 	video_view_dc->FillRect(rect, &brush);
 	brush.DeleteObject();
 }
-
 
 void CParallelRecordClientDlg::OnBnClickedButtonRtspPlay()
 {
@@ -682,3 +698,4 @@ void CParallelRecordClientDlg::OnBnClickedButtonRtspStop()
 	video_view_dc->FillRect(rect, &brush);
 	brush.DeleteObject();
 }
+

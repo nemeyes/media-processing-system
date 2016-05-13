@@ -10,42 +10,54 @@
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
 
 
-dk_rtsp_base::dk_rtsp_base(void)
+debuggerking::rtsp_base::rtsp_base(void)
 {
 }
 
-dk_rtsp_base::~dk_rtsp_base(void)
+debuggerking::rtsp_base::~rtsp_base(void)
 {
 
 }
 
-bool dk_rtsp_base::is_vps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
+bool debuggerking::rtsp_base::is_vps(int32_t smt, uint8_t nal_unit_type)
 {
 	// VPS NAL units occur in H.265 only:
-	return smt == dk_rtsp_base::vsubmedia_type_hevc && nal_unit_type == 32;
+	return smt == rtsp_base::video_submedia_type_t::hevc && nal_unit_type == 32;
 }
 
-bool dk_rtsp_base::is_sps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
+bool debuggerking::rtsp_base::is_sps(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtsp_base::vsubmedia_type_h264 ? nal_unit_type == 7 : nal_unit_type == 33;
+	if (smt >= rtsp_base::video_submedia_type_t::avc && smt <= rtsp_base::video_submedia_type_t::h264_ep)
+		return nal_unit_type == 7;
+	else
+		return nal_unit_type == 33;
 }
 
-bool dk_rtsp_base::is_pps(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
+bool debuggerking::rtsp_base::is_pps(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtsp_base::vsubmedia_type_h264 ? nal_unit_type == 8 : nal_unit_type == 34;
+	if (smt >= rtsp_base::video_submedia_type_t::avc && smt <= rtsp_base::video_submedia_type_t::h264_ep)
+		return nal_unit_type == 8;
+	else
+		return nal_unit_type == 34;
 }
 
-bool dk_rtsp_base::is_idr(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
+bool debuggerking::rtsp_base::is_idr(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtsp_base::vsubmedia_type_h264 ? nal_unit_type == 5 : nal_unit_type == 34;
+	if (smt >= rtsp_base::video_submedia_type_t::avc && smt <= rtsp_base::video_submedia_type_t::h264_ep)
+		return nal_unit_type == 5;
+	else
+		return nal_unit_type == 34;
 }
 
-bool dk_rtsp_base::is_vlc(dk_rtsp_base::vsubmedia_type smt, uint8_t nal_unit_type)
+bool debuggerking::rtsp_base::is_vlc(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtsp_base::vsubmedia_type_h264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
+	if (smt >= rtsp_base::video_submedia_type_t::avc && smt <= rtsp_base::video_submedia_type_t::h264_ep)
+		return (nal_unit_type <= 5 && nal_unit_type > 0);
+	else
+		return (nal_unit_type <= 31);
 }
 
-const int dk_rtsp_base::find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
+const int32_t debuggerking::rtsp_base::find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
 {
 	uint32_t i;
 	// find start
@@ -96,7 +108,7 @@ const int dk_rtsp_base::find_nal_unit(uint8_t * bitstream, size_t size, int * na
 }
 
 
-const uint8_t * dk_rtsp_base::find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state)
+const uint8_t * debuggerking::rtsp_base::find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state)
 {
 	int i;
 	if (begin >= end)

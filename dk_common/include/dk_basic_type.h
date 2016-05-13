@@ -89,7 +89,10 @@ namespace debuggerking
 		typedef struct _max_media_value_t
 		{
 			static const int32_t max_video_size = 1024 * 1024 * 16;
-			static const int32_t max_audio_size = 705600; // 44100 (Samples) * 2 (Bytes per Sample) * 8 (channels), 44100*2*8
+			static const int32_t max_audio_channels = 8;
+			static const int32_t max_audio_samplerate = 48000;
+			static const int32_t max_audio_bitdepth = 16;
+			static const int32_t max_audio_size = max_audio_samplerate*(max_audio_bitdepth / 8)* max_audio_channels;//705600; // 44100 (Samples) * 2 (Bytes per Sample) * 8 (channels), 44100*2*8
 		} max_media_value_t;
 
 		typedef struct _protocol_type_t
@@ -188,6 +191,14 @@ namespace debuggerking
 			static const int32_t audio = 0x01;
 			static const int32_t video = 0x02;
 		} recv_option_t;
+
+		typedef struct _focus_option_t
+		{
+			static const int32_t nothing = 0x00;
+			static const int32_t audio = 0x01;
+			static const int32_t video = 0x02;
+		} focus_option_t;
+
 	};
 };
 

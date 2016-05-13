@@ -28,7 +28,7 @@ extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_GetSeconds(const wcha
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Remove(const wchar_t * url, int index);
 
-extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int hour, int minute, int second, bool repeat);
+extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int hour, int minute, int second, float scale, bool repeat);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Stop(const wchar_t * url, int index);
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_RTSP_Add(const wchar_t * url, int port_number, const wchar_t * username, const wchar_t * password, HWND hwnd);

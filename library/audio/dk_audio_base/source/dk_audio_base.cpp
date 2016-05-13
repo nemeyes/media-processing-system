@@ -3,105 +3,156 @@
 #include <dk_auto_lock.h>
 #include <dk_circular_buffer.h>
 
-
-#define MAX_CHANNELS	8
-#define MAX_SAMPLE_RATE	48000
-#define MAX_BIT_DEPTH	16
-#define MAX_AUDIO_SIZE	MAX_CHANNELS*MAX_SAMPLE_RATE*MAX_BIT_DEPTH*sizeof(int16_t) / 8
-
-dk_audio_base::dk_audio_base(void)
+debuggerking::audio_base::_configuration_t::_configuration_t(void)
+	: mode(audio_base::mode_t::none)
+	, buffer_size(audio_base::max_media_value_t::max_video_size)
 {
-	::InitializeCriticalSection(&_mutex);
-	_aqueue = dk_circular_buffer_create(MAX_AUDIO_SIZE);
-	_root = static_cast<abuffer_t*>(malloc(sizeof(abuffer_t)));
-	init(_root);
+
 }
 
-dk_audio_base::~dk_audio_base(void)
+debuggerking::audio_base::_configuration_t::_configuration_t(const audio_base::_configuration_t & clone)
 {
-	dk_circular_buffer_destroy(_aqueue);
-	::DeleteCriticalSection(&_mutex);
+	mode = clone.mode;
 }
 
-dk_audio_base::err_code dk_audio_base::push(uint8_t * bs, size_t size, long long pts)
+debuggerking::audio_base::_configuration_t & debuggerking::audio_base::_configuration_t::operator=(const audio_base::_configuration_t & clone)
 {
-	dk_audio_base::err_code status = dk_audio_base::err_code_success;
+	mode = clone.mode;
+	return (*this);
+}
+
+
+debuggerking::audio_base::audio_base(void)
+{
+
+}
+
+debuggerking::audio_base::~audio_base(void)
+{
+
+}
+
+int32_t debuggerking::audio_base::initialize(configuration_t * config)
+{
+	_config = config;
+	if (_config->mode == audio_base::mode_t::sync)
+	{
+		::InitializeCriticalSection(&_mutex);
+		_queue = circular_buffer_t::create(_config->buffer_size);
+		_root = static_cast<buffer_t*>(malloc(sizeof(buffer_t)));
+		init(_root);
+	}
+	return audio_base::err_code_t::success;
+}
+
+int32_t debuggerking::audio_base::release(void)
+{
+	if (_config->mode == audio_base::mode_t::sync)
+	{
+		audio_base::buffer_t * buffer = _root->next;
+		while (buffer)
+		{
+			buffer->prev->next = buffer->next;
+			free(buffer);
+			buffer = nullptr;
+		}
+		free(_root);
+		_root = nullptr;
+
+		circular_buffer_t::destroy(_queue);
+		::DeleteCriticalSection(&_mutex);
+	}
+	_config->mode = audio_base::mode_t::none;
+	return audio_base::err_code_t::success;
+}
+
+int32_t debuggerking::audio_base::push(uint8_t * bs, size_t size, long long timestamp)
+{
+	if (_config->mode != audio_base::mode_t::sync)
+		return audio_base::err_code_t::unsupported_function;
+
+	int32_t status = audio_base::err_code_t::success;
 	dk_auto_lock lock(&_mutex);
 	if (bs && size > 0)
 	{
-		abuffer_t * abuffer = _root;
-		abuffer->amount = MAX_AUDIO_SIZE;
+		buffer_t * buffer = _root;
+		buffer->amount = _config->buffer_size;
 		//move to tail
 		do
 		{
-			if (!abuffer->next)
+			if (!buffer->next)
 				break;
-			abuffer = abuffer->next;
+			buffer = buffer->next;
 		} while (1);
 
-		abuffer->next = static_cast<abuffer_t*>(malloc(sizeof(abuffer_t)));
-		init(abuffer->next);
-		abuffer->next->prev = abuffer;
-		abuffer = abuffer->next;
+		buffer->next = static_cast<buffer_t*>(malloc(sizeof(buffer_t)));
+		init(buffer->next);
+		buffer->next->prev = buffer;
+		buffer = buffer->next;
 
-		abuffer->amount = size;
-		abuffer->pts = pts;
-		int32_t result = dk_circular_buffer_write(_aqueue, bs, abuffer->amount);
+		buffer->amount = size;
+		buffer->timestamp = timestamp;
+		int32_t result = circular_buffer_t::write(_queue, bs, buffer->amount);
 		if (result == -1)
 		{
-			if (abuffer->prev)
-				abuffer->prev->next = nullptr;
-			free(abuffer);
-			abuffer = nullptr;
-			status = dk_audio_base::err_code_fail;
+			if (buffer->prev)
+				buffer->prev->next = nullptr;
+			free(buffer);
+			buffer = nullptr;
+			status = audio_base::err_code_t::fail;
 		}
-		//else
-		//{
-		//	wchar_t debug[500];
-		//	_snwprintf_s(debug, sizeof(debug), L">>push audio data[%zu]\n", abuffer->amount);
-		//	OutputDebugString(debug);
-		//}
 	}
 	return status;
 }
 
-dk_audio_base::err_code dk_audio_base::pop(uint8_t * bs, size_t & size, long long & pts)
+int32_t debuggerking::audio_base::pop(uint8_t * bs, size_t & size, long long & timestamp)
 {
-	dk_audio_base::err_code status = dk_audio_base::err_code_success;
+	if (_config->mode != audio_base::mode_t::sync)
+		return audio_base::err_code_t::unsupported_function;
+
+	int32_t status = audio_base::err_code_t::success;
 	size = 0;
 	dk_auto_lock lock(&_mutex);
-	abuffer_t * abuffer = _root->next;
-	if (abuffer)
+	buffer_t * buffer = _root->next;
+	if (buffer)
 	{
-		_root->next = abuffer->next;
+		_root->next = buffer->next;
 		if (_root->next)
 			_root->next->prev = _root;
 
-		int32_t result = dk_circular_buffer_read(_aqueue, bs, abuffer->amount);
+		int32_t result = circular_buffer_t::read(_queue, bs, buffer->amount);
 		if (result == -1)
-			status = dk_audio_base::err_code_fail;
+			status = audio_base::err_code_t::fail;
 
-		size = abuffer->amount;
-		pts = abuffer->pts;
-		//wchar_t debug[500];
-		//_snwprintf_s(debug, sizeof(debug), L"<<pop audio data[%zu]\n", abuffer->amount);
-		//OutputDebugString(debug);
-
-		free(abuffer);
+		size = buffer->amount;
+		timestamp = buffer->timestamp;
+		free(buffer);
+		buffer = nullptr;
 	}
 	return status;
 }
 
-dk_audio_base::err_code dk_audio_base::init(abuffer_t * buffer)
+int32_t debuggerking::audio_base::init(audio_base::buffer_t * buffer)
 {
 	buffer->amount = 0;
 	buffer->next = nullptr;
 	buffer->prev = nullptr;
-	return dk_audio_base::err_code_success;
+	return audio_base::err_code_t::success;
 }
 
+void debuggerking::audio_base::set_extradata(uint8_t * extradata, size_t extradata_size)
+{
+	_extradata_size = extradata_size;
+	memmove(_extradata, extradata, _extradata_size);
+}
 
-dk_audio_decoder::_configuration_t::_configuration_t(void)
+uint8_t * debuggerking::audio_base::get_extradata(size_t & extradata_size)
+{
+	extradata_size = _extradata_size;
+	return _extradata;
+}
+
+debuggerking::audio_decoder::_configuration_t::_configuration_t(void)
 	: samplerate(48000)
 	, channels(2)
 	, bitdepth(16)
@@ -111,7 +162,7 @@ dk_audio_decoder::_configuration_t::_configuration_t(void)
 	memset(extradata, 0x00, sizeof(extradata));
 }
 
-dk_audio_decoder::_configuration_t::_configuration_t(const dk_audio_decoder::_configuration_t & clone)
+debuggerking::audio_decoder::_configuration_t::_configuration_t(const audio_decoder::_configuration_t & clone)
 {
 	samplerate = clone.samplerate;
 	channels = clone.channels;
@@ -121,7 +172,7 @@ dk_audio_decoder::_configuration_t::_configuration_t(const dk_audio_decoder::_co
 	memcpy(extradata, clone.extradata, extradata_size);
 }
 
-dk_audio_decoder::_configuration_t dk_audio_decoder::_configuration_t::operator=(const dk_audio_decoder::_configuration_t & clone)
+debuggerking::audio_decoder::_configuration_t debuggerking::audio_decoder::_configuration_t::operator=(const audio_decoder::_configuration_t & clone)
 {
 	samplerate = clone.samplerate;
 	channels = clone.channels;
@@ -132,46 +183,56 @@ dk_audio_decoder::_configuration_t dk_audio_decoder::_configuration_t::operator=
 	return (*this);
 }
 
-dk_audio_decoder::dk_audio_decoder(void)
+debuggerking::audio_decoder::audio_decoder(void)
 {
 
 }
 
-dk_audio_decoder::~dk_audio_decoder(void)
+debuggerking::audio_decoder::~audio_decoder(void)
 {
 
 }
 
-dk_audio_decoder::err_code dk_audio_decoder::initialize_decoder(void * config)
+int32_t debuggerking::audio_decoder::initialize_decoder(void * config)
 {
-	return err_code_not_implemented;
+	return audio_decoder::err_code_t::not_implemented;
 }
 
-dk_audio_decoder::err_code dk_audio_decoder::release_decoder(void)
+int32_t debuggerking::audio_decoder::release_decoder(void)
 {
-	return err_code_not_implemented;
+	return audio_decoder::err_code_t::not_implemented;
 }
 
-dk_audio_decoder::err_code dk_audio_decoder::decode(dk_audio_entity_t * encoded, dk_audio_entity_t * pcm)
+int32_t debuggerking::audio_decoder::decode(audio_decoder::entity_t * encoded, audio_decoder::entity_t * pcm)
 {
-	return err_code_not_implemented;
+	return audio_decoder::err_code_t::not_implemented;
 }
 
-dk_audio_encoder::_configuration_t::_configuration_t(void)
+int32_t debuggerking::audio_decoder::decode(audio_decoder::entity_t * encoded)
+{
+	return audio_decoder::err_code_t::not_implemented;
+}
+
+int32_t debuggerking::audio_decoder::get_queued_data(audio_decoder::entity_t * pcm)
+{
+	return audio_decoder::err_code_t::not_implemented;
+}
+
+debuggerking::audio_encoder::_configuration_t::_configuration_t(void)
 	: samplerate(48000)
 	, channels(2)
 	, bitrate(128000)
 {
 }
 
-dk_audio_encoder::_configuration_t::_configuration_t(const _configuration_t & clone)
+debuggerking::audio_encoder::_configuration_t::_configuration_t(const audio_encoder::_configuration_t & clone)
 {
 	samplerate = clone.samplerate;
 	channels = clone.channels;
 	bitrate = clone.bitrate;
 }
 
-dk_audio_encoder::_configuration_t dk_audio_encoder::_configuration_t::operator=(const _configuration_t & clone)
+debuggerking::audio_encoder::_configuration_t debuggerking::audio_encoder::_configuration_t::operator=(const audio_encoder::_configuration_t & clone)
 {
 	samplerate = clone.samplerate;
 	channels = clone.channels;
@@ -179,52 +240,42 @@ dk_audio_encoder::_configuration_t dk_audio_encoder::_configuration_t::operator=
 	return (*this);
 }
 
-dk_audio_encoder::dk_audio_encoder(void)
+debuggerking::audio_encoder::audio_encoder(void)
 {
 
 }
 
-dk_audio_encoder::~dk_audio_encoder(void)
+debuggerking::audio_encoder::~audio_encoder(void)
 {
 
 }
 
-dk_audio_encoder::err_code dk_audio_encoder::initialize_encoder(void * config)
+int32_t debuggerking::audio_encoder::initialize_encoder(void * config)
 {
-	return err_code_not_implemented;
+	return audio_encoder::err_code_t::not_implemented;
 }
 
-dk_audio_encoder::err_code dk_audio_encoder::release_encoder(void)
+int32_t debuggerking::audio_encoder::release_encoder(void)
 {
-	return err_code_not_implemented;
+	return audio_encoder::err_code_t::not_implemented;
 }
 
-dk_audio_encoder::err_code dk_audio_encoder::encode(dk_audio_entity_t * pcm, dk_audio_entity_t * encoded)
+int32_t debuggerking::audio_encoder::encode(audio_encoder::entity_t * pcm, audio_encoder::entity_t * encoded)
 {
-	return err_code_not_implemented;
+	return audio_encoder::err_code_t::not_implemented;
 }
 
-dk_audio_encoder::err_code dk_audio_encoder::encode(dk_audio_entity_t * pcm)
+int32_t debuggerking::audio_encoder::encode(audio_encoder::entity_t * pcm)
 {
-	return err_code_not_implemented;
+	return audio_encoder::err_code_t::not_implemented;
 }
 
-dk_audio_encoder::err_code dk_audio_encoder::get_queued_data(dk_audio_entity_t * encoded)
+int32_t debuggerking::audio_encoder::get_queued_data(audio_encoder::entity_t * encoded)
 {
-	return err_code_not_implemented;
+	return audio_encoder::err_code_t::not_implemented;
 }
 
-uint8_t * dk_audio_encoder::extradata(void)
-{
-	return nullptr;
-}
-
-size_t dk_audio_encoder::extradata_size(void)
-{
-	return 0;
-}
-
-dk_audio_renderer::_configuration_t::_configuration_t(void)
+debuggerking::audio_renderer::_configuration_t::_configuration_t(void)
 	: samplerate(0)
 	, bitdepth(0)
 	, channels(0)
@@ -232,14 +283,14 @@ dk_audio_renderer::_configuration_t::_configuration_t(void)
 
 }
 
-dk_audio_renderer::_configuration_t::_configuration_t(const dk_audio_renderer::_configuration_t & clone)
+debuggerking::audio_renderer::_configuration_t::_configuration_t(const audio_renderer::_configuration_t & clone)
 {
 	samplerate = clone.samplerate;
 	bitdepth = clone.bitdepth;
 	channels = clone.channels;
 }
 
-dk_audio_renderer::_configuration_t & dk_audio_renderer::_configuration_t::operator=(const dk_audio_renderer::_configuration_t & clone)
+debuggerking::audio_renderer::_configuration_t & debuggerking::audio_renderer::_configuration_t::operator=(const audio_renderer::_configuration_t & clone)
 {
 	samplerate = clone.samplerate;
 	bitdepth = clone.bitdepth;
@@ -247,27 +298,27 @@ dk_audio_renderer::_configuration_t & dk_audio_renderer::_configuration_t::opera
 	return (*this);
 }
 
-dk_audio_renderer::dk_audio_renderer(void)
+debuggerking::audio_renderer::audio_renderer(void)
 {
 
 }
 
-dk_audio_renderer::~dk_audio_renderer(void)
+debuggerking::audio_renderer::~audio_renderer(void)
 {
 
 }
 
-dk_audio_renderer::err_code dk_audio_renderer::initialize_renderer(void * config)
+int32_t debuggerking::audio_renderer::initialize_renderer(void * config)
 {
-	return err_code_not_implemented;
+	return audio_renderer::err_code_t::not_implemented;
 }
 
-dk_audio_renderer::err_code dk_audio_renderer::release_renderer(void)
+int32_t debuggerking::audio_renderer::release_renderer(void)
 {
-	return err_code_not_implemented;
+	return audio_renderer::err_code_t::not_implemented;
 }
 
-dk_audio_renderer::err_code dk_audio_renderer::render(dk_audio_renderer::dk_audio_entity_t * pcm)
+int32_t debuggerking::audio_renderer::render(audio_renderer::entity_t * pcm)
 {
-	return err_code_not_implemented;
+	return audio_renderer::err_code_t::not_implemented;
 }

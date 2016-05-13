@@ -2,12 +2,12 @@
 #include "dk_directdraw_renderer.h"
 #include "directdraw_renderer.h"
 
-dk_directdraw_renderer::dk_directdraw_renderer(void)
+debuggerking::directdraw_renderer::directdraw_renderer(void)
 {
-	_core = new directdraw_renderer(this);
+	_core = new directdraw_core(this);
 }
 
-dk_directdraw_renderer::~dk_directdraw_renderer(void)
+debuggerking::directdraw_renderer::~directdraw_renderer(void)
 {
 	if (_core)
 	{
@@ -16,17 +16,17 @@ dk_directdraw_renderer::~dk_directdraw_renderer(void)
 	}
 }
 
-dk_directdraw_renderer::err_code dk_directdraw_renderer::initialize_renderer(void * config)
+int32_t debuggerking::directdraw_renderer::initialize_renderer(void * config)
 {
-	return _core->initialize_renderer(static_cast<dk_directdraw_renderer::configuration_t*>(config));
+	return _core->initialize_renderer(static_cast<directdraw_renderer::configuration_t*>(config));
 }
 
-dk_directdraw_renderer::err_code dk_directdraw_renderer::release_renderer(void)
+int32_t debuggerking::directdraw_renderer::release_renderer(void)
 {
 	return _core->release_renderer();
 }
 
-dk_directdraw_renderer::err_code dk_directdraw_renderer::render(dk_directdraw_renderer::dk_video_entity_t * p)
+int32_t debuggerking::directdraw_renderer::render(directdraw_renderer::entity_t * p)
 {
 	return _core->render(p);
 }

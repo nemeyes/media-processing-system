@@ -9,27 +9,27 @@
 
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
 
-bool stream_parser::is_sps(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool debuggerking::stream_parser::is_sps(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 7 : nal_unit_type == 33;
+	return ((smt == rtmp_client::video_submedia_type_t::avc) || (smt == rtmp_client::video_submedia_type_t::h264)) ? nal_unit_type == 7 : nal_unit_type == 33;
 }
 
-bool stream_parser::is_pps(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool debuggerking::stream_parser::is_pps(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 8 : nal_unit_type == 34;
+	return ((smt == rtmp_client::video_submedia_type_t::avc) || (smt == rtmp_client::video_submedia_type_t::h264)) ? nal_unit_type == 8 : nal_unit_type == 34;
 }
 
-bool stream_parser::is_idr(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool debuggerking::stream_parser::is_idr(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? nal_unit_type == 5 : nal_unit_type == 34;
+	return ((smt == rtmp_client::video_submedia_type_t::avc) || (smt == rtmp_client::video_submedia_type_t::h264)) ? nal_unit_type == 5 : nal_unit_type == 34;
 }
 
-bool stream_parser::is_vlc(dk_rtmp_client::VIDEO_SUBMEDIA_TYPE_T smt, uint8_t nal_unit_type)
+bool debuggerking::stream_parser::is_vlc(int32_t smt, uint8_t nal_unit_type)
 {
-	return smt == dk_rtmp_client::SUBMEDIA_TYPE_H264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
+	return ((smt == rtmp_client::video_submedia_type_t::avc) || (smt == rtmp_client::video_submedia_type_t::h264)) ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }
 
-const int stream_parser::find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
+const int32_t debuggerking::stream_parser::find_nal_unit(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
 {
 	int i;
 	// find start
@@ -80,7 +80,7 @@ const int stream_parser::find_nal_unit(uint8_t * bitstream, size_t size, int * n
 }
 
 
-const uint8_t * stream_parser::find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state)
+const uint8_t * debuggerking::stream_parser::find_start_code(const uint8_t * __restrict begin, const uint8_t * end, uint32_t * __restrict state)
 {
 	int i;
 	if (begin >= end)

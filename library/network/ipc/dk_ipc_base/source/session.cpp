@@ -22,6 +22,11 @@ ic::session::session(abstract_ipc_client * processor, SOCKET fd)
 	, _associated(false)
 	, _hb_retry_count(3)
 {
+
+#if defined(WITH_WORKING_AS_SERVER)
+	_timer_queue = ::CreateTimerQueue();
+#endif
+
 	memset(_send_buffer, 0x00, MAX_SEND_BUFFER_SIZE);
 	memset(_recv_buffer, 0x00, MAX_RECV_BUFFER_SIZE);
 	_recv_context = allocate_io_context();
@@ -41,21 +46,18 @@ ic::session::session(abstract_ipc_client * processor, SOCKET fd)
 
 	update_hb_start_time();
 	update_hb_end_time();
-
-#if defined(WITH_DELAYED_TASK)
-	//_dt_queue.start(1);
-#endif
 }
 
 ic::session::~session(void)
 {
-#if defined(WITH_DELAYED_TASK)
-	//_dt_queue.stop();
-#endif
-
 	::CloseHandle(_send_lock);
 	::CloseHandle(_recv_lock);
 	shutdown_fd();
+
+#if defined(WITH_WORKING_AS_SERVER)
+	::DeleteTimerQueue(_timer_queue);
+	_timer_queue = INVALID_HANDLE_VALUE;
+#endif
 }
 
 bool ic::session::shutdown_fd(void)

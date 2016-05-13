@@ -7,7 +7,7 @@
 class aac_buffer_sink : public buffer_sink
 {
 public:
-	aac_buffer_sink(dk_live_rtsp_client * front, UsageEnvironment & env, unsigned buffer_size, int32_t channels, int32_t samplerate, int32_t bitrate, char * configstr, size_t configstr_size);
+	aac_buffer_sink(debuggerking::live_rtsp_client * front, UsageEnvironment & env, unsigned buffer_size, int32_t channels, int32_t samplerate, int32_t bitrate, char * configstr, size_t configstr_size);
 	virtual ~aac_buffer_sink(void);
 
 protected:

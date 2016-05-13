@@ -30,7 +30,7 @@ private:
 	void EnableTray(BOOL enable);
 
 private:
-	dk_record_streamer _streamer;
+	debuggerking::record_streamer _streamer;
 	BOOL _is_streaming;
 // Implementation
 protected:

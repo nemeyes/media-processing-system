@@ -2,8 +2,8 @@
 #include "h2645_buffer_sink.h"
 #include <H264VideoRTPSource.hh>
 
-h2645_buffer_sink::h2645_buffer_sink(dk_live_rtsp_client * front, dk_live_rtsp_client::vsubmedia_type smt, UsageEnvironment & env, const char * vps, unsigned vps_size, const char * sps, unsigned sps_size, const char * pps, unsigned pps_size, unsigned buffer_size)
-	: buffer_sink(front, dk_live_rtsp_client::media_type_video, smt, env, buffer_size)
+h2645_buffer_sink::h2645_buffer_sink(debuggerking::live_rtsp_client * front, int32_t smt, UsageEnvironment & env, const char * vps, unsigned vps_size, const char * sps, unsigned sps_size, const char * pps, unsigned pps_size, unsigned buffer_size)
+	: buffer_sink(front, debuggerking::live_rtsp_client::media_type_t::video, smt, env, buffer_size)
 	, _receive_first_frame(false)
 {
     _vspps[0] = vps;

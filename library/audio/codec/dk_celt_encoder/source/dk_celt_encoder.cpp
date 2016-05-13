@@ -1,21 +1,21 @@
 #include "dk_celt_encoder.h"
 #include "celt_encoder.h"
 
-dk_celt_encoder::_configuration_t::_configuration_t(void)
+debuggerking::celt_encoder::_configuration_t::_configuration_t(void)
 	: codingrate(48000)
 	, framesize(20)
 	, complexity(10)
 {
 }
 
-dk_celt_encoder::_configuration_t::_configuration_t(const _configuration_t & clone)
+debuggerking::celt_encoder::_configuration_t::_configuration_t(const _configuration_t & clone)
 {
 	codingrate = clone.codingrate;
 	framesize = clone.framesize;
 	complexity = clone.complexity;
 }
 
-dk_celt_encoder::_configuration_t dk_celt_encoder::_configuration_t::operator=(const _configuration_t & clone)
+debuggerking::celt_encoder::_configuration_t debuggerking::celt_encoder::_configuration_t::operator=(const _configuration_t & clone)
 {
 	codingrate = clone.codingrate;
 	framesize = clone.framesize;
@@ -24,12 +24,12 @@ dk_celt_encoder::_configuration_t dk_celt_encoder::_configuration_t::operator=(c
 }
 
 
-dk_celt_encoder::dk_celt_encoder(void)
+debuggerking::celt_encoder::celt_encoder(void)
 {
-	_core = new celt_encoder(this);
+	_core = new celt_core(this);
 }
 
-dk_celt_encoder::~dk_celt_encoder(void)
+debuggerking::celt_encoder::~celt_encoder(void)
 {
 	if (_core)
 	{
@@ -38,27 +38,38 @@ dk_celt_encoder::~dk_celt_encoder(void)
 	}
 }
 
-dk_celt_encoder::err_code dk_celt_encoder::initialize_encoder(void * config)
+int32_t debuggerking::celt_encoder::initialize_encoder(void * config)
 {
-	return _core->initialize_encoder(static_cast<dk_celt_encoder::configuration_t*>(config));
+	int32_t status = audio_base::initialize(static_cast<audio_base::configuration_t*>(config));
+	if (status != celt_encoder::err_code_t::success)
+		return status;
+	return _core->initialize_encoder(static_cast<celt_encoder::configuration_t*>(config));
 }
 
-dk_celt_encoder::err_code dk_celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm, dk_celt_encoder::dk_audio_entity_t * encoded)
+int32_t debuggerking::celt_encoder::release_encoder(void)
+{
+	int32_t status = _core->release_encoder();
+	if (status != celt_encoder::err_code_t::success)
+		return status;
+	return audio_base::release();
+}
+
+int32_t debuggerking::celt_encoder::encode(celt_encoder::entity_t * pcm, celt_encoder::entity_t * encoded)
 {
 	return _core->encode(pcm, encoded);
 }
 
-dk_celt_encoder::err_code dk_celt_encoder::encode(dk_celt_encoder::dk_audio_entity_t * pcm)
+int32_t debuggerking::celt_encoder::encode(celt_encoder::entity_t * pcm)
 {
 	return _core->encode(pcm);
 }
 
-dk_celt_encoder::err_code dk_celt_encoder::get_queued_data(dk_celt_encoder::dk_audio_entity_t * encoded)
+int32_t debuggerking::celt_encoder::get_queued_data(celt_encoder::entity_t * encoded)
 {
 	return _core->get_queued_data(encoded);
 }
 
-dk_celt_encoder::err_code dk_celt_encoder::release_encoder(void)
+void debuggerking::celt_encoder::after_encoding_callback(uint8_t * bistream, size_t size)
 {
-	return _core->release_encoder();
+
 }

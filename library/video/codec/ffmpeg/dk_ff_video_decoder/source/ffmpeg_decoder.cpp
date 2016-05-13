@@ -13,7 +13,7 @@ extern "C"
 
 #include <dk_simd_colorspace_converter.h>
 
-ffmpeg_decoder::ffmpeg_decoder(dk_ff_video_decoder * front)
+debuggerking::ffmpeg_core::ffmpeg_core(ff_video_decoder * front)
 	: _front(front)
 	, _insert_start_code(false)
 #if 0
@@ -23,12 +23,12 @@ ffmpeg_decoder::ffmpeg_decoder(dk_ff_video_decoder * front)
 
 }
 
-ffmpeg_decoder::~ffmpeg_decoder(void)
+debuggerking::ffmpeg_core::~ffmpeg_core(void)
 {
 
 }
 
-dk_ff_video_decoder::err_code ffmpeg_decoder::initialize_decoder(dk_ff_video_decoder::configuration_t * config)
+int32_t debuggerking::ffmpeg_core::initialize_decoder(ff_video_decoder::configuration_t * config)
 {
 	release_decoder();
 	_insert_start_code = false;
@@ -41,27 +41,27 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 #endif
 	switch (config->codec)
 	{
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_avc :
+		case ff_video_decoder::video_submedia_type_t::avc :
 			_insert_start_code = true;
 #if 0
 			_buffer4start_code = static_cast<uint8_t*>(av_malloc(1024*1024*2)); //2MB
 #endif
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264 :
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264_hp :
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264_mp :
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_h264_ep :
+		case ff_video_decoder::video_submedia_type_t::h264 :
+		case ff_video_decoder::video_submedia_type_t::h264_hp :
+		case ff_video_decoder::video_submedia_type_t::h264_mp :
+		case ff_video_decoder::video_submedia_type_t::h264_ep :
 		{
 			_av_codec = avcodec_find_decoder(AV_CODEC_ID_H264);
 			break;
 		}
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_mp4v :
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_mp4v_sp :
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_mp4v_asp :
+		case ff_video_decoder::video_submedia_type_t::mp4v :
+		case ff_video_decoder::video_submedia_type_t::mp4v_sp :
+		case ff_video_decoder::video_submedia_type_t::mp4v_asp :
 		{
 			_av_codec = avcodec_find_decoder(AV_CODEC_ID_MPEG4);
 			break;
 		}
-		case dk_ff_video_decoder::submedia_type_t::submedia_type_jpeg :
+		case ff_video_decoder::video_submedia_type_t::jpeg:
 		{
 			_av_codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
 			break;
@@ -71,14 +71,14 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 	if (!_av_codec)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::err_code_fail;
+		return ff_video_decoder::err_code_t::fail;
 	}
 
 	_av_codec_ctx = avcodec_alloc_context3(_av_codec);
 	if (!_av_codec_ctx)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::err_code_fail;
+		return ff_video_decoder::err_code_t::fail;
 	}
 	_av_codec_ctx->delay = 0;
 	if (config->extradata && (config->extradata_size>0))
@@ -91,7 +91,7 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 	if (avcodec_open2(_av_codec_ctx, _av_codec, NULL)<0)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::err_code_fail;
+		return ff_video_decoder::err_code_t::fail;
 	}
 
 	_av_frame = av_frame_alloc();
@@ -99,22 +99,22 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::initialize_decoder(dk_ff_video_dec
 	if (!_av_frame || !_av_video_frame)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::err_code_fail;
+		return ff_video_decoder::err_code_t::fail;
 	}
 
 	_av_packet = (AVPacket *)av_malloc(sizeof(AVPacket));
 	if (!_av_packet)
 	{
 		release_decoder();
-		return dk_ff_video_decoder::err_code_fail;
+		return ff_video_decoder::err_code_t::fail;
 	}
 	av_init_packet(_av_packet);
 
 	_config = config;
-	return dk_ff_video_decoder::err_code_success;
+	return ff_video_decoder::err_code_t::success;
 }
 
-dk_ff_video_decoder::err_code ffmpeg_decoder::release_decoder(void)
+int32_t debuggerking::ffmpeg_core::release_decoder(void)
 {
 	if (_av_packet)
 	{
@@ -158,12 +158,12 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::release_decoder(void)
 		av_free(_av_codec_ctx);
 		_av_codec_ctx = nullptr;
 	}
-	return dk_ff_video_decoder::err_code_success;
+	return ff_video_decoder::err_code_t::success;
 }
 
-dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_video_entity_t * encoded, dk_ff_video_decoder::dk_video_entity_t * decoded)
+int32_t debuggerking::ffmpeg_core::decode(ff_video_decoder::entity_t * encoded, ff_video_decoder::entity_t * decoded)
 {
-	int32_t value = dk_ff_video_decoder::err_code_fail;
+	int32_t value = ff_video_decoder::err_code_t::fail;
 	int32_t result = -1;
 	int32_t	got_frame = 0;
 
@@ -240,7 +240,7 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 						sws_freeContext(_sws_ctx);
 						_sws_ctx = 0;
 					}
-					return dk_ff_video_decoder::err_code_fail;
+					return ff_video_decoder::err_code_t::fail;
 				}
 			}
 
@@ -263,7 +263,7 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 		unsigned char * src_u_plane = frame->data[1];
 		unsigned char * src_v_plane = frame->data[2];
 
-		if ((_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_i420) || (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_yv12))
+		if ((_config->cs == ff_video_decoder::video_submedia_type_t::i420) || (_config->cs == ff_video_decoder::video_submedia_type_t::yv12))
 		{
 			unsigned char * dst_y_plane = decoded->data;
 			unsigned char * dst_u_plane = 0;
@@ -301,12 +301,12 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			osize = _decoded_buffer_size;
 #else
 			decoded->data_size = _config->ostride*y_height*1.5;
-			if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_i420) //4:2:0 Y U V
+			if (_config->cs == ff_video_decoder::video_submedia_type_t::i420) //4:2:0 Y U V
 			{
 				dst_u_plane = dst_y_plane + dst_y_stride*y_height;
 				dst_v_plane = dst_u_plane + dst_uv_stride*uv_height;
 			}
-			else if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_yv12) // 4:2:0 Y V U
+			else if (_config->cs == ff_video_decoder::video_submedia_type_t::yv12) // 4:2:0 Y V U
 			{
 				dst_v_plane = dst_y_plane + dst_y_stride*y_height;
 				dst_u_plane = dst_v_plane + dst_uv_stride*uv_height;
@@ -323,7 +323,7 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			}
 #endif
 		}
-		else if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_rgb32)
+		else if (_config->cs == ff_video_decoder::video_submedia_type_t::rgb32)
 		{
 			if (_config->ostride < 1)
 				_config->ostride = _config->owidth * 4;
@@ -333,7 +333,7 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			decoded->data_size = dst_stride*y_height;
 			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
 		}
-		else if (_config->cs == dk_ff_video_decoder::submedia_type_t::submedia_type_rgb24)
+		else if (_config->cs == ff_video_decoder::video_submedia_type_t::rgb24)
 		{
 			if (_config->ostride < 1)
 				_config->ostride = _config->owidth * 3;
@@ -343,17 +343,17 @@ dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_vid
 			decoded->data_size = dst_stride*y_height;
 			dk_simd_colorspace_converter::convert_i420_to_rgba(y_width, y_height, src_y_plane, src_y_stride, src_u_plane, src_u_stride, src_v_plane, src_v_stride, dst, dst_stride, 0, false);
 		}
-		return dk_ff_video_decoder::err_code_success;
+		return ff_video_decoder::err_code_t::success;
 	}
-	return dk_ff_video_decoder::err_code_fail;
+	return ff_video_decoder::err_code_t::fail;
 }
 
-dk_ff_video_decoder::err_code ffmpeg_decoder::decode(dk_ff_video_decoder::dk_video_entity_t * encoded)
+int32_t debuggerking::ffmpeg_core::decode(ff_video_decoder::entity_t * encoded)
 {
-	return dk_ff_video_decoder::err_code_success;
+	return ff_video_decoder::err_code_t::success;
 }
 
-dk_ff_video_decoder::err_code ffmpeg_decoder::get_queued_data(dk_ff_video_decoder::dk_video_entity_t * decoded)
+int32_t debuggerking::ffmpeg_core::get_queued_data(ff_video_decoder::entity_t * decoded)
 {
-	return dk_ff_video_decoder::err_code_success;
+	return ff_video_decoder::err_code_t::success;
 }

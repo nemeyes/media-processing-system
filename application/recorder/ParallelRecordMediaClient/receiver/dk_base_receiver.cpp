@@ -1,6 +1,6 @@
 #include "dk_base_receiver.h"
 
-dk_base_receiver::dk_base_receiver(void)
+debuggerking::base_receiver::base_receiver(void)
 	: _video_decoder(nullptr)
 	, _video_decoder_config(nullptr)
 	, _video_renderer(nullptr)
@@ -14,7 +14,7 @@ dk_base_receiver::dk_base_receiver(void)
 	_audio_buffer = static_cast<uint8_t*>(malloc(AUDIO_BUFFER_SIZE)); //48000hz * 16bitdetph * 8 channels
 }
 
-dk_base_receiver::~dk_base_receiver(void)
+debuggerking::base_receiver::~base_receiver(void)
 {
 	if (_video_buffer)
 		free(_video_buffer);
@@ -24,7 +24,7 @@ dk_base_receiver::~dk_base_receiver(void)
 	_audio_buffer = nullptr;
 }
 
-void dk_base_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
+void debuggerking::base_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
 {
 	unsigned aspect_ratio_info_present_flag = bv.get1Bit();
 	DEBUG_PRINT(aspect_ratio_info_present_flag);
@@ -82,7 +82,7 @@ void dk_base_receiver::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, un
 	}
 }
 
-int32_t dk_base_receiver::parse_pps(uint8_t * pps, int32_t pps_size)
+int32_t debuggerking::base_receiver::parse_pps(uint8_t * pps, int32_t pps_size)
 {
 	if (pps_size <= 0 || pps == NULL)
 		return 0;
@@ -102,7 +102,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int32_t dk_base_receiver::parse_sps(uint8_t * data, int32_t sizeOfSPS, int32_t * width, int32_t * height, int32_t * sar_width, int32_t * sar_height)
+int32_t debuggerking::base_receiver::parse_sps(uint8_t * data, int32_t sizeOfSPS, int32_t * width, int32_t * height, int32_t * sar_width, int32_t * sar_height)
 {
 	uint8_t* sps;
 	uint32_t sps_size;
@@ -289,7 +289,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int32_t dk_base_receiver::parse_mpeg(uint8_t * data, int32_t size, int32_t * width, int32_t * height, int32_t * sar_width, int32_t * sar_height)
+int32_t debuggerking::base_receiver::parse_mpeg(uint8_t * data, int32_t size, int32_t * width, int32_t * height, int32_t * sar_width, int32_t * sar_height)
 {
 	// First, Find VOL Header
 	int i;
@@ -431,7 +431,7 @@ int32_t dk_base_receiver::parse_mpeg(uint8_t * data, int32_t size, int32_t * wid
 	return 1;
 }
 
-int32_t dk_base_receiver::parse_jpeg(uint8_t* data, int32_t size, int32_t * width, int32_t * height, int32_t * sar_width, int32_t * sar_height)
+int32_t debuggerking::base_receiver::parse_jpeg(uint8_t* data, int32_t size, int32_t * width, int32_t * height, int32_t * sar_width, int32_t * sar_height)
 {
 	int i, found = 0;
 
@@ -450,7 +450,7 @@ int32_t dk_base_receiver::parse_jpeg(uint8_t* data, int32_t size, int32_t * widt
 	return found;
 }
 
-void dk_base_receiver::make_adts_header(uint8_t * data, int32_t size, char audioObjectType, char samplingFreqIndex, char channelConfig)
+void debuggerking::base_receiver::make_adts_header(uint8_t * data, int32_t size, char audioObjectType, char samplingFreqIndex, char channelConfig)
 {
 	CBitVector bv(data, 0, 72);
 

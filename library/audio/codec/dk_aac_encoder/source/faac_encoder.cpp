@@ -1,11 +1,9 @@
 #include "faac_encoder.h"
 
 
-faac_encoder::faac_encoder(dk_aac_encoder * front)
+debuggerking::faac_encoder::faac_encoder(aac_encoder * front)
 	: _front(front)
 	, _faac_encoder(nullptr)
-	, _extradata(nullptr)
-	, _extradata_size(0)
 	, _buffer(0)
 	, _buffer_index(0)
 	, _buffer4queue(nullptr)
@@ -13,7 +11,7 @@ faac_encoder::faac_encoder(dk_aac_encoder * front)
 	_buffer = static_cast<int*>(malloc(10 * 2 * 48000 * sizeof(int)));
 }
 
-faac_encoder::~faac_encoder(void)
+debuggerking::faac_encoder::~faac_encoder(void)
 {
 	if (_buffer)
 	{
@@ -23,20 +21,20 @@ faac_encoder::~faac_encoder(void)
 	_buffer_index = 0;
 }
 
-dk_aac_encoder::err_code faac_encoder::initialize_encoder(dk_aac_encoder::configuration_t * config)
+int32_t debuggerking::faac_encoder::initialize_encoder(aac_encoder::configuration_t * config)
 {
 	_faac_encoder = faacEncOpen(config->samplerate, config->channels, &config->framesize, &config->ob);
 	if (!_faac_encoder)
-		return dk_aac_encoder::err_code_fail;
+		return aac_encoder::err_code_t::fail;
 
 	// set encoder configuration
 	faacEncConfiguration * _faac_encoder_config = faacEncGetCurrentConfiguration(_faac_encoder);
 	switch (config->mpeg_version)
 	{
-	case dk_aac_encoder::version_type_mpeg2:
+	case aac_encoder::version_type_mpeg2:
 		_faac_encoder_config->mpegVersion = MPEG2;
 		break;
-	case dk_aac_encoder::version_type_mpeg4:
+	case aac_encoder::version_type_mpeg4:
 		_faac_encoder_config->mpegVersion = MPEG4;
 		break;
 	default:
@@ -45,16 +43,16 @@ dk_aac_encoder::err_code faac_encoder::initialize_encoder(dk_aac_encoder::config
 	}
 	switch (config->object_type)
 	{
-	case dk_aac_encoder::aac_object_type_main:
+	case aac_encoder::aac_object_type_main:
 		_faac_encoder_config->aacObjectType = MAIN;
 		break;
-	case dk_aac_encoder::aac_object_type_low:
+	case aac_encoder::aac_object_type_low:
 		_faac_encoder_config->aacObjectType = LOW;
 		break;
-	case dk_aac_encoder::aac_object_type_ssr:
+	case aac_encoder::aac_object_type_ssr:
 		_faac_encoder_config->aacObjectType = SSR;
 		break;
-	case dk_aac_encoder::aac_object_type_ltp:
+	case aac_encoder::aac_object_type_ltp:
 		_faac_encoder_config->aacObjectType = LTP;
 		break;
 	}
@@ -71,13 +69,13 @@ dk_aac_encoder::err_code faac_encoder::initialize_encoder(dk_aac_encoder::config
 
 	switch (config->shortctl)
 	{
-	case dk_aac_encoder::block_type_normal:
+	case aac_encoder::block_type_normal:
 		_faac_encoder_config->shortctl = SHORTCTL_NORMAL;
 		break;
-	case dk_aac_encoder::block_type_noshort:
+	case aac_encoder::block_type_noshort:
 		_faac_encoder_config->shortctl = SHORTCTL_NOSHORT;
 		break;
-	case dk_aac_encoder::block_type_nolong:
+	case aac_encoder::block_type_nolong:
 		_faac_encoder_config->shortctl = SHORTCTL_NOLONG;
 		break;
 	default:
@@ -87,16 +85,16 @@ dk_aac_encoder::err_code faac_encoder::initialize_encoder(dk_aac_encoder::config
 
 	switch (config->input_format)
 	{
-	case dk_aac_encoder::format_type_16bit:
+	case aac_encoder::format_type_16bit:
 		_faac_encoder_config->inputFormat = FAAC_INPUT_16BIT;
 		break;
-	case dk_aac_encoder::format_type_24bit:
+	case aac_encoder::format_type_24bit:
 		_faac_encoder_config->inputFormat = FAAC_INPUT_24BIT;
 		break;
-	case dk_aac_encoder::format_type_32bit:
+	case aac_encoder::format_type_32bit:
 		_faac_encoder_config->inputFormat = FAAC_INPUT_32BIT;
 		break;
-	case dk_aac_encoder::format_type_float:
+	case aac_encoder::format_type_float:
 		_faac_encoder_config->inputFormat = FAAC_INPUT_FLOAT;
 		break;
 	default:
@@ -106,13 +104,13 @@ dk_aac_encoder::err_code faac_encoder::initialize_encoder(dk_aac_encoder::config
 
 	switch (config->output_format)
 	{
-	case dk_aac_encoder::format_type_raw:
+	case aac_encoder::format_type_raw:
 		_faac_encoder_config->outputFormat = 0;
 		break;
-	case dk_aac_encoder::format_type_adts:
+	case aac_encoder::format_type_adts:
 		_faac_encoder_config->outputFormat = 1;
 		break;
-	case dk_aac_encoder::format_type_latm:
+	case aac_encoder::format_type_latm:
 		_faac_encoder_config->outputFormat = 2;
 		break;
 	default:
@@ -126,21 +124,22 @@ dk_aac_encoder::err_code faac_encoder::initialize_encoder(dk_aac_encoder::config
 	{
 		faacEncClose(_faac_encoder);
 		_faac_encoder = 0;
-		return dk_aac_encoder::err_code_fail;
+		return aac_encoder::err_code_t::fail;
 	}
 
-	_extradata = nullptr;
-	_extradata_size = 0;
-	faacEncGetDecoderSpecificInfo(_faac_encoder, &_extradata, &_extradata_size);
+	uint8_t * extradata = nullptr;
+	unsigned long extradata_size = 0;
+	faacEncGetDecoderSpecificInfo(_faac_encoder, &extradata, &extradata_size);
+	_front->set_extradata(extradata, extradata_size);
 
 	_buffer4queue = (uint8_t*)malloc(config->ob);
 
 	_config = *config;
 	_buffer_index = 0;
-	return dk_aac_encoder::err_code_success;
+	return aac_encoder::err_code_t::success;
 }
 
-dk_aac_encoder::err_code faac_encoder::release_encoder(void)
+int32_t debuggerking::faac_encoder::release_encoder(void)
 {
 	if (_buffer4queue)
 	{
@@ -154,10 +153,10 @@ dk_aac_encoder::err_code faac_encoder::release_encoder(void)
 		_faac_encoder = 0;
 	}
 	_buffer_index = 0;
-	return dk_aac_encoder::err_code_success;
+	return aac_encoder::err_code_t::success;
 }
 
-dk_aac_encoder::err_code faac_encoder::encode(dk_aac_encoder::dk_audio_entity_t * pcm, dk_aac_encoder::dk_audio_entity_t * encoded)
+int32_t debuggerking::faac_encoder::encode(aac_encoder::entity_t * pcm, aac_encoder::entity_t * encoded)
 {
 #if 0	
 	int32_t bytes_written = faacEncEncode(_faac_encoder, (int32_t*)pcm->data, pcm->data_size, (uint8_t*)encoded->data, (unsigned int)encoded->data_capacity);
@@ -175,7 +174,7 @@ dk_aac_encoder::err_code faac_encoder::encode(dk_aac_encoder::dk_audio_entity_t 
 #else
 	encoded->data_size = 0;
 	if (!_faac_encoder || _config.bitdepth!=16)
-		return dk_aac_encoder::err_code_fail;
+		return aac_encoder::err_code_t::fail;
 
 	memcpy((int16_t*)_buffer + _buffer_index, pcm->data, pcm->data_size);
 	_buffer_index += (pcm->data_size >> 1);
@@ -199,13 +198,13 @@ dk_aac_encoder::err_code faac_encoder::encode(dk_aac_encoder::dk_audio_entity_t 
 		_buffer_index = left;
 	}
 #endif
-	return dk_aac_encoder::err_code_success;
+	return aac_encoder::err_code_t::success;
 }
 
-dk_aac_encoder::err_code faac_encoder::encode(dk_aac_encoder::dk_audio_entity_t * pcm)
+int32_t debuggerking::faac_encoder::encode(aac_encoder::entity_t * pcm)
 {
 	if (!_faac_encoder || _config.bitdepth!=16)
-		return dk_aac_encoder::err_code_fail;
+		return aac_encoder::err_code_t::fail;
 
 	memcpy(((uint16_t*)_buffer) + _buffer_index, pcm->data, pcm->data_size);
 	_buffer_index += (pcm->data_size >> 1);
@@ -232,27 +231,17 @@ dk_aac_encoder::err_code faac_encoder::encode(dk_aac_encoder::dk_audio_entity_t 
 			memmove(_buffer, ((int16_t*)_buffer) + cur_buffer_index, left*sizeof(int16_t));
 		_buffer_index = left;
 	}
-	return dk_aac_encoder::err_code_success;
+	return aac_encoder::err_code_t::success;
 }
 
-dk_aac_encoder::err_code faac_encoder::get_queued_data(dk_aac_encoder::dk_audio_entity_t * encoded)
+int32_t debuggerking::faac_encoder::get_queued_data(aac_encoder::entity_t * encoded)
 {
 	if (_front)
 	{
-		return _front->pop((uint8_t*)encoded->data, encoded->data_size, encoded->pts);
+		return _front->pop((uint8_t*)encoded->data, encoded->data_size, encoded->timestamp);
 	}
 	else
 	{
-		return dk_aac_encoder::err_code_fail;
+		return aac_encoder::err_code_t::fail;
 	}
-}
-
-uint8_t * faac_encoder::extradata(void)
-{
-	return _extradata;
-}
-
-size_t faac_encoder::extradata_size(void)
-{
-	return (size_t)_extradata_size;
 }

@@ -11,12 +11,12 @@
 
 //MediaSubsessionIterator * rtsp_client::_iter;
 
-live_rtsp_client * live_rtsp_client::createNew(dk_live_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, unsigned int http_port_number, bool * kill_flag)
+debuggerking::live_rtsp_core * debuggerking::live_rtsp_core::createNew(live_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, float scale, unsigned int http_port_number, bool * kill_flag)
 {
-	return new live_rtsp_client(front, env, url, username, password, transport_option, recv_option, recv_timeout, http_port_number, kill_flag);
+	return new live_rtsp_core(front, env, url, username, password, transport_option, recv_option, recv_timeout, scale, http_port_number, kill_flag);
 }
 
-live_rtsp_client::live_rtsp_client(dk_live_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, unsigned int http_port_number, bool * kill_flag)
+debuggerking::live_rtsp_core::live_rtsp_core(live_rtsp_client * front, UsageEnvironment & env, const char * url, const char * username, const char * password, int transport_option, int recv_option, int recv_timeout, float scale, unsigned int http_port_number, bool * kill_flag)
 	: RTSPClient(env, url, 1, "dk_live_rtsp_client", http_port_number, -1)
 	, _front(front)
 	, _kill_flag(kill_flag)
@@ -37,7 +37,7 @@ live_rtsp_client::live_rtsp_client(dk_live_rtsp_client * front, UsageEnvironment
     , _duration_slot(-1.0)
     , _init_seek_time(0.0f)
     , _init_abs_seek_time(0)
-    , _scale(1.0f)
+	, _scale(scale)
     , _end_time(0)
     , _shutting_down(false)
     , _wait_teardown_response(false)
@@ -48,13 +48,13 @@ live_rtsp_client::live_rtsp_client(dk_live_rtsp_client * front, UsageEnvironment
     _transport_option = transport_option;
     _recv_option = recv_option;
 
-	_kill_trigger = envir().taskScheduler().createEventTrigger((TaskFunc*)&(live_rtsp_client::kill_trigger));
+	_kill_trigger = envir().taskScheduler().createEventTrigger((TaskFunc*)&(live_rtsp_core::kill_trigger));
 	//_task_sched = &_env->taskScheduler();
 	if (username && password && strlen(username)>0 && strlen(password)>0)
         _auth = new Authenticator(username, password);
 }
 
-live_rtsp_client::~live_rtsp_client(void)
+debuggerking::live_rtsp_core::~live_rtsp_core(void)
 {
 	if (_auth)
 	{
@@ -63,58 +63,58 @@ live_rtsp_client::~live_rtsp_client(void)
 	}
 }
 
-void live_rtsp_client::get_options(RTSPClient::responseHandler * after_func)
+void debuggerking::live_rtsp_core::get_options(RTSPClient::responseHandler * after_func)
 {
     sendOptionsCommand(after_func, _auth);
 }
 
-void live_rtsp_client::get_description(RTSPClient::responseHandler * after_func)
+void debuggerking::live_rtsp_core::get_description(RTSPClient::responseHandler * after_func)
 {
     sendDescribeCommand(after_func, _auth);
 }
 
-void live_rtsp_client::setup_media_subsession(MediaSubsession * media_subsession, bool rtp_over_tcp, bool force_multicast_unspecified, RTSPClient::responseHandler * after_func)
+void debuggerking::live_rtsp_core::setup_media_subsession(MediaSubsession * media_subsession, bool rtp_over_tcp, bool force_multicast_unspecified, RTSPClient::responseHandler * after_func)
 {
     sendSetupCommand(*media_subsession, after_func, False, rtp_over_tcp?True:False, force_multicast_unspecified?True:False, _auth);
 }
 
-void live_rtsp_client::start_playing_session(MediaSession * media_session, double start, double end, float scale, RTSPClient::responseHandler * after_func)
+void debuggerking::live_rtsp_core::start_playing_session(MediaSession * media_session, double start, double end, float scale, RTSPClient::responseHandler * after_func)
 {
     sendPlayCommand(*media_session, after_func, start, end, scale, _auth);
 }
 
-void live_rtsp_client::start_playing_session(MediaSession * media_session, const char * abs_start_time, const char * abs_end_time, float scale, RTSPClient::responseHandler * after_func)
+void debuggerking::live_rtsp_core::start_playing_session(MediaSession * media_session, const char * abs_start_time, const char * abs_end_time, float scale, RTSPClient::responseHandler * after_func)
 {
     sendPlayCommand(*media_session, after_func, abs_start_time, abs_end_time, scale, _auth);
 }
 
-void live_rtsp_client::teardown_session(MediaSession * media_session, RTSPClient::responseHandler * after_func)
+void debuggerking::live_rtsp_core::teardown_session(MediaSession * media_session, RTSPClient::responseHandler * after_func)
 {
     sendTeardownCommand(*media_session, after_func, _auth);
 }
 
-void live_rtsp_client::set_user_agent_string(const char * user_agent)
+void debuggerking::live_rtsp_core::set_user_agent_string(const char * user_agent)
 {
     setUserAgentString(user_agent);
 }
 
-void live_rtsp_client::continue_after_client_creation(RTSPClient * param)
+void debuggerking::live_rtsp_core::continue_after_client_creation(RTSPClient * param)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
     self->set_user_agent_string("Debuger King ICT");
     self->get_options(continue_after_options);
 }
 
-void live_rtsp_client::continue_after_options(RTSPClient * param, int result_code, char * result_string)
+void debuggerking::live_rtsp_core::continue_after_options(RTSPClient * param, int result_code, char * result_string)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
     delete [] result_string;
     self->get_description(continue_after_describe);
 }
 
-void live_rtsp_client::continue_after_describe(RTSPClient * param, int result_code, char * result_string)
+void debuggerking::live_rtsp_core::continue_after_describe(RTSPClient * param, int result_code, char * result_string)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
 
 	do
 	{
@@ -136,9 +136,9 @@ void live_rtsp_client::continue_after_describe(RTSPClient * param, int result_co
 		MediaSubsessionIterator iter(*self->_media_session);
 		MediaSubsession * media_subsession;
 		char medium[10] = { 0 };
-		if (self->_recv_option == dk_live_rtsp_client::recv_audio)
+		if (self->_recv_option & live_rtsp_client::recv_option_t::audio)
 			strncpy(medium, "audio", sizeof(medium));
-		if (self->_recv_option == dk_live_rtsp_client::recv_video)
+		if (self->_recv_option & live_rtsp_client::recv_option_t::video)
 			strncpy(medium, "video", sizeof(medium));
 
 		bool made_progress = false;
@@ -180,9 +180,9 @@ void live_rtsp_client::continue_after_describe(RTSPClient * param, int result_co
 #endif
 }
 
-void live_rtsp_client::continue_after_setup(RTSPClient * param, int result_code, char * result_string)
+void debuggerking::live_rtsp_core::continue_after_setup(RTSPClient * param, int result_code, char * result_string)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
 
     if( result_code==0 )
         self->_made_progress = true;
@@ -193,9 +193,9 @@ void live_rtsp_client::continue_after_setup(RTSPClient * param, int result_code,
     self->setup_streams();
 }
 
-void live_rtsp_client::continue_after_play(RTSPClient * param, int result_code, char * result_string)
+void debuggerking::live_rtsp_core::continue_after_play(RTSPClient * param, int result_code, char * result_string)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
 
 	do
 	{
@@ -241,9 +241,9 @@ void live_rtsp_client::continue_after_play(RTSPClient * param, int result_code, 
 #endif
 }
 
-void live_rtsp_client::continue_after_teardown(RTSPClient * param, int result_code, char * result_string)
+void debuggerking::live_rtsp_core::continue_after_teardown(RTSPClient * param, int result_code, char * result_string)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
 
     if( result_string )
         delete [] result_string;
@@ -265,16 +265,16 @@ void live_rtsp_client::continue_after_teardown(RTSPClient * param, int result_co
 	self->close();
 }
 
-void live_rtsp_client::close(void)
+void debuggerking::live_rtsp_core::close(void)
 {
 	//envir().taskScheduler();
 	envir().taskScheduler().triggerEvent(_kill_trigger, this);
 }
 
-void live_rtsp_client::subsession_after_playing(void * param)
+void debuggerking::live_rtsp_core::subsession_after_playing(void * param)
 {
 	MediaSubsession * media_subsession = static_cast<MediaSubsession*>(param);
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(media_subsession->miscPtr);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(media_subsession->miscPtr);
 
     Medium::close( media_subsession->sink );
     media_subsession->sink = 0;
@@ -289,10 +289,10 @@ void live_rtsp_client::subsession_after_playing(void * param)
 	self->session_after_playing(self);
 }
 
-void live_rtsp_client::subsession_bye_handler(void * param)
+void debuggerking::live_rtsp_core::subsession_bye_handler(void * param)
 {
 	MediaSubsession * media_subsession = static_cast<MediaSubsession*>(param);
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(media_subsession->miscPtr);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(media_subsession->miscPtr);
 
     //struct timeval time_now;
     //gettimeofday( &time_now, 0 );
@@ -300,9 +300,9 @@ void live_rtsp_client::subsession_bye_handler(void * param)
 	self->subsession_after_playing(media_subsession);
 }
 
-void live_rtsp_client::session_after_playing(void * param)
+void debuggerking::live_rtsp_core::session_after_playing(void * param)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
 #if 0
 	self->shutdown();
 #else
@@ -310,7 +310,7 @@ void live_rtsp_client::session_after_playing(void * param)
 #endif
 }
 
-void live_rtsp_client::setup_streams(void)
+void debuggerking::live_rtsp_core::setup_streams(void)
 {
 	//static MediaSubsessionIterator * iter = new MediaSubsessionIterator(*_media_session);
 	if (!_iter)
@@ -320,10 +320,10 @@ void live_rtsp_client::setup_streams(void)
     {
         if( media_subsession->clientPortNum()==0 )
             continue;
-        if(_transport_option==dk_live_rtsp_client::rtp_over_tcp)
-			setup_media_subsession(media_subsession, true, false, live_rtsp_client::continue_after_setup);
+        if(_transport_option==live_rtsp_client::rtp_over_tcp)
+			setup_media_subsession(media_subsession, true, false, live_rtsp_core::continue_after_setup);
         else
-			setup_media_subsession(media_subsession, false, false, live_rtsp_client::continue_after_setup);
+			setup_media_subsession(media_subsession, false, false, live_rtsp_core::continue_after_setup);
 
 		return;
     }
@@ -347,7 +347,7 @@ void live_rtsp_client::setup_streams(void)
 		if(media_subsession->readSource()==0) // was not initiated
 			continue;
 
-		buffer_sink * bs;
+		::buffer_sink * bs;
 		if (!strcmp(media_subsession->mediumName(), "video"))
 		{
 			if(!strcmp(media_subsession->codecName(), "H265"))
@@ -436,7 +436,7 @@ void live_rtsp_client::setup_streams(void)
         start_playing_session( _media_session, _init_seek_time, _end_time, _scale, continue_after_play );
 }
 
-void live_rtsp_client::shutdown(void)
+void debuggerking::live_rtsp_core::shutdown(void)
 {
     if( _shutting_down )
         return;
@@ -464,23 +464,23 @@ void live_rtsp_client::shutdown(void)
         continue_after_teardown( this, 0, 0 );
 }
 
-void live_rtsp_client::session_timer_handler(void * param)
+void debuggerking::live_rtsp_core::session_timer_handler(void * param)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
     self->_session_timer_task = 0;
 	self->session_after_playing(self);
 }
 
-void live_rtsp_client::check_packet_arrival(void * param)
+void debuggerking::live_rtsp_core::check_packet_arrival(void * param)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
     int delay_usec = 100000; //100 ms
-	self->_arrival_check_timer_task = self->envir().taskScheduler().scheduleDelayedTask(delay_usec, (TaskFunc*)&live_rtsp_client::check_packet_arrival, self);
+	self->_arrival_check_timer_task = self->envir().taskScheduler().scheduleDelayedTask(delay_usec, (TaskFunc*)&live_rtsp_core::check_packet_arrival, self);
 }
 
-void live_rtsp_client::check_inter_packet_gaps(void * param)
+void debuggerking::live_rtsp_core::check_inter_packet_gaps(void * param)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
     if( !self->_inter_packet_gap_max_time )
         return;
 
@@ -505,13 +505,13 @@ void live_rtsp_client::check_inter_packet_gaps(void * param)
     else
     {
         self->_total_packets_received = total_packets_received;
-		self->_inter_packet_gap_check_timer_task = self->envir().taskScheduler().scheduleDelayedTask(self->_inter_packet_gap_max_time * 1000000, (TaskFunc*)&live_rtsp_client::check_inter_packet_gaps, self);
+		self->_inter_packet_gap_check_timer_task = self->envir().taskScheduler().scheduleDelayedTask(self->_inter_packet_gap_max_time * 1000000, (TaskFunc*)&live_rtsp_core::check_inter_packet_gaps, self);
     }
 }
 
-void live_rtsp_client::check_session_timeout_broken_server(void * param)
+void debuggerking::live_rtsp_core::check_session_timeout_broken_server(void * param)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
     if( !self->_send_keepalives_to_broken_servers )
         return;
 
@@ -522,12 +522,12 @@ void live_rtsp_client::check_session_timeout_broken_server(void * param)
     unsigned delay_sec_until_next_keepalive = session_timeout<=5?1:session_timeout-5;
     //reduce the interval a liteel, to be on the safe side
 
-	self->_session_timeout_broken_server_task = self->envir().taskScheduler().scheduleDelayedTask(delay_sec_until_next_keepalive * 1000000, (TaskFunc*)&live_rtsp_client::check_session_timeout_broken_server, self);
+	self->_session_timeout_broken_server_task = self->envir().taskScheduler().scheduleDelayedTask(delay_sec_until_next_keepalive * 1000000, (TaskFunc*)&live_rtsp_core::check_session_timeout_broken_server, self);
 }
 
-void live_rtsp_client::kill_trigger(void * param)
+void debuggerking::live_rtsp_core::kill_trigger(void * param)
 {
-	live_rtsp_client * self = static_cast<live_rtsp_client*>(param);
+	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
 	self->_shutting_down = false;
 	self->shutdown();
 
