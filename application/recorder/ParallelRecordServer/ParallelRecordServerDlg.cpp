@@ -199,7 +199,7 @@ void CParallelRecordServerDlg::StartRecording(void)
 {
 	if (!_is_recording)
 	{
-		dk_recorder_service::instance().start_recording();
+		debuggerking::recorder_service::instance().start_recording();
 		CWnd *wnd = GetDlgItem(IDC_BUTTON_START_RECORD);
 		wnd->EnableWindow(FALSE);
 		wnd = GetDlgItem(IDC_BUTTON_STOP_RECORD);
@@ -213,7 +213,7 @@ void CParallelRecordServerDlg::StopRecording(void)
 {
 	if (_is_recording)
 	{
-		dk_recorder_service::instance().stop_recording();
+		debuggerking::recorder_service::instance().stop_recording();
 		CWnd *wnd = GetDlgItem(IDC_BUTTON_START_RECORD);
 		wnd->EnableWindow(TRUE);
 		wnd = GetDlgItem(IDC_BUTTON_STOP_RECORD);

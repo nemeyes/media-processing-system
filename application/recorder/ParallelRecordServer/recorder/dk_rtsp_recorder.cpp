@@ -4,7 +4,7 @@
 
 #define DEFAULT_FILE_CHUNK_SIZE 1024*1024*64
 
-dk_rtsp_recorder::dk_rtsp_recorder(int32_t chunk_size_mb)
+debuggerking::rtsp_recorder::rtsp_recorder(int32_t chunk_size_mb)
 	: _chunk_size_bytes(chunk_size_mb*1024*1024)
 {
 	memset(_storage, 0x00, sizeof(_storage));
@@ -17,7 +17,7 @@ dk_rtsp_recorder::dk_rtsp_recorder(int32_t chunk_size_mb)
 #endif
 }
 
-dk_rtsp_recorder::~dk_rtsp_recorder(void)
+debuggerking::rtsp_recorder::~rtsp_recorder(void)
 {
 	//stop_recording();
 #if defined(WITH_RELAY_LIVE)
@@ -29,13 +29,13 @@ dk_rtsp_recorder::~dk_rtsp_recorder(void)
 #endif
 }
 
-void dk_rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, const char * storage, const char * uuid)
+void debuggerking::rtsp_recorder::start_recording(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, const char * storage, const char * uuid)
 {
 	if (storage && uuid && strlen(storage)>0 && strlen(uuid)>0)
 	{
 		strncpy_s(_storage, storage, sizeof(_storage));
 		strncpy_s(_uuid, uuid, sizeof(_uuid));
-		dk_live_rtsp_client::play(url, username, password, transport_option, recv_option, recv_timeout, true);
+		live_rtsp_client::play(url, username, password, transport_option, recv_option, recv_timeout, 1.f, true);
 
 #if defined(WITH_RELAY_LIVE)
 		_sm_server->create_shared_memory(uuid);
@@ -43,13 +43,13 @@ void dk_rtsp_recorder::start_recording(const char * url, const char * username, 
 	}
 }
 
-void dk_rtsp_recorder::stop_recording(void)
+void debuggerking::rtsp_recorder::stop_recording(void)
 {
 #if defined(WITH_RELAY_LIVE)
 	_sm_server->destroy_shared_memory();
 #endif
 
-	dk_live_rtsp_client::stop();
+	live_rtsp_client::stop();
 #if defined(WITH_MPEG2TS)
 	if (_mpeg2ts_recorder)
 	{
@@ -67,9 +67,9 @@ void dk_rtsp_recorder::stop_recording(void)
 #endif
 }
 
-void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, uint8_t * vps, size_t vps_size, uint8_t * sps, size_t sps_size, uint8_t * pps, size_t pps_size, const uint8_t * data, size_t data_size, long long timestamp)
+void debuggerking::rtsp_recorder::on_begin_video(int32_t smt, uint8_t * vps, size_t vps_size, uint8_t * sps, size_t sps_size, uint8_t * pps, size_t pps_size, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (smt == dk_live_rtsp_client::vsubmedia_type_h264)
+	if (smt == live_rtsp_client::video_submedia_type_t::h264)
 	{
 #if defined(WITH_MPEG2TS)
 		do
@@ -143,9 +143,9 @@ void dk_rtsp_recorder::on_begin_video(dk_live_rtsp_client::vsubmedia_type smt, u
 	}
 }
 
-void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp)
+void debuggerking::rtsp_recorder::on_recv_video(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (smt == dk_live_rtsp_client::vsubmedia_type_h264)
+	if (smt == live_rtsp_client::video_submedia_type_t::h264)
 	{
 #if defined(WITH_MPEG2TS)
 		if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
@@ -228,18 +228,18 @@ void dk_rtsp_recorder::on_recv_video(dk_live_rtsp_client::vsubmedia_type smt, co
 	}
 }
 
-void dk_rtsp_recorder::on_begin_audio(dk_live_rtsp_client::asubmedia_type smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
+void debuggerking::rtsp_recorder::on_begin_audio(int32_t smt, uint8_t * config, size_t config_size, int32_t samplerate, int32_t bitdepth, int32_t channels, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }
 
-void dk_rtsp_recorder::on_recv_audio(dk_live_rtsp_client::asubmedia_type smt, const uint8_t * data, size_t data_size, long long timestamp)
+void debuggerking::rtsp_recorder::on_recv_audio(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
 
 }
 
 // Local Functions
-void dk_rtsp_recorder::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
+void debuggerking::rtsp_recorder::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, unsigned& time_scale, unsigned& fixed_frame_rate_flag, int* sar_width, int* sar_height)
 {
 	unsigned aspect_ratio_info_present_flag = bv.get1Bit();
 	DEBUG_PRINT(aspect_ratio_info_present_flag);
@@ -297,7 +297,7 @@ void dk_rtsp_recorder::parse_vui(CBitVector& bv, unsigned& num_units_in_tick, un
 	}
 }
 
-int dk_rtsp_recorder::parse_pps(uint8_t * pps, int pps_size)
+int debuggerking::rtsp_recorder::parse_pps(uint8_t * pps, int pps_size)
 {
 	if (pps_size <= 0 || pps == NULL)
 		return 0;
@@ -317,7 +317,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int dk_rtsp_recorder::parse_sps(uint8_t* data, int sizeOfSPS, int *width, int *height, int* sar_width, int* sar_height)
+int debuggerking::rtsp_recorder::parse_sps(uint8_t* data, int sizeOfSPS, int *width, int *height, int* sar_width, int* sar_height)
 {
 	uint8_t* sps;
 	uint32_t sps_size;
@@ -504,7 +504,7 @@ PARSE_ERROR:
 	return 0;
 }
 
-int dk_rtsp_recorder::parse_mpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
+int debuggerking::rtsp_recorder::parse_mpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
 {
 	// First, Find VOL Header
 	int i;
@@ -646,7 +646,7 @@ int dk_rtsp_recorder::parse_mpeg(uint8_t* data, int size, int *width, int *heigh
 	return 1;
 }
 
-int dk_rtsp_recorder::parse_jpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
+int debuggerking::rtsp_recorder::parse_jpeg(uint8_t* data, int size, int *width, int *height, int* sar_width, int* sar_height)
 {
 	int i, found = 0;
 
@@ -665,7 +665,7 @@ int dk_rtsp_recorder::parse_jpeg(uint8_t* data, int size, int *width, int *heigh
 	return found;
 }
 
-void dk_rtsp_recorder::make_adts_header(uint8_t* data, int size, char audioObjectType, char samplingFreqIndex, char channelConfig)
+void debuggerking::rtsp_recorder::make_adts_header(uint8_t* data, int size, char audioObjectType, char samplingFreqIndex, char channelConfig)
 {
 	CBitVector bv(data, 0, 72);
 
@@ -686,45 +686,45 @@ void dk_rtsp_recorder::make_adts_header(uint8_t* data, int size, char audioObjec
 	bv.putBits(0, 2);
 }
 
-uint8_t * dk_rtsp_recorder::get_sps(size_t & sps_size)
+uint8_t * debuggerking::rtsp_recorder::get_sps(size_t & sps_size)
 {
 	sps_size = _sps_size;
 	return _sps;
 }
 
-uint8_t * dk_rtsp_recorder::get_pps(size_t & pps_size)
+uint8_t * debuggerking::rtsp_recorder::get_pps(size_t & pps_size)
 {
 	pps_size = _pps_size;
 	return _pps;
 }
 
-void dk_rtsp_recorder::set_sps(uint8_t * sps, size_t sps_size)
+void debuggerking::rtsp_recorder::set_sps(uint8_t * sps, size_t sps_size)
 {
 	memset(_sps, 0x00, sizeof(_sps));
 	memcpy(_sps, sps, sps_size);
 	_sps_size = sps_size;
 }
 
-void dk_rtsp_recorder::set_pps(uint8_t * pps, size_t pps_size)
+void debuggerking::rtsp_recorder::set_pps(uint8_t * pps, size_t pps_size)
 {
 	memset(_pps, 0x00, sizeof(_pps));
 	memcpy(_pps, pps, pps_size);
 	_pps_size = pps_size;
 }
 
-void dk_rtsp_recorder::clear_sps(void)
+void debuggerking::rtsp_recorder::clear_sps(void)
 {
 	memset(_sps, 0x00, sizeof(_sps));
 	_sps_size = 0;
 }
 
-void dk_rtsp_recorder::clear_pps(void)
+void debuggerking::rtsp_recorder::clear_pps(void)
 {
 	memset(_pps, 0x00, sizeof(_pps));
 	_pps_size = 0;
 }
 
-long long dk_rtsp_recorder::get_elapsed_msec_from_epoch(void)
+long long debuggerking::rtsp_recorder::get_elapsed_msec_from_epoch(void)
 {
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 	boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::local_time();
@@ -733,7 +733,7 @@ long long dk_rtsp_recorder::get_elapsed_msec_from_epoch(void)
 	return elapsed_millsec;
 }
 
-void dk_rtsp_recorder::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
+void debuggerking::rtsp_recorder::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
 {
 	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");

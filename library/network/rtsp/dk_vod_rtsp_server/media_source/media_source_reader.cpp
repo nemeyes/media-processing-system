@@ -17,14 +17,17 @@
 debuggerking::media_source_reader::media_source_reader(void)
 	: _scale(1.f)
 #if defined(WITH_RECORD_MODULE)
+#if defined(WITH_BUFFERING_MODE)
 	, _video_thread(INVALID_HANDLE_VALUE)
 	, _video_run(false)
 	, _video_queue_count(0)
 	, _video_buffer(nullptr)
 	, _video_buffer_size(0)
 #endif
+#endif
 {
 #if defined(WITH_RECORD_MODULE)
+#if defined(WITH_BUFFERING_MODE)
 	_video_buffer_size = VIDEO_BUFFER_SIZE;
 	_video_buffer = static_cast<uint8_t*>(malloc(_video_buffer_size));
 
@@ -33,6 +36,7 @@ debuggerking::media_source_reader::media_source_reader(void)
 	_video_root = static_cast<video_buffer_t*>(malloc(sizeof(video_buffer_t)));
 	init_video(_video_root);
 #endif
+#endif
 }
 
 debuggerking::media_source_reader::~media_source_reader(void)
@@ -40,6 +44,7 @@ debuggerking::media_source_reader::~media_source_reader(void)
 	close();
 
 #if defined(WITH_RECORD_MODULE)
+#if defined(WITH_BUFFERING_MODE)
 	video_buffer_t * vbuffer = _video_root->next;
 	while (vbuffer)
 	{
@@ -56,6 +61,7 @@ debuggerking::media_source_reader::~media_source_reader(void)
 		free(_video_buffer);
 	_video_buffer = nullptr;
 	_video_buffer_size = 0;
+#endif
 #endif
 }
 
@@ -136,7 +142,7 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 	asmt = _asmt;
 
 #if defined(WITH_RECORD_MODULE)
-#if 0
+#if defined(WITH_BUFFERING_MODE)
 	unsigned thrd_addr = 0;
 	_video_thread = (HANDLE)::_beginthreadex(NULL, 0, &media_source_reader::video_process_callback, this, 0, &thrd_addr);
 #endif
@@ -147,7 +153,7 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 bool debuggerking::media_source_reader::close(void)
 {
 #if defined(WITH_RECORD_MODULE)
-#if 0
+#if defined(WITH_BUFFERING_MODE)
 	if (_video_thread && _video_thread != INVALID_HANDLE_VALUE)
 	{
 		::WaitForSingleObject(_video_thread, INFINITE);
@@ -166,13 +172,13 @@ bool debuggerking::media_source_reader::read(int32_t mt, uint8_t * data, size_t 
 		if (_vsmt == media_source_reader::video_submedia_type_t::h264)
 		{
 #if defined(WITH_RECORD_MODULE)
-#if 1
-			_record_module.read(data, data_size, timestamp);
-#else
+#if defined(WITH_BUFFERING_MODE)
 			uint8_t nalu_type = recorder_module::nalu_type_t::none;
 			int32_t status = pop_video(data, data_size, nalu_type, timestamp);
 			if(status != media_source_reader::err_code_t::success)
 				return false;
+#else
+			_record_module.read(data, data_size, timestamp);
 #endif
 #else
 			_record_module_seeker.read(data, data_size, timestamp);
@@ -183,7 +189,6 @@ bool debuggerking::media_source_reader::read(int32_t mt, uint8_t * data, size_t 
 	{
 		return false;
 	}
-	::Sleep(1);
 	return true;
 }
 
@@ -206,6 +211,7 @@ const uint8_t * debuggerking::media_source_reader::get_pps(size_t & pps_size)
 }
 
 #if defined(WITH_RECORD_MODULE)
+#if defined(WITH_BUFFERING_MODE)
 int32_t debuggerking::media_source_reader::push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long timestamp)
 {
 	int32_t status = media_source_reader::err_code_t::success;
@@ -314,6 +320,7 @@ void debuggerking::media_source_reader::video_process(void)
 		::Sleep(10);
 	}
 }
+#endif
 #endif
 
 #if !defined(WITH_RECORD_MODULE)

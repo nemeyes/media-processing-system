@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <io.h>
 
-dk_recorder_service::_recorder_receiver_information_t::_recorder_receiver_information_t(void)
+debuggerking::recorder_service::_recorder_receiver_information_t::_recorder_receiver_information_t(void)
 {
 	memset(uuid, 0x00, sizeof(uuid));
 	memset(url, 0x00, sizeof(url));
@@ -20,7 +20,7 @@ dk_recorder_service::_recorder_receiver_information_t::_recorder_receiver_inform
 	recorder = nullptr;
 }
 
-dk_recorder_service::_recorder_receiver_information_t::_recorder_receiver_information_t(const dk_recorder_service::_recorder_receiver_information_t & clone)
+debuggerking::recorder_service::_recorder_receiver_information_t::_recorder_receiver_information_t(const debuggerking::recorder_service::_recorder_receiver_information_t & clone)
 {
 	strncpy_s(uuid, clone.uuid, sizeof(uuid));
 	strncpy_s(url, clone.url, sizeof(url));
@@ -29,7 +29,7 @@ dk_recorder_service::_recorder_receiver_information_t::_recorder_receiver_inform
 	recorder = clone.recorder;
 }
 
-dk_recorder_service::_recorder_receiver_information_t dk_recorder_service::_recorder_receiver_information_t::operator=(const dk_recorder_service::_recorder_receiver_information_t & clone)
+debuggerking::recorder_service::_recorder_receiver_information_t debuggerking::recorder_service::_recorder_receiver_information_t::operator=(const recorder_service::_recorder_receiver_information_t & clone)
 {
 	strncpy_s(uuid, clone.uuid, sizeof(uuid));
 	strncpy_s(url, clone.url, sizeof(url));
@@ -39,7 +39,7 @@ dk_recorder_service::_recorder_receiver_information_t dk_recorder_service::_reco
 	return (*this);
 }
 
-dk_recorder_service::dk_recorder_service(void)
+debuggerking::recorder_service::recorder_service(void)
 	: _backup_thread(INVALID_HANDLE_VALUE)
 	, _backup_port_number(21)
 	, _backup_enable(false)
@@ -53,19 +53,19 @@ dk_recorder_service::dk_recorder_service(void)
 	curl_global_init(CURL_GLOBAL_ALL);
 }
 
-dk_recorder_service::~dk_recorder_service(void)
+debuggerking::recorder_service::~recorder_service(void)
 {
 	stop_recording();
 	curl_global_cleanup();
 }
 
-dk_recorder_service & dk_recorder_service::instance(void)
+debuggerking::recorder_service & debuggerking::recorder_service::instance(void)
 {
-	static dk_recorder_service _instance;
+	static debuggerking::recorder_service _instance;
 	return _instance;
 }
 
-bool dk_recorder_service::start_recording(void)
+bool debuggerking::recorder_service::start_recording(void)
 {
 	memset(_backup_url, 0x00, sizeof(_backup_url));
 	memset(_backup_username, 0x00, sizeof(_backup_username));
@@ -169,15 +169,15 @@ bool dk_recorder_service::start_recording(void)
 		const char * password = password_elem->GetText();
 
 
-		dk_recorder_service::recorder_receiver_information_t recv_info;
+		recorder_service::recorder_receiver_information_t recv_info;
 		strncpy_s(recv_info.uuid, uuid, sizeof(recv_info.uuid));
 		strncpy_s(recv_info.url, url, sizeof(recv_info.url));
 		if (username && strlen(username)>0)
 			strncpy_s(recv_info.username, username, sizeof(recv_info.username));
 		if (password && strlen(password)>0)
 			strncpy_s(recv_info.password, password, sizeof(recv_info.password));
-		recv_info.recorder = new dk_rtsp_recorder(chunk_size_in_mb);
-		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, dk_rtsp_recorder::rtp_over_tcp, dk_rtsp_recorder::recv_video, recv_timeout, storage_path.c_str(), recv_info.uuid);
+		recv_info.recorder = new rtsp_recorder(chunk_size_in_mb);
+		recv_info.recorder->start_recording(recv_info.url, recv_info.username, recv_info.password, rtsp_recorder::rtp_over_tcp, rtsp_recorder::recv_option_t::video, recv_timeout, storage_path.c_str(), recv_info.uuid);
 		_receivers.push_back(recv_info);
 
 		media_source_elem = media_source_elem->NextSiblingElement();
@@ -189,7 +189,7 @@ bool dk_recorder_service::start_recording(void)
 		return true;
 }
 
-bool dk_recorder_service::stop_recording(void)
+bool debuggerking::recorder_service::stop_recording(void)
 {
 	if (_backup_enable)
 		stop_backup_service();
@@ -197,10 +197,10 @@ bool dk_recorder_service::stop_recording(void)
 	_backup_enable = false;
 	_backup_delete_after_backup = false;
 
-	std::vector<dk_recorder_service::recorder_receiver_information_t>::iterator iter;
+	std::vector<recorder_service::recorder_receiver_information_t>::iterator iter;
 	for (iter = _receivers.begin(); iter != _receivers.end(); iter++)
 	{
-		dk_rtsp_recorder * recorder = (iter)->recorder;
+		rtsp_recorder * recorder = (iter)->recorder;
 		recorder->stop_recording();
 		delete recorder;
 		(iter)->recorder = nullptr;
@@ -209,7 +209,7 @@ bool dk_recorder_service::stop_recording(void)
 	return true;
 }
 
-const char * dk_recorder_service::retrieve_storage_path(bool file_separator)
+const char * debuggerking::recorder_service::retrieve_storage_path(bool file_separator)
 {
 	char * module_path = nullptr;
 	dk_misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe", &module_path);
@@ -224,7 +224,7 @@ const char * dk_recorder_service::retrieve_storage_path(bool file_separator)
 	return _storage_path;
 }
 
-const char * dk_recorder_service::retrieve_config_path(void)
+const char * debuggerking::recorder_service::retrieve_config_path(void)
 {
 	char * module_path = nullptr;
 	dk_misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe", &module_path);
@@ -236,14 +236,14 @@ const char * dk_recorder_service::retrieve_config_path(void)
 	return _config_path;
 }
 
-bool dk_recorder_service::start_backup_service(void)
+bool debuggerking::recorder_service::start_backup_service(void)
 {
 	unsigned int thrd_addr;
-	_backup_thread = (HANDLE)::_beginthreadex(NULL, 0, dk_recorder_service::backup_process_callback, this, 0, &thrd_addr);
+	_backup_thread = (HANDLE)::_beginthreadex(NULL, 0, recorder_service::backup_process_callback, this, 0, &thrd_addr);
 	return true;
 }
 
-bool dk_recorder_service::stop_backup_service(void)
+bool debuggerking::recorder_service::stop_backup_service(void)
 {
 	if (_backup_run)
 	{
@@ -255,14 +255,14 @@ bool dk_recorder_service::stop_backup_service(void)
 	return true;
 }
 
-unsigned __stdcall dk_recorder_service::backup_process_callback(void * param)
+unsigned __stdcall debuggerking::recorder_service::backup_process_callback(void * param)
 {
-	dk_recorder_service * self = static_cast<dk_recorder_service*>(param);
+	debuggerking::recorder_service * self = static_cast<debuggerking::recorder_service*>(param);
 	self->backup_process();
 	return 0;
 }
 
-void dk_recorder_service::backup_process(void)
+void debuggerking::recorder_service::backup_process(void)
 {
 	_backup_run = true;
 	while (_backup_run)
@@ -280,7 +280,7 @@ void dk_recorder_service::backup_process(void)
 }
 
 
-void dk_recorder_service::file_search_and_upload(const char * path)
+void debuggerking::recorder_service::file_search_and_upload(const char * path)
 {
 	WIN32_FIND_DATAA wfd;
 	char search_path[260] = { 0 };
@@ -376,7 +376,7 @@ void dk_recorder_service::file_search_and_upload(const char * path)
 	}
 }
 
-size_t dk_recorder_service::backup_get_content_length_callback2(void * ptr, size_t size, size_t nmemb, void * stream)
+size_t debuggerking::recorder_service::backup_get_content_length_callback2(void * ptr, size_t size, size_t nmemb, void * stream)
 {
 	(void)ptr;
 	(void)stream;
@@ -386,7 +386,7 @@ size_t dk_recorder_service::backup_get_content_length_callback2(void * ptr, size
 }
 
 /* parse headers for Content-Length */
-size_t dk_recorder_service::backup_get_content_length_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+size_t debuggerking::recorder_service::backup_get_content_length_callback(void * ptr, size_t size, size_t nmemb, void * stream)
 {
 	int r;
 	long len = 0;
@@ -401,13 +401,13 @@ size_t dk_recorder_service::backup_get_content_length_callback(void * ptr, size_
 }
 
 /* discard downloaded data */
-size_t dk_recorder_service::backup_discard_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+size_t debuggerking::recorder_service::backup_discard_callback(void * ptr, size_t size, size_t nmemb, void * stream)
 {
 	return size * nmemb;
 }
 
 /* read data to upload */
-size_t dk_recorder_service::backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream)
+size_t debuggerking::recorder_service::backup_read_callback(void * ptr, size_t size, size_t nmemb, void * stream)
 {
 	FILE * f = (FILE*)stream;
 	size_t n;
@@ -420,7 +420,7 @@ size_t dk_recorder_service::backup_read_callback(void * ptr, size_t size, size_t
 	return n;
 }
 
-bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath)
+bool debuggerking::recorder_service::backup_check_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath)
 {
 	CURLcode r = CURLE_GOT_NOTHING;
 
@@ -453,7 +453,7 @@ bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * rem
 
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
 	curl_easy_setopt(curl, CURLOPT_FILETIME, 1);
-	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &dk_recorder_service::backup_get_content_length_callback2);
+	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &recorder_service::backup_get_content_length_callback2);
 	curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
 
 	r = curl_easy_perform(curl);
@@ -479,7 +479,7 @@ bool dk_recorder_service::backup_check_single_file(CURL * curl, const char * rem
 }
 
 /* read data to upload */
-bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath, long timeout, long tries)
+bool debuggerking::recorder_service::backup_upload_single_file(CURL * curl, const char * remotepath, const char * username, const char * password, const char * localpath, long timeout, long tries)
 {
 	FILE *f;
 	long uploaded_len = 0;
@@ -519,10 +519,10 @@ bool dk_recorder_service::backup_upload_single_file(CURL * curl, const char * re
 	if (timeout)
 		curl_easy_setopt(curl, CURLOPT_FTP_RESPONSE_TIMEOUT, timeout);
 
-	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &dk_recorder_service::backup_get_content_length_callback);
+	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &recorder_service::backup_get_content_length_callback);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &uploaded_len);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dk_recorder_service::backup_discard_callback);
-	curl_easy_setopt(curl, CURLOPT_READFUNCTION, &dk_recorder_service::backup_read_callback);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &recorder_service::backup_discard_callback);
+	curl_easy_setopt(curl, CURLOPT_READFUNCTION, &recorder_service::backup_read_callback);
 	curl_easy_setopt(curl, CURLOPT_READDATA, f);
 	/* disable passive mode */
 	curl_easy_setopt(curl, CURLOPT_FTPPORT, "-");

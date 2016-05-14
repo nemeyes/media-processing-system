@@ -76,7 +76,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;WITH_RECORD_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;WITH_RECORD_SERVER;WITH_RECORD_MODULE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;..\..\..\container\dk_record_module\include;..\..\..\container\dk_recorder_module\include;..\..\..\buffering\dk_media_buffering\include;..\..\..\logger\dk_log4cplus_logger_1.2.0\include;media_source;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -104,7 +104,6 @@
     <ClInclude Include="media_source\live_media_source_entity.h" />
     <ClInclude Include="media_source\media_source_reader.h" />
     <ClInclude Include="media_source\record_module_seeker.h" />
-    <ClInclude Include="media_source\scoped_lock.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp" />

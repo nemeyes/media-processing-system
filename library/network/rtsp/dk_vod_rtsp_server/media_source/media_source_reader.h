@@ -18,6 +18,7 @@ namespace debuggerking
 	public:
 
 #if defined(WITH_RECORD_MODULE)
+#if defined(WITH_BUFFERING_MODE)
 		typedef struct _video_buffer_t
 		{
 			long long	timestamp;
@@ -27,7 +28,7 @@ namespace debuggerking
 			_video_buffer_t * next;
 		} video_buffer_t;
 #endif
-
+#endif
 
 		media_source_reader(void);
 		virtual ~media_source_reader(void);
@@ -42,10 +43,14 @@ namespace debuggerking
 		const uint8_t * get_sps(size_t & size);
 		const uint8_t * get_pps(size_t & size);
 
+#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_BUFFERING_MODE)
 	private:
 		int32_t push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long timestamp);
 		int32_t pop_video(uint8_t * bs, size_t & size, uint8_t & nalu_type, long long & timestamp);
 		int32_t init_video(video_buffer_t * buffer);
+#endif
+#endif
 
 #if defined(WITH_RECORD_MODULE)
 		unsigned static __stdcall video_process_callback(void * param);
@@ -57,6 +62,7 @@ namespace debuggerking
 		char _stream_name[250];
 #if defined(WITH_RECORD_MODULE)
 		recorder_module _record_module;
+#if defined(WITH_BUFFERING_MODE)
 		CRITICAL_SECTION _video_mutex;
 		bool _video_run;
 		HANDLE _video_thread;
@@ -66,6 +72,7 @@ namespace debuggerking
 		uint64_t _video_queue_count;
 		uint8_t * _video_buffer;
 		size_t _video_buffer_size;
+#endif
 #else
 		record_module_seeker _record_module_seeker;
 #endif

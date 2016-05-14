@@ -51,9 +51,6 @@
     <ClInclude Include="media_source\record_module_seeker.h">
       <Filter>media_source</Filter>
     </ClInclude>
-    <ClInclude Include="media_source\scoped_lock.h">
-      <Filter>media_source</Filter>
-    </ClInclude>
     <ClInclude Include="media_source\live_media_source_entity.h">
       <Filter>media_source</Filter>
     </ClInclude>
