@@ -70,9 +70,10 @@ void buffered_byte_stream_source::read_from_buffer(void)
 	{
 		fFrameSize = 0;
 		size_t data_size = 0;
+
+		long long interval = 0;
 		long long timestamp = 0;
-		
-		_reader->read(debuggerking::media_source_reader::media_type_t::video, fRealFrame, sizeof(fRealFrame), data_size, timestamp);
+		_reader->read(debuggerking::media_source_reader::media_type_t::video, fRealFrame, sizeof(fRealFrame), data_size, interval, timestamp);
 
 		if (data_size > 0)
 		{
@@ -86,13 +87,13 @@ void buffered_byte_stream_source::read_from_buffer(void)
 			gettimeofday(&fPresentationTime, NULL);
 
 #if 1
-			if (timestamp == 0)
+			if (interval == 0)
 			{
 				FramedSource::afterGetting(this);//nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);// 
 			}
 			else
 			{
-				int64_t timestamp_microsec = timestamp * 1000;
+				int64_t timestamp_microsec = interval * 1000;
 				if (_reader->get_scale() != 1.f)
 					timestamp_microsec /= _reader->get_scale();
 				nextTask() = envir().taskScheduler().scheduleDelayedTask(timestamp_microsec, (TaskFunc*)FramedSource::afterGetting, this);

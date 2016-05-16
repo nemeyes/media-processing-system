@@ -21,6 +21,7 @@ namespace debuggerking
 #if defined(WITH_BUFFERING_MODE)
 		typedef struct _video_buffer_t
 		{
+			long long	interval;
 			long long	timestamp;
 			size_t		amount;
 			uint8_t		nalu_type;
@@ -38,7 +39,7 @@ namespace debuggerking
 
 		bool open(const char * stream_name, long long timestamp, int32_t & vsmt, int32_t & asmt);
 		bool close(void);
-		bool read(int32_t mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & timestamp);
+		bool read(int32_t mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & interval, long long & timestamp);
 
 		const uint8_t * get_sps(size_t & size);
 		const uint8_t * get_pps(size_t & size);
@@ -46,8 +47,8 @@ namespace debuggerking
 #if defined(WITH_RECORD_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	private:
-		int32_t push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long timestamp);
-		int32_t pop_video(uint8_t * bs, size_t & size, uint8_t & nalu_type, long long & timestamp);
+		int32_t push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long interval, long long timestamp);
+		int32_t pop_video(uint8_t * bs, size_t & size, uint8_t & nalu_type, long long & interval, long long & timestamp);
 		int32_t init_video(video_buffer_t * buffer);
 #endif
 #endif

@@ -50,10 +50,11 @@ int32_t debuggerking::audio_buffer::push(const uint8_t * data, size_t size, long
 			buffer = buffer->next;
 		} while (1);
 
-		buffer->next = static_cast<buffer_t*>(malloc(sizeof(buffer_t)));
-		init(buffer->next);
-		buffer->next->prev = buffer;
-		buffer = buffer->next;
+		buffer_t * next = static_cast<buffer_t*>(malloc(sizeof(buffer_t)));
+		init(next);
+		next->prev = buffer;
+		buffer->next = next;
+		buffer = next;
 
 		buffer->timestamp = timestamp;
 		buffer->amount = size;
@@ -78,17 +79,29 @@ int32_t debuggerking::audio_buffer::pop(uint8_t * data, size_t & size, long long
 	buffer_t * buffer = _root->next;
 	if (buffer)
 	{
-		_root->next = buffer->next;
-		if (_root->next)
-			_root->next->prev = _root;
-
+		buffer_t * next = buffer->next;
+		buffer_t * prev = buffer->prev;
 		int32_t result = circular_buffer_t::read(_cbuffer, data, buffer->amount);
 		if (result == -1)
+		{
 			status = audio_buffer::err_code_t::fail;
-
-		size = buffer->amount;
-		timestamp = buffer->timestamp;
+		}
+		else
+		{
+			size = buffer->amount;
+			timestamp = buffer->timestamp;
+		}
 		free(buffer);
+		if (next)
+		{
+			buffer = next;
+			buffer->prev = prev;
+			buffer->prev->next = buffer;
+		}
+		else
+		{
+			_root->next = nullptr;
+		}
 	}
 	return status;
 }

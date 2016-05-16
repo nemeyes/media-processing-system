@@ -375,12 +375,12 @@ debuggerking::video_encoder::encoder_state debuggerking::video_encoder::state(vo
 
 int32_t debuggerking::video_encoder::initialize_encoder(void * config)
 {
-	return video_encoder::err_code_t::success;
+	return video_base::initialize(static_cast<video_encoder::configuration_t*>(config));
 }
 
 int32_t debuggerking::video_encoder::release_encoder(void)
 {
-	return video_encoder::err_code_t::success;
+	return video_encoder::release();
 }
 
 int32_t debuggerking::video_encoder::encode(video_encoder::entity_t * input, video_encoder::entity_t * bitstream)

@@ -98,7 +98,7 @@ debuggerking::nvenc_encoder::encoder_state debuggerking::nvenc_encoder::state(vo
 
 int32_t debuggerking::nvenc_encoder::initialize_encoder(void * config)
 {
-	int32_t status = video_base::initialize(static_cast<video_base::configuration_t*>(config));
+	int32_t status = video_encoder::initialize(static_cast<video_base::configuration_t*>(config));
 	if (status != nvenc_encoder::err_code_t::success)
 		return status;
 	return _core->initialize_encoder(static_cast<nvenc_encoder::configuration_t*>(config));
