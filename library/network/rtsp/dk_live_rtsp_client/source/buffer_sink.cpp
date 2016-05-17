@@ -159,11 +159,11 @@ void buffer_sink::after_getting_frame(unsigned frame_size, unsigned truncated_by
 			if (_vsmt == debuggerking::live_rtsp_client::video_submedia_type_t::h264)
 			{
 				const unsigned char start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
-				if ((_buffer[0] == start_code[0]) && (_buffer[1] == start_code[1]) && (_buffer[2] == start_code[2]) && (_buffer[3] == start_code[3]))
-				{
-					add_data(_buffer, frame_size, timestamp);
-				}
-				else
+				//if ((_buffer[0] == start_code[0]) && (_buffer[1] == start_code[1]) && (_buffer[2] == start_code[2]) && (_buffer[3] == start_code[3]))
+				//{
+				//	add_data(_buffer, frame_size, timestamp);
+				//}
+				//else
 				{
 					if (truncated_bytes > 0)
 					{

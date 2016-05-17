@@ -14,7 +14,7 @@ debuggerking::rtsp_receiver::~rtsp_receiver(void)
 int32_t debuggerking::rtsp_receiver::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd)
 {
 	_hwnd = hwnd;
-	return live_rtsp_client::play(url, username, password, transport_option, recv_option, 0, scale, repeat);
+	return live_rtsp_client::play(url, username, password, transport_option, recv_option, 3, scale, repeat);
 }
 
 int32_t debuggerking::rtsp_receiver::stop(void)

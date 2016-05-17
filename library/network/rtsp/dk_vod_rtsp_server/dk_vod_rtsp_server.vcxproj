@@ -55,7 +55,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;WITH_RECORD_SERVER;WITH_RECORD_MODULE;WITH_BUFFERING_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;EXPORT_LIB;WITH_RECORD_SERVER;WITH_RECORD_MODULE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\..\dk_common\include;..\..\..\..\3rdparty\live_media\include;..\..\..\..\3rdparty\ffmpeg\win32\x86\include;..\..\..\..\dk_ffmpeg_base\include;..\..\..\container\dk_record_module\include;..\..\..\container\dk_recorder_module\include;..\..\..\buffering\dk_media_buffering\include;..\..\..\logger\dk_log4cplus_logger_1.2.0\include;media_source;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>

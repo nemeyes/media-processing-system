@@ -73,6 +73,7 @@ void buffered_byte_stream_source::read_from_buffer(void)
 
 		long long interval = 0;
 		long long timestamp = 0;
+		memset(fRealFrame, 0x00, sizeof(fRealFrame));
 		_reader->read(debuggerking::media_source_reader::media_type_t::video, fRealFrame, sizeof(fRealFrame), data_size, interval, timestamp);
 
 		if (data_size > 0)
