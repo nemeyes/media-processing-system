@@ -18,5 +18,13 @@
     <ClInclude Include="include\commands_payload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\process_starter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\process_starter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
