@@ -67,7 +67,7 @@ ServerMediaSession * live_rtsp_server::lookupServerMediaSession(char const * str
 
 #define NEW_SMS(description) do {\
 								char const* descStr = description\
-								", DebugerKing RTSP Media Server";\
+								", DebuggerKing RTSP Media Server";\
 								sms = ServerMediaSession::createNew(env, stream_name, stream_name, descStr);\
 							} while(0)
 

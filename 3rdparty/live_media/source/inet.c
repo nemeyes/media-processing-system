@@ -2,6 +2,10 @@
 #include "NetCommon.h"
 #endif
 
+//#if defined(DEBUG)
+//#include <dk_log4cplus_logger.h>
+//#endif
+
 #include <stdio.h>
 
 #ifdef VXWORKS
@@ -278,8 +282,8 @@ our_initstate(seed, arg_state, n)
 		state[-1] = MAX_TYPES * (rptr - state) + rand_type;
 	if (n < BREAK_0) {
 #ifdef DEBUG
-		(void)fprintf(stderr,
-		    "random: not enough state (%d bytes); ignored.\n", n);
+		//debuggerking::log4cplus_logger::make_debug_log("live555", "random: not enough state (%d bytes); ignored.", n);
+		(void)fprintf(stderr, "random: not enough state (%d bytes); ignored.\n", n);
 #endif
 		return(0);
 	}
@@ -354,8 +358,8 @@ our_setstate(arg_state)
 		break;
 	default:
 #ifdef DEBUG
-		(void)fprintf(stderr,
-		    "random: state info corrupted; not changed.\n");
+		//debuggerking::log4cplus_logger::make_debug_log("live555", "random: state info corrupted; not changed.");
+		(void)fprintf(stderr, "random: state info corrupted; not changed.\n");
 #endif
 		break;
 	}

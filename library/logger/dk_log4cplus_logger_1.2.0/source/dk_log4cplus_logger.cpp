@@ -12,27 +12,27 @@
 #include "userenv.h"
 #include "wtsapi32.h"
 
-dk_log4cplus_logger * dk_log4cplus_logger::_instance = nullptr;
+debuggerking::log4cplus_logger * debuggerking::log4cplus_logger::_instance = nullptr;
 
-void dk_log4cplus_logger::create(const char * configuration_path)
+void debuggerking::log4cplus_logger::create(const char * configuration_path)
 {
 	if (!_instance)
-		_instance = new dk_log4cplus_logger(configuration_path);
+		_instance = new log4cplus_logger(configuration_path);
 }
 
-void dk_log4cplus_logger::destroy(void)
+void debuggerking::log4cplus_logger::destroy(void)
 {
 	if (_instance)
 		delete _instance;
 	_instance = nullptr;
 }
 
-dk_log4cplus_logger * dk_log4cplus_logger::instance(void)
+debuggerking::log4cplus_logger * debuggerking::log4cplus_logger::instance(void)
 {
 	return _instance;
 }
 
-dk_log4cplus_logger::dk_log4cplus_logger(const char * configuration_path)
+debuggerking::log4cplus_logger::log4cplus_logger(const char * configuration_path)
 {
 	std::locale::global(     // set global locale
 		std::locale(         // using std::locale constructed from
@@ -73,7 +73,7 @@ dk_log4cplus_logger::dk_log4cplus_logger(const char * configuration_path)
 	}
 }
 
-dk_log4cplus_logger::~dk_log4cplus_logger(void)
+debuggerking::log4cplus_logger::~log4cplus_logger(void)
 {
 	if (_configure_thread)
 	{
@@ -82,11 +82,11 @@ dk_log4cplus_logger::~dk_log4cplus_logger(void)
 	}
 }
 
-void dk_log4cplus_logger::make_fatal_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_fatal_log(const char * secion, const char * fmt, ...)
 {
 	if (_instance)
 	{
-		char log[500] = { 0 };
+		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
 		vsnprintf_s(log, sizeof(log), fmt, args);
@@ -95,11 +95,11 @@ void dk_log4cplus_logger::make_fatal_log(const char * secion, const char * fmt, 
 	}
 }
 
-void dk_log4cplus_logger::make_error_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_error_log(const char * secion, const char * fmt, ...)
 {
 	if (_instance)
 	{
-		char log[500] = { 0 };
+		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
 		vsnprintf_s(log, sizeof(log), fmt, args);
@@ -108,11 +108,11 @@ void dk_log4cplus_logger::make_error_log(const char * secion, const char * fmt, 
 	}
 }
 
-void dk_log4cplus_logger::make_warn_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_warn_log(const char * secion, const char * fmt, ...)
 {
 	if (_instance)
 	{
-		char log[500] = { 0 };
+		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
 		vsnprintf_s(log, sizeof(log), fmt, args);
@@ -121,11 +121,11 @@ void dk_log4cplus_logger::make_warn_log(const char * secion, const char * fmt, .
 	}
 }
 
-void dk_log4cplus_logger::make_info_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_info_log(const char * secion, const char * fmt, ...)
 {
 	if (_instance)
 	{
-		char log[500] = { 0 };
+		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
 		vsnprintf_s(log, sizeof(log), fmt, args);
@@ -134,11 +134,11 @@ void dk_log4cplus_logger::make_info_log(const char * secion, const char * fmt, .
 	}
 }
 
-void dk_log4cplus_logger::make_debug_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_debug_log(const char * secion, const char * fmt, ...)
 {
 	if (_instance)
 	{
-		char log[500] = { 0 };
+		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
 		vsnprintf_s(log, sizeof(log), fmt, args);
@@ -147,11 +147,11 @@ void dk_log4cplus_logger::make_debug_log(const char * secion, const char * fmt, 
 	}
 }
 
-void dk_log4cplus_logger::make_trace_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_trace_log(const char * secion, const char * fmt, ...)
 {
 	if (_instance)
 	{
-		char log[500] = { 0 };
+		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
 		vsnprintf_s(log, sizeof(log), fmt, args);
@@ -163,7 +163,7 @@ void dk_log4cplus_logger::make_trace_log(const char * secion, const char * fmt, 
 /*
 void dk_log4cplus_logger::make_system_info_log(const char * secion, const char * fmt, ...)
 {
-	char log[500] = { 0 };
+	char log[4096] = { 0 };
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf_s(log, sizeof(log), fmt, args);
@@ -173,7 +173,7 @@ void dk_log4cplus_logger::make_system_info_log(const char * secion, const char *
 
 void dk_log4cplus_logger::make_system_trace_log(const char * secion, const char * fmt, ...)
 {
-	char log[500] = { 0 };
+	char log[4096] = { 0 };
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf_s(log, sizeof(log), fmt, args);
@@ -183,7 +183,7 @@ void dk_log4cplus_logger::make_system_trace_log(const char * secion, const char 
 
 void dk_log4cplus_logger::make_system_debug_log(const char * secion, const char * fmt, ...)
 {
-	char log[500] = { 0 };
+	char log[4096] = { 0 };
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf_s(log, sizeof(log), fmt, args);
@@ -193,7 +193,7 @@ void dk_log4cplus_logger::make_system_debug_log(const char * secion, const char 
 
 void dk_log4cplus_logger::make_system_warn_log(const char * secion, const char * fmt, ...)
 {
-	char log[500] = { 0 };
+	char log[4096] = { 0 };
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf_s(log, sizeof(log), fmt, args);
@@ -203,7 +203,7 @@ void dk_log4cplus_logger::make_system_warn_log(const char * secion, const char *
 
 void dk_log4cplus_logger::make_system_error_log(const char * secion, const char * fmt, ...)
 {
-	char log[500] = { 0 };
+	char log[4096] = { 0 };
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf_s(log, sizeof(log), fmt, args);
@@ -213,7 +213,7 @@ void dk_log4cplus_logger::make_system_error_log(const char * secion, const char 
 
 void dk_log4cplus_logger::make_system_fatal_log(const char * secion, const char * fmt, ...)
 {
-	char log[500] = { 0 };
+	char log[4096] = { 0 };
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf_s(log, sizeof(log), fmt, args);

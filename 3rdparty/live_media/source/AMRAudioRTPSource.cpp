@@ -23,6 +23,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "BitVector.hh"
 #include <string.h>
 #include <stdlib.h>
+#if defined(DEBUG)
+#include <dk_log4cplus_logger.h>
+#endif
 
 // This source is implemented internally by two separate sources:
 // (i) a RTP source for the raw (and possibly interleaved) AMR frames, and
@@ -254,7 +257,8 @@ Boolean RawAMRRTPSource
     ++resultSpecialHeaderSize;
   }
 #ifdef DEBUG
-  fprintf(stderr, "packetSize: %d, ILL: %d, ILP: %d\n", packetSize, fILL, fILP);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "packetSize: %d, ILL: %d, ILP: %d", packetSize, fILL, fILP);
+  //fprintf(stderr, "packetSize: %d, ILL: %d, ILP: %d\n", packetSize, fILL, fILP);
 #endif
   fFrameIndex = 0; // initially
 
@@ -269,13 +273,15 @@ Boolean RawAMRRTPSource
     unsigned char const FT = (tocByte&0x78) >> 3;
 #ifdef DEBUG
     unsigned char Q = (tocByte&0x04)>>2;
-    fprintf(stderr, "\tTOC entry: F %d, FT %d, Q %d\n", F, FT, Q);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "\tTOC entry: F %d, FT %d, Q %d", F, FT, Q);
+    //fprintf(stderr, "\tTOC entry: F %d, FT %d, Q %d\n", F, FT, Q);
 #endif
     ++numFramesPresent;
     if (FT != FT_SPEECH_LOST && FT != FT_NO_DATA) ++numNonEmptyFramesPresent;
   } while (F);
 #ifdef DEBUG
-  fprintf(stderr, "TOC contains %d entries (%d non-empty)\n", numFramesPresent, numNonEmptyFramesPresent);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "TOC contains %d entries (%d non-empty)", numFramesPresent, numNonEmptyFramesPresent);
+  //fprintf(stderr, "TOC contains %d entries (%d non-empty)\n", numFramesPresent, numNonEmptyFramesPresent);
 #endif
 
   // Now that we know the size of the TOC, fill in our copy:
@@ -294,12 +300,14 @@ Boolean RawAMRRTPSource
     // Note: we currently don't check the CRCs for validity #####
     resultSpecialHeaderSize += numNonEmptyFramesPresent;
 #ifdef DEBUG
-    fprintf(stderr, "Ignoring %d following CRC bytes\n", numNonEmptyFramesPresent);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "Ignoring %d following CRC bytes", numNonEmptyFramesPresent);
+    //fprintf(stderr, "Ignoring %d following CRC bytes\n", numNonEmptyFramesPresent);
 #endif
     if (resultSpecialHeaderSize > packetSize) return False;
   }
 #ifdef DEBUG
-  fprintf(stderr, "Total special header size: %d\n", resultSpecialHeaderSize);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "Total special header size: %d", resultSpecialHeaderSize);
+  //fprintf(stderr, "Total special header size: %d\n", resultSpecialHeaderSize);
 #endif
 
   return True;
@@ -359,7 +367,8 @@ unsigned AMRBufferedPacket::
     frameSize = 0; // This probably messes up the rest of this packet, but...
   }
 #ifdef DEBUG
-  fprintf(stderr, "AMRBufferedPacket::nextEnclosedFrameSize(): frame #: %d, FT: %d, isWideband: %d => frameSize: %d (dataSize: %d)\n", tocIndex, FT, fOurSource.isWideband(), frameSize, dataSize);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "AMRBufferedPacket::nextEnclosedFrameSize(): frame #: %d, FT: %d, isWideband: %d => frameSize: %d (dataSize: %d)", tocIndex, FT, fOurSource.isWideband(), frameSize, dataSize);
+  //fprintf(stderr, "AMRBufferedPacket::nextEnclosedFrameSize(): frame #: %d, FT: %d, isWideband: %d => frameSize: %d (dataSize: %d)\n", tocIndex, FT, fOurSource.isWideband(), frameSize, dataSize);
 #endif
   ++fOurSource.frameIndex();
 
@@ -535,7 +544,8 @@ void AMRDeinterleavingBuffer
   // (This is overkill, as the source should have already done this.)
   if (ILP > fILL || frameIndex == 0) {
 #ifdef DEBUG
-    fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame() param sanity check failed (%d,%d,%d,%d)\n", frameSize, fILL, ILP, frameIndex);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "AMRDeinterleavingBuffer::deliverIncomingFrame() param sanity check failed (%d,%d,%d,%d)", frameSize, fILL, ILP, frameIndex);
+    //fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame() param sanity check failed (%d,%d,%d,%d)\n", frameSize, fILL, ILP, frameIndex);
 #endif
     source->envir().internalError();
   }
@@ -563,7 +573,8 @@ void AMRDeinterleavingBuffer
       || seqNumLT(fLastPacketSeqNumForGroup, packetSeqNum + frameBlockIndex)) {
     // We've moved to a new interleave group
 #ifdef DEBUG
-    fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame(): new interleave group\n");
+	debuggerking::log4cplus_logger::make_debug_log("live555", "AMRDeinterleavingBuffer::deliverIncomingFrame(): new interleave group");
+    //fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame(): new interleave group\n");
 #endif
     fHaveSeenPackets = True;
     fLastPacketSeqNumForGroup = packetSeqNum + fILL - ILP;
@@ -581,7 +592,8 @@ void AMRDeinterleavingBuffer
     = ((ILP + frameBlockIndex*(fILL+1))*fNumChannels + frameWithinFrameBlock)
       % fMaxInterleaveGroupSize; // the % is for sanity
 #ifdef DEBUG
-  fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame(): frameIndex %d (%d,%d) put in bank %d, bin %d (%d): size %d, header 0x%02x, presentationTime %lu.%06ld\n", frameIndex, frameBlockIndex, frameWithinFrameBlock, fIncomingBankId, binNumber, fMaxInterleaveGroupSize, frameSize, frameHeader, presentationTime.tv_sec, presentationTime.tv_usec);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "AMRDeinterleavingBuffer::deliverIncomingFrame(): frameIndex %d (%d,%d) put in bank %d, bin %d (%d): size %d, header 0x%02x, presentationTime %lu.%06ld", frameIndex, frameBlockIndex, frameWithinFrameBlock, fIncomingBankId, binNumber, fMaxInterleaveGroupSize, frameSize, frameHeader, presentationTime.tv_sec, presentationTime.tv_usec);
+  //fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame(): frameIndex %d (%d,%d) put in bank %d, bin %d (%d): size %d, header 0x%02x, presentationTime %lu.%06ld\n", frameIndex, frameBlockIndex, frameWithinFrameBlock, fIncomingBankId, binNumber, fMaxInterleaveGroupSize, frameSize, frameHeader, presentationTime.tv_sec, presentationTime.tv_usec);
 #endif
   FrameDescriptor& inBin = fFrames[fIncomingBankId][binNumber];
   unsigned char* curBuffer = inBin.frameData;
@@ -652,7 +664,8 @@ Boolean AMRDeinterleavingBuffer
   }
   memmove(to, fromPtr, resultFrameSize);
 #ifdef DEBUG
-  fprintf(stderr, "AMRDeinterleavingBuffer::retrieveFrame(): from bank %d, bin %d: size %d, header 0x%02x, presentationTime %lu.%06ld\n", fIncomingBankId^1, fNextOutgoingBin, resultFrameSize, resultFrameHeader, resultPresentationTime.tv_sec, resultPresentationTime.tv_usec);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "AMRDeinterleavingBuffer::retrieveFrame(): from bank %d, bin %d: size %d, header 0x%02x, presentationTime %lu.%06ld", fIncomingBankId ^ 1, fNextOutgoingBin, resultFrameSize, resultFrameHeader, resultPresentationTime.tv_sec, resultPresentationTime.tv_usec);
+  //fprintf(stderr, "AMRDeinterleavingBuffer::retrieveFrame(): from bank %d, bin %d: size %d, header 0x%02x, presentationTime %lu.%06ld\n", fIncomingBankId^1, fNextOutgoingBin, resultFrameSize, resultFrameHeader, resultPresentationTime.tv_sec, resultPresentationTime.tv_usec);
 #endif
 
   ++fNextOutgoingBin;
@@ -727,7 +740,8 @@ static void unpackBandwidthEfficientData(BufferedPacket* packet,
 	      );
 #ifdef DEBUG
     if (frameSizeBits > fromBV.numBitsRemaining()) {
-      fprintf(stderr, "\tWarning: Unpacking frame %d of %d: want %d bits, but only %d are available!\n", i, tocSize, frameSizeBits, fromBV.numBitsRemaining());
+		debuggerking::log4cplus_logger::make_debug_log("live555", "\tWarning: Unpacking frame %d of %d: want %d bits, but only %d are available!", i, tocSize, frameSizeBits, fromBV.numBitsRemaining());
+      //fprintf(stderr, "\tWarning: Unpacking frame %d of %d: want %d bits, but only %d are available!\n", i, tocSize, frameSizeBits, fromBV.numBitsRemaining());
     }
 #endif
     fromBV.skipBits(frameSizeBits);
@@ -736,7 +750,8 @@ static void unpackBandwidthEfficientData(BufferedPacket* packet,
 
 #ifdef DEBUG
   if (fromBV.numBitsRemaining() > 7) {
-    fprintf(stderr, "\tWarning: %d bits remain unused!\n", fromBV.numBitsRemaining());
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "\tWarning: %d bits remain unused!", fromBV.numBitsRemaining());
+    //fprintf(stderr, "\tWarning: %d bits remain unused!\n", fromBV.numBitsRemaining());
   }
 #endif
 

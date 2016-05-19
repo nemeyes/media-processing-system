@@ -21,6 +21,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AMRAudioFileSource.hh"
 #include "InputFile.hh"
 #include "GroupsockHelper.hh"
+#ifdef DEBUG
+#include <dk_log4cplus_logger.h>
+#endif
 
 ////////// AMRAudioFileSource //////////
 
@@ -70,8 +73,8 @@ AMRAudioFileSource::createNew(UsageEnvironment& env, char const* fileName) {
     magicNumberOK = True;
 
 #ifdef DEBUG
-    fprintf(stderr, "isWideband: %d, numChannels: %d\n",
-	    isWideband, numChannels);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "isWideband: %d, numChannels: %d", isWideband, numChannels);
+    //fprintf(stderr, "isWideband: %d, numChannels: %d\n", isWideband, numChannels);
 #endif
     return new AMRAudioFileSource(env, fid, isWideband, numChannels);
   } while (0);
@@ -127,20 +130,22 @@ void AMRAudioFileSource::doGetNextFrame() {
     }
     if ((fLastFrameHeader&0x83) != 0) {
 #ifdef DEBUG
-      fprintf(stderr, "Invalid frame header 0x%02x (padding bits (0x83) are not zero)\n", fLastFrameHeader);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "Invalid frame header 0x%02x (padding bits (0x83) are not zero)", fLastFrameHeader);
+      //fprintf(stderr, "Invalid frame header 0x%02x (padding bits (0x83) are not zero)\n", fLastFrameHeader);
 #endif
     } else {
       unsigned char ft = (fLastFrameHeader&0x78)>>3;
       fFrameSize = fIsWideband ? frameSizeWideband[ft] : frameSize[ft];
       if (fFrameSize == FT_INVALID) {
 #ifdef DEBUG
-	fprintf(stderr, "Invalid FT field %d (from frame header 0x%02x)\n",
-		ft, fLastFrameHeader);
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "Invalid FT field %d (from frame header 0x%02x)", ft, fLastFrameHeader);
+	//fprintf(stderr, "Invalid FT field %d (from frame header 0x%02x)\n", ft, fLastFrameHeader);
 #endif
       } else {
 	// The frame header is OK
 #ifdef DEBUG
-	fprintf(stderr, "Valid frame header 0x%02x -> ft %d -> frame size %d\n", fLastFrameHeader, ft, fFrameSize);
+	   debuggerking::log4cplus_logger::make_debug_log("live555", "Valid frame header 0x%02x -> ft %d -> frame size %d", fLastFrameHeader, ft, fFrameSize);
+	//fprintf(stderr, "Valid frame header 0x%02x -> ft %d -> frame size %d\n", fLastFrameHeader, ft, fFrameSize);
 #endif
 	break;
       }

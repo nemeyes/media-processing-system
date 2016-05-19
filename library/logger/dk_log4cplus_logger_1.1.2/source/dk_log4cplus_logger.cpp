@@ -12,7 +12,7 @@
 #include "userenv.h"
 #include "wtsapi32.h"
 
-dk_log4cplus_logger::dk_log4cplus_logger(void)
+debuggerking::log4cplus_logger::log4cplus_logger(void)
 {
 	try
 	{
@@ -46,7 +46,7 @@ dk_log4cplus_logger::dk_log4cplus_logger(void)
 	}
 }
 
-dk_log4cplus_logger::~dk_log4cplus_logger(void)
+debuggerking::log4cplus_logger::~log4cplus_logger(void)
 {
 	if (_configure_thread)
 	{
@@ -55,7 +55,7 @@ dk_log4cplus_logger::~dk_log4cplus_logger(void)
 	}
 }
 
-void dk_log4cplus_logger::make_system_info_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_system_info_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
 	va_list args;
@@ -65,7 +65,7 @@ void dk_log4cplus_logger::make_system_info_log(const char * secion, const char *
 	LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
-void dk_log4cplus_logger::make_system_trace_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_system_trace_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
 	va_list args;
@@ -75,7 +75,7 @@ void dk_log4cplus_logger::make_system_trace_log(const char * secion, const char 
 	LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
-void dk_log4cplus_logger::make_system_debug_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_system_debug_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
 	va_list args;
@@ -85,7 +85,7 @@ void dk_log4cplus_logger::make_system_debug_log(const char * secion, const char 
 	LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
-void dk_log4cplus_logger::make_system_warn_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_system_warn_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
 	va_list args;
@@ -95,7 +95,7 @@ void dk_log4cplus_logger::make_system_warn_log(const char * secion, const char *
 	LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
-void dk_log4cplus_logger::make_system_error_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_system_error_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
 	va_list args;
@@ -105,7 +105,7 @@ void dk_log4cplus_logger::make_system_error_log(const char * secion, const char 
 	LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_STRING_TO_TSTRING(secion)), LOG4CPLUS_STRING_TO_TSTRING(log));
 }
 
-void dk_log4cplus_logger::make_system_fatal_log(const char * secion, const char * fmt, ...)
+void debuggerking::log4cplus_logger::make_system_fatal_log(const char * secion, const char * fmt, ...)
 {
 	char log[500] = { 0 };
 	va_list args;

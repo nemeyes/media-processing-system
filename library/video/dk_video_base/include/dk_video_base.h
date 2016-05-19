@@ -5,6 +5,10 @@
 
 #if defined(WIN32)
 #include <windows.h>
+#include <atlbase.h>
+#include <dxgi1_2.h>
+#include <dxgi1_3.h>
+#include <d3d11.h>
 #if defined(EXPORT_LIB)
 #define EXP_CLASS __declspec(dllexport)
 #else
@@ -82,7 +86,6 @@ namespace debuggerking
 				, flush(false)
 			{
 			}
-
 			_entity_t(const _entity_t & clone)
 			{
 				timestamp = clone.timestamp;
@@ -99,7 +102,6 @@ namespace debuggerking
 				gen_intra = clone.gen_intra;
 				flush = clone.flush;
 			}
-
 			_entity_t operator=(const _entity_t & clone)
 			{
 				timestamp = clone.timestamp;
@@ -117,10 +119,8 @@ namespace debuggerking
 				flush = clone.flush;
 				return (*this);
 			}
-
 			~_entity_t(void)
 			{
-
 			}
 		} entity_t;
 
@@ -143,7 +143,16 @@ namespace debuggerking
 		uint8_t * get_sps(size_t & sps_size);
 		uint8_t * get_pps(size_t & pps_size);
 
-		static const int next_nalu(uint8_t * bitstream, size_t size, int32_t * nal_start, int32_t * nal_end);
+#if 0
+		int32_t initialize_d3d11(ID3D11Device * d3d11_device, int32_t iwidth, int32_t iheight, int32_t ifps, int32_t owidth, int32_t oheight, int32_t ofps);
+		int32_t release_d3d11(void);
+
+		int32_t convert_d3d11_rgb32_to_nv12(ID3D11Texture2D * rgb32, ID3D11Texture2D * nv12, int32_t iwidth, int32_t iheight, int32_t owidth, int32_t oheight);
+#endif
+		int32_t convert_yv12pitch_to_nv12(uint8_t * src_y, uint8_t * src_u, uint8_t * src_v, uint8_t * dst_y, uint8_t * dst_u, int32_t width, int32_t height, uint32_t src_stride, uint32_t dst_stride);
+		int32_t convert_yv12pitch_to_yv12(uint8_t * src_y, uint8_t * src_u, uint8_t * src_v, uint8_t * dst_y, uint8_t * dst_u, int32_t width, int32_t height, uint32_t src_stride, uint32_t dst_stride);
+
+		static const int32_t next_nalu(uint8_t * bitstream, size_t size, int32_t * nal_start, int32_t * nal_end);
 
 	private:
 		configuration_t * _config;
@@ -165,6 +174,13 @@ namespace debuggerking
 		size_t _vps_size;
 		size_t _sps_size;
 		size_t _pps_size;
+
+#if 0
+		ATL::CComPtr<ID3D11VideoDevice> _d3d11_video_device;
+		ATL::CComPtr<ID3D11DeviceContext> _d3d11_device_context;
+		ATL::CComPtr<ID3D11VideoProcessorEnumerator> _d3d11_video_processor_enum;
+		ATL::CComPtr<ID3D11VideoProcessor> _d3d11_video_processor;
+#endif
 	};
 
 	class EXP_CLASS video_decoder : public video_base

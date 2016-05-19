@@ -20,6 +20,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "BasicUsageEnvironment.hh"
 #include <stdio.h>
 
+//by archientist
+#include <dk_log4cplus_logger.h>
+
 ////////// BasicUsageEnvironment //////////
 
 #if defined(__WIN32__) || defined(_WIN32)
@@ -54,27 +57,47 @@ int BasicUsageEnvironment::getErrno() const {
 }
 
 UsageEnvironment& BasicUsageEnvironment::operator<<(char const* str) {
-  if (str == NULL) str = "(NULL)"; // sanity check
-  fprintf(stderr, "%s", str);
-  return *this;
+	if (str == NULL) str = "(NULL)"; // sanity check
+#if defined(DEBUG)
+	debuggerking::log4cplus_logger::make_debug_log("live555", "%s", str);
+#else
+	fprintf(stderr, "%s", str);
+#endif
+	return *this;
 }
 
 UsageEnvironment& BasicUsageEnvironment::operator<<(int i) {
-  fprintf(stderr, "%d", i);
-  return *this;
+#if defined(DEBUG)
+	debuggerking::log4cplus_logger::make_debug_log("live555", "%d", i);
+#else
+	fprintf(stderr, "%d", i);
+#endif
+	return *this;
 }
 
 UsageEnvironment& BasicUsageEnvironment::operator<<(unsigned u) {
-  fprintf(stderr, "%u", u);
-  return *this;
+#if defined(DEBUG)
+	debuggerking::log4cplus_logger::make_debug_log("live555", "%u", u);
+#else
+	fprintf(stderr, "%u", u);
+#endif
+	return *this;
 }
 
 UsageEnvironment& BasicUsageEnvironment::operator<<(double d) {
-  fprintf(stderr, "%f", d);
-  return *this;
+#if defined(DEBUG)
+	debuggerking::log4cplus_logger::make_debug_log("live555", "%f", d);
+#else
+	fprintf(stderr, "%f", d);
+#endif
+	return *this;
 }
 
 UsageEnvironment& BasicUsageEnvironment::operator<<(void* p) {
-  fprintf(stderr, "%p", p);
-  return *this;
+#if defined(DEBUG)
+	debuggerking::log4cplus_logger::make_debug_log("live555", "%p", p);
+#else
+	fprintf(stderr, "%p", p);
+#endif
+	return *this;
 }

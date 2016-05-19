@@ -101,7 +101,7 @@ void debuggerking::live_rtsp_core::set_user_agent_string(const char * user_agent
 void debuggerking::live_rtsp_core::continue_after_client_creation(RTSPClient * param)
 {
 	live_rtsp_core * self = static_cast<live_rtsp_core*>(param);
-    self->set_user_agent_string("Debuger King ICT");
+    self->set_user_agent_string("DebuggerKing ICT");
     self->get_options(continue_after_options);
 }
 

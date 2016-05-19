@@ -44,7 +44,7 @@ BOOL CALLBACK fullwnd_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 
 int PRMC_Initialize(HWND hwnd)
 {
-	dk_log4cplus_logger::create("config\\log.properties");
+	debuggerking::log4cplus_logger::create("config\\log.properties");
 
 	::InitializeCriticalSection(&g_lock);
 	::InitializeCriticalSection(&g_rtsp_source_lock);
@@ -63,7 +63,7 @@ int PRMC_Release(void)
 {
 	::DeleteCriticalSection(&g_rtsp_source_lock);
 	::DeleteCriticalSection(&g_lock);
-	dk_log4cplus_logger::destroy();
+	debuggerking::log4cplus_logger::destroy();
 	return PRMC_SUCCESS;
 }
 

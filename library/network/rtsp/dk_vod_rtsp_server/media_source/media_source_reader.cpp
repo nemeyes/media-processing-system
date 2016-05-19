@@ -16,7 +16,7 @@
 #if defined(WITH_RECORD_SERVER)
 debuggerking::media_source_reader::media_source_reader(void)
 	: _scale(1.f)
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	, _video_thread(INVALID_HANDLE_VALUE)
 	, _video_run(false)
@@ -26,7 +26,7 @@ debuggerking::media_source_reader::media_source_reader(void)
 #endif
 #endif
 {
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	_video_buffer_size = VIDEO_BUFFER_SIZE;
 	_video_buffer = static_cast<uint8_t*>(malloc(_video_buffer_size));
@@ -43,7 +43,7 @@ debuggerking::media_source_reader::~media_source_reader(void)
 {
 	close();
 
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	video_buffer_t * vbuffer = _video_root->next;
 	while (vbuffer)
@@ -106,7 +106,7 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 			long long elapsed_seek_time_millsec = elapsed_seek_time.total_milliseconds();
 
 			char time[260] = { 0 };
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
 			bool result = _record_module.seek(single_media_source_path, elapsed_seek_time_millsec);
 			if (!result)
@@ -141,7 +141,7 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 	vsmt = _vsmt;
 	asmt = _asmt;
 
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	unsigned thrd_addr = 0;
 	_video_thread = (HANDLE)::_beginthreadex(NULL, 0, &media_source_reader::video_process_callback, this, 0, &thrd_addr);
@@ -152,10 +152,11 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 
 bool debuggerking::media_source_reader::close(void)
 {
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
-	if (_video_thread && _video_thread != INVALID_HANDLE_VALUE)
+	if (_video_run && _video_thread && _video_thread != INVALID_HANDLE_VALUE)
 	{
+		_video_run = false;
 		::WaitForSingleObject(_video_thread, INFINITE);
 		::CloseHandle(_video_thread);
 		_video_thread = INVALID_HANDLE_VALUE;
@@ -167,17 +168,18 @@ bool debuggerking::media_source_reader::close(void)
 
 bool debuggerking::media_source_reader::read(int32_t mt, uint8_t * data, size_t data_capacity, size_t & data_size, long long & interval, long long & timestamp)
 {
+	data_size = 0;
 	interval = 0;
 	timestamp = 0;
 	if (mt == media_source_reader::media_type_t::video)
 	{
 		if (_vsmt == media_source_reader::video_submedia_type_t::h264)
 		{
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 			uint8_t nalu_type = recorder_module::nalu_type_t::none;
 			int32_t status = pop_video(data, data_size, nalu_type, interval, timestamp);
-			if(status != media_source_reader::err_code_t::success)
+			if (status != media_source_reader::err_code_t::success)
 				return false;
 #else
 			_record_module.read(data, data_size, interval, timestamp);
@@ -196,7 +198,7 @@ bool debuggerking::media_source_reader::read(int32_t mt, uint8_t * data, size_t 
 
 const uint8_t * debuggerking::media_source_reader::get_sps(size_t & sps_size)
 {
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 	return _record_module.get_sps(sps_size);
 #else
 	return _record_module_seeker.get_sps(sps_size);
@@ -205,14 +207,14 @@ const uint8_t * debuggerking::media_source_reader::get_sps(size_t & sps_size)
 
 const uint8_t * debuggerking::media_source_reader::get_pps(size_t & pps_size)
 {
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 	return _record_module.get_pps(pps_size);
 #else
 	return _record_module_seeker.get_pps(pps_size);
 #endif
 }
 
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 int32_t debuggerking::media_source_reader::push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long interval, long long timestamp)
 {
@@ -249,6 +251,10 @@ int32_t debuggerking::media_source_reader::push_video(uint8_t * bs, size_t size,
 			vbuffer = nullptr;
 			status = media_source_reader::err_code_t::fail;
 		}
+		else
+		{
+			_video_queue_count++;
+		}
 	}
 	return status;
 }
@@ -259,7 +265,7 @@ int32_t debuggerking::media_source_reader::pop_video(uint8_t * bs, size_t & size
 	size = 0;
 	dk_auto_lock lock(&_video_mutex);
 	video_buffer_t * vbuffer = _video_root->next;
-	if (vbuffer)
+	if (vbuffer && _video_queue_count>0)
 	{
 		video_buffer_t * next = vbuffer->next;
 		video_buffer_t * prev = vbuffer->prev;
@@ -274,7 +280,6 @@ int32_t debuggerking::media_source_reader::pop_video(uint8_t * bs, size_t & size
 			nalu_type = vbuffer->nalu_type;
 			interval = vbuffer->interval;
 			timestamp = vbuffer->timestamp;
-			_video_queue_count--;
 		}
 		free(vbuffer);
 		if (next)
@@ -287,6 +292,11 @@ int32_t debuggerking::media_source_reader::pop_video(uint8_t * bs, size_t & size
 		{
 			_video_root->next = nullptr;
 		}
+		_video_queue_count--;
+	}
+	else
+	{
+		status = media_source_reader::err_code_t::fail;
 	}
 	return status;
 }
@@ -310,6 +320,7 @@ unsigned debuggerking::media_source_reader::video_process_callback(void * param)
 
 void debuggerking::media_source_reader::video_process(void)
 {
+	long long prev_interval = int64_max;
 	_video_run = true;
 	while (_video_run)
 	{
@@ -321,18 +332,34 @@ void debuggerking::media_source_reader::video_process(void)
 			_record_module.read(_video_buffer, video_buffer_size, interval, timestamp);
 
 			uint8_t nalu_type = recorder_module::nalu_type_t::none;
-			if ((_video_buffer[4] & 0x1F) == 0x07)
+			if ((_video_buffer[0] & 0x1F) == 0x07)
 				nalu_type = recorder_module::nalu_type_t::sps;
-			else if ((_video_buffer[4] & 0x1F) == 0x08)
+			else if ((_video_buffer[0] & 0x1F) == 0x08)
 				nalu_type = recorder_module::nalu_type_t::pps;
-			else if ((_video_buffer[4] & 0x1F) == 0x05)
+			else if ((_video_buffer[0] & 0x1F) == 0x05)
 				nalu_type = recorder_module::nalu_type_t::idr;
 			else
 				nalu_type = recorder_module::nalu_type_t::vcl;
 
-			int32_t status = push_video(_video_buffer, video_buffer_size, nalu_type, interval, timestamp);
-			if (status == media_source_reader::err_code_t::success)
-				_video_queue_count++;
+			if (prev_interval > 0)
+			{
+				uint8_t sei[27] = { 0x06, 0x05, 0x08, 0xbc, 0x97, 0xb8, 0x4d, 0x96, 0x9f, 0x48, 0xb9, 0xbc, 0xe4, 0x7c, 0x1c, 0x1a, 0x39, 0x2f, 0x37, 00, 00, 00, 00, 00, 00, 00, 00 };
+				memcpy(&sei[19], &timestamp, sizeof(timestamp));
+				int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
+				recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
+				//sei[19] = (timestamp & 0xFF00000000000000) >> 56;
+				//sei[20] = (timestamp & 0x00FF000000000000) >> 48;
+				//sei[21] = (timestamp & 0x0000FF0000000000) >> 40;
+				//sei[22] = (timestamp & 0x000000FF00000000) >> 32;
+				//sei[23] = (timestamp & 0x00000000FF000000) >> 24;
+				//sei[24] = (timestamp & 0x0000000000FF0000) >> 16;
+				//sei[25] = (timestamp & 0x000000000000FF00) >> 8;
+				//sei[26] = (timestamp & 0x00000000000000FF);
+				push_video((uint8_t*)sei, sizeof(sei), recorder_module::nalu_type_t::sei, 0, timestamp);
+			}
+
+			push_video(_video_buffer, video_buffer_size, nalu_type, interval, timestamp);
+			prev_interval = interval;
 		}
 		::Sleep(10);
 	}
@@ -340,7 +367,7 @@ void debuggerking::media_source_reader::video_process(void)
 #endif
 #endif
 
-#if !defined(WITH_RECORD_MODULE)
+#if !defined(WITH_RECORDER_MODULE)
 void media_source_reader::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
 {
 	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);

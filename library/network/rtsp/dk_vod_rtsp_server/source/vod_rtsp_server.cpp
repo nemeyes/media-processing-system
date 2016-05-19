@@ -46,7 +46,7 @@ ServerMediaSession * debuggerking::vod_rtsp_core::lookupServerMediaSession(char 
 
 #define NEW_SMS(description) do {\
 								char const* descStr = description\
-								", streamed by the DebugerKing Media Server";\
+								", streamed by the DebuggerKing Media Server";\
 								sms = ServerMediaSession::createNew(env, stream_name, stream_name, descStr);\
 							} while(0)
 

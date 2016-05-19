@@ -24,6 +24,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <GroupsockHelper.hh>
 #include <stdio.h>
 
+#if defined(DEBUG)
+#include <dk_log4cplus_logger.h>
+#endif
+
 ////////// Helper Functions - Definition //////////
 
 // Helper routines and data structures, used to implement
@@ -311,8 +315,11 @@ void RTPInterface::stopNetworkReading() {
 Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned packetSize,
 						 int socketNum, unsigned char streamChannelId) {
 #ifdef DEBUG_SEND
-  fprintf(stderr, "sendRTPorRTCPPacketOverTCP: %d bytes over channel %d (socket %d)\n",
-	  packetSize, streamChannelId, socketNum); fflush(stderr);
+#if defined(DEBUG)
+	debuggerking::log4cplus_logger::make_debug_log("live555", "sendRTPorRTCPPacketOverTCP: %d bytes over channel %d (socket %d)", packetSize, streamChannelId, socketNum);
+#else
+	fprintf(stderr, "sendRTPorRTCPPacketOverTCP: %d bytes over channel %d (socket %d)\n", packetSize, streamChannelId, socketNum); fflush(stderr);
+#endif
 #endif
   // Send a RTP/RTCP packet over TCP, using the encoding defined in RFC 2326, section 10.12:
   //     $<streamChannelId><packetSize><packet>
@@ -329,14 +336,22 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
 
     if (!sendDataOverTCP(socketNum, packet, packetSize, True)) break;
 #ifdef DEBUG_SEND
+#if defined(DEBUG)
+	debuggerking::log4cplus_logger::make_debug_log("live555", "sendRTPorRTCPPacketOverTCP: completed");
+#else
     fprintf(stderr, "sendRTPorRTCPPacketOverTCP: completed\n"); fflush(stderr);
+#endif
 #endif
 
     return True;
   } while (0);
 
 #ifdef DEBUG_SEND
+#if defined(DEBUG)
+  debuggerking::log4cplus_logger::make_debug_log("live555", "sendRTPorRTCPPacketOverTCP: failed! (errno %d)", envir().getErrno());
+#else
   fprintf(stderr, "sendRTPorRTCPPacketOverTCP: failed! (errno %d)\n", envir().getErrno()); fflush(stderr);
+#endif
 #endif
   return False;
 }
@@ -469,8 +484,12 @@ SocketDescriptor::~SocketDescriptor() {
 void SocketDescriptor::registerRTPInterface(unsigned char streamChannelId,
 					    RTPInterface* rtpInterface) {
   Boolean isFirstRegistration = fSubChannelHashTable->IsEmpty();
-#if defined(DEBUG_SEND)||defined(DEBUG_RECEIVE)
+#if defined(DEBUG_SEND)|| defined(DEBUG_RECEIVE)
+#if defined(DEBUG)
+  debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::registerRTPInterface(channel %d): isFirstRegistration %d", fOurSocketNum, streamChannelId, isFirstRegistration);
+#else
   fprintf(stderr, "SocketDescriptor(socket %d)::registerRTPInterface(channel %d): isFirstRegistration %d\n", fOurSocketNum, streamChannelId, isFirstRegistration);
+#endif
 #endif
   fSubChannelHashTable->Add((char const*)(long)streamChannelId,
 			    rtpInterface);
@@ -493,7 +512,11 @@ RTPInterface* SocketDescriptor
 void SocketDescriptor
 ::deregisterRTPInterface(unsigned char streamChannelId) {
 #if defined(DEBUG_SEND)||defined(DEBUG_RECEIVE)
+#if defined(DEBUG)
+  debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::deregisterRTPInterface(channel %d)\n", fOurSocketNum, streamChannelId);
+#else
   fprintf(stderr, "SocketDescriptor(socket %d)::deregisterRTPInterface(channel %d)\n", fOurSocketNum, streamChannelId);
+#endif
 #endif
   fSubChannelHashTable->Remove((char const*)(long)streamChannelId);
 
@@ -533,7 +556,11 @@ Boolean SocketDescriptor::tcpReadHandler1(int mask) {
       return False;
     } else if (result != 1) { // error reading TCP socket, so we will no longer handle it
 #ifdef DEBUG_RECEIVE
+#if defined(DEBUG)
+		debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::tcpReadHandler(): readSocket(1 byte) returned %d (error)", fOurSocketNum, result);
+#else
       fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): readSocket(1 byte) returned %d (error)\n", fOurSocketNum, result);
+#endif
 #endif
       fReadErrorOccurred = True;
       fDeleteMyselfNext = True;
@@ -546,7 +573,11 @@ Boolean SocketDescriptor::tcpReadHandler1(int mask) {
     case AWAITING_DOLLAR: {
       if (c == '$') {
 #ifdef DEBUG_RECEIVE
+#if defined(DEBUG)
+		  debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::tcpReadHandler(): Saw '$'", fOurSocketNum);
+#else
 	fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): Saw '$'\n", fOurSocketNum);
+#endif
 #endif
 	fTCPReadingState = AWAITING_STREAM_CHANNEL_ID;
       } else {
@@ -566,7 +597,11 @@ Boolean SocketDescriptor::tcpReadHandler1(int mask) {
       } else {
 	// This wasn't a stream channel id that we expected.  We're (somehow) in a strange state.  Try to recover:
 #ifdef DEBUG_RECEIVE
+#if defined(DEBUG)
+		  debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::tcpReadHandler(): Saw nonexistent stream channel id: 0x%02x", fOurSocketNum, c);
+#else
 	fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): Saw nonexistent stream channel id: 0x%02x\n", fOurSocketNum, c);
+#endif
 #endif
 	fTCPReadingState = AWAITING_DOLLAR;
       }
@@ -604,18 +639,30 @@ Boolean SocketDescriptor::tcpReadHandler1(int mask) {
 	}
 	if (rtpInterface->fReadHandlerProc != NULL) {
 #ifdef DEBUG_RECEIVE
+#if defined(DEBUG)
+		debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::tcpReadHandler(): reading %d bytes on channel %d", fOurSocketNum, rtpInterface->fNextTCPReadSize, rtpInterface->fNextTCPReadStreamChannelId);
+#else
 	  fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): reading %d bytes on channel %d\n", fOurSocketNum, rtpInterface->fNextTCPReadSize, rtpInterface->fNextTCPReadStreamChannelId);
+#endif
 #endif
 	  fTCPReadingState = AWAITING_PACKET_DATA;
 	  rtpInterface->fReadHandlerProc(rtpInterface->fOwner, mask);
 	} else {
 #ifdef DEBUG_RECEIVE
+#if defined(DEBUG)
+		debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::tcpReadHandler(): No handler proc for \"rtpInterface\" for channel %d; need to skip %d remaining bytes", fOurSocketNum, fStreamChannelId, rtpInterface->fNextTCPReadSize);
+#else
 	  fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): No handler proc for \"rtpInterface\" for channel %d; need to skip %d remaining bytes\n", fOurSocketNum, fStreamChannelId, rtpInterface->fNextTCPReadSize);
+#endif
 #endif
 	  int result = readSocket(fEnv, fOurSocketNum, &c, 1, fromAddress);
 	  if (result < 0) { // error reading TCP socket, so we will no longer handle it
 #ifdef DEBUG_RECEIVE
+#if defined(DEBUG)
+		  debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::tcpReadHandler(): readSocket(1 byte) returned %d (error)", fOurSocketNum, result);
+#else
 	    fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): readSocket(1 byte) returned %d (error)\n", fOurSocketNum, result);
+#endif
 #endif
 	    fReadErrorOccurred = True;
 	    fDeleteMyselfNext = True;
@@ -630,7 +677,11 @@ Boolean SocketDescriptor::tcpReadHandler1(int mask) {
 	}
       }
 #ifdef DEBUG_RECEIVE
+#if defined(DEBUG)
+	  else debuggerking::log4cplus_logger::make_debug_log("live555", "SocketDescriptor(socket %d)::tcpReadHandler(): No \"rtpInterface\" for channel %d", fOurSocketNum, fStreamChannelId);
+#else
       else fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): No \"rtpInterface\" for channel %d\n", fOurSocketNum, fStreamChannelId);
+#endif
 #endif
     }
   }

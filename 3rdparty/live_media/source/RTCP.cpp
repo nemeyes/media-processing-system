@@ -25,6 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define snprintf _snprintf
 #endif
 
+#if defined(DEBUG)
+#include <dk_log4cplus_logger.h>
+#endif
+
 ////////// RTCPMemberDatabase //////////
 
 class RTCPMemberDatabase {
@@ -88,7 +92,8 @@ void RTCPMemberDatabase::reapOldMembers(unsigned threshold) {
     char const* key;
     while ((timeCount = (uintptr_t)(iter->next(key))) != 0) {
 #ifdef DEBUG
-      fprintf(stderr, "reap: checking SSRC 0x%lx: %ld (threshold %d)\n", (unsigned long)key, timeCount, threshold);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "reap: checking SSRC 0x%lx: %ld (threshold %d)", (unsigned long)key, timeCount, threshold);
+      //fprintf(stderr, "reap: checking SSRC 0x%lx: %ld (threshold %d)\n", (unsigned long)key, timeCount, threshold);
 #endif
       if (timeCount < (uintptr_t)threshold) { // this SSRC is old
         uintptr_t ssrc = (uintptr_t)key;
@@ -100,7 +105,8 @@ void RTCPMemberDatabase::reapOldMembers(unsigned threshold) {
 
     if (foundOldMember) {
 #ifdef DEBUG
-        fprintf(stderr, "reap: removing SSRC 0x%x\n", oldSSRC);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "reap: removing SSRC 0x%x\n", oldSSRC);
+        //fprintf(stderr, "reap: removing SSRC 0x%x\n", oldSSRC);
 #endif
       fOurRTCPInstance.removeSSRC(oldSSRC, True);
     }
@@ -138,7 +144,8 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
     fSpecificRRHandlerTable(NULL),
     fAppHandlerTask(NULL), fAppHandlerClientData(NULL) {
 #ifdef DEBUG
-  fprintf(stderr, "RTCPInstance[%p]::RTCPInstance()\n", this);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "RTCPInstance[%p]::RTCPInstance()", this);
+  //fprintf(stderr, "RTCPInstance[%p]::RTCPInstance()\n", this);
 #endif
   if (fTotSessionBW == 0) { // not allowed!
     env << "RTCPInstance::RTCPInstance error: totSessionBW parameter should not be zero!\n";
@@ -181,7 +188,8 @@ struct RRHandlerRecord {
 
 RTCPInstance::~RTCPInstance() {
 #ifdef DEBUG
-  fprintf(stderr, "RTCPInstance[%p]::~RTCPInstance()\n", this);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "RTCPInstance[%p]::~RTCPInstance()", this);
+  //fprintf(stderr, "RTCPInstance[%p]::~RTCPInstance()\n", this);
 #endif
   if (fSource != NULL) fSource->deregisterForMultiplexedRTCPPackets();
 
@@ -511,7 +519,8 @@ void RTCPInstance
     if ((rtcpHdr & 0xE0FE0000) != (0x80000000 | (RTCP_PT_SR<<16)) &&
 	(rtcpHdr & 0xE0FF0000) != (0x80000000 | (RTCP_PT_APP<<16))) {
 #ifdef DEBUG
-      fprintf(stderr, "rejected bad RTCP packet: header 0x%08x\n", rtcpHdr);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "rejected bad RTCP packet: header 0x%08x\n", rtcpHdr);
+      //fprintf(stderr, "rejected bad RTCP packet: header 0x%08x\n", rtcpHdr);
 #endif
       break;
     }
@@ -536,7 +545,8 @@ void RTCPInstance
       switch (pt) {
         case RTCP_PT_SR: {
 #ifdef DEBUG
-	  fprintf(stderr, "SR\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "SR");
+	  //fprintf(stderr, "SR\n");
 #endif
 	  if (length < 20) break; length -= 20;
 
@@ -559,7 +569,8 @@ void RTCPInstance
 	}
         case RTCP_PT_RR: {
 #ifdef DEBUG
-	  fprintf(stderr, "RR\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "RR");
+	  //fprintf(stderr, "RR\n");
 #endif
 	  unsigned reportBlocksSize = rc*(6*4);
 	  if (length < reportBlocksSize) break;
@@ -599,7 +610,8 @@ void RTCPInstance
 	}
         case RTCP_PT_BYE: {
 #ifdef DEBUG
-	  fprintf(stderr, "BYE\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "BYE");
+	  //fprintf(stderr, "BYE\n");
 #endif
 	  // If a 'BYE handler' was set, arrange for it to be called at the end of this routine.
 	  // (Note: We don't call it immediately, in case it happens to cause "this" to be deleted.)
@@ -621,21 +633,25 @@ void RTCPInstance
         case RTCP_PT_APP: {
 	  u_int8_t& subtype = rc; // In "APP" packets, the "rc" field gets used as "subtype"
 #ifdef DEBUG
-	  fprintf(stderr, "APP (subtype 0x%02x)\n", subtype);
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "APP (subtype 0x%02x)", subtype);
+	  //fprintf(stderr, "APP (subtype 0x%02x)\n", subtype);
 #endif
 	  if (length < 4) {
 #ifdef DEBUG
-	    fprintf(stderr, "\tError: No \"name\" field!\n");
+		  debuggerking::log4cplus_logger::make_debug_log("live555", "\tError: No \"name\" field!");
+	    //fprintf(stderr, "\tError: No \"name\" field!\n");
 #endif
 	    break;
 	  }
 #ifdef DEBUG
-	  fprintf(stderr, "\tname:%c%c%c%c\n", pkt[0], pkt[1], pkt[2], pkt[3]);
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "\tname:%c%c%c%c", pkt[0], pkt[1], pkt[2], pkt[3]);
+	  //fprintf(stderr, "\tname:%c%c%c%c\n", pkt[0], pkt[1], pkt[2], pkt[3]);
 #endif
 	  u_int32_t nameBytes = (pkt[0]<<24)|(pkt[1]<<16)|(pkt[2]<<8)|(pkt[3]);
 	  ADVANCE(4); // skip over "name", to the 'application-dependent data'
 #ifdef DEBUG
-	  fprintf(stderr, "\tapplication-dependent data size: %d bytes\n", length);
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "\tapplication-dependent data size: %d bytes", length);
+	  //fprintf(stderr, "\tapplication-dependent data size: %d bytes\n", length);
 #endif
 
 	  // If an 'APP' packet handler was set, call it now:
@@ -650,7 +666,8 @@ void RTCPInstance
         case RTCP_PT_SDES: {
 #ifdef DEBUG
 	  // 'Handle' SDES packets only in debugging code, by printing out the 'SDES items':
-	  fprintf(stderr, "SDES\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "SDES");
+	  //fprintf(stderr, "SDES\n");
 
 	  // Process each 'chunk':
 	  Boolean chunkOK = False;
@@ -659,7 +676,8 @@ void RTCPInstance
 	    chunkOK = False; // until we learn otherwise
 
 	    u_int32_t SSRC_CSRC = ntohl(*(u_int32_t*)pkt); ADVANCE(4); length -= 4;
-	    fprintf(stderr, "\tSSRC/CSRC: 0x%08x\n", SSRC_CSRC);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "\tSSRC/CSRC: 0x%08x", SSRC_CSRC);
+	    //fprintf(stderr, "\tSSRC/CSRC: 0x%08x\n", SSRC_CSRC);
 
 	    // Process each 'SDES item' in the chunk:
 	    u_int8_t itemType = *pkt; ADVANCE(1); --length;
@@ -700,14 +718,16 @@ void RTCPInstance
 	}
         case RTCP_PT_RTPFB: {
 #ifdef DEBUG
-	  fprintf(stderr, "RTPFB(unhandled)\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "RTPFB(unhandled)");
+	  //fprintf(stderr, "RTPFB(unhandled)\n");
 #endif
 	  subPacketOK = True;
 	  break;
 	}
         case RTCP_PT_PSFB: {
 #ifdef DEBUG
-	  fprintf(stderr, "PSFB(unhandled)\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "PSFB(unhandled)");
+	  //fprintf(stderr, "PSFB(unhandled)\n");
 	  // Temporary code to show "Receiver Estimated Maximum Bitrate" (REMB) feedback reports:
 	  //#####
 	  if (length >= 12 && pkt[4] == 'R' && pkt[5] == 'E' && pkt[6] == 'M' && pkt[7] == 'B') {
@@ -718,7 +738,8 @@ void RTCPInstance
 	      remb *= 2.0;
 	      exp /= 2;
 	    }
-	    fprintf(stderr, "\tReceiver Estimated Max Bitrate (REMB): %g bps\n", remb);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "\tReceiver Estimated Max Bitrate (REMB): %g bps", remb);
+	    //fprintf(stderr, "\tReceiver Estimated Max Bitrate (REMB): %g bps\n", remb);
 	  }
 #endif
 	  subPacketOK = True;
@@ -726,42 +747,48 @@ void RTCPInstance
 	}
         case RTCP_PT_XR: {
 #ifdef DEBUG
-	  fprintf(stderr, "XR(unhandled)\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "XR(unhandled)");
+	  //fprintf(stderr, "XR(unhandled)\n");
 #endif
 	  subPacketOK = True;
 	  break;
 	}
         case RTCP_PT_AVB: {
 #ifdef DEBUG
-	  fprintf(stderr, "AVB(unhandled)\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "AVB(unhandled)");
+	  //fprintf(stderr, "AVB(unhandled)\n");
 #endif
 	  subPacketOK = True;
 	  break;
 	}
         case RTCP_PT_RSI: {
 #ifdef DEBUG
-	  fprintf(stderr, "RSI(unhandled)\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "RSI(unhandled)");
+	  //fprintf(stderr, "RSI(unhandled)\n");
 #endif
 	  subPacketOK = True;
 	  break;
 	}
         case RTCP_PT_TOKEN: {
 #ifdef DEBUG
-	  fprintf(stderr, "TOKEN(unhandled)\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "TOKEN(unhandled)");
+	  //fprintf(stderr, "TOKEN(unhandled)\n");
 #endif
 	  subPacketOK = True;
 	  break;
 	}
         case RTCP_PT_IDMS: {
 #ifdef DEBUG
-	  fprintf(stderr, "IDMS(unhandled)\n");
+		debuggerking::log4cplus_logger::make_debug_log("live555", "IDMS(unhandled)");
+	  //fprintf(stderr, "IDMS(unhandled)\n");
 #endif
 	  subPacketOK = True;
 	  break;
 	}
         default: {
 #ifdef DEBUG
-	  fprintf(stderr, "UNKNOWN TYPE(0x%x)\n", pt);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "UNKNOWN TYPE(0x%x)", pt);
+	  //fprintf(stderr, "UNKNOWN TYPE(0x%x)\n", pt);
 #endif
 	  subPacketOK = True;
 	  break;
@@ -772,7 +799,8 @@ void RTCPInstance
       // need to check for (& handle) SSRC collision! #####
 
 #ifdef DEBUG
-      fprintf(stderr, "validated RTCP subpacket: rc:%d, pt:%d, bytes remaining:%d, report sender SSRC:0x%08x\n", rc, pt, length, reportSenderSSRC);
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "validated RTCP subpacket: rc:%d, pt:%d, bytes remaining:%d, report sender SSRC:0x%08x", rc, pt, length, reportSenderSSRC);
+      //fprintf(stderr, "validated RTCP subpacket: rc:%d, pt:%d, bytes remaining:%d, report sender SSRC:0x%08x\n", rc, pt, length, reportSenderSSRC);
 #endif
 
       // Skip over any remaining bytes in this subpacket:
@@ -784,14 +812,16 @@ void RTCPInstance
 	break;
       } else if (packetSize < 4) {
 #ifdef DEBUG
-	fprintf(stderr, "extraneous %d bytes at end of RTCP packet!\n", packetSize);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "extraneous %d bytes at end of RTCP packet!", packetSize);
+	//fprintf(stderr, "extraneous %d bytes at end of RTCP packet!\n", packetSize);
 #endif
 	break;
       }
       rtcpHdr = ntohl(*(u_int32_t*)pkt);
       if ((rtcpHdr & 0xC0000000) != 0x80000000) {
 #ifdef DEBUG
-	fprintf(stderr, "bad RTCP subpacket: header 0x%08x\n", rtcpHdr);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "bad RTCP subpacket: header 0x%08x", rtcpHdr);
+	//fprintf(stderr, "bad RTCP subpacket: header 0x%08x\n", rtcpHdr);
 #endif
 	break;
       }
@@ -799,12 +829,14 @@ void RTCPInstance
 
     if (!packetOK) {
 #ifdef DEBUG
-      fprintf(stderr, "rejected bad RTCP subpacket: header 0x%08x\n", rtcpHdr);
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "rejected bad RTCP subpacket: header 0x%08x", rtcpHdr);
+      //fprintf(stderr, "rejected bad RTCP subpacket: header 0x%08x\n", rtcpHdr);
 #endif
       break;
     } else {
 #ifdef DEBUG
-      fprintf(stderr, "validated entire RTCP packet\n");
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "validated entire RTCP packet");
+      //fprintf(stderr, "validated entire RTCP packet\n");
 #endif
     }
 
@@ -841,7 +873,8 @@ void RTCPInstance::onReceive(int typeOfPacket, int totPacketSize,
 
 void RTCPInstance::sendReport() {
 #ifdef DEBUG
-  fprintf(stderr, "sending REPORT\n");
+	debuggerking::log4cplus_logger::make_debug_log("live555", "sending REPORT");
+  //fprintf(stderr, "sending REPORT\n");
 #endif
   // Begin by including a SR and/or RR report:
   if (!addReport()) return;
@@ -862,7 +895,8 @@ void RTCPInstance::sendReport() {
 
 void RTCPInstance::sendBYE() {
 #ifdef DEBUG
-  fprintf(stderr, "sending BYE\n");
+	debuggerking::log4cplus_logger::make_debug_log("live555", "sending BYE");
+  //fprintf(stderr, "sending BYE\n");
 #endif
   // The packet must begin with a SR and/or RR report:
   (void)addReport(True);
@@ -873,7 +907,8 @@ void RTCPInstance::sendBYE() {
 
 void RTCPInstance::sendBuiltPacket() {
 #ifdef DEBUG
-  fprintf(stderr, "sending RTCP packet\n");
+	debuggerking::log4cplus_logger::make_debug_log("live555", "sending RTCP packet");
+  //fprintf(stderr, "sending RTCP packet\n");
   unsigned char* p = fOutBuf->packet();
   for (unsigned i = 0; i < fOutBuf->curPacketSize(); ++i) {
     if (i%4 == 0) fprintf(stderr," ");
@@ -1125,7 +1160,8 @@ void RTCPInstance::schedule(double nextTime) {
   double secondsToDelay = nextTime - dTimeNow();
   if (secondsToDelay < 0) secondsToDelay = 0;
 #ifdef DEBUG
-  fprintf(stderr, "schedule(%f->%f)\n", secondsToDelay, nextTime);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "schedule(%f->%f)", secondsToDelay, nextTime);
+  //fprintf(stderr, "schedule(%f->%f)\n", secondsToDelay, nextTime);
 #endif
   int64_t usToGo = (int64_t)(secondsToDelay * 1000000);
   nextTask() = envir().taskScheduler().scheduleDelayedTask(usToGo,

@@ -9,15 +9,26 @@
 #include <cstring>
 #include "live_rtsp_client.h"
 
+#if defined(DEBUG)
+#include <dk_log4cplus_logger.h>
+#pragma comment(lib,"dk_log4cplus_logger_1.2.0.lib")
+#endif
+
 debuggerking::live_rtsp_client::live_rtsp_client( void )
 	: _ignore_sdp(true)
 {
 	WSADATA wsd;
 	WSAStartup( MAKEWORD(2,2), &wsd );
+#if defined(DEBUG)
+	log4cplus_logger::create("config/log.properties");
+#endif
 }
 
 debuggerking::live_rtsp_client::~live_rtsp_client(void)
 {
+#if defined(DEBUG)
+	log4cplus_logger::destroy();
+#endif
 	WSACleanup();
 }
 

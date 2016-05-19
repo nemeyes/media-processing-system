@@ -460,7 +460,7 @@ int32_t debuggerking::directdraw_core::render(directdraw_renderer::entity_t * p)
 					}
 				}*/
 
-				/*if (_enable_osd_text)
+				if (_enable_osd_text)
 				{
 					HDC hdc;
 					RECT rtRGB = { _osd_text_position_x, _osd_text_position_y, display_width, display_height };
@@ -485,7 +485,7 @@ int32_t debuggerking::directdraw_core::render(directdraw_renderer::entity_t * p)
 
 						_pdd_rgb->ReleaseDC(hdc);
 					}
-				}*/
+				}
 
 				/*do
 				{

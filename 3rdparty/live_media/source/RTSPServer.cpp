@@ -25,6 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Base64.hh"
 #include <GroupsockHelper.hh>
 
+#if defined(DEBUG)
+#include <dk_log4cplus_logger.h>
+#endif
+
 ////////// RTSPServer implementation //////////
 
 RTSPServer*
@@ -628,7 +632,8 @@ void RTSPServer::RTSPClientConnection::handleHTTPCmd_notFound() {
 
 void RTSPServer::RTSPClientConnection::handleHTTPCmd_OPTIONS() {
 #ifdef DEBUG
-  fprintf(stderr, "Handled HTTP \"OPTIONS\" request\n");
+	debuggerking::log4cplus_logger::make_debug_log("live555", "Handled HTTP \"OPTIONS\" request");
+  //fprintf(stderr, "Handled HTTP \"OPTIONS\" request\n");
 #endif
   // Construct a response to the "OPTIONS" command that notes that our special headers (for RTSP-over-HTTP tunneling) are allowed:
   snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
@@ -651,7 +656,8 @@ void RTSPServer::RTSPClientConnection::handleHTTPCmd_TunnelingGET(char const* se
   delete[] fOurSessionCookie; fOurSessionCookie = strDup(sessionCookie);
   fOurRTSPServer.fClientConnectionsForHTTPTunneling->Add(sessionCookie, (void*)this);
 #ifdef DEBUG
-  fprintf(stderr, "Handled HTTP \"GET\" request (client output socket: %d)\n", fClientOutputSocket);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "Handled HTTP \"GET\" request (client output socket: %d)", fClientOutputSocket);
+  //fprintf(stderr, "Handled HTTP \"GET\" request (client output socket: %d)\n", fClientOutputSocket);
 #endif
   
   // Construct our response:
@@ -681,7 +687,8 @@ Boolean RTSPServer::RTSPClientConnection
     return False;
   }
 #ifdef DEBUG
-  fprintf(stderr, "Handled HTTP \"POST\" request (client input socket: %d)\n", fClientInputSocket);
+  debuggerking::log4cplus_logger::make_debug_log("live555", "Handled HTTP \"POST\" request (client input socket: %d)", fClientInputSocket);
+  //fprintf(stderr, "Handled HTTP \"POST\" request (client input socket: %d)\n", fClientInputSocket);
 #endif
   
   // Change the previous "RTSPClientSession" object's input socket to ours.  It will be used for subsequent requests:
@@ -789,7 +796,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
       // Either the client socket has died, or the request was too big for us.
       // Terminate this connection:
 #ifdef DEBUG
-      fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() read %d new bytes (of %d); terminating connection!\n", this, newBytesRead, fRequestBufferBytesLeft);
+		debuggerking::log4cplus_logger::make_debug_log("live555", "RTSPClientConnection[%p]::handleRequestBytes() read %d new bytes (of %d); terminating connection!", this, newBytesRead, fRequestBufferBytesLeft);
+      //fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() read %d new bytes (of %d); terminating connection!\n", this, newBytesRead, fRequestBufferBytesLeft);
 #endif
       fIsActive = False;
       break;
@@ -799,8 +807,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
     unsigned char* ptr = &fRequestBuffer[fRequestBytesAlreadySeen];
 #ifdef DEBUG
     ptr[newBytesRead] = '\0';
-    fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() %s %d new bytes:%s\n",
-	    this, numBytesRemaining > 0 ? "processing" : "read", newBytesRead, ptr);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "RTSPClientConnection[%p]::handleRequestBytes() %s %d new bytes:%s", this, numBytesRemaining > 0 ? "processing" : "read", newBytesRead, ptr);
+    //fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() %s %d new bytes:%s\n", this, numBytesRemaining > 0 ? "processing" : "read", newBytesRead, ptr);
 #endif
     
     if (fClientOutputSocket != fClientInputSocket && numBytesRemaining == 0) {
@@ -885,7 +893,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
     Boolean playAfterSetup = False;
     if (parseSucceeded) {
 #ifdef DEBUG
-      fprintf(stderr, "parseRTSPRequestString() succeeded, returning cmdName \"%s\", urlPreSuffix \"%s\", urlSuffix \"%s\", CSeq \"%s\", Content-Length %u, with %d bytes following the message.\n", cmdName, urlPreSuffix, urlSuffix, cseq, contentLength, ptr + newBytesRead - (tmpPtr + 2));
+		debuggerking::log4cplus_logger::make_debug_log("live555", "parseRTSPRequestString() succeeded, returning cmdName \"%s\", urlPreSuffix \"%s\", urlSuffix \"%s\", CSeq \"%s\", Content-Length %u, with %d bytes following the message.", cmdName, urlPreSuffix, urlSuffix, cseq, contentLength, ptr + newBytesRead - (tmpPtr + 2));
+      //fprintf(stderr, "parseRTSPRequestString() succeeded, returning cmdName \"%s\", urlPreSuffix \"%s\", urlSuffix \"%s\", CSeq \"%s\", Content-Length %u, with %d bytes following the message.\n", cmdName, urlPreSuffix, urlSuffix, cseq, contentLength, ptr + newBytesRead - (tmpPtr + 2));
 #endif
       // If there was a "Content-Length:" header, then make sure we've received all of the data that it specified:
       if (ptr + newBytesRead < tmpPtr + 2 + contentLength) break; // we still need more data; subsequent reads will give it to us 
@@ -988,7 +997,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
       }
     } else {
 #ifdef DEBUG
-      fprintf(stderr, "parseRTSPRequestString() failed; checking now for HTTP commands (for RTSP-over-HTTP tunneling)...\n");
+	  debuggerking::log4cplus_logger::make_debug_log("live555", "parseRTSPRequestString() failed; checking now for HTTP commands (for RTSP-over-HTTP tunneling)...");
+      //fprintf(stderr, "parseRTSPRequestString() failed; checking now for HTTP commands (for RTSP-over-HTTP tunneling)...\n");
 #endif
       // The request was not (valid) RTSP, but check for a special case: HTTP commands (for setting up RTSP-over-HTTP tunneling):
       char sessionCookie[RTSP_PARAM_STRING_MAX];
@@ -1001,7 +1011,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
       *fLastCRLF = '\r';
       if (parseSucceeded) {
 #ifdef DEBUG
-	fprintf(stderr, "parseHTTPRequestString() succeeded, returning cmdName \"%s\", urlSuffix \"%s\", sessionCookie \"%s\", acceptStr \"%s\"\n", cmdName, urlSuffix, sessionCookie, acceptStr);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "parseHTTPRequestString() succeeded, returning cmdName \"%s\", urlSuffix \"%s\", sessionCookie \"%s\", acceptStr \"%s\"", cmdName, urlSuffix, sessionCookie, acceptStr);
+	//fprintf(stderr, "parseHTTPRequestString() succeeded, returning cmdName \"%s\", urlSuffix \"%s\", sessionCookie \"%s\", acceptStr \"%s\"\n", cmdName, urlSuffix, sessionCookie, acceptStr);
 #endif
 	// Check that the HTTP command is valid for RTSP-over-HTTP tunneling: There must be a 'session cookie'.
 	Boolean isValidHTTPCmd = True;
@@ -1035,14 +1046,16 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	}
       } else {
 #ifdef DEBUG
-	fprintf(stderr, "parseHTTPRequestString() failed!\n");
+	debuggerking::log4cplus_logger::make_debug_log("live555", "parseHTTPRequestString() failed!");
+	//fprintf(stderr, "parseHTTPRequestString() failed!\n");
 #endif
 	handleCmd_bad();
       }
     }
     
 #ifdef DEBUG
-    fprintf(stderr, "sending response: %s", fResponseBuffer);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "sending response: %s", fResponseBuffer);
+    //fprintf(stderr, "sending response: %s", fResponseBuffer);
 #endif
     send(fClientOutputSocket, (char const*)fResponseBuffer, strlen((char*)fResponseBuffer), 0);
     
@@ -1155,7 +1168,8 @@ Boolean RTSPServer::RTSPClientConnection
     // Next, the username has to be known to us:
     char const* password = authDB->lookupPassword(username);
 #ifdef DEBUG
-    fprintf(stderr, "lookupPassword(%s) returned password %s\n", username, password);
+	debuggerking::log4cplus_logger::make_debug_log("live555", "lookupPassword(%s) returned password %s", username, password);
+    //fprintf(stderr, "lookupPassword(%s) returned password %s\n", username, password);
 #endif
     if (password == NULL) break;
     fCurrentAuthenticator.setUsernameAndPassword(username, password, authDB->passwordsAreMD5());

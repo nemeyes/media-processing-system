@@ -222,7 +222,7 @@ void record_module_seeker::read(uint8_t * data, size_t &data_size, long long & t
 			_record_module->read(type, data, data_size, timestamp);
 
 			if (data_size>0)
-				dk_log4cplus_logger::make_debug_log("parallel.record.streamer", "nalu type : [%s], nalu size : [%d]", type == 0 ? "sps" : (type == 1 ? "pps" : (type == 2 ? "idr" : "vcl")), (int)data_size);
+				debuggerking::log4cplus_logger::make_debug_log("parallel.record.streamer", "nalu type : [%s], nalu size : [%d]", type == 0 ? "sps" : (type == 1 ? "pps" : (type == 2 ? "idr" : "vcl")), (int)data_size);
 			strncpy_s(_last_filename, _record_module->get_filename(), sizeof(_last_filename));
 			//_last_read_timestamp = timestamp;
 		}

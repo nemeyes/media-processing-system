@@ -11,12 +11,12 @@ debuggerking::vod_rtsp_server::vod_rtsp_server(void)
 {
 	memset(_username, 0x00, sizeof(_username));
 	memset(_password, 0x00, sizeof(_password));
-	dk_log4cplus_logger::create("config/log.properties");
+	log4cplus_logger::create("config/log.properties");
 }
 
 debuggerking::vod_rtsp_server::~vod_rtsp_server(void)
 {
-	dk_log4cplus_logger::destroy();
+	log4cplus_logger::destroy();
 }
 
 int32_t debuggerking::vod_rtsp_server::add_live_media_source(const char * uuid, const char * url, const char * username, const char * password)

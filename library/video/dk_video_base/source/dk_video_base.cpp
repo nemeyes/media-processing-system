@@ -20,6 +20,64 @@ debuggerking::video_base::_configuration_t & debuggerking::video_base::_configur
 	return (*this);
 }
 
+/*
+debuggerking::video_base::_entity_t::_entity_t(void)
+	: timestamp(0)
+	, mem_type(video_base::video_memory_type_t::host)
+	, surface(nullptr)
+	, data(nullptr)
+	, data_size(0)
+	, data_capacity(0)
+	, pic_type(video_base::video_picture_type_t::unknown)
+	, width(0)
+	, height(0)
+	, gen_spspps(false)
+	, gen_idr(false)
+	, gen_intra(false)
+	, flush(false)
+{
+}
+
+debuggerking::video_base::_entity_t::_entity_t(const video_base::_entity_t & clone)
+{
+	timestamp = clone.timestamp;
+	mem_type = clone.mem_type;
+	surface = clone.surface;
+	data = clone.data;
+	data_size = clone.data_size;
+	data_capacity = clone.data_capacity;
+	pic_type = clone.pic_type;
+	width = clone.width;
+	height = clone.height;
+	gen_spspps = clone.gen_spspps;
+	gen_idr = clone.gen_idr;
+	gen_intra = clone.gen_intra;
+	flush = clone.flush;
+}
+
+debuggerking::video_base::_entity_t debuggerking::video_base::_entity_t::operator = (const video_base::_entity_t & clone)
+{
+	timestamp = clone.timestamp;
+	mem_type = clone.mem_type;
+	surface = clone.surface;
+	data = clone.data;
+	data_size = clone.data_size;
+	data_capacity = clone.data_capacity;
+	pic_type = clone.pic_type;
+	width = clone.width;
+	height = clone.height;
+	gen_spspps = clone.gen_spspps;
+	gen_idr = clone.gen_idr;
+	gen_intra = clone.gen_intra;
+	flush = clone.flush;
+	return (*this);
+}
+
+debuggerking::video_base::_entity_t::~_entity_t(void)
+{
+
+}
+*/
 
 debuggerking::video_base::video_base(void)
 	: _config(nullptr)
@@ -194,7 +252,222 @@ uint8_t * debuggerking::video_base::get_pps(size_t & pps_size)
 	return _pps;
 }
 
-const int debuggerking::video_base::next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
+#if 0
+int32_t debuggerking::video_base::initialize_d3d11(ID3D11Device * d3d11_device, int32_t iwidth, int32_t iheight, int32_t ifps, int32_t owidth, int32_t oheight, int32_t ofps)
+{
+	HRESULT hr = S_OK;
+	int32_t status = video_base::err_code_t::fail;
+
+	ATL::CComPtr<ID3D11VideoContext> d3d11_video_context = NULL;
+	do
+	{
+		hr = d3d11_device->QueryInterface(__uuidof(ID3D11VideoDevice), (void**)&_d3d11_video_device);
+		if (FAILED(hr))
+			break;
+
+		d3d11_device->GetImmediateContext(&_d3d11_device_context);
+		hr = _d3d11_device_context->QueryInterface(__uuidof(ID3D11VideoContext), (void**)&d3d11_video_context);
+		if (FAILED(hr))
+			break;
+
+		D3D11_VIDEO_PROCESSOR_CONTENT_DESC content_desc;
+		content_desc.InputFrameFormat = D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE;
+		content_desc.InputWidth = (DWORD)iwidth;
+		content_desc.InputHeight = (DWORD)iheight;
+		content_desc.OutputWidth = (DWORD)owidth;
+		content_desc.OutputHeight = (DWORD)oheight;
+		content_desc.InputFrameRate.Numerator = ifps;
+		content_desc.InputFrameRate.Denominator = 1;
+		content_desc.OutputFrameRate.Numerator = ofps;
+		content_desc.OutputFrameRate.Denominator = 1;
+		content_desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
+
+		hr = _d3d11_video_device->CreateVideoProcessorEnumerator(&content_desc, &_d3d11_video_processor_enum);
+		if (FAILED(hr))
+			break;
+
+		UINT flags;
+		DXGI_FORMAT output_format = DXGI_FORMAT_NV12;
+		hr = _d3d11_video_processor_enum->CheckVideoProcessorFormat(output_format, &flags);
+		if (FAILED(hr) || (flags & D3D11_VIDEO_PROCESSOR_FORMAT_SUPPORT_OUTPUT) == 0)
+			break;
+
+		DWORD index = 0;
+		D3D11_VIDEO_PROCESSOR_CAPS caps = {};
+		D3D11_VIDEO_PROCESSOR_RATE_CONVERSION_CAPS conv_caps = {};
+
+		hr = _d3d11_video_processor_enum->GetVideoProcessorCaps(&caps);
+		if (FAILED(hr))
+			break;
+
+		for (DWORD i = 0; i < caps.RateConversionCapsCount; i++)
+		{
+			hr = _d3d11_video_processor_enum->GetVideoProcessorRateConversionCaps(i, &conv_caps);
+			if (FAILED(hr))
+				break;
+
+			if ((conv_caps.ProcessorCaps & D3D11_VIDEO_PROCESSOR_PROCESSOR_CAPS_DEINTERLACE_BOB) != 0)
+				index = i;
+		}
+
+		if (FAILED(hr))
+			break;
+
+		hr = _d3d11_video_device->CreateVideoProcessor(_d3d11_video_processor_enum, index, &_d3d11_video_processor);
+		if (FAILED(hr))
+			break;
+
+		status = video_base::err_code_t::success;
+	} while (0);
+
+	return status;
+}
+
+int32_t debuggerking::video_base::release_d3d11(void)
+{
+	int32_t status = video_base::err_code_t::success;
+
+	return status;
+}
+
+int32_t debuggerking::video_base::convert_d3d11_rgb32_to_nv12(ID3D11Texture2D * rgb32, ID3D11Texture2D * nv12, int32_t iwidth, int32_t iheight, int32_t owidth, int32_t oheight)
+{
+	int32_t status = video_base::err_code_t::fail;
+	HRESULT hr = E_FAIL;
+
+	ATL::CComPtr<ID3D11VideoProcessorInputView> input_view = NULL;
+	ATL::CComPtr<ID3D11VideoProcessorOutputView> output_view = NULL;
+	ATL::CComPtr<ID3D11VideoContext> video_context = NULL;
+	do
+	{
+		hr = _d3d11_device_context->QueryInterface(__uuidof(ID3D11VideoContext), (void**)&video_context);
+		if (FAILED(hr))
+			break;
+
+#if defined(_DEBUG)
+		D3D11_TEXTURE2D_DESC rgb32_desc;
+		rgb32->GetDesc(&rgb32_desc);
+
+		D3D11_TEXTURE2D_DESC nv12_desc;
+		nv12->GetDesc(&nv12_desc);
+#endif
+
+		D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_view_desc;
+		memset(&output_view_desc, 0x00, sizeof(D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC));
+		output_view_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
+		output_view_desc.Texture2D.MipSlice = 0;
+		output_view_desc.Texture2DArray.MipSlice = 0;
+		output_view_desc.Texture2DArray.FirstArraySlice = 0;
+		hr = _d3d11_video_device->CreateVideoProcessorOutputView(nv12, _d3d11_video_processor_enum, &output_view_desc, &output_view);
+		if (FAILED(hr))
+			break;
+
+		D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC input_view_desc;
+		memset(&input_view_desc, 0x00, sizeof(D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC));
+		input_view_desc.FourCC = 0;
+		input_view_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
+		input_view_desc.Texture2D.MipSlice = 0;
+		input_view_desc.Texture2D.ArraySlice = 0;
+		hr = _d3d11_video_device->CreateVideoProcessorInputView(rgb32, _d3d11_video_processor_enum, &input_view_desc, &input_view);
+		if (FAILED(hr))
+			break;
+
+		video_context->VideoProcessorSetStreamFrameFormat(_d3d11_video_processor, 0, D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE);
+		video_context->VideoProcessorSetStreamOutputRate(_d3d11_video_processor, 0, D3D11_VIDEO_PROCESSOR_OUTPUT_RATE_NORMAL, TRUE, NULL); // Output rate (repeat frames)
+
+		RECT SRect = { 0, 0, iwidth, iheight };
+		RECT DRect = { 0, 0, owidth, oheight };
+		video_context->VideoProcessorSetStreamSourceRect(_d3d11_video_processor, 0, TRUE, &SRect); // Source rect
+		video_context->VideoProcessorSetStreamDestRect(_d3d11_video_processor, 0, TRUE, &SRect); // Stream dest rect
+		video_context->VideoProcessorSetOutputTargetRect(_d3d11_video_processor, TRUE, &DRect);
+
+		D3D11_VIDEO_PROCESSOR_COLOR_SPACE cs = {};
+		cs.YCbCr_xvYCC = 1;
+		video_context->VideoProcessorSetStreamColorSpace(_d3d11_video_processor, 0, &cs);
+		video_context->VideoProcessorSetOutputColorSpace(_d3d11_video_processor, &cs); // Output color space
+
+		D3D11_VIDEO_COLOR bgcolor = {};
+		bgcolor.RGBA.A = 1.0F;
+		bgcolor.RGBA.R = 1.0F * static_cast<float>(GetRValue(0)) / 255.0F;
+		bgcolor.RGBA.G = 1.0F * static_cast<float>(GetGValue(0)) / 255.0F;
+		bgcolor.RGBA.B = 1.0F * static_cast<float>(GetBValue(0)) / 255.0F;
+		video_context->VideoProcessorSetOutputBackgroundColor(_d3d11_video_processor, TRUE, &bgcolor);
+
+		D3D11_VIDEO_PROCESSOR_STREAM d3d11_stream_data;
+		ZeroMemory(&d3d11_stream_data, sizeof(D3D11_VIDEO_PROCESSOR_STREAM));
+		d3d11_stream_data.Enable = TRUE;
+		d3d11_stream_data.OutputIndex = 0;
+		d3d11_stream_data.InputFrameOrField = 0;
+		d3d11_stream_data.PastFrames = 0;
+		d3d11_stream_data.FutureFrames = 0;
+		d3d11_stream_data.ppPastSurfaces = NULL;
+		d3d11_stream_data.ppFutureSurfaces = NULL;
+		d3d11_stream_data.pInputSurface = input_view;
+		d3d11_stream_data.ppPastSurfacesRight = NULL;
+		d3d11_stream_data.ppFutureSurfacesRight = NULL;
+
+		hr = video_context->VideoProcessorBlt(_d3d11_video_processor, output_view, 0, 1, &d3d11_stream_data);
+		if (FAILED(hr))
+			break;
+
+		status = video_base::err_code_t::success;
+
+	} while (0);
+
+	return status;
+}
+#endif
+
+int32_t debuggerking::video_base::convert_yv12pitch_to_nv12(uint8_t * src_y, uint8_t * src_u, uint8_t * src_v, uint8_t * dst_y, uint8_t * dst_u, int32_t width, int32_t height, uint32_t src_stride, uint32_t dst_stride)
+{
+	int32_t y;
+	int32_t x;
+	if (src_stride == 0)
+		src_stride = width;
+	if (dst_stride == 0)
+		dst_stride = width;
+
+	for (y = 0; y < height; y++)
+	{
+		memcpy(dst_y + (dst_stride*y), src_y + (src_stride*y), width);
+		if (y < height / 2)
+		{
+			for (x = 0; x < width; x = x + 2)
+			{
+				dst_u[(y*dst_stride) + x] = src_u[((src_stride / 2)*y) + (x >> 1)];
+				dst_u[(y*dst_stride) + (x + 1)] = src_v[((src_stride / 2)*y) + (x >> 1)];
+			}
+		}
+	}
+	return video_base::err_code_t::success;
+}
+
+int32_t debuggerking::video_base::convert_yv12pitch_to_yv12(uint8_t * src_y, uint8_t * src_u, uint8_t * src_v, uint8_t * dst_y, uint8_t * dst_u, int32_t width, int32_t height, uint32_t src_stride, uint32_t dst_stride)
+{
+	int32_t y;
+	if (src_stride == 0)
+		src_stride = width;
+	if (dst_stride == 0)
+		dst_stride = width;
+
+	for (y = 0; y < height; y++)
+	{
+		memcpy(dst_y + (dst_stride*y), src_y + (src_stride*y), width);
+		if (y < height / 2)
+		{
+#if 1
+			memcpy(dst_u + y*(dst_stride >> 1), src_u + y*(src_stride >> 1), width >> 1);
+			memcpy(dst_u + ((height*dst_stride) >> 2) + y*(dst_stride >> 1), src_v + y*(src_stride >> 1), width >> 1);
+#else
+			memcpy(dst_u + ((height*dst_stride) >> 2) + y*(dst_stride >> 1), src_u + y*(src_stride >> 1), width >> 1);
+			memcpy(dst_u + y*(dst_stride >> 1), src_v + y*(src_stride >> 1), width >> 1);
+#endif
+		}
+	}
+	return video_base::err_code_t::success;
+}
+
+const int32_t debuggerking::video_base::next_nalu(uint8_t * bitstream, size_t size, int * nal_start, int * nal_end)
 {
 	int i;
 	*nal_start = 0;

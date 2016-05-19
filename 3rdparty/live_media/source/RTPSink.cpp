@@ -21,6 +21,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTPSink.hh"
 #include "GroupsockHelper.hh"
 
+#if defined(DEBUG)
+#include <dk_log4cplus_logger.h>
+#endif
+
 ////////// RTPSink //////////
 
 Boolean RTPSink::lookupByName(UsageEnvironment& env, char const* sinkName,
@@ -86,9 +90,12 @@ u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
 
   u_int32_t const rtpTimestamp = fTimestampBase + timestampIncrement;
 #ifdef DEBUG_TIMESTAMPS
-  fprintf(stderr, "fTimestampBase: 0x%08x, tv: %lu.%06ld\n\t=> RTP timestamp: 0x%08x\n",
-	  fTimestampBase, tv.tv_sec, tv.tv_usec, rtpTimestamp);
+#if defined(DEBUG)
+  debuggerking::log4cplus_logger::make_debug_log("live555", "fTimestampBase: 0x%08x, tv: %lu.%06ld\n\t=> RTP timestamp: 0x%08x", fTimestampBase, tv.tv_sec, tv.tv_usec, rtpTimestamp);
+#else
+  fprintf(stderr, "fTimestampBase: 0x%08x, tv: %lu.%06ld\n\t=> RTP timestamp: 0x%08x\n", fTimestampBase, tv.tv_sec, tv.tv_usec, rtpTimestamp);
   fflush(stderr);
+#endif
 #endif
 
   return rtpTimestamp;

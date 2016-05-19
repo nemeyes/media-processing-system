@@ -21,6 +21,11 @@ namespace debuggerking
 		int32_t open(void);
 		int32_t close(void);
 
+		int32_t enable_osd_text(bool enable = true);
+		int32_t set_osd_text(wchar_t *osd);
+		int32_t set_osd_text_position(unsigned short x, unsigned short y);
+		int32_t set_osd_text_font_size(unsigned char size);
+		int32_t set_osd_text_color(unsigned char red, unsigned char green, unsigned char blue);
 	private:
 		int32_t create(HWND hwnd, DWORD width, DWORD height, DWORD pos_x, DWORD pos_y, DWORD *rgb_bitcount = 0);
 		int32_t destroy(void);
@@ -30,12 +35,6 @@ namespace debuggerking
 		int32_t set_time_text_position(unsigned short x, unsigned short y);
 		int32_t set_time_text_font_size(unsigned char size);
 		int32_t set_time_text_color(unsigned char red, unsigned char green, unsigned char blue);
-
-		int32_t enable_osd_text(bool enable = true);
-		int32_t set_osd_text(wchar_t *osd);
-		int32_t set_osd_text_position(unsigned short x, unsigned short y);
-		int32_t set_osd_text_font_size(unsigned char size);
-		int32_t set_osd_text_color(unsigned char red, unsigned char green, unsigned char blue);
 
 		int32_t set_background_color(unsigned char red, unsigned char green, unsigned char blue);
 

@@ -1,4 +1,6 @@
 #include "dk_rtsp_receiver.h"
+#include <dk_recorder_module.h>
+#include <dk_string_helper.h>
 
 debuggerking::rtsp_receiver::rtsp_receiver(void)
 	: _frame_count(0)
@@ -110,6 +112,10 @@ void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, siz
 
 		directdraw_renderer * video_renderer = static_cast<directdraw_renderer*>(_video_renderer);
 		directdraw_renderer::configuration_t * video_renderer_config = static_cast<directdraw_renderer::configuration_t*>(_video_renderer_config);
+		video_renderer->enable_osd_text(true);
+		video_renderer->set_osd_text(L"");
+		video_renderer->set_osd_text_color(0xFF, 0xFF, 0xFF);
+		video_renderer->set_osd_text_position(10, 10);
 
 
 		do
@@ -210,14 +216,37 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 		decoded.data = _video_buffer;
 		decoded.data_capacity = VIDEO_BUFFER_SIZE;
 
-		int32_t decode_err = video_decoder->decode(&encoded, &decoded);
-		if ((decode_err == video_decoder::err_code_t::success) && (decoded.data_size > 0))
+		if ((data[4] & 0x1F) == 0x06)
 		{
-			video_renderer::entity_t render;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
-			render.mem_type = video_renderer::video_memory_type_t::host;
-			render.data = decoded.data;
-			render.data_size = decoded.data_size;
-			video_renderer->render(&render);
+			/*sei[19] = (timestamp & 0xFF00000000000000) >> 56;
+			sei[20] = (timestamp & 0x00FF000000000000) >> 48;
+			sei[21] = (timestamp & 0x0000FF0000000000) >> 40;
+			sei[22] = (timestamp & 0x000000FF00000000) >> 32;
+			sei[23] = (timestamp & 0x00000000FF000000) >> 24;
+			sei[24] = (timestamp & 0x0000000000FF0000) >> 16;
+			sei[25] = (timestamp & 0x000000000000FF00) >> 8;
+			sei[26] = (timestamp & 0x00000000000000FF);*/
+			const uint8_t * sei = data + 4;
+			long long timestamp = 0;
+			memcpy(&timestamp, &sei[19], sizeof(timestamp));
+
+			int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
+			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
+			wchar_t time[MAX_PATH] = { 0 };
+			_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
+			video_renderer->set_osd_text(time);
+		}
+		else
+		{
+			int32_t decode_err = video_decoder->decode(&encoded, &decoded);
+			if ((decode_err == video_decoder::err_code_t::success) && (decoded.data_size > 0))
+			{
+				video_renderer::entity_t render;// = { dk_ff_video_decoder::MEMORY_TYPE_HOST, nullptr, nullptr, 0, 0, dk_ff_video_decoder::PICTURE_TYPE_NONE };
+				render.mem_type = video_renderer::video_memory_type_t::host;
+				render.data = decoded.data;
+				render.data_size = decoded.data_size;
+				video_renderer->render(&render);
+			}
 		}
 	}
 }

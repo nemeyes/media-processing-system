@@ -3,7 +3,7 @@
 
 #include <dk_basic_type.h>
 #if defined(WITH_RECORD_SERVER)
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
  #include <dk_recorder_module.h>
 #else
  #include "record_module_seeker.h"
@@ -17,7 +17,7 @@ namespace debuggerking
 	{
 	public:
 
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 		typedef struct _video_buffer_t
 		{
@@ -44,7 +44,7 @@ namespace debuggerking
 		const uint8_t * get_sps(size_t & size);
 		const uint8_t * get_pps(size_t & size);
 
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	private:
 		int32_t push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long interval, long long timestamp);
@@ -53,7 +53,7 @@ namespace debuggerking
 #endif
 #endif
 
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 		unsigned static __stdcall video_process_callback(void * param);
 		void video_process(void);
 #else
@@ -61,7 +61,7 @@ namespace debuggerking
 #endif
 	private:
 		char _stream_name[250];
-#if defined(WITH_RECORD_MODULE)
+#if defined(WITH_RECORDER_MODULE)
 		recorder_module _record_module;
 #if defined(WITH_BUFFERING_MODE)
 		CRITICAL_SECTION _video_mutex;
