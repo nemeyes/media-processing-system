@@ -2,9 +2,10 @@
 #include <windows.h>
 #include <cstdint>
 #include "dk_bit_vector.h"
-#include <dk_live_rtsp_client.h>
-#if defined(WITH_MPEG2TS)
- #include "dk_mpeg2ts_recorder.h"
+#include <dk_rtsp_client.h>
+
+#if defined(WITH_RECORDER_MODULE)
+ #include "dk_recorder_module.h"
 #else
  #include "dk_record_module.h"
 #endif
@@ -16,7 +17,7 @@
 
 namespace debuggerking 
 {
-	class rtsp_recorder : public live_rtsp_client
+	class rtsp_recorder : public rtsp_client
 	{
 	public:
 		rtsp_recorder(int32_t chunk_size_mb);
@@ -48,8 +49,10 @@ namespace debuggerking
 		void clear_pps(void);
 
 	private:
+#if !defined(WITH_RECORDER_MODULE)
 		static long long get_elapsed_msec_from_epoch(void);
 		static void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
+#endif
 
 	private:
 		char _storage[260];
@@ -60,16 +63,15 @@ namespace debuggerking
 		uint8_t _pps[200];
 		size_t _pps_size;
 	
-	#if defined(WITH_MPEG2TS)
-		dk_ff_mpeg2ts_muxer::configuration_t _config;
-		dk_mpeg2ts_recorder * _mpeg2ts_recorder;
-	#else
+#if defined(WITH_RECORDER_MODULE)
+		recorder_module * _file_recorder;
+#else
 		dk_record_module * _file_recorder;
-	#endif
+#endif
 
-	#if defined(WITH_RELAY_LIVE)
+#if defined(WITH_RELAY_LIVE)
 		ic::dk_shared_memory_server * _sm_server;
-	#endif
+#endif
 
 		long long _chunk_size_bytes;
 	};

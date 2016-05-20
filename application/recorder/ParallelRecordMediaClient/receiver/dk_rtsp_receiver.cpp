@@ -16,12 +16,12 @@ debuggerking::rtsp_receiver::~rtsp_receiver(void)
 int32_t debuggerking::rtsp_receiver::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd)
 {
 	_hwnd = hwnd;
-	return live_rtsp_client::play(url, username, password, transport_option, recv_option, 3, scale, repeat);
+	return rtsp_client::play(url, username, password, transport_option, recv_option, 3, scale, repeat);
 }
 
 int32_t debuggerking::rtsp_receiver::stop(void)
 {
-	int32_t status = live_rtsp_client::stop();
+	int32_t status = rtsp_client::stop();
 
 	if (_video_decoder)
 	{
@@ -100,7 +100,7 @@ void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, siz
 		_video_renderer_config = nullptr;
 	}
 
-	if (smt == live_rtsp_client::video_submedia_type_t::h264)
+	if (smt == rtsp_client::video_submedia_type_t::h264)
 	{
 		_video_decoder = new ff_video_decoder();
 		_video_decoder_config = new ff_video_decoder::configuration_t();
@@ -198,7 +198,7 @@ void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, siz
 
 void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (smt == live_rtsp_client::video_submedia_type_t::h264)
+	if (smt == rtsp_client::video_submedia_type_t::h264)
 	{
 		ff_video_decoder * video_decoder = static_cast<ff_video_decoder*>(_video_decoder);
 		ff_video_decoder::configuration_t * video_decoder_config = static_cast<ff_video_decoder::configuration_t*>(_video_decoder_config);
@@ -283,7 +283,7 @@ void debuggerking::rtsp_receiver::on_begin_audio(int32_t smt, uint8_t * config, 
 	mmwave_renderer * audio_renderer = static_cast<mmwave_renderer*>(_audio_renderer);
 	mmwave_renderer::configuration_t * audio_renderer_config = static_cast<mmwave_renderer::configuration_t*>(_audio_renderer_config);
 
-	if (smt == live_rtsp_client::audio_submedia_type_t::aac)
+	if (smt == rtsp_client::audio_submedia_type_t::aac)
 	{
 		_audio_decoder = new aac_decoder();
 		_audio_decoder_config = new aac_decoder::configuration_t();
@@ -325,7 +325,7 @@ void debuggerking::rtsp_receiver::on_begin_audio(int32_t smt, uint8_t * config, 
 		}
 
 	}
-	else if (smt == live_rtsp_client::audio_submedia_type_t::mp3)
+	else if (smt == rtsp_client::audio_submedia_type_t::mp3)
 	{
 		_audio_decoder = new ff_mp3_decoder();
 		_audio_decoder_config = new ff_mp3_decoder::configuration_t();
@@ -368,7 +368,7 @@ void debuggerking::rtsp_receiver::on_begin_audio(int32_t smt, uint8_t * config, 
 
 void debuggerking::rtsp_receiver::on_recv_audio(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if(smt == live_rtsp_client::audio_submedia_type_t::aac)
+	if (smt == rtsp_client::audio_submedia_type_t::aac)
 	{
 		aac_decoder * audio_decoder = static_cast<aac_decoder*>(_audio_decoder);
 		aac_decoder::configuration_t * audio_decoder_config = static_cast<aac_decoder::configuration_t*>(_audio_decoder_config);
@@ -393,7 +393,7 @@ void debuggerking::rtsp_receiver::on_recv_audio(int32_t smt, const uint8_t * dat
 			_audio_renderer->render(&render);
 		}
 	}
-	else if(smt == live_rtsp_client::audio_submedia_type_t::mp3)
+	else if (smt == rtsp_client::audio_submedia_type_t::mp3)
 	{
 		ff_mp3_decoder * audio_decoder = static_cast<ff_mp3_decoder*>(_audio_decoder);
 		ff_mp3_decoder::configuration_t * audio_decoder_config = static_cast<ff_mp3_decoder::configuration_t*>(_audio_decoder_config);

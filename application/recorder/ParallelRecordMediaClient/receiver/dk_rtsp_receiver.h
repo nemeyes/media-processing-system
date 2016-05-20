@@ -2,7 +2,7 @@
 #define _DK_RTSP_RECEIVER_H_
 
 #include <dk_base_receiver.h>
-#include <dk_live_rtsp_client.h>
+#include <dk_rtsp_client.h>
 #include <dk_ff_video_decoder.h>
 #include <dk_aac_decoder.h>
 #include <dk_ff_mp3_decoder.h>
@@ -11,7 +11,7 @@
 
 namespace debuggerking
 {
-	class rtsp_receiver : public base_receiver, public live_rtsp_client
+	class rtsp_receiver : public base_receiver, public rtsp_client
 	{
 	public:
 		rtsp_receiver(void);

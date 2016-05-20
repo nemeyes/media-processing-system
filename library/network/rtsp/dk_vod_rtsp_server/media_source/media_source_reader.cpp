@@ -17,6 +17,7 @@
 debuggerking::media_source_reader::media_source_reader(void)
 	: _scale(1.f)
 #if defined(WITH_RECORDER_MODULE)
+	, _record_module(0)
 #if defined(WITH_BUFFERING_MODE)
 	, _video_thread(INVALID_HANDLE_VALUE)
 	, _video_run(false)

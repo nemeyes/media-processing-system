@@ -35,7 +35,7 @@ void debuggerking::rtsp_recorder::start_recording(const char * url, const char *
 	{
 		strncpy_s(_storage, storage, sizeof(_storage));
 		strncpy_s(_uuid, uuid, sizeof(_uuid));
-		live_rtsp_client::play(url, username, password, transport_option, recv_option, recv_timeout, 1.f, true);
+		rtsp_client::play(url, username, password, transport_option, recv_option, recv_timeout, 1.f, true);
 
 #if defined(WITH_RELAY_LIVE)
 		_sm_server->create_shared_memory(uuid);
@@ -49,57 +49,29 @@ void debuggerking::rtsp_recorder::stop_recording(void)
 	_sm_server->destroy_shared_memory();
 #endif
 
-	live_rtsp_client::stop();
-#if defined(WITH_MPEG2TS)
-	if (_mpeg2ts_recorder)
-	{
-		if (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED)
-			_mpeg2ts_recorder->release();
-		delete _mpeg2ts_recorder;
-		_mpeg2ts_recorder = nullptr;
-	}
-#else
+	rtsp_client::stop();
 	if (_file_recorder)
 	{
 		delete _file_recorder;
 		_file_recorder = nullptr;
 	}
-#endif
 }
 
 void debuggerking::rtsp_recorder::on_begin_video(int32_t smt, uint8_t * vps, size_t vps_size, uint8_t * sps, size_t sps_size, uint8_t * pps, size_t pps_size, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (smt == live_rtsp_client::video_submedia_type_t::h264)
+	if (smt == rtsp_client::video_submedia_type_t::h264)
 	{
-#if defined(WITH_MPEG2TS)
-		do
-		{
-			int32_t sarw = 0;
-			int32_t sarh = 0;
-			if (parse_sps((BYTE*)(sps), spssize, &_config.vconfig.width, &_config.vconfig.height, &sarw, &sarh) > 0)
-			{
+#if defined(WITH_RECORDER_MODULE)
+		char single_recorder_file_path[MAX_PATH] = { 0 };
+		_snprintf_s(single_recorder_file_path, sizeof(single_recorder_file_path), "%s%s\\", _storage, _uuid);
 
-				if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
-				{
-					_mpeg2ts_recorder->release();
-					delete _mpeg2ts_recorder;
-					_mpeg2ts_recorder = nullptr;
-				}
-			
-				_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_storage, _uuid);
+		if (!_file_recorder)
+			_file_recorder = new recorder_module(_chunk_size_bytes);
 
-				_config.vconfig.extradata_size = spssize + ppssize;
-				memcpy(_config.vconfig.extradata, sps, spssize);
-				memcpy(_config.vconfig.extradata + spssize, pps, ppssize);
-				//config.vconfig.width = 1280;
-				//config.vconfig.height = 720;
-				_config.vconfig.fps = 30;
-				_config.vconfig.stream_index = 0;
-				_config.vconfig.bitrate = 4000000;
-				_mpeg2ts_recorder->initialize(&_config);
-				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
-			}
-		} while (0);
+		_file_recorder->seek(single_recorder_file_path, timestamp, false);
+		_file_recorder->write(sps, sps_size, timestamp);
+		_file_recorder->write(pps, pps_size, timestamp);
+		_file_recorder->write((uint8_t*)data, data_size, timestamp);
 #else
 		timestamp = get_elapsed_msec_from_epoch();
 
@@ -130,6 +102,8 @@ void debuggerking::rtsp_recorder::on_begin_video(int32_t smt, uint8_t * vps, siz
 		_file_recorder->write(sps, sps_size, timestamp);
 		_file_recorder->write(pps, pps_size, timestamp);
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
+#endif
+
 
 #if defined(WITH_RELAY_LIVE)
 		if(_sm_server->wait_available())
@@ -139,34 +113,15 @@ void debuggerking::rtsp_recorder::on_begin_video(int32_t smt, uint8_t * vps, siz
 		if (_sm_server->wait_available())
 			_sm_server->write((void*)data, data_size);
 #endif
-#endif
 	}
 }
 
 void debuggerking::rtsp_recorder::on_recv_video(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp)
 {
-	if (smt == live_rtsp_client::video_submedia_type_t::h264)
+	if (smt == rtsp_client::video_submedia_type_t::h264)
 	{
-#if defined(WITH_MPEG2TS)
-		if (_mpeg2ts_recorder && (_mpeg2ts_recorder->state() == dk_ff_mpeg2ts_muxer::STATE_INITIALIZED))
-		{
-			//_chunk_size_bytes
-			long long saved_chunk_size_bytes = _mpeg2ts_recorder->get_file_size();
-			if ((saved_chunk_size_bytes >= _chunk_size_bytes) && ((data[4] & 0x1F) == 0x05))
-			{
-				_mpeg2ts_recorder->release();
-				delete _mpeg2ts_recorder;
-				_mpeg2ts_recorder = nullptr;
-
-				_mpeg2ts_recorder = new dk_mpeg2ts_recorder(_storage, _uuid);
-				_mpeg2ts_recorder->initialize(&_config);
-			}
-
-			if ((data[4] & 0x1F) == 0x05)
-				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, true);
-			else
-				_mpeg2ts_recorder->put_video_stream((unsigned char*)data, data_size, timestamp, false);
-		}
+#if defined(WITH_RECORDER_MODULE)
+		_file_recorder->write((uint8_t*)data, data_size, timestamp);
 #else
 		timestamp = get_elapsed_msec_from_epoch();
 
@@ -220,10 +175,10 @@ void debuggerking::rtsp_recorder::on_recv_video(int32_t smt, const uint8_t * dat
 		}
 
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
+#endif
 #if defined(WITH_RELAY_LIVE)
 		if (_sm_server->wait_available())
 			_sm_server->write((void*)data, data_size);
-#endif
 #endif
 	}
 }
@@ -724,6 +679,7 @@ void debuggerking::rtsp_recorder::clear_pps(void)
 	_pps_size = 0;
 }
 
+#if !defined(WITH_RECORDER_MODULE)
 long long debuggerking::rtsp_recorder::get_elapsed_msec_from_epoch(void)
 {
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
@@ -743,3 +699,4 @@ void debuggerking::rtsp_recorder::get_time_from_elapsed_msec_from_epoch(long lon
 	//strncpy_s(time_string, time_string_size, tmp_time.c_str(), (size_t)time_string_size);
 	strcpy_s(time_string, time_string_size, tmp_time.c_str());
 }
+#endif

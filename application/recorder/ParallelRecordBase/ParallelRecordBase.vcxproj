@@ -79,10 +79,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\commands_payload.h" />
-    <ClInclude Include="include\process_starter.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="source\process_starter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

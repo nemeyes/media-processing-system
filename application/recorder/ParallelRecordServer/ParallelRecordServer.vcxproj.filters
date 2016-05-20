@@ -42,9 +42,6 @@
     <ClInclude Include="recorder\dk_bit_vector.h">
       <Filter>recorder</Filter>
     </ClInclude>
-    <ClInclude Include="recorder\dk_mpeg2ts_recorder.h">
-      <Filter>recorder</Filter>
-    </ClInclude>
     <ClInclude Include="recorder\dk_recorder_service.h">
       <Filter>recorder</Filter>
     </ClInclude>
@@ -63,9 +60,6 @@
       <Filter>recorder</Filter>
     </ClCompile>
     <ClCompile Include="recorder\dk_bit_vector.cpp">
-      <Filter>recorder</Filter>
-    </ClCompile>
-    <ClCompile Include="recorder\dk_mpeg2ts_recorder.cpp">
       <Filter>recorder</Filter>
     </ClCompile>
     <ClCompile Include="recorder\dk_recorder_service.cpp">
