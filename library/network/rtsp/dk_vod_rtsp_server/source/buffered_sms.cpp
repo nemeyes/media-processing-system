@@ -18,8 +18,8 @@ void buffered_sms::testScaleFactor(float& scale)
 {
 	if (scale > 8.f)
 		scale = 8.f;
-	if (scale < 0.1f)
-		scale = 0.1f;
+	if (scale < 0.0f)
+		scale = 0.0f;
 }
 
 void buffered_sms::setStreamSourceScale(FramedSource* inputSource, float scale)

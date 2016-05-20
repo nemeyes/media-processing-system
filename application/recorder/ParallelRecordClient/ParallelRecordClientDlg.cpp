@@ -561,6 +561,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 		PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
 		if (PRMC_index != PRMC_FAIL)
 		{
+			//status = PRMC_StartExport((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, year, month, day, hour, minute, second);
 			status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
 		}
 	}
