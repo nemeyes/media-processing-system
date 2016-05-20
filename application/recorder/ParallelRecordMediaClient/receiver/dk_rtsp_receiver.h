@@ -17,6 +17,8 @@ namespace debuggerking
 		rtsp_receiver(void);
 		virtual ~rtsp_receiver(void);
 
+		int32_t set_osd_position(int32_t x, int32_t y);
+
 		int32_t play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd);
 		int32_t stop(void);
 
@@ -27,6 +29,9 @@ namespace debuggerking
 
 	private:
 		int64_t _frame_count;
+
+		int32_t _osd_x;
+		int32_t _osd_y;
 	};
 };
 

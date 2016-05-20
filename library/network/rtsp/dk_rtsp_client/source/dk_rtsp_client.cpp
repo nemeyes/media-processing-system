@@ -63,15 +63,18 @@ int32_t debuggerking::rtsp_client::play(const char * url, const char * username,
 
 int32_t debuggerking::rtsp_client::stop(void)
 {
-	_repeat = false;
-	_kill = true;
-	if (_live)
+	if (!_kill )
 	{
-		_live->close();
-	}
-	else
-	{
+		_repeat = false;
 		_kill = true;
+		if (_live)
+		{
+			_live->close();
+		}
+		else
+		{
+			_kill = true;
+		}
 	}
 #if defined(WIN32)
 	::WaitForSingleObject( _worker, INFINITE );

@@ -77,6 +77,8 @@ void CParallelRecordClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_RTSP_USERNAME, _rtsp_username);
 	DDX_Control(pDX, IDC_EDIT9_RTSP_PASSWORD, _rtsp_password);
 	DDX_Control(pDX, IDC_EDIT_RECORDING_PLAY_SCALE, _recording_play_scale);
+	DDX_Control(pDX, IDC_EDIT_OSD_POSITION_X, _osd_x);
+	DDX_Control(pDX, IDC_EDIT_OSD_POSITON_Y, _osd_y);
 }
 
 BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
@@ -97,6 +99,7 @@ BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_MANUAL_STOP_PLAYBACK, &CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback)
 	ON_BN_CLICKED(IDC_BUTTON_RTSP_PLAY, &CParallelRecordClientDlg::OnBnClickedButtonRtspPlay)
 	ON_BN_CLICKED(IDC_BUTTON_RTSP_STOP, &CParallelRecordClientDlg::OnBnClickedButtonRtspStop)
+	ON_BN_CLICKED(IDC_BUTTON_SET_OSD_POSITION, &CParallelRecordClientDlg::OnBnClickedButtonSetOsdPosition)
 END_MESSAGE_MAP()
 
 
@@ -141,6 +144,9 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 
 	_uuid.SetWindowTextW(L"CH1");
 	_recording_play_scale.SetWindowTextW(L"1");
+
+	_osd_x.SetWindowTextW(L"20");
+	_osd_y.SetWindowTextW(L"20");
 
 	PRMC_Initialize(GetSafeHwnd());
 	PRMC_index = -1;
@@ -662,6 +668,23 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback()
 	brush.DeleteObject();
 }
 
+void CParallelRecordClientDlg::OnBnClickedButtonSetOsdPosition()
+{
+	// TODO: Add your control notification handler code here
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+	CString osd_x, osd_y;
+	_osd_x.GetWindowText(osd_x);
+	_osd_y.GetWindowText(osd_y);
+
+	int status = PRMC_FAIL;
+	if (recorder_address.GetLength()>0)
+	{
+		if (PRMC_index != PRMC_FAIL)
+			status = PRMC_SetOSDPosition((LPCWSTR)recorder_address, PRMC_index, _ttoi(osd_x), _ttoi(osd_y));
+	}
+}
+
 void CParallelRecordClientDlg::OnBnClickedButtonRtspPlay()
 {
 	// TODO: Add your control notification handler code here
@@ -698,4 +721,3 @@ void CParallelRecordClientDlg::OnBnClickedButtonRtspStop()
 	video_view_dc->FillRect(rect, &brush);
 	brush.DeleteObject();
 }
-

@@ -80,4 +80,9 @@ public:
 	afx_msg void OnBnClickedButtonManualStopPlayback();
 	afx_msg void OnBnClickedButtonRtspPlay();
 	afx_msg void OnBnClickedButtonRtspStop();
+private:
+	CEdit _osd_x;
+	CEdit _osd_y;
+public:
+	afx_msg void OnBnClickedButtonSetOsdPosition();
 };

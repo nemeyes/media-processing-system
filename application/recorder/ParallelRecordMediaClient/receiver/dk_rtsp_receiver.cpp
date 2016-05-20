@@ -4,6 +4,8 @@
 
 debuggerking::rtsp_receiver::rtsp_receiver(void)
 	: _frame_count(0)
+	, _osd_x(-1)
+	, _osd_y(-1)
 {
 
 }
@@ -11,6 +13,13 @@ debuggerking::rtsp_receiver::rtsp_receiver(void)
 debuggerking::rtsp_receiver::~rtsp_receiver(void)
 {
 		
+}
+
+int32_t debuggerking::rtsp_receiver::set_osd_position(int32_t x, int32_t y)
+{
+	_osd_x = x;
+	_osd_y = y;
+	return rtsp_receiver::err_code_t::success;
 }
 
 int32_t debuggerking::rtsp_receiver::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd)
@@ -115,7 +124,10 @@ void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, siz
 		video_renderer->enable_osd_text(true);
 		video_renderer->set_osd_text(L"");
 		video_renderer->set_osd_text_color(0xFF, 0xFF, 0xFF);
-		video_renderer->set_osd_text_position(10, 10);
+		if (_osd_x==-1 || _osd_y==-1)
+			video_renderer->set_osd_text_position(10, 10);
+		else
+			video_renderer->set_osd_text_position(_osd_x, _osd_y);
 
 
 		do
@@ -234,6 +246,11 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
 			wchar_t time[MAX_PATH] = { 0 };
 			_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
+
+			if (_osd_x == -1 || _osd_y == -1)
+				video_renderer->set_osd_text_position(10, 10);
+			else
+				video_renderer->set_osd_text_position(_osd_x, _osd_y);
 			video_renderer->set_osd_text(time);
 		}
 		else
