@@ -29,6 +29,10 @@ private:
 	LRESULT OnTrayIconClick(WPARAM wParam, LPARAM lParam);
 	void EnableTray(BOOL enable);
 
+#if defined(WITH_KEYLOCK)
+	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+#endif
+
 private:
 	debuggerking::record_streamer _streamer;
 	BOOL _is_streaming;

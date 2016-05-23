@@ -7,6 +7,12 @@
 #include "ParallelRecordStreamerDlg.h"
 #include "afxdialogex.h"
 
+#if defined(WITH_KEYLOCK)
+#include <megalock.h>
+#pragma comment(lib, "setupapi.lib")
+#pragma comment(lib, "l_mega32.lib")
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -120,6 +126,27 @@ BOOL CParallelRecordStreamerDlg::DestroyWindow()
 	return CDialogEx::DestroyWindow();
 }
 
+#if defined(WITH_KEYLOCK)
+LRESULT CParallelRecordStreamerDlg::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// CD ROM, USB 저장장치 등이 연결되거나 제거될 때 인터럽트가 오면 이때 락의 제거 여부를 확인 할 수 있음
+	// 인터럽트가 걸린 상태이서 lock_init_usb(8) 이외의 다른 함수를 호출하면 명령이 중복될 우려가 있으므로 해제를 확인하는 용도로만 사용 권장
+	unsigned int usbID;
+	if (WM_DEVICECHANGE == message)
+	{
+		usbID = lock_init_usb(8);
+		if (usbID == 0x0000859d) // 메가락 연결 확인
+		{
+			StartStreaming();
+		}
+		else //메가락 연결 해제
+		{
+			StopStreaming();
+		}
+	}
+	return CDialogEx::DefWindowProc(message, wParam, lParam);
+}
+#endif
 
 void CParallelRecordStreamerDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -194,6 +221,12 @@ void CParallelRecordStreamerDlg::Position2Center(void)
 
 void CParallelRecordStreamerDlg::StartStreaming(void)
 {
+#if defined(WITH_KEYLOCK)
+	unsigned int usbID = lock_init_usb(8);	// USB용 메가락 찾기, 인수 8은 cpu id의 첫번째 숫자 8~F 까지 사용가능
+	if (usbID != 0x0000859d)
+		return;
+#endif
+
 	if (!_is_streaming)
 	{
 		_streamer.start();
