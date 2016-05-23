@@ -85,4 +85,21 @@ private:
 	CEdit _osd_y;
 public:
 	afx_msg void OnBnClickedButtonSetOsdPosition();
+private:
+	CEdit _exp_uuid;
+	CEdit _exp_begin_year;
+	CEdit _exp_begin_month;
+	CEdit _exp_begin_day;
+	CEdit _exp_begin_hour;
+	CEdit _exp_begin_minute;
+	CEdit _exp_begin_second;
+	CEdit _exp_end_year;
+	CEdit _exp_end_month;
+	CEdit _exp_end_day;
+	CEdit _exp_end_hour;
+	CEdit _exp_end_minute;
+	CEdit _exp_end_second;
+public:
+	afx_msg void OnBnClickedButtonStartExport();
+	afx_msg void OnBnClickedButtonStopExport();
 };

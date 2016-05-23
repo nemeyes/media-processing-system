@@ -1,16 +1,16 @@
-#include "mpeg2ts_muxer.h"
+#include "ffmpeg_tsmuxer.h"
 
-mpeg2ts_muxer::mpeg2ts_muxer(dk_ff_mpeg2ts_muxer * front)
+debuggerking::ffmpeg_tsmuxer::ffmpeg_tsmuxer(ff_tsmuxer * front)
 	: _front(front)
 	, _avio_ctx(nullptr)
 	, _avio_buffer(nullptr)
 	, _avio_buffer_size(1024*1024*2)
-	, _state(dk_ff_mpeg2ts_muxer::STATE_NONE)
+	, _state(ff_tsmuxer::state_none)
 {
 	_avio_buffer = static_cast<uint8_t*>(av_malloc(_avio_buffer_size));
 }
 
-mpeg2ts_muxer::~mpeg2ts_muxer(void)
+debuggerking::ffmpeg_tsmuxer::~ffmpeg_tsmuxer(void)
 {
 	if (_avio_buffer)
 	{
@@ -20,18 +20,18 @@ mpeg2ts_muxer::~mpeg2ts_muxer(void)
 	_avio_buffer_size = 0;
 }
 
-dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::initialize(dk_ff_mpeg2ts_muxer::configuration_t * config)
+int32_t debuggerking::ffmpeg_tsmuxer::initialize(ff_tsmuxer::configuration_t * config)
 {
 	_config = config;
 
 	_ofmt = av_guess_format("mpegts", NULL, NULL);
 	if (!_ofmt)
-		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
+		return ff_tsmuxer::err_code_t::fail;
 	_ofmt->video_codec = AV_CODEC_ID_H264;
 
 	_format_ctx = avformat_alloc_context();
 	if (!_format_ctx)
-		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
+		return ff_tsmuxer::err_code_t::fail;
 	
 	_format_ctx->oformat = _ofmt;
 #if 0
@@ -40,16 +40,16 @@ dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::initialize(dk_ff_mpeg2ts_muxer::con
 	if (avio_open(&_format_ctx->pb, _format_ctx->filename, AVIO_FLAG_WRITE) < 0)
 		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
 #else
-	_avio_ctx = avio_alloc_context(_avio_buffer, _avio_buffer_size, 1, this, NULL, mpeg2ts_muxer::on_write_packet, NULL);
+	_avio_ctx = avio_alloc_context(_avio_buffer, _avio_buffer_size, 1, this, NULL, ffmpeg_tsmuxer::on_write_packet, NULL);
 	_format_ctx->pb = _avio_ctx;
 #endif
 
 	if (_ofmt->video_codec == AV_CODEC_ID_NONE)
-		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
+		return ff_tsmuxer::err_code_t::fail;
 
 	_vstream = avformat_new_stream(_format_ctx, NULL);
 	if (!_vstream)
-		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
+		return ff_tsmuxer::err_code_t::fail;
 
 	AVCodecContext * c = _vstream->codec;
 	c->codec_id = _ofmt->video_codec;
@@ -77,14 +77,14 @@ dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::initialize(dk_ff_mpeg2ts_muxer::con
 
 	// Write container header
 	if (avformat_write_header(_format_ctx, NULL))
-		dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
+		return ff_tsmuxer::err_code_t::fail;
 
 	_nframes = 0;
-	_state = dk_ff_mpeg2ts_muxer::STATE_INITIALIZED;
-	return dk_ff_mpeg2ts_muxer::ERR_CODE_SUCCESS;
+	_state = ff_tsmuxer::state_initialized;
+	return ff_tsmuxer::err_code_t::success;
 }
 
-dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::release(void)
+int32_t debuggerking::ffmpeg_tsmuxer::release(void)
 {
 	if (_is_initialized)
 	{
@@ -111,16 +111,16 @@ dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::release(void)
 	}
 
 	_nframes = 0;
-	_state = dk_ff_mpeg2ts_muxer::STATE_NONE;
-	return dk_ff_mpeg2ts_muxer::ERR_CODE_SUCCESS;
+	_state = ff_tsmuxer::state_none;
+	return ff_tsmuxer::err_code_t::success;
 }
 
-dk_ff_mpeg2ts_muxer::STATE mpeg2ts_muxer::state(void)
+debuggerking::ff_tsmuxer::tsmuxer_state debuggerking::ffmpeg_tsmuxer::state(void)
 {
 	return _state;
 }
 
-dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::put_video_stream(uint8_t * buffer, size_t nb, int64_t ts, bool keyframe)
+int32_t debuggerking::ffmpeg_tsmuxer::put_video_stream(const uint8_t * buffer, size_t nb, int64_t timestamp, bool keyframe)
 {
 	// Note for H.264 :
 	//    At the moment the SPS/PPS will be written to container again for the first frame here
@@ -136,7 +136,7 @@ dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::put_video_stream(uint8_t * buffer, 
 	pkt.pts = av_rescale_q(_nframes/*m_pVideoStream->pts.val*/, c->time_base, _vstream->time_base);
 	pkt.dts = AV_NOPTS_VALUE;
 	pkt.stream_index = _vstream->index;
-	pkt.data = buffer;
+	pkt.data = (uint8_t*)buffer;
 	pkt.size = nb;
 
 	//TODO
@@ -147,7 +147,7 @@ dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::put_video_stream(uint8_t * buffer, 
 	// Write the compressed frame in the media file
 	int ret = av_interleaved_write_frame(_format_ctx, &pkt);
 	if (ret<0)
-		return dk_ff_mpeg2ts_muxer::ERR_CODE_FAILED;
+		return ff_tsmuxer::err_code_t::fail;
 
 #ifdef ENCODE_AUDIO
 	// Note that video + audio muxing timestamp handling in this sample is very rudimentary
@@ -156,14 +156,14 @@ dk_ff_mpeg2ts_muxer::ERR_CODE mpeg2ts_muxer::put_video_stream(uint8_t * buffer, 
 	write_audio_frame(m_pFormatCtx, real_video_pts);
 #endif
 
-	return dk_ff_mpeg2ts_muxer::ERR_CODE_SUCCESS;
+	return ff_tsmuxer::err_code_t::success;
 }
 
-int32_t mpeg2ts_muxer::on_write_packet(void * opaque, uint8_t * buffer, int32_t size)
+int32_t debuggerking::ffmpeg_tsmuxer::on_write_packet(void * opaque, uint8_t * buffer, int32_t size)
 {
-	mpeg2ts_muxer * self = reinterpret_cast<mpeg2ts_muxer*>(opaque);
+	ffmpeg_tsmuxer * self = reinterpret_cast<ffmpeg_tsmuxer*>(opaque);
 
 	if (self && self->_front)
-		self->_front->recv_ts_stream_callback(buffer, size);
+		self->_front->after_demuxing_callback(buffer, size);
 	return size;
 }

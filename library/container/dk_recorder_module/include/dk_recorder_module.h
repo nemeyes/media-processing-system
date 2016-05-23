@@ -52,6 +52,7 @@ namespace debuggerking
 		static void set_file_position(HANDLE file, uint32_t offset, uint32_t flag);
 		static long long get_file_size(HANDLE file);
 		static long long get_elapsed_msec_from_epoch(void);
+		static long long get_elapsed_msec_from_epoch(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second);
 		static void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int32_t time_string_size);
 		static void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, int32_t & year, int32_t & month, int32_t & day, int32_t & hour, int32_t & minute, int32_t & second);
 

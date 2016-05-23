@@ -6,6 +6,7 @@
 
 #define RTSP_RECEIVER	0
 #define RTMP_RECEIVER	1
+#define RTSP_EXPORTOR	3
 
 namespace debuggerking
 { 
@@ -13,43 +14,69 @@ namespace debuggerking
 	typedef struct _single_media_source_t
 	{
 		int type;
-		char uuid[260];
-		char username[260];
-		char password[260];
+		char uuid[MAX_PATH];
+		char username[MAX_PATH];
+		char password[MAX_PATH];
 		HWND hwnd;
 		bool run;
 		void * receiver;
+		void * exportor;
+		char export_file_path[MAX_PATH];
 		_single_media_source_t(void)
 			: type(RTSP_RECEIVER)
 			, hwnd(NULL)
 			, run(false)
 			, receiver(NULL)
+			, exportor(NULL)
 		{
 			memset(uuid, 0x00, sizeof(uuid));
 			memset(username, 0x00, sizeof(username));
 			memset(password, 0x00, sizeof(password));
+			memset(export_file_path, 0x00, sizeof(export_file_path));
 		}
 
 		_single_media_source_t(_single_media_source_t & clone)
 		{
-			strcpy_s(uuid, sizeof(uuid), clone.uuid);
-			strcpy_s(username, sizeof(username), clone.username);
-			strcpy_s(password, sizeof(password), clone.password);
+			memset(uuid, 0x00, sizeof(uuid));
+			memset(username, 0x00, sizeof(username));
+			memset(password, 0x00, sizeof(password));
+			memset(export_file_path, 0x00, sizeof(export_file_path));
+
+			if (strlen(clone.uuid)>0)
+				strcpy_s(uuid, sizeof(uuid), clone.uuid);
+			if (strlen(clone.username)>0)
+				strcpy_s(username, sizeof(username), clone.username);
+			if (strlen(clone.password)>0)
+				strcpy_s(password, sizeof(password), clone.password);
+			if (strlen(clone.export_file_path)>0)
+				strcpy_s(export_file_path, sizeof(export_file_path), clone.export_file_path);
 
 			hwnd = clone.hwnd;
 			run = clone.run;
 			receiver = clone.receiver;
+			exportor = clone.exportor;
 		}
 
 		_single_media_source_t & operator=(_single_media_source_t & clone)
 		{
-			strcpy_s(uuid, sizeof(uuid), clone.uuid);
-			strcpy_s(username, sizeof(username), clone.username);
-			strcpy_s(password, sizeof(password), clone.password);
+			memset(uuid, 0x00, sizeof(uuid));
+			memset(username, 0x00, sizeof(username));
+			memset(password, 0x00, sizeof(password));
+			memset(export_file_path, 0x00, sizeof(export_file_path));
+
+			if (strlen(clone.uuid)>0)
+				strcpy_s(uuid, sizeof(uuid), clone.uuid);
+			if (strlen(clone.username)>0)
+				strcpy_s(username, sizeof(username), clone.username);
+			if (strlen(clone.password)>0)
+				strcpy_s(password, sizeof(password), clone.password);
+			if (strlen(clone.export_file_path)>0)
+				strcpy_s(export_file_path, sizeof(export_file_path), clone.export_file_path);
 
 			hwnd = clone.hwnd;
 			run = clone.run;
 			receiver = clone.receiver;
+			exportor = clone.exportor;
 			return (*this);
 		}
 	} single_media_source_t;

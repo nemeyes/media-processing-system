@@ -79,6 +79,19 @@ void CParallelRecordClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_RECORDING_PLAY_SCALE, _recording_play_scale);
 	DDX_Control(pDX, IDC_EDIT_OSD_POSITION_X, _osd_x);
 	DDX_Control(pDX, IDC_EDIT_OSD_POSITON_Y, _osd_y);
+	DDX_Control(pDX, IDC_EDIT_EXPORT_UUID, _exp_uuid);
+	DDX_Control(pDX, IDC_EDIT_EXPORT_BEGIN_YEAR, _exp_begin_year);
+	DDX_Control(pDX, IDC_EDIT_EXPORT_BEGIN_MONTH, _exp_begin_month);
+	DDX_Control(pDX, IDC_EDIT_EXPORT_BEGIN_DAY, _exp_begin_day);
+	DDX_Control(pDX, IDC_EDIT_EXPORT_BEGIN_HOUR, _exp_begin_hour);
+	DDX_Control(pDX, IDC_EDIT_EXPORT_BEGIN_MINUTE, _exp_begin_minute);
+	DDX_Control(pDX, IDC_EDIT_EXPORT_BEGIN_SECOND, _exp_begin_second);
+	DDX_Control(pDX, IDC_EDIT8, _exp_end_year);
+	DDX_Control(pDX, IDC_EDIT9, _exp_end_month);
+	DDX_Control(pDX, IDC_EDIT10, _exp_end_day);
+	DDX_Control(pDX, IDC_EDIT11, _exp_end_hour);
+	DDX_Control(pDX, IDC_EDIT12, _exp_end_minute);
+	DDX_Control(pDX, IDC_EDIT13, _exp_end_second);
 }
 
 BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
@@ -100,6 +113,8 @@ BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_RTSP_PLAY, &CParallelRecordClientDlg::OnBnClickedButtonRtspPlay)
 	ON_BN_CLICKED(IDC_BUTTON_RTSP_STOP, &CParallelRecordClientDlg::OnBnClickedButtonRtspStop)
 	ON_BN_CLICKED(IDC_BUTTON_SET_OSD_POSITION, &CParallelRecordClientDlg::OnBnClickedButtonSetOsdPosition)
+	ON_BN_CLICKED(IDC_BUTTON_START_EXPORT, &CParallelRecordClientDlg::OnBnClickedButtonStartExport)
+	ON_BN_CLICKED(IDC_BUTTON_STOP_EXPORT, &CParallelRecordClientDlg::OnBnClickedButtonStopExport)
 END_MESSAGE_MAP()
 
 
@@ -147,6 +162,24 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 
 	_osd_x.SetWindowTextW(L"20");
 	_osd_y.SetWindowTextW(L"20");
+
+
+	_exp_uuid.SetWindowTextW(L"CH1");
+	_exp_begin_year.SetWindowTextW(L"2016");
+	_exp_begin_month.SetWindowTextW(L"5");
+	_exp_begin_day.SetWindowTextW(L"20");
+	_exp_begin_hour.SetWindowTextW(L"16");
+	_exp_begin_minute.SetWindowTextW(L"42");
+	_exp_begin_second.SetWindowTextW(L"40");
+
+	_exp_end_year.SetWindowTextW(L"2016");
+	_exp_end_month.SetWindowTextW(L"5");
+	_exp_end_day.SetWindowTextW(L"20");
+	_exp_end_hour.SetWindowTextW(L"16");
+	_exp_end_minute.SetWindowTextW(L"44");
+	_exp_end_second.SetWindowTextW(L"40");
+
+
 
 	PRMC_Initialize(GetSafeHwnd());
 	PRMC_index = -1;
@@ -668,6 +701,88 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback()
 	video_view_dc->FillRect(rect, &brush);
 	brush.DeleteObject();
 }
+
+void CParallelRecordClientDlg::OnBnClickedButtonStartExport()
+{
+	// TODO: Add your control notification handler code here
+	int status = PRMC_FAIL;
+
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+
+	CString uuid;
+	_exp_uuid.GetWindowText(uuid);
+
+	CString str_begin_year, str_begin_month, str_begin_day, str_begin_hour, str_begin_minute, str_begin_second;
+	_exp_begin_year.GetWindowTextW(str_begin_year);
+	_exp_begin_month.GetWindowTextW(str_begin_month);
+	_exp_begin_day.GetWindowTextW(str_begin_day);
+	_exp_begin_hour.GetWindowTextW(str_begin_hour);
+	_exp_begin_minute.GetWindowTextW(str_begin_minute);
+	_exp_begin_second.GetWindowTextW(str_begin_second);
+
+	CString str_end_year, str_end_month, str_end_day, str_end_hour, str_end_minute, str_end_second;
+	_exp_end_year.GetWindowTextW(str_end_year);
+	_exp_end_month.GetWindowTextW(str_end_month);
+	_exp_end_day.GetWindowTextW(str_end_day);
+	_exp_end_hour.GetWindowTextW(str_end_hour);
+	_exp_end_minute.GetWindowTextW(str_end_minute);
+	_exp_end_second.GetWindowTextW(str_end_second);
+
+	if (recorder_address.GetLength()>0)
+	{
+		int begin_year = _ttoi(str_begin_year);
+		int begin_month = _ttoi(str_begin_month);
+		int begin_day = _ttoi(str_begin_day);
+		int begin_hour = _ttoi(str_begin_hour);
+		int begin_minute = _ttoi(str_begin_minute);
+		int begin_second = _ttoi(str_begin_second);
+		int end_year = _ttoi(str_end_year);
+		int end_month = _ttoi(str_end_month);
+		int end_day = _ttoi(str_end_day);
+		int end_hour = _ttoi(str_end_hour);
+		int end_minute = _ttoi(str_end_minute);
+		int end_second = _ttoi(str_end_second);
+
+
+		WCHAR current_dir[MAX_PATH];
+		memset(current_dir, 0, MAX_PATH);
+		::GetModuleFileName(NULL, current_dir, sizeof(current_dir));
+		CString str_folder = current_dir;
+		str_folder = str_folder.Left(str_folder.ReverseFind(_T('\\')) + 1);
+		if (str_folder.GetLength() > 0)
+		{
+			WCHAR destionation_file_path[MAX_PATH] = { 0 };
+			_snwprintf_s(destionation_file_path, sizeof(destionation_file_path) / sizeof(wchar_t), L"%s%s", (LPCWSTR)str_folder, L"test.ts");
+			PRMC_index = PRMC_AddExport((LPCWSTR)recorder_address, (LPCWSTR)uuid, (LPCWSTR)destionation_file_path);
+			if (PRMC_index != PRMC_FAIL)
+			{
+				status = PRMC_PlayExport((LPCWSTR)recorder_address, PRMC_index,
+					begin_year, begin_month, begin_day, begin_hour, begin_minute, begin_second,
+					end_year, end_month, end_day, end_hour, end_minute, end_second);
+			}
+		}
+	}
+}
+
+
+void CParallelRecordClientDlg::OnBnClickedButtonStopExport()
+{
+	// TODO: Add your control notification handler code here
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+
+	int status = PRMC_FAIL;
+	if (recorder_address.GetLength()>0)
+	{
+		if (PRMC_index != PRMC_FAIL)
+			status = PRMC_StopExport((LPCWSTR)recorder_address, PRMC_index);
+		if (status == PRMC_SUCCESS)
+			status = PRMC_RemoveExport((LPCWSTR)recorder_address, PRMC_index);
+	}
+	PRMC_index = -1;
+}
+
 
 void CParallelRecordClientDlg::OnBnClickedButtonSetOsdPosition()
 {

@@ -51,6 +51,9 @@
     <ClInclude Include="commands\commands_client.h">
       <Filter>commands</Filter>
     </ClInclude>
+    <ClInclude Include="receiver\dk_rtsp_exportor.h">
+      <Filter>receiver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\ParallelRecordMediaClient.cpp">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="control\dk_parallel_recorder_controller.cpp">
       <Filter>control</Filter>
+    </ClCompile>
+    <ClCompile Include="receiver\dk_rtsp_exportor.cpp">
+      <Filter>receiver</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
