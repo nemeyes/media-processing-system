@@ -262,6 +262,7 @@ void ic::iocp_server::execute(void)
 		{
 			if (io_context == NULL)
 				continue;
+			DWORD err = ::GetLastError();
 		}
 
 		try
