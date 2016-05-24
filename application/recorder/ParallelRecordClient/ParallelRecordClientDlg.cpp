@@ -705,6 +705,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback()
 void CParallelRecordClientDlg::OnBnClickedButtonStartExport()
 {
 	// TODO: Add your control notification handler code here
+#if defined(WITH_RTSP_EXPORTOR)
 	int status = PRMC_FAIL;
 
 	CString recorder_address;
@@ -763,12 +764,14 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartExport()
 			}
 		}
 	}
+#endif
 }
 
 
 void CParallelRecordClientDlg::OnBnClickedButtonStopExport()
 {
 	// TODO: Add your control notification handler code here
+#if defined(WITH_RTSP_EXPORTOR)
 	CString recorder_address;
 	_parallel_recorder_address.GetWindowText(recorder_address);
 
@@ -781,6 +784,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonStopExport()
 			status = PRMC_RemoveExport((LPCWSTR)recorder_address, PRMC_index);
 	}
 	PRMC_index = -1;
+#endif
 }
 
 

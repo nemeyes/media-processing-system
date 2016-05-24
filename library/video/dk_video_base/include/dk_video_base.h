@@ -272,6 +272,8 @@ namespace debuggerking
 			int32_t height;
 			HWND hwnd_full;
 			HWND hwnd;
+			bool stretch;
+			bool full_window;
 			_configuration_t(void);
 			_configuration_t(const _configuration_t & clone);
 			_configuration_t & operator=(const _configuration_t & clone);

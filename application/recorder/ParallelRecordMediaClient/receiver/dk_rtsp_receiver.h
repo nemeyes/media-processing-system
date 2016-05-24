@@ -7,6 +7,7 @@
 #include <dk_aac_decoder.h>
 #include <dk_ff_mp3_decoder.h>
 #include <dk_directdraw_renderer.h>
+#include <dk_bitmap_renderer.h>
 #include <dk_mmwave_renderer.h>
 
 namespace debuggerking

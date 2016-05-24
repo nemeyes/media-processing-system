@@ -38,12 +38,6 @@ namespace debuggerking
 
 		int32_t set_background_color(unsigned char red, unsigned char green, unsigned char blue);
 
-		int32_t set_normal_screen_handle(HWND hwnd);
-		int32_t set_full_screen_handle(HWND hwnd);
-
-		int32_t enable_full_screen(bool enable);
-		int32_t enable_stretch(bool enable);
-
 		int32_t set_enable(bool enable);
 		bool get_enable(void);
 
@@ -72,12 +66,6 @@ namespace debuggerking
 
 		DWORD _display_width;
 		DWORD _display_height;
-
-		bool _is_video_stretch;
-		bool _is_video_fullscreen;
-
-		HWND _noraml_screen_hwnd;
-		HWND _full_screen_hwnd;
 
 		bool _enable_time_text;
 		wchar_t _time[100];

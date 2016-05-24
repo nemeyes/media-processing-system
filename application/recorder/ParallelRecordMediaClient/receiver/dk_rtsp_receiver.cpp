@@ -113,14 +113,25 @@ void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, siz
 	{
 		_video_decoder = new ff_video_decoder();
 		_video_decoder_config = new ff_video_decoder::configuration_t();
+
+#if defined(WITH_BITMAP_RENDERER)
+		_video_renderer = new bitmap_renderer();
+		_video_renderer_config = new bitmap_renderer::configuration_t();
+#else
 		_video_renderer = new directdraw_renderer();
 		_video_renderer_config = new directdraw_renderer::configuration_t();
+#endif
 
 		ff_video_decoder * video_decoder = static_cast<ff_video_decoder*>(_video_decoder);
 		ff_video_decoder::configuration_t * video_decoder_config = static_cast<ff_video_decoder::configuration_t*>(_video_decoder_config);
 
+#if defined(WITH_BITMAP_RENDERER)
+		bitmap_renderer * video_renderer = static_cast<bitmap_renderer*>(_video_renderer);
+		bitmap_renderer::configuration_t * video_renderer_config = static_cast<bitmap_renderer::configuration_t*>(_video_renderer_config);
+#else
 		directdraw_renderer * video_renderer = static_cast<directdraw_renderer*>(_video_renderer);
 		directdraw_renderer::configuration_t * video_renderer_config = static_cast<directdraw_renderer::configuration_t*>(_video_renderer_config);
+#endif
 		video_renderer->enable_osd_text(true);
 		video_renderer->set_osd_text(L"");
 		video_renderer->set_osd_text_color(0xFF, 0xFF, 0xFF);
@@ -215,7 +226,11 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 		ff_video_decoder * video_decoder = static_cast<ff_video_decoder*>(_video_decoder);
 		ff_video_decoder::configuration_t * video_decoder_config = static_cast<ff_video_decoder::configuration_t*>(_video_decoder_config);
 
+#if defined(WITH_BITMAP_RENDERER)
+		bitmap_renderer * video_renderer = static_cast<bitmap_renderer*>(_video_renderer);
+#else
 		directdraw_renderer * video_renderer = static_cast<directdraw_renderer*>(_video_renderer);
+#endif
 
 		video_decoder::entity_t encoded;
 		encoded.mem_type = video_decoder::video_memory_type_t::host;

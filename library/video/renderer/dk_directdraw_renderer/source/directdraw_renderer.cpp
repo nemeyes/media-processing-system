@@ -19,8 +19,6 @@ debuggerking::directdraw_core::directdraw_core(directdraw_renderer * front)
 	, _pdd_video(0)
 	, _pdd_cliper(0)
 	, _pdd_rgb(0)
-	, _is_video_stretch(true)
-	, _is_video_fullscreen(false)
 	, _library(0)
 	, _enable_time_text(true)
 	, _time_text_position_x(5)
@@ -120,30 +118,6 @@ int32_t debuggerking::directdraw_core::set_background_color(unsigned char red, u
 	return directdraw_renderer::err_code_t::success;
 }
 
-int32_t debuggerking::directdraw_core::set_normal_screen_handle(HWND hwnd)
-{
-	_noraml_screen_hwnd = hwnd;
-	return directdraw_renderer::err_code_t::success;
-}
-
-int32_t debuggerking::directdraw_core::set_full_screen_handle(HWND hwnd)
-{
-	_full_screen_hwnd = hwnd;
-	return directdraw_renderer::err_code_t::success;
-}
-
-int32_t debuggerking::directdraw_core::enable_full_screen(bool enable)
-{
-	_is_video_fullscreen = enable;
-	return directdraw_renderer::err_code_t::success;
-}
-
-int32_t debuggerking::directdraw_core::enable_stretch(bool enable)
-{
-	_is_video_stretch = enable;
-	return directdraw_renderer::err_code_t::success;
-}
-
 int32_t debuggerking::directdraw_core::set_enable(bool enable)
 {
 	_enable = enable;
@@ -164,20 +138,11 @@ int32_t debuggerking::directdraw_core::initialize_renderer(directdraw_renderer::
 {
 	release_renderer();
 	_config = config;
-	_full_screen_hwnd = _config->hwnd_full;
-	_noraml_screen_hwnd = _config->hwnd;
 
 	int32_t value = directdraw_renderer::err_code_t::fail;
-	HWND hwnd = 0;
-
 	if (_config->height>0 && _config->width>0)
 	{
-		if (_is_video_fullscreen)
-			hwnd = _full_screen_hwnd;
-		else
-			hwnd = _noraml_screen_hwnd;
-		if (hwnd)
-			value = open();
+		value = open();
 	}
 	_is_initialized = true;
 	return value;
@@ -204,10 +169,10 @@ int32_t debuggerking::directdraw_core::open(void)
 		_library = ::LoadLibrary(_T("DDRAW.DLL"));
 	}
 
-	if (_is_video_fullscreen)
-		hwnd = _full_screen_hwnd;
+	if (_config->full_window)
+		hwnd = _config->hwnd_full;
 	else
-		hwnd = _noraml_screen_hwnd;
+		hwnd = _config->hwnd;
 
 	if (hwnd)
 	{
@@ -308,23 +273,7 @@ int32_t debuggerking::directdraw_core::render(directdraw_renderer::entity_t * p)
 
 	if ((_pdd) && (_config->height>0) && (_config->width>0))
 	{
-		/*
-		if( _is_video_fullscreen!=subpe->is_video_fullscreen )
-		{
-		close( subpe );
-		open( subpe );
-		if( subpe->device_context )
-		{
-		render_video_device_interface *device_context = static_cast<render_video_device_interface*>( subpe->device_context );
-
-		if( subpe->is_video_fullscreen )
-		device_context->active_fullscreen();
-		else
-		device_context->deactive_fullscreen();
-		}
-		}
-		*/
-		if (_is_video_fullscreen)
+		if (_config->full_window)
 			value = make_full_screen_display_size(display_width, display_height, display_x, display_y);
 		else
 			value = make_normal_screen_display_size(display_width, display_height, display_x, display_y);
@@ -527,8 +476,8 @@ int32_t debuggerking::directdraw_core::render(directdraw_renderer::entity_t * p)
 int32_t debuggerking::directdraw_core::make_normal_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
 {
 	RECT dst_rect = { 0 };
-	if (_noraml_screen_hwnd)
-		::GetClientRect(_noraml_screen_hwnd, &dst_rect);
+	if (_config->hwnd)
+		::GetClientRect(_config->hwnd, &dst_rect);
 	else
 		return directdraw_renderer::err_code_t::fail;
 
@@ -538,7 +487,7 @@ int32_t debuggerking::directdraw_core::make_normal_screen_display_size(int32_t &
 	unsigned int dwidth = dst_rect.right - dst_rect.left;
 	unsigned int dheight = dst_rect.bottom - dst_rect.top;
 
-	if (_is_video_stretch)
+	if (_config->stretch)
 	{
 		display_width = dwidth;
 		display_height = dheight;
@@ -577,14 +526,14 @@ int32_t debuggerking::directdraw_core::make_normal_screen_display_size(int32_t &
 int32_t debuggerking::directdraw_core::make_full_screen_display_size(int32_t & display_width, int32_t & display_height, int32_t & display_x, int32_t & display_y)
 {
 	RECT dst_rect;
-	::GetClientRect(_full_screen_hwnd, &dst_rect);
+	::GetClientRect(_config->hwnd_full, &dst_rect);
 
 	unsigned int iwidth = _config->width;
 	unsigned int iheight = _config->height;
 	unsigned int dwidth = dst_rect.right - dst_rect.left;
 	unsigned int dheight = dst_rect.bottom - dst_rect.top;
 
-	if (_is_video_stretch)
+	if (_config->stretch)
 	{
 		display_width = dwidth;
 		display_height = dheight;

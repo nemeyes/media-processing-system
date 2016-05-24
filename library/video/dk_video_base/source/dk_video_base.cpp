@@ -676,6 +676,8 @@ debuggerking::video_renderer::_configuration_t::_configuration_t(void)
 	, height(0)
 	, hwnd_full(NULL)
 	, hwnd(NULL)
+	, stretch(false)
+	, full_window(NULL)
 {}
 
 debuggerking::video_renderer::_configuration_t::_configuration_t(const video_renderer::_configuration_t & clone)
@@ -684,6 +686,8 @@ debuggerking::video_renderer::_configuration_t::_configuration_t(const video_ren
 	height = clone.height;
 	hwnd_full = clone.hwnd_full;
 	hwnd = clone.hwnd;
+	stretch = clone.stretch;
+	full_window = clone.full_window;
 }
 
 debuggerking::video_renderer::_configuration_t & debuggerking::video_renderer::_configuration_t::operator = (const video_renderer::_configuration_t & clone)
@@ -692,6 +696,8 @@ debuggerking::video_renderer::_configuration_t & debuggerking::video_renderer::_
 	height = clone.height;
 	hwnd_full = clone.hwnd_full;
 	hwnd = clone.hwnd;
+	stretch = clone.stretch;
+	full_window = clone.full_window;
 	return (*this);
 }
 
