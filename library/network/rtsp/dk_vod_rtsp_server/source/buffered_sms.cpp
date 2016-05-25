@@ -13,6 +13,17 @@ buffered_sms::~buffered_sms(void)
 	delete[](char*)_stream_name;
 }
 
+/*
+float buffered_sms::duration(void) const
+{
+	return 1.f;
+}
+*/
+
+void buffered_sms::seekStreamSource(FramedSource * inputSource, double& seekNPT, double streamDuration, u_int64_t& numBytes)
+{
+
+}
 
 void buffered_sms::testScaleFactor(float& scale)
 {

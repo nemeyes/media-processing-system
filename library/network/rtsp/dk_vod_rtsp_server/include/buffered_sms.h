@@ -14,6 +14,9 @@ protected: // we're a virtual base class
 	buffered_sms(UsageEnvironment & env, char const * stream_name, Boolean reuseFirstSource, std::shared_ptr<debuggerking::media_source_reader> reader);
 	virtual ~buffered_sms(void);
 
+	//virtual float duration(void) const;
+	virtual void seekStreamSource(FramedSource* inputSource, double& seekNPT, double streamDuration, u_int64_t& numBytes);
+
 	virtual void testScaleFactor(float& scale);
 	virtual void setStreamSourceScale(FramedSource* inputSource, float scale);
 protected:
