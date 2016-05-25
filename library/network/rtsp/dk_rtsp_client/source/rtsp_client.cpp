@@ -88,6 +88,11 @@ void debuggerking::rtsp_core::start_playing_session(MediaSession * media_session
     sendPlayCommand(*media_session, after_func, abs_start_time, abs_end_time, scale, _auth);
 }
 
+void debuggerking::rtsp_core::start_pausing_session(void)
+{
+	sendPauseCommand(*_media_session, continue_after_pause, _auth);
+}
+
 void debuggerking::rtsp_core::teardown_session(MediaSession * media_session, RTSPClient::responseHandler * after_func)
 {
     sendTeardownCommand(*media_session, after_func, _auth);
@@ -239,6 +244,11 @@ void debuggerking::rtsp_core::continue_after_play(RTSPClient * param, int result
 #else
 	self->close();
 #endif
+}
+
+void debuggerking::rtsp_core::continue_after_pause(RTSPClient * param, int result_code, char * result_string)
+{
+
 }
 
 void debuggerking::rtsp_core::continue_after_teardown(RTSPClient * param, int result_code, char * result_string)

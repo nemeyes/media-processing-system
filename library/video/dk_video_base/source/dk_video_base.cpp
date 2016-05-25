@@ -677,7 +677,7 @@ debuggerking::video_renderer::_configuration_t::_configuration_t(void)
 	, hwnd_full(NULL)
 	, hwnd(NULL)
 	, stretch(false)
-	, full_window(NULL)
+	, full_window(false)
 {}
 
 debuggerking::video_renderer::_configuration_t::_configuration_t(const video_renderer::_configuration_t & clone)

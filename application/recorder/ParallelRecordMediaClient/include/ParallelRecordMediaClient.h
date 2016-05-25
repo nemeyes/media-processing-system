@@ -30,6 +30,7 @@ extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Remove(const wchar_t 
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int hour, int minute, int second, float scale, bool repeat);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Stop(const wchar_t * url, int index);
+extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Pause(const wchar_t * url, int index);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y);
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * export_file_path);

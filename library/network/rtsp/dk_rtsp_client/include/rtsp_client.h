@@ -19,8 +19,10 @@ namespace debuggerking
 		static void continue_after_describe(RTSPClient * param, int result_code, char * result_string);
 		static void continue_after_setup(RTSPClient * param, int result_code, char * result_string);
 		static void continue_after_play(RTSPClient * param, int result_code, char * result_string);
+		static void continue_after_pause(RTSPClient * param, int result_code, char * result_string);
 		static void continue_after_teardown(RTSPClient * param, int result_code, char * result_string);
 
+		void start_pausing_session(void);
 		void close(void);
 
 	protected:

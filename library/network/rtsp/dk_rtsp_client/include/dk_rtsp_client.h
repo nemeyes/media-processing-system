@@ -14,6 +14,7 @@ namespace debuggerking
 		virtual ~rtsp_client(void);
 		int32_t play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, int32_t recv_timeout, float scale = 1.f, bool repeat = true);
 		int32_t stop(void);
+		int32_t pause(void);
 
 		void set_sps(uint8_t * sps, size_t sps_size);
 		void set_pps(uint8_t * pps, size_t pps_size);

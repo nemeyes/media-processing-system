@@ -84,6 +84,18 @@ int32_t debuggerking::rtsp_client::stop(void)
 	return rtsp_client::err_code_t::success;
 }
 
+int32_t debuggerking::rtsp_client::pause(void)
+{
+	if (!_kill)
+	{
+		if (_live)
+		{
+			_live->start_pausing_session();
+		}
+	}
+	return rtsp_client::err_code_t::success;
+}
+
 uint8_t * debuggerking::rtsp_client::get_sps(size_t & sps_size)
 {
 	sps_size = _sps_size;

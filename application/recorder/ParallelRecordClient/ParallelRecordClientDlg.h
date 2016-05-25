@@ -102,4 +102,6 @@ private:
 public:
 	afx_msg void OnBnClickedButtonStartExport();
 	afx_msg void OnBnClickedButtonStopExport();
+	afx_msg void OnBnClickedButtonPausePlayback();
+	afx_msg void OnBnClickedButtonManualPausePlayback();
 };

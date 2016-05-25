@@ -115,6 +115,8 @@ BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_SET_OSD_POSITION, &CParallelRecordClientDlg::OnBnClickedButtonSetOsdPosition)
 	ON_BN_CLICKED(IDC_BUTTON_START_EXPORT, &CParallelRecordClientDlg::OnBnClickedButtonStartExport)
 	ON_BN_CLICKED(IDC_BUTTON_STOP_EXPORT, &CParallelRecordClientDlg::OnBnClickedButtonStopExport)
+	ON_BN_CLICKED(IDC_BUTTON_PAUSE_PLAYBACK, &CParallelRecordClientDlg::OnBnClickedButtonPausePlayback)
+	ON_BN_CLICKED(IDC_BUTTON_MANUAL_PAUSE_PLAYBACK, &CParallelRecordClientDlg::OnBnClickedButtonManualPausePlayback)
 END_MESSAGE_MAP()
 
 
@@ -628,6 +630,19 @@ void CParallelRecordClientDlg::OnBnClickedButtonStopPlayback()
 	//InvalidateRect(rect);
 }
 
+void CParallelRecordClientDlg::OnBnClickedButtonPausePlayback()
+{
+	// TODO: Add your control notification handler code here
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+
+	int status = PRMC_FAIL;
+	if (recorder_address.GetLength()>0)
+	{
+		if (PRMC_index != PRMC_FAIL)
+			status = PRMC_Pause((LPCWSTR)recorder_address, PRMC_index);
+	}
+}
 
 
 void CParallelRecordClientDlg::OnBnClickedButtonManualStartPlayback()
@@ -700,6 +715,20 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback()
 	video_view->GetClientRect(rect);
 	video_view_dc->FillRect(rect, &brush);
 	brush.DeleteObject();
+}
+
+void CParallelRecordClientDlg::OnBnClickedButtonManualPausePlayback()
+{
+	// TODO: Add your control notification handler code here
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+
+	int status = PRMC_FAIL;
+	if (recorder_address.GetLength()>0)
+	{
+		if (PRMC_index != PRMC_FAIL)
+			status = PRMC_Pause((LPCWSTR)recorder_address, PRMC_index);
+	}
 }
 
 void CParallelRecordClientDlg::OnBnClickedButtonStartExport()
