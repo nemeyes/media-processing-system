@@ -3,20 +3,23 @@
 //#include <mferror.h>
 #include "mf_topology_builder.h"
 
-mf_player_framework::mf_player_framework(void)
-	: _ref_count(1)
-	, _state(dk_mf_player_framework::player_state_closed)
+debuggerking::mf_player_core::mf_player_core(void)
+	: _config(nullptr)
+	, _ref_count(1)
+	, _state(mf_player_framework::state_closed)
 	, _session(NULL)
 	, _rate_control(NULL)
 	, _presentation_clock(NULL)
+	//, _topology(NULL)
 	, _duration(0)
 	, _video_display(NULL)
+	//	, _hwnd(NULL)
 {
 	MFStartup(MF_VERSION);
 	_close_completion_event = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 }
 
-mf_player_framework::~mf_player_framework(void)
+debuggerking::mf_player_core::~mf_player_core(void)
 {
 	stop();
 	close_session();
@@ -31,23 +34,24 @@ mf_player_framework::~mf_player_framework(void)
 		_video_display.Release();
 		_video_display = NULL;
 	}
+	//_hwnd = INVALID_HANDLE_VALUE;
 	MFShutdown();
 	::CloseHandle(_close_completion_event);
 }
 
 // Playback control
-dk_mf_player_framework::err_code mf_player_framework::seek(int position)
+int32_t debuggerking::mf_player_core::seek(int position)
 {
-	return dk_mf_player_framework::err_code_success;
+	return mf_player_framework::err_code_t::success;
 }
 
-dk_mf_player_framework::err_code mf_player_framework::slowfoward_rate(float rate)
+int32_t debuggerking::mf_player_core::slowfoward_rate(float rate)
 {
 	HRESULT hr = S_OK;
 	BOOL thin = FALSE;
 	do
 	{
-		if (_state != dk_mf_player_framework::player_state_started)
+		if (_state != mf_player_framework::state_started)
 		{
 			hr = MF_E_INVALIDREQUEST;
 			break;
@@ -59,18 +63,18 @@ dk_mf_player_framework::err_code mf_player_framework::slowfoward_rate(float rate
 	} while (0);
 
 	if (FAILED(hr))
-		return dk_mf_player_framework::err_code_failed;
+		return mf_player_framework::err_code_t::fail;
 	else
-		return dk_mf_player_framework::err_code_success;
+		return mf_player_framework::err_code_t::success;
 }
 
-dk_mf_player_framework::err_code mf_player_framework::fastforward_rate(float rate)
+int32_t debuggerking::mf_player_core::fastforward_rate(float rate)
 {
 	HRESULT hr = S_OK;
 	BOOL thin = FALSE;
 	do
 	{
-		if (_state != dk_mf_player_framework::player_state_started)
+		if (_state != mf_player_framework::state_started)
 		{
 			hr = MF_E_INVALIDREQUEST;
 			break;
@@ -82,17 +86,18 @@ dk_mf_player_framework::err_code mf_player_framework::fastforward_rate(float rat
 	} while (0);
 
 	if (FAILED(hr))
-		return dk_mf_player_framework::err_code_failed;
+		return mf_player_framework::err_code_t::fail;
 	else
-		return dk_mf_player_framework::err_code_success;
+		return mf_player_framework::err_code_t::success;
 }
 
-dk_mf_player_framework::err_code mf_player_framework::open_file(const wchar_t * file, uint32_t gpu_index, HWND hwnd)
+int32_t debuggerking::mf_player_core::open_file(mf_player_framework::configuration_t * config)
 {
 	HRESULT hr = S_OK;
-	if (hwnd == NULL)
-		return dk_mf_player_framework::err_code_failed;
+	if (config->hwnd == NULL)
+		return mf_player_framework::err_code_t::fail;
 
+	_config = config;
 	do
 	{
 		// Step 1: create a media session if one doesn't exist already
@@ -108,15 +113,15 @@ dk_mf_player_framework::err_code mf_player_framework::open_file(const wchar_t * 
 		BREAK_ON_FAIL(hr);
 
 		// Step 2 : create a media source for specified URL string, The URL can be a path to a stream or it can be a path to a local file
-		hr = mf_topology_builder::create_source(file, &_media_source);
+		hr = mf_topology_builder::create_source(_config->filepath, &_media_source);
 		BREAK_ON_FAIL(hr);
+
 
 		// Step 3: build the topology
 		CComQIPtr<IMFPresentationDescriptor> present_descriptor;
 		DWORD number_of_streams = 0;
 		do
 		{
-			
 			hr = MFCreateTopology(&_topology);
 			BREAK_ON_FAIL(hr);
 
@@ -128,13 +133,13 @@ dk_mf_player_framework::err_code mf_player_framework::open_file(const wchar_t * 
 
 			for (DWORD index = 0; index < number_of_streams; index++)
 			{
-				mf_topology_builder::add_branch_to_partial_topology(_topology, _media_source, index, present_descriptor, hwnd, gpu_index, &_device_manager, &_key_event);
+				mf_topology_builder::add_branch_to_partial_topology(_topology, _media_source, index, present_descriptor, _config, &_device_manager, &_key_event);
 			}
 		} while (0);
 		BREAK_ON_FAIL(hr);
 
 		// Step 4: add the topology to the internal queue of topologies associated with this
-		hr = _topology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE);
+		hr = _topology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_ONLY_HARDWARE);
 		BREAK_ON_FAIL(hr);
 
 		hr = _topology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL);
@@ -147,59 +152,59 @@ dk_mf_player_framework::err_code mf_player_framework::open_file(const wchar_t * 
 
 		// If we've just initialized a brand new topology in step 1, set the player state 
 		// to "open pending" - not playing yet, but ready to begin.
-		if (_state == dk_mf_player_framework::player_state_ready)
+		if (_state == mf_player_framework::state_ready)
 		{
-			_state = dk_mf_player_framework::player_state_open_pending;
+			_state = mf_player_framework::state_open_pending;
 		}
 	} while (0);
 
 	if (FAILED(hr))
 	{
-		_state = dk_mf_player_framework::player_state_closed;
-		return dk_mf_player_framework::err_code_failed;
+		_state = mf_player_framework::state_closed;
+		return mf_player_framework::err_code_t::fail;
 	}
-	return dk_mf_player_framework::err_code_success;
+	return mf_player_framework::err_code_t::success;
 }
 
-dk_mf_player_framework::err_code mf_player_framework::play(void)
+int32_t debuggerking::mf_player_core::play(void)
 {
-	if (_state != dk_mf_player_framework::player_state_paused && _state != dk_mf_player_framework::player_state_stopped)
-		return dk_mf_player_framework::err_code_failed;
+	if (_state != mf_player_framework::state_paused && _state != mf_player_framework::state_stopped)
+		return mf_player_framework::err_code_t::fail;
 
 	if (_session == NULL)
-		return dk_mf_player_framework::err_code_failed;
+		return mf_player_framework::err_code_t::fail;
 
 	HRESULT hr = start_playback();
 	if (SUCCEEDED(hr))
-		return dk_mf_player_framework::err_code_success;
+		return mf_player_framework::err_code_t::success;
 	else
-		return dk_mf_player_framework::err_code_failed;
+		return mf_player_framework::err_code_t::fail;
 }
 
-dk_mf_player_framework::err_code mf_player_framework::pause(void)
+int32_t debuggerking::mf_player_core::pause(void)
 {
-	if (_state != dk_mf_player_framework::player_state_started)
-		return dk_mf_player_framework::err_code_failed;
+	if (_state != mf_player_framework::state_started)
+		return mf_player_framework::err_code_t::fail;
 
 	if (_session == NULL)
-		return dk_mf_player_framework::err_code_failed;
+		return mf_player_framework::err_code_t::fail;
 
 	HRESULT hr = _session->Pause();
 	if (SUCCEEDED(hr))
 	{
-		_state = dk_mf_player_framework::player_state_paused;
-		return dk_mf_player_framework::err_code_success;
+		_state = mf_player_framework::state_paused;
+		return mf_player_framework::err_code_t::success;
 	}
 	else
-		return dk_mf_player_framework::err_code_failed;
+		return mf_player_framework::err_code_t::fail;
 }
 
-dk_mf_player_framework::err_code mf_player_framework::stop(void)
+int32_t debuggerking::mf_player_core::stop(void)
 {
 	HRESULT hr = S_OK;
 	do
 	{
-		if (_state != dk_mf_player_framework::player_state_started)
+		if (_state != mf_player_framework::state_started)
 		{
 			hr = MF_E_INVALIDREQUEST;
 			break;
@@ -210,69 +215,69 @@ dk_mf_player_framework::err_code mf_player_framework::stop(void)
 		hr = _session->Stop();
 		BREAK_ON_FAIL(hr);
 
-		_state = dk_mf_player_framework::player_state_stopped;
+		_state = mf_player_framework::state_stopped;
 	} while (0);
 
 	if (SUCCEEDED(hr))
-		return dk_mf_player_framework::err_code_success;
+		return mf_player_framework::err_code_t::success;
 	else
-		return dk_mf_player_framework::err_code_failed;
+		return mf_player_framework::err_code_t::fail;
 }
 
-dk_mf_player_framework::player_state mf_player_framework::state(void) const 
-{ 
-	return _state; 
+debuggerking::mf_player_framework::player_state debuggerking::mf_player_core::state(void) const
+{
+	return _state;
 }
 
-void mf_player_framework::on_keydown_right(void)
+void debuggerking::mf_player_core::on_keydown_right(void)
 {
 	if (_key_event)
 		_key_event->OnKeyDownRight();
 }
 
-void mf_player_framework::on_keyup_right(void)
+void debuggerking::mf_player_core::on_keyup_right(void)
 {
 	if (_key_event)
 		_key_event->OnKeyUpRight();
 }
 
-void mf_player_framework::on_keydown_left(void)
+void debuggerking::mf_player_core::on_keydown_left(void)
 {
 	if (_key_event)
 		_key_event->OnKeyDownLeft();
 }
 
-void mf_player_framework::on_keyup_left(void)
+void debuggerking::mf_player_core::on_keyup_left(void)
 {
 	if (_key_event)
 		_key_event->OnKeyUpLeft();
 }
 
-void mf_player_framework::on_keydown_up(void)
+void debuggerking::mf_player_core::on_keydown_up(void)
 {
 	if (_key_event)
 		_key_event->OnKeyDownUp();
 }
 
-void mf_player_framework::on_keyup_up(void)
+void debuggerking::mf_player_core::on_keyup_up(void)
 {
 	if (_key_event)
 		_key_event->OnKeyUpUp();
 }
 
-void mf_player_framework::on_keydown_down(void)
+void debuggerking::mf_player_core::on_keydown_down(void)
 {
 	if (_key_event)
 		_key_event->OnKeyDownDown();
 }
 
-void mf_player_framework::on_keyup_down(void)
+void debuggerking::mf_player_core::on_keyup_down(void)
 {
 	if (_key_event)
 		_key_event->OnKeyUpDown();
 }
 
-HRESULT mf_player_framework::QueryInterface(REFIID riid, void ** ppv)
+HRESULT debuggerking::mf_player_core::QueryInterface(REFIID riid, void ** ppv)
 {
 	HRESULT hr = S_OK;
 
@@ -301,12 +306,12 @@ HRESULT mf_player_framework::QueryInterface(REFIID riid, void ** ppv)
 	return hr;
 }
 
-ULONG mf_player_framework::AddRef(void)
+ULONG debuggerking::mf_player_core::AddRef(void)
 {
 	return InterlockedIncrement(&_ref_count);
 }
 
-ULONG mf_player_framework::Release(void)
+ULONG debuggerking::mf_player_core::Release(void)
 {
 	ULONG uCount = InterlockedDecrement(&_ref_count);
 	if (uCount == 0)
@@ -323,7 +328,7 @@ ULONG mf_player_framework::Release(void)
 // async_result - a pointer to the asynchronous result object which references the event 
 // itself in the IMFMediaEventGenerator's event queue.  (The media session is the object
 // that implements the IMFMediaEventGenerator interface.)
-HRESULT mf_player_framework::Invoke(IMFAsyncResult * async_result)
+HRESULT debuggerking::mf_player_core::Invoke(IMFAsyncResult * async_result)
 {
 	ATL::CComPtr<IMFMediaEvent> media_event;
 	HRESULT hr = S_OK;
@@ -356,7 +361,7 @@ HRESULT mf_player_framework::Invoke(IMFAsyncResult * async_result)
 
 		// If we are in a normal state, handle the event by passing it to the HandleEvent()
 		// function.  Otherwise, if we are in the closing state, do nothing with the event.
-		if (_state != dk_mf_player_framework::player_state_closing)
+		if (_state != mf_player_framework::state_closing)
 		{
 			process_event(media_event);
 		}
@@ -365,7 +370,7 @@ HRESULT mf_player_framework::Invoke(IMFAsyncResult * async_result)
 	return S_OK;
 }
 
-HRESULT mf_player_framework::process_event(ATL::CComPtr<IMFMediaEvent> & media_event)
+HRESULT debuggerking::mf_player_core::process_event(ATL::CComPtr<IMFMediaEvent> & media_event)
 {
 	HRESULT hr_status = S_OK;            // Event status
 	HRESULT hr = S_OK;
@@ -412,12 +417,13 @@ HRESULT mf_player_framework::process_event(ATL::CComPtr<IMFMediaEvent> & media_e
 	return hr;
 }
 
-HRESULT mf_player_framework::topology_ready_callback(void)
+HRESULT debuggerking::mf_player_core::topology_ready_callback(void)
 {
 	HRESULT hr = S_OK;
 
 	// release any previous instance of the m_pVideoDisplay interface
 	_video_display.Release();
+	_video_display = NULL;
 	// Ask the session for the IMFVideoDisplayControl interface. 
 	MFGetService(_session, MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&_video_display));
 
@@ -436,16 +442,34 @@ HRESULT mf_player_framework::topology_ready_callback(void)
 	return hr;
 }
 
-HRESULT mf_player_framework::presentation_ended_callback(void)
+HRESULT debuggerking::mf_player_core::presentation_ended_callback(void)
 {
 	// The session puts itself into the stopped state automatically.
-	_state = dk_mf_player_framework::player_state_stopped;
-	_session->Stop();
-	_session->Shutdown();
+	if (_config && _config->enable_repeat)
+	{
+		PROPVARIANT var_play;
+		PropVariantInit(&var_play);
+
+		var_play.vt = VT_I8;
+		var_play.hVal = { 0 };
+
+		HRESULT hr = _session->Start(&GUID_NULL, &var_play);
+		if (SUCCEEDED(hr))
+			_state = mf_player_framework::state_started;
+
+		PropVariantClear(&var_play);
+	}
+	else
+	{
+		_state = mf_player_framework::state_stopped;
+		_session->Stop();
+		_session->Shutdown();
+	}
+
 	return S_OK;
 }
 
-HRESULT mf_player_framework::create_session(void)
+HRESULT debuggerking::mf_player_core::create_session(void)
 {
 	// Close the old session, if any.
 	HRESULT hr = S_OK;
@@ -453,13 +477,13 @@ HRESULT mf_player_framework::create_session(void)
 
 	do
 	{
-		assert(_state == dk_mf_player_framework::player_state_closed);
+		assert(_state == mf_player_framework::state_closed);
 
 		// Create the media session.
 		hr = MFCreateMediaSession(NULL, &_session);
 		BREAK_ON_FAIL(hr);
 
-		_state = dk_mf_player_framework::player_state_ready;
+		_state = mf_player_framework::state_ready;
 
 		// designate this class as the one that will be handling events from the media 
 		hr = _session->BeginGetEvent((IMFAsyncCallback*)this, NULL);
@@ -469,12 +493,12 @@ HRESULT mf_player_framework::create_session(void)
 	return hr;
 }
 
-HRESULT mf_player_framework::close_session(void)
+HRESULT debuggerking::mf_player_core::close_session(void)
 {
 	HRESULT hr = S_OK;
 	DWORD wait_result = 0;
 
-	_state = dk_mf_player_framework::player_state_closing;
+	_state = mf_player_framework::state_closing;
 
 	// release the video display object
 	_video_display.Release();
@@ -484,7 +508,7 @@ HRESULT mf_player_framework::close_session(void)
 	// operation to complete on another thread
 	if (_session != NULL)
 	{
-		_state = dk_mf_player_framework::player_state_closing;
+		_state = mf_player_framework::state_closing;
 		hr = _session->Close();
 		if (SUCCEEDED(hr))
 		{
@@ -507,11 +531,11 @@ HRESULT mf_player_framework::close_session(void)
 	}
 
 	_session = NULL;
-	_state = dk_mf_player_framework::player_state_closed;
+	_state = mf_player_framework::state_closed;
 	return hr;
 }
 
-HRESULT mf_player_framework::start_playback(void)
+HRESULT debuggerking::mf_player_core::start_playback(void)
 {
 	assert(_session != NULL);
 	PROPVARIANT var_play;
@@ -525,14 +549,14 @@ HRESULT mf_player_framework::start_playback(void)
 	HRESULT hr = _session->Start(&GUID_NULL, &var_play);
 	if (SUCCEEDED(hr))
 	{
-		_state = dk_mf_player_framework::player_state_started;
+		_state = mf_player_framework::state_started;
 	}
 
 	PropVariantClear(&var_play);
 	return hr;
 }
 
-HRESULT mf_player_framework::determine_duration(void)
+HRESULT debuggerking::mf_player_core::determine_duration(void)
 {
 	HRESULT hr = S_OK;
 	CComPtr<IMFTopology> topology;
@@ -576,7 +600,7 @@ HRESULT mf_player_framework::determine_duration(void)
 	return hr;
 }
 
-HRESULT mf_player_framework::shutdown_source(void)
+HRESULT debuggerking::mf_player_core::shutdown_source(void)
 {
 	HRESULT hr = S_OK;
 	if (_media_source)
@@ -585,6 +609,7 @@ HRESULT mf_player_framework::shutdown_source(void)
 		hr = _media_source->Shutdown();
 		// release the source, since all subsequent calls to it will fail
 		_media_source.Release();
+		//_media_source = NULL;
 	}
 	else
 	{

@@ -1,6 +1,6 @@
 #include "mf_topology_builder.h"
 
-HRESULT mf_topology_builder::create_source(const wchar_t * filepath, IMFMediaSource ** media_source)
+HRESULT debuggerking::mf_topology_builder::create_source(const wchar_t * filepath, IMFMediaSource ** media_source)
 {
 	HRESULT hr = S_OK;
 	MF_OBJECT_TYPE obj_type = MF_OBJECT_INVALID;
@@ -20,7 +20,7 @@ HRESULT mf_topology_builder::create_source(const wchar_t * filepath, IMFMediaSou
 	return hr;
 }
 
-HRESULT mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topology, IMFMediaSource * media_source, DWORD stream_index, IMFPresentationDescriptor * present_descriptor, HWND hwnd, UINT gpu_index, IUnknown ** device_manager, IKeyEvent ** keyevent)
+HRESULT debuggerking::mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topology, IMFMediaSource * media_source, DWORD stream_index, IMFPresentationDescriptor * present_descriptor, mf_player_framework::configuration_t * config, IUnknown ** device_manager, IKeyEvent ** keyevent)
 {
 	HRESULT hr = S_OK;
 	ATL::CComPtr<IMFStreamDescriptor> stream_descriptor = NULL;
@@ -39,7 +39,6 @@ HRESULT mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topolo
 
 		if (stream_selected)
 		{
-
 			/////////////////create a source node for this stream///////////////////
 			hr = mf_topology_builder::create_stream_source_node(media_source, present_descriptor, stream_descriptor, &source_node);
 			BREAK_ON_FAIL(hr);
@@ -52,90 +51,111 @@ HRESULT mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topolo
 
 			do
 			{
-				if (hwnd != NULL)
+				hr = stream_descriptor->GetMediaTypeHandler(&media_type_handler);
+				BREAK_ON_FAIL(hr);
+
+				hr = media_type_handler->GetCurrentMediaType(&media_type);
+				BREAK_ON_FAIL(hr);
+
+				hr = media_type->GetMajorType(&major_type);
+				BREAK_ON_FAIL(hr);
+
+				// Create an IMFActivate controller object for the renderer, based on the media type.
+				if (major_type == MFMediaType_Audio)
 				{
-					hr = stream_descriptor->GetMediaTypeHandler(&media_type_handler);
-					BREAK_ON_FAIL(hr);
+					//hr = MFCreateAudioRendererActivate(&renderer_activate);
+					//// create the node which will represent the renderer
+					//hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
+					//BREAK_ON_FAIL(hr);
 
-					hr = media_type_handler->GetCurrentMediaType(&media_type);
-					BREAK_ON_FAIL(hr);
-
-					hr = media_type->GetMajorType(&major_type);
-					BREAK_ON_FAIL(hr);
-
-					// Create an IMFActivate controller object for the renderer, based on the media type.
-					if (major_type == MFMediaType_Audio)
-					{
-						hr = MFCreateAudioRendererActivate(&renderer_activate);
-						// create the node which will represent the renderer
-						hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
-						BREAK_ON_FAIL(hr);
-
-						// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
-						hr = sink_node->SetObject(renderer_activate);
-						BREAK_ON_FAIL(hr);
-					}
-					else if (major_type == MFMediaType_Video)
-					{
-#if 0
-						hr = MFCreateVideoRendererActivate(_hwnd, &renderer_activate);
-						BREAK_ON_FAIL(hr);
-
-						// create the node which will represent the renderer
-						hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
-						BREAK_ON_FAIL(hr);
-
-						// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
-						hr = sink_node->SetObject(renderer_activate);
-						BREAK_ON_FAIL(hr);
-#else
-						hr = mf_topology_builder::create_dx11_video_renderer_activate(hwnd, &renderer_activate);
-						BREAK_ON_FAIL(hr);
-
-						ATL::CComQIPtr<IGPUSelector> gpu_selector(renderer_activate);
-						if (!gpu_selector)
-							break;
-						hr = gpu_selector->SetGPUIndex(gpu_index);
-						BREAK_ON_FAIL(hr);
-
-						ATL::CComPtr<IMFMediaSink> media_sink;
-						hr = renderer_activate->ActivateObject(IID_PPV_ARGS(&media_sink));
-						BREAK_ON_FAIL(hr);
-
-						ATL::CComPtr<IMFGetService> get_service;
-						hr = media_sink->QueryInterface(IID_PPV_ARGS(&get_service));
-						BREAK_ON_FAIL(hr);
-
-						ATL::CComQIPtr<IKeyEvent> key_event(media_sink);
-						if (!key_event)
-							break;
-
-						ATL::CComPtr<IMFStreamSink> stream_sink;
-						DWORD stream_sink_count = 0;
-						hr = media_sink->GetStreamSinkCount(&stream_sink_count);
-						BREAK_ON_FAIL(hr);
-						hr = media_sink->GetStreamSinkByIndex((stream_sink_count - 1), &stream_sink);
-						BREAK_ON_FAIL(hr);
-
-						CLSID devuce_manager_iid = IID_IMFDXGIDeviceManager;
-						hr = get_service->GetService(MR_VIDEO_ACCELERATION_SERVICE, devuce_manager_iid, (void**)device_manager);
-						BREAK_ON_FAIL(hr);
-
-						LONG_PTR device_manager_ptr = reinterpret_cast<ULONG_PTR>(*device_manager);
-
-						hr = mf_topology_builder::create_video_decoder_node(media_type, device_manager_ptr, &transform_node);
-						BREAK_ON_FAIL(hr);
-
-						hr = mf_topology_builder::create_stream_sink_node(stream_sink, stream_index + 1, &sink_node);
-						BREAK_ON_FAIL(hr);
-#endif
-					}
-					else
-					{
-						hr = E_FAIL;
-					}
-					BREAK_ON_FAIL(hr);
+					//// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
+					//hr = sink_node->SetObject(renderer_activate);
+					//BREAK_ON_FAIL(hr);
 				}
+				else if (major_type == MFMediaType_Video && config->hwnd != NULL)
+				{
+#if 0
+					hr = MFCreateVideoRendererActivate(_hwnd, &renderer_activate);
+					BREAK_ON_FAIL(hr);
+
+					// create the node which will represent the renderer
+					hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &sink_node);
+					BREAK_ON_FAIL(hr);
+
+					// store the IActivate object in the sink node - it will be extracted later by the media session during the topology render phase.
+					hr = sink_node->SetObject(renderer_activate);
+					BREAK_ON_FAIL(hr);
+#else
+					hr = mf_topology_builder::create_dx11_video_renderer_activate(config->hwnd, &renderer_activate);
+					BREAK_ON_FAIL(hr);
+
+					ATL::CComQIPtr<IGPUHandler> gpu_handler(renderer_activate);
+					hr = gpu_handler->SetGPUIndex(config->gpu_index);
+					BREAK_ON_FAIL(hr);
+					hr = gpu_handler->EnablePresent(config->enable_present ? TRUE : FALSE);
+					BREAK_ON_FAIL(hr);
+
+					ATL::CComPtr<IMFMediaSink> media_sink;
+					hr = renderer_activate->ActivateObject(IID_PPV_ARGS(&media_sink));
+					BREAK_ON_FAIL(hr);
+
+					ATL::CComQIPtr<IVideoCodecConfigurator> vcodec_configurator(media_sink);
+					if (!vcodec_configurator)
+						break;
+					hr = vcodec_configurator->SetVideoCodec(config->video_codec);
+					BREAK_ON_FAIL(hr);
+					hr = vcodec_configurator->SetVideoWidth(config->video_width);
+					BREAK_ON_FAIL(hr);
+					hr = vcodec_configurator->SetVideoHeight(config->video_height);
+					BREAK_ON_FAIL(hr);
+					hr = vcodec_configurator->SetVideoBitrate(config->video_bitrate);
+					BREAK_ON_FAIL(hr);
+					hr = vcodec_configurator->SetVideoFPS(config->video_fps);
+					BREAK_ON_FAIL(hr);
+					hr = vcodec_configurator->SetVideoKeyframeInterval(config->video_keyframe_interval);
+					BREAK_ON_FAIL(hr);
+
+					ATL::CComQIPtr<IMediaStreamerConfigurator> streamer_configurator(media_sink);
+					hr = streamer_configurator->SetUUID(config->uuid);
+					BREAK_ON_FAIL(hr);
+					hr = streamer_configurator->SetAddress(L"127.0.0.1");
+					BREAK_ON_FAIL(hr);
+					hr = streamer_configurator->SetPortNumber(1935);
+					BREAK_ON_FAIL(hr);
+
+					ATL::CComPtr<IMFGetService> get_service;
+					hr = media_sink->QueryInterface(IID_PPV_ARGS(&get_service));
+					BREAK_ON_FAIL(hr);
+
+					hr = media_sink->QueryInterface(IID_IKeyEvent, (void**)keyevent);
+					BREAK_ON_FAIL(hr);
+
+					ATL::CComPtr<IMFStreamSink> stream_sink;
+					DWORD stream_sink_count = 0;
+					hr = media_sink->GetStreamSinkCount(&stream_sink_count);
+					BREAK_ON_FAIL(hr);
+					hr = media_sink->GetStreamSinkByIndex((stream_sink_count - 1), &stream_sink);
+					BREAK_ON_FAIL(hr);
+
+					CLSID device_manager_iid = IID_IMFDXGIDeviceManager;
+					hr = get_service->GetService(MR_VIDEO_ACCELERATION_SERVICE, device_manager_iid, (void**)device_manager);
+					BREAK_ON_FAIL(hr);
+
+
+					LONG_PTR device_manager_ptr = reinterpret_cast<ULONG_PTR>(*device_manager);
+
+					hr = mf_topology_builder::create_video_decoder_node(media_type, device_manager_ptr, &transform_node);
+					BREAK_ON_FAIL(hr);
+
+					hr = mf_topology_builder::create_stream_sink_node(stream_sink, stream_index + 1, &sink_node);
+					BREAK_ON_FAIL(hr);
+#endif
+				}
+				else
+				{
+					hr = E_FAIL;
+				}
+				BREAK_ON_FAIL(hr);
 			} while (0);
 			BREAK_ON_FAIL(hr);
 
@@ -179,7 +199,7 @@ HRESULT mf_topology_builder::add_branch_to_partial_topology(IMFTopology * topolo
 	return hr;
 }
 
-HRESULT mf_topology_builder::create_stream_source_node(IMFMediaSource * media_source, IMFPresentationDescriptor * present_descriptor, IMFStreamDescriptor * stream_descriptor, IMFTopologyNode ** node)
+HRESULT debuggerking::mf_topology_builder::create_stream_source_node(IMFMediaSource * media_source, IMFPresentationDescriptor * present_descriptor, IMFStreamDescriptor * stream_descriptor, IMFTopologyNode ** node)
 {
 	HRESULT hr = S_OK;
 	do
@@ -208,14 +228,17 @@ HRESULT mf_topology_builder::create_stream_source_node(IMFMediaSource * media_so
 	return hr;
 }
 
-HRESULT mf_topology_builder::create_dx11_video_renderer_activate(HWND hwnd, IMFActivate ** activate)
+HRESULT debuggerking::mf_topology_builder::create_dx11_video_renderer_activate(HWND hwnd, IMFActivate ** activate)
 {
 	if (activate == nullptr)
 		return E_POINTER;
 
-	HMODULE renderer_dll = ::LoadLibrary(L"dk_mf_dx11_video_renderer.dll");
+	HMODULE renderer_dll = ::LoadLibrary(L"cap_mf_dx11_video_renderer.dll");
 	if (renderer_dll == NULL)
+	{
+		DWORD err = ::GetLastError();
 		return E_FAIL;
+	}
 
 	LPCSTR fn_name = "CreateDX11VideoRendererActivate";
 	FARPROC create_dx11_video_renderer_activate_far_proc = ::GetProcAddress(renderer_dll, fn_name);
@@ -232,7 +255,7 @@ HRESULT mf_topology_builder::create_dx11_video_renderer_activate(HWND hwnd, IMFA
 	return hr;
 }
 
-HRESULT mf_topology_builder::create_video_decoder_node(IMFMediaType * media_type, ULONG_PTR device_manager_ptr, IMFTopologyNode ** node)
+HRESULT debuggerking::mf_topology_builder::create_video_decoder_node(IMFMediaType * media_type, ULONG_PTR device_manager_ptr, IMFTopologyNode ** node)
 {
 	HRESULT hr;
 
@@ -296,8 +319,8 @@ HRESULT mf_topology_builder::create_video_decoder_node(IMFMediaType * media_type
 
 	return hr;
 }
-#
-HRESULT mf_topology_builder::create_stream_sink_node(IUnknown * stream_sink, DWORD stream_number, IMFTopologyNode ** node)
+
+HRESULT debuggerking::mf_topology_builder::create_stream_sink_node(IUnknown * stream_sink, DWORD stream_number, IMFTopologyNode ** node)
 {
 	HRESULT hr;
 	hr = MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, node);
@@ -315,7 +338,7 @@ HRESULT mf_topology_builder::create_stream_sink_node(IUnknown * stream_sink, DWO
 	return hr;
 }
 
-HRESULT mf_topology_builder::find_video_decoder(REFCLSID subtype, UINT32 width, UINT32 height, IMFTransform ** decoder)
+HRESULT debuggerking::mf_topology_builder::find_video_decoder(REFCLSID subtype, UINT32 width, UINT32 height, IMFTransform ** decoder)
 {
 	HRESULT hr;
 	UINT32 flags = MFT_ENUM_FLAG_SORTANDFILTER;

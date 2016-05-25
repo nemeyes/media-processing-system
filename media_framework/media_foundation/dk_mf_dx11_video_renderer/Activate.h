@@ -6,42 +6,44 @@
 
 namespace DX11VideoRenderer
 {
-	class CActivate : public CMFAttributesImpl<IMFActivate>, public IPersistStream, public IGPUSelector, private CBase
-    {
-    public:
+	class CActivate : public CMFAttributesImpl<IMFActivate>, public IPersistStream, public IGPUHandler, private CBase
+	{
+	public:
 
-        static HRESULT CreateInstance(HWND hwnd, IMFActivate** ppActivate);
+		static HRESULT CreateInstance(HWND hwnd, IMFActivate** ppActivate);
 
-        // IUnknown
-        STDMETHODIMP_(ULONG) AddRef(void);
-        STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppvObject);
-        STDMETHODIMP_(ULONG) Release(void);
+		// IUnknown
+		STDMETHODIMP_(ULONG) AddRef(void);
+		STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppvObject);
+		STDMETHODIMP_(ULONG) Release(void);
 
-        // IMFActivate
-        STDMETHODIMP ActivateObject(__RPC__in REFIID riid, __RPC__deref_out_opt void** ppvObject);
-        STDMETHODIMP DetachObject(void);
-        STDMETHODIMP ShutdownObject(void);
+		// IMFActivate
+		STDMETHODIMP ActivateObject(__RPC__in REFIID riid, __RPC__deref_out_opt void** ppvObject);
+		STDMETHODIMP DetachObject(void);
+		STDMETHODIMP ShutdownObject(void);
 
-        // IPersistStream
-        STDMETHODIMP GetSizeMax(__RPC__out ULARGE_INTEGER* pcbSize);
-        STDMETHODIMP IsDirty(void);
-        STDMETHODIMP Load(__RPC__in_opt IStream* pStream);
-        STDMETHODIMP Save(__RPC__in_opt IStream* pStream, BOOL bClearDirty);
+		// IPersistStream
+		STDMETHODIMP GetSizeMax(__RPC__out ULARGE_INTEGER* pcbSize);
+		STDMETHODIMP IsDirty(void);
+		STDMETHODIMP Load(__RPC__in_opt IStream* pStream);
+		STDMETHODIMP Save(__RPC__in_opt IStream* pStream, BOOL bClearDirty);
 
-        // IPersist (from IPersistStream)
-        STDMETHODIMP GetClassID(__RPC__out CLSID* pClassID);
+		// IPersist (from IPersistStream)
+		STDMETHODIMP GetClassID(__RPC__out CLSID* pClassID);
 
-		// IGPUSelector
+		// ICAPGPUSelector
 		STDMETHODIMP SetGPUIndex(UINT index);
+		STDMETHODIMP EnablePresent(BOOL enable);
 
-    private:
+	private:
 
-        CActivate(void);
-        ~CActivate(void);
+		CActivate(void);
+		~CActivate(void);
 
-        long m_lRefCount;
+		long m_lRefCount;
 		UINT _gpu_index;
-        IMFMediaSink* m_pMediaSink;
-        HWND m_hwnd;
-    };
+		BOOL _enable_present;
+		IMFMediaSink* m_pMediaSink;
+		HWND m_hwnd;
+	};
 }

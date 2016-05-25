@@ -76,7 +76,7 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 	//open video file
 	char contents_path[260] = { 0 };
 	char * module_path = nullptr;
-	dk_misc_helper::retrieve_absolute_module_path("dk_vod_rtsp_server.dll", &module_path);
+	misc_helper::retrieve_absolute_module_path("dk_vod_rtsp_server.dll", &module_path);
 	if (module_path && strlen(module_path)>0)
 	{
 		_snprintf_s(contents_path, sizeof(contents_path), "%s%s", module_path, "contents\\");
@@ -220,7 +220,7 @@ const uint8_t * debuggerking::media_source_reader::get_pps(size_t & pps_size)
 int32_t debuggerking::media_source_reader::push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long interval, long long timestamp)
 {
 	int32_t status = media_source_reader::err_code_t::success;
-	dk_auto_lock lock(&_video_mutex);
+	auto_lock lock(&_video_mutex);
 	if (bs && size > 0)
 	{
 		video_buffer_t * vbuffer = _video_root;
@@ -264,7 +264,7 @@ int32_t debuggerking::media_source_reader::pop_video(uint8_t * bs, size_t & size
 {
 	int32_t status = media_source_reader::err_code_t::success;
 	size = 0;
-	dk_auto_lock lock(&_video_mutex);
+	auto_lock lock(&_video_mutex);
 	video_buffer_t * vbuffer = _video_root->next;
 	if (vbuffer && _video_queue_count>0)
 	{

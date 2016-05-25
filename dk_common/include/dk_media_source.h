@@ -1,27 +1,5 @@
 #pragma once
 
-typedef enum _DK_VIDEO_MEDIA_TYPE
-{
-	DK_VIDEO_TYPE_UNKNOWN = -1,
-	DK_VIDEO_TYPE_AVC = 0,
-	DK_VIDEO_TYPE_HEVC = 1,
-} DK_VIDEO_MEDIA_TYPE;
-
-typedef enum _DK_AUDIO_MEDIA_TYPE
-{
-	DK_AUDIO_TYPE_UNKNOWN = -1,
-	DK_AUDIO_TYPE_CELT = 0,
-	DK_AUDIO_TYPE_AAC = 1,
-	DK_AUDIO_TYPE_MP3 = 2
-} DK_AUDIO_MEDIA_TYPE;
-
-typedef enum _DK_RECV_OPTION
-{
-	DK_RECV_NONE = 0x00,
-	DK_RECV_AUDIO = 0x01,
-	DK_RECV_VIDEO = 0x02,
-} DK_RECV_OPTION;
-
 #ifdef __cplusplus
 extern "C" {
 #endif

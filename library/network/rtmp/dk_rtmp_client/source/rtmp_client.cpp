@@ -967,7 +967,7 @@ void* debuggerking::rtmp_core::pb_process_cb(void * param)
 int32_t debuggerking::rtmp_core::push_video_send_packet(uint8_t * bs, size_t size)
 {
 	int32_t status = rtmp_client::err_code_t::success;
-	dk_auto_lock lock(&_video_mutex);
+	auto_lock lock(&_video_mutex);
 	if (bs && size > 0)
 	{
 		pb_buffer_t * vbuffer = _video_root;
@@ -1003,7 +1003,7 @@ int32_t debuggerking::rtmp_core::pop_video_send_packet(uint8_t * bs, size_t & si
 {
 	int32_t status = rtmp_client::err_code_t::success;
 	size = 0;
-	dk_auto_lock lock(&_video_mutex);
+	auto_lock lock(&_video_mutex);
 	pb_buffer_t * vbuffer = _video_root->next;
 	if (vbuffer)
 	{
@@ -1024,7 +1024,7 @@ int32_t debuggerking::rtmp_core::pop_video_send_packet(uint8_t * bs, size_t & si
 int32_t debuggerking::rtmp_core::push_audio_send_packet(uint8_t * bs, size_t size)
 {
 	int32_t status = rtmp_client::err_code_t::success;
-	dk_auto_lock lock(&_audio_mutex);
+	auto_lock lock(&_audio_mutex);
 	if (bs && size > 0)
 	{
 		pb_buffer_t * abuffer = _audio_root;
@@ -1060,7 +1060,7 @@ int32_t debuggerking::rtmp_core::pop_audio_send_packet(uint8_t * bs, size_t & si
 {
 	int32_t status = rtmp_client::err_code_t::success;
 	size = 0;
-	dk_auto_lock lock(&_audio_mutex);
+	auto_lock lock(&_audio_mutex);
 	pb_buffer_t * abuffer = _audio_root->next;
 	if (abuffer)
 	{

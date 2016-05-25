@@ -38,7 +38,7 @@ int32_t debuggerking::video_buffer::push(const uint8_t * data, size_t size, long
 	int32_t status = video_buffer::err_code_t::success;
 	if (data && size > 0)
 	{
-		dk_auto_lock lock(&_mutex);
+		auto_lock lock(&_mutex);
 		buffer_t * buffer = _root;
 		buffer->amount = video_buffer::max_media_value_t::max_video_size;
 
@@ -75,7 +75,7 @@ int32_t debuggerking::video_buffer::pop(uint8_t * data, size_t & size, long long
 {
 	int32_t status = video_buffer::err_code_t::success;
 	size = 0;
-	dk_auto_lock lock(&_mutex);
+	auto_lock lock(&_mutex);
 	buffer_t * buffer = _root->next;
 	if (buffer)
 	{

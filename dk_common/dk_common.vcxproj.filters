@@ -60,10 +60,19 @@
     <ClInclude Include="include\dk_time_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dk_gpu_selector.h">
+    <ClInclude Include="include\dk_key_event.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dk_key_event.h">
+    <ClInclude Include="include\dk_gpu_handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dk_video_codec_configurator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dk_audio_codec_configurator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dk_media_streamer_configurator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

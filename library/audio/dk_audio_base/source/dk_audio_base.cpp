@@ -72,7 +72,7 @@ int32_t debuggerking::audio_base::push(uint8_t * bs, size_t size, long long time
 		return audio_base::err_code_t::unsupported_function;
 
 	int32_t status = audio_base::err_code_t::success;
-	dk_auto_lock lock(&_mutex);
+	auto_lock lock(&_mutex);
 	if (bs && size > 0)
 	{
 		buffer_t * buffer = _root;
@@ -112,7 +112,7 @@ int32_t debuggerking::audio_base::pop(uint8_t * bs, size_t & size, long long & t
 
 	int32_t status = audio_base::err_code_t::success;
 	size = 0;
-	dk_auto_lock lock(&_mutex);
+	auto_lock lock(&_mutex);
 	buffer_t * buffer = _root->next;
 	if (buffer)
 	{

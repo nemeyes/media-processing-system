@@ -16,7 +16,7 @@ debuggerking::multiple_media_buffering::multiple_media_buffering(void)
 debuggerking::multiple_media_buffering::~multiple_media_buffering(void)
 {
 	{
-		dk_auto_lock lock(&_vmutex);
+		auto_lock lock(&_vmutex);
 		std::map<std::string, video_buffer*>::iterator iter;
 		for (iter = _vbuffers.begin(); iter != _vbuffers.end(); iter++)
 		{
@@ -27,7 +27,7 @@ debuggerking::multiple_media_buffering::~multiple_media_buffering(void)
 	}
 
 	{
-		dk_auto_lock lock(&_amutex);
+		auto_lock lock(&_amutex);
 		std::map<std::string, audio_buffer*>::iterator iter;
 		for (iter = _abuffers.begin(); iter != _abuffers.end(); iter++)
 		{
@@ -55,13 +55,13 @@ int32_t debuggerking::multiple_media_buffering::create(const char * id)
 		return multiple_media_buffering::err_code_t::fail;
 
 	{
-		dk_auto_lock lock(&_vmutex);
+		auto_lock lock(&_vmutex);
 		video_buffer * vbuffer = new video_buffer();
 		_vbuffers.insert(std::make_pair(id, vbuffer));
 	}
 
 	{
-		dk_auto_lock lock(&_amutex);
+		auto_lock lock(&_amutex);
 		audio_buffer * abuffer = new audio_buffer();
 		_abuffers.insert(std::make_pair(id, abuffer));
 	}
@@ -76,7 +76,7 @@ int32_t debuggerking::multiple_media_buffering::destroy(const char * id)
 
 	{
 		video_buffer * vbuffer = nullptr;
-		dk_auto_lock lock(&_vmutex);
+		auto_lock lock(&_vmutex);
 		std::map<std::string, video_buffer*>::iterator iter;
 		iter = _vbuffers.find(id);
 		if (iter != _vbuffers.end())
@@ -89,7 +89,7 @@ int32_t debuggerking::multiple_media_buffering::destroy(const char * id)
 
 	{
 		audio_buffer * abuffer = nullptr;
-		dk_auto_lock lock(&_amutex);
+		auto_lock lock(&_amutex);
 		std::map<std::string, audio_buffer*>::iterator iter;
 		iter = _abuffers.find(id);
 		if (iter != _abuffers.end())
@@ -485,7 +485,7 @@ debuggerking::video_buffer * debuggerking::multiple_media_buffering::get_video_b
 	if (!id || strlen(id) < 1)
 		return nullptr;
 
-	dk_auto_lock lock(&_vmutex);
+	auto_lock lock(&_vmutex);
 	video_buffer * buffer = nullptr;
 	std::map<std::string, video_buffer*>::iterator iter;
 	iter = _vbuffers.find(id);
@@ -501,7 +501,7 @@ debuggerking::audio_buffer * debuggerking::multiple_media_buffering::get_audio_b
 	if (!id || strlen(id) < 1)
 		return nullptr;
 
-	dk_auto_lock lock(&_amutex);
+	auto_lock lock(&_amutex);
 	audio_buffer * buffer = nullptr;
 	std::map<std::string, audio_buffer*>::iterator iter;
 	iter = _abuffers.find(id);

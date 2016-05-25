@@ -76,22 +76,25 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\dk_audio_codec_configurator.h" />
     <ClInclude Include="include\dk_auto_lock.h" />
     <ClInclude Include="include\dk_basic_type.h" />
     <ClInclude Include="include\dk_fileio.h" />
-    <ClInclude Include="include\dk_gpu_selector.h" />
+    <ClInclude Include="include\dk_gpu_handler.h" />
     <ClInclude Include="include\dk_image_creator.h" />
     <ClInclude Include="include\dk_image_loader.h" />
     <ClInclude Include="include\dk_image_synthesis.h" />
     <ClInclude Include="include\dk_key_event.h" />
     <ClInclude Include="include\dk_macros.h" />
     <ClInclude Include="include\dk_media_source.h" />
+    <ClInclude Include="include\dk_media_streamer_configurator.h" />
     <ClInclude Include="include\dk_misc_helper.h" />
     <ClInclude Include="include\dk_platform.h" />
     <ClInclude Include="include\dk_string_helper.h" />
     <ClInclude Include="include\dk_submedia_type.h" />
     <ClInclude Include="include\dk_time_helper.h" />
     <ClInclude Include="include\dk_util.h" />
+    <ClInclude Include="include\dk_video_codec_configurator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
