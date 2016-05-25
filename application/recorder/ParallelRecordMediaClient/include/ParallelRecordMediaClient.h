@@ -32,7 +32,6 @@ extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Play(const wchar_t * 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Stop(const wchar_t * url, int index);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y);
 
-#if defined(WITH_RTSP_EXPORTOR)
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * export_file_path);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_RemoveExport(const wchar_t * url, int index);
 
@@ -40,7 +39,6 @@ extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_PlayExport(const wcha
 																		int begin_year, int begin_month, int begin_day, int begin_hour, int begin_minute, int begin_second, 
 																		int end_year, int end_month, int end_day, int end_hour, int end_minute, int end_second);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_StopExport(const wchar_t * url, int index);
-#endif
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_RTSP_Add(const wchar_t * url, int port_number, const wchar_t * username, const wchar_t * password, HWND hwnd);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_RTSP_Remove(int index);

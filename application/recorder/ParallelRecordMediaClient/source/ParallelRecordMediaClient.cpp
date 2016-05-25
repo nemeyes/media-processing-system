@@ -1,9 +1,7 @@
 #include "dk_parallel_recorder_controller.h"
 #include "dk_rtmp_receiver.h"
 #include "dk_rtsp_receiver.h"
-#if defined(WITH_RTSP_EXPORTOR)
 #include "dk_rtsp_exportor.h"
-#endif
 #include <dk_auto_lock.h>
 #include <dk_string_helper.h>
 #include <dk_log4cplus_logger.h>
@@ -675,7 +673,6 @@ int PRMC_Stop(const wchar_t * url, int index)
 	return result;
 }
 
-#if defined(WITH_RTSP_EXPORTOR)
 int PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * export_file_path)
 {
 	if (!url || wcslen(url) < 1)
@@ -891,7 +888,6 @@ int PRMC_StopExport(const wchar_t * url, int index)
 
 	return result;
 }
-#endif
 
 int PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y)
 {

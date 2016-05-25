@@ -13,7 +13,7 @@ debuggerking::bitmap_core::bitmap_core(bitmap_renderer * front)
 	, _osd_text_color_blue(0xFF)
 	, _osd_text_color_green(0xFF)
 {
-	wcscpy_s(_osd, L"What the Fuck!!");
+	memset(_osd, 0x00, sizeof(_osd));
 }
 
 debuggerking::bitmap_core::~bitmap_core(void)
@@ -29,7 +29,7 @@ int32_t debuggerking::bitmap_core::enable_osd_text(bool enable)
 
 int32_t debuggerking::bitmap_core::set_osd_text(wchar_t *osd)
 {
-	//wcscpy_s(_osd, osd);
+	wcscpy_s(_osd, osd);
 	return bitmap_renderer::err_code_t::success;
 }
 

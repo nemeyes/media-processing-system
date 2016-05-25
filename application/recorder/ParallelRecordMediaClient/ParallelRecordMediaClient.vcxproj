@@ -99,7 +99,7 @@
     <ClInclude Include="receiver\dk_bit_vector.h" />
     <ClInclude Include="receiver\dk_rtmp_receiver.h" />
     <ClInclude Include="receiver\dk_rtsp_exportor.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="receiver\dk_rtsp_receiver.h" />
   </ItemGroup>
@@ -109,7 +109,7 @@
     <ClCompile Include="receiver\dk_bit_vector.cpp" />
     <ClCompile Include="receiver\dk_rtmp_receiver.cpp" />
     <ClCompile Include="receiver\dk_rtsp_exportor.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="receiver\dk_rtsp_receiver.cpp" />
     <ClCompile Include="source\ParallelRecordMediaClient.cpp" />
