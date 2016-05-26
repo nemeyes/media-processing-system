@@ -1,20 +1,7 @@
-/******************************Module*Header*******************************\
-* Module Name: display.cpp
-*
-* Support for DDraw device on Multiple Monitors.
-*
-*
-* Created: Mon 01/24/2000
-* Author:  Stephen Estrop [StEstrop]
-* Mod:     KirtD - First integration into MF renderer model
-*
-* Copyright (c) Microsoft Corporation
-\**************************************************************************/
 #include <windows.h>
 #include <unknwn.h>
 #include "display.h"
 #include <strsafe.h>
-
 
 #ifndef DEFAULT_DENSITY_LIMIT
 #define DEFAULT_DENSITY_LIMIT       60
@@ -26,100 +13,72 @@
 #define HEIGHT(x) ((x)->bottom - (x)->top)
 #endif
 
-
-/* -------------------------------------------------------------------------
-** Structure use to pass info to the DDrawEnumEx callback
-** -------------------------------------------------------------------------
-*/
-
-struct DDRAWINFO
+namespace debuggerking
 {
-    DWORD               dwCount;
-    DWORD               dwPmiSize;
-    HRESULT             hrCallback;
-    const GUID*         pGUID;
-    CAMDDrawMonitorInfo* pmi;
-    HWND                hwnd;
+	typedef struct _ddraw_info_t
+	{
+		DWORD count;
+		DWORD pmi_size;
+		HRESULT hr_callback;
+		const GUID * guid;
+		cam_ddraw_monitor_info_t * pmi;
+		HWND hwnd;
+	} ddraw_info_t;
 };
 
-/******************************Public*Routine******************************\
-* TermDDrawMonitorInfo
-*
-*
-*
-* History:
-* 01-17-2000 - StEstrop - Created
-*
-\**************************************************************************/
-void CMonitorArray::TermDDrawMonitorInfo(
-    _Inout_ CAMDDrawMonitorInfo* pmi
-    )
+
+void debuggerking::monitor_array::term_ddraw_monitor_info(_Inout_ cam_ddraw_monitor_info_t * pmi)
 {
-
-
-    ZeroMemory(pmi, sizeof(CAMDDrawMonitorInfo));
+    ZeroMemory(pmi, sizeof(cam_ddraw_monitor_info_t));
 }
 
-/*****************************Private*Routine******************************\
-* GetAMDDrawMonitorInfo
-*
-*
-*
-* History:
-* Tue 08/17/1999 - StEstrop - Created
-*
-\**************************************************************************/
-BOOL CMonitorArray::GetAMDDrawMonitorInfo(
-    UINT uDevID,
-    _Out_ CAMDDrawMonitorInfo* lpmi,
-    _In_ HMONITOR hm
-    )
+BOOL debuggerking::monitor_array::get_am_ddraw_monitor_info(UINT device_id, _Out_ cam_ddraw_monitor_info_t * lpmi, _In_ HMONITOR hm)
 {
     MONITORINFOEX miInfoEx;
     miInfoEx.cbSize = sizeof(miInfoEx);
 
-    lpmi->hMon = NULL;
-    lpmi->uDevID = 0;
-    lpmi->physMonDim.cx = 0;
-    lpmi->physMonDim.cy = 0;
-    lpmi->dwRefreshRate = DEFAULT_DENSITY_LIMIT;
+    lpmi->monitor = NULL;
+    lpmi->device_id = 0;
+	lpmi->phys_monitor_dimension.cx = 0;
+	lpmi->phys_monitor_dimension.cy = 0;
+    lpmi->refresh_rate = DEFAULT_DENSITY_LIMIT;
 
     if (GetMonitorInfo(hm, &miInfoEx))
     {
-        HRESULT hr = StringCchCopy(lpmi->szDevice, sizeof(lpmi->szDevice)/sizeof(lpmi->szDevice[0]), miInfoEx.szDevice);
+        HRESULT hr = StringCchCopy(lpmi->device, sizeof(lpmi->device)/sizeof(lpmi->device[0]), miInfoEx.szDevice);
 
         if ( FAILED( hr ) )
         {
             return FALSE;
         }
 
-        lpmi->hMon = hm;
-        lpmi->uDevID = uDevID;
-        lpmi->physMonDim.cx = WIDTH(&miInfoEx.rcMonitor);
-        lpmi->physMonDim.cy = HEIGHT(&miInfoEx.rcMonitor);
+        lpmi->monitor = hm;
+        lpmi->device_id = device_id;
+        lpmi->phys_monitor_dimension.cx = WIDTH(&miInfoEx.rcMonitor);
+		lpmi->phys_monitor_dimension.cy = HEIGHT(&miInfoEx.rcMonitor);
 
         int j = 0;
-        DISPLAY_DEVICE ddMonitor;
+        DISPLAY_DEVICE dd_monitor;
 
-        ddMonitor.cb = sizeof(ddMonitor);
-        while (EnumDisplayDevices(lpmi->szDevice, j, &ddMonitor, 0))
+		dd_monitor.cb = sizeof(dd_monitor);
+		while (EnumDisplayDevices(lpmi->device, j, &dd_monitor, 0))
         {
-            if (ddMonitor.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
+			if (dd_monitor.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
             {
                 DEVMODE     dm;
 
                 ZeroMemory(&dm, sizeof(dm));
                 dm.dmSize = sizeof(dm);
-                if (EnumDisplaySettings(lpmi->szDevice, ENUM_CURRENT_SETTINGS, &dm))
+                if (EnumDisplaySettings(lpmi->device, ENUM_CURRENT_SETTINGS, &dm))
                 {
-                    lpmi->dwRefreshRate = dm.dmDisplayFrequency == 0 ? lpmi->dwRefreshRate : dm.dmDisplayFrequency;
+					lpmi->refresh_rate = dm.dmDisplayFrequency == 0 ? lpmi->refresh_rate : dm.dmDisplayFrequency;
                 }
 
                 // Remove registry snooping for monitor dimensions, as this is not supported by LDDM.
                 // if (!FindMonitorDimensions(ddMonitor.DeviceID, &lpmi->physMonDim.cx, &lpmi->physMonDim.cy))
                 {
-                    lpmi->physMonDim.cx = WIDTH(&miInfoEx.rcMonitor);
-                    lpmi->physMonDim.cy = HEIGHT(&miInfoEx.rcMonitor);
+					lpmi->phys_monitor_dimension.cx = WIDTH(&miInfoEx.rcMonitor);
+					lpmi->phys_monitor_dimension.cy = HEIGHT(&miInfoEx.rcMonitor);
                 }
             }
             j++;
@@ -132,69 +91,43 @@ BOOL CMonitorArray::GetAMDDrawMonitorInfo(
 }
 
 
-BOOL CMonitorArray::InitMonitor(
-    _In_ HMONITOR hMon,
-    BOOL fXclMode
-    )
+BOOL debuggerking::monitor_array::init_monitor( _In_ HMONITOR monitor, BOOL fxclmode)
 {
-
-
-    if (GetAMDDrawMonitorInfo(m_dwNumMonitors, &m_DDMon[m_dwNumMonitors], hMon))
+	if (get_am_ddraw_monitor_info(_nmonitors, &_dd_monitor[_nmonitors], monitor))
     {
-        m_DDMon[m_dwNumMonitors].pDD = (IUnknown*)1; // make checks for pDD succeed.
-        m_dwNumMonitors++;
+        _dd_monitor[_nmonitors].pdd = (IUnknown*)1; // make checks for pDD succeed.
+        _nmonitors++;
     }
 
-    if (EVR_MAX_MONITORS >= m_dwNumMonitors)
+	if (EVR_MAX_MONITORS >= _nmonitors)
     {
         // don't exceed array bounds
         return TRUE;
     }
-
     return FALSE;
 }
 
-
-BOOL CALLBACK CMonitorArray::MonitorEnumProc(
-    _In_ HMONITOR hMon,
-    _In_opt_ HDC hDC,
-    _In_ LPRECT pRect,
-    LPARAM dwData
-    )
+BOOL CALLBACK debuggerking::monitor_array::monitor_enum_proc(_In_ HMONITOR monitor, _In_opt_ HDC hdc, _In_ LPRECT rect, LPARAM data)
 {
-    MonitorEnumProcInfo* info = (MonitorEnumProcInfo*)dwData;
+	monitor_enum_proc_info_t * info = (monitor_enum_proc_info_t*)data;
 
     if (!info)
-    {
         return TRUE;
-    }
 
-    return info->pMonArray->InitMonitor(hMon, FALSE);
+    return info->mon_array->init_monitor(monitor, FALSE);
 }
 
-/*****************************Private*Routine******************************\
-* InitializeDisplaySystem
-*
-*
-*
-* History:
-* Mon 01/24/2000 - StEstrop - Created
-*
-\**************************************************************************/
-HRESULT CMonitorArray::InitializeDisplaySystem(
-    _In_ HWND hwnd
-    )
+HRESULT debuggerking::monitor_array::initialize_display_system(_In_ HWND hwnd)
 {
     HRESULT hr = S_OK;
-
-    MonitorEnumProcInfo info;
+    monitor_enum_proc_info_t info;
 
     info.hwnd = hwnd;
-    info.pMonArray = this;
+    info.mon_array = this;
 
-    EnumDisplayMonitors(NULL, NULL, &MonitorEnumProc, (LPARAM)&info);
+    EnumDisplayMonitors(NULL, NULL, &monitor_enum_proc, (LPARAM)&info);
 
-    if (m_dwNumMonitors == 0)
+    if (_nmonitors == 0)
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
         return(hr);
@@ -203,111 +136,51 @@ HRESULT CMonitorArray::InitializeDisplaySystem(
     return(hr);
 }
 
-/*****************************Private*Routine******************************\
-* FindMonitor
-*
-* find the current monitor
-*
-* History:
-* Fri 04/25/2000 - GlennE - Created
-*
-\**************************************************************************/
-CAMDDrawMonitorInfo* CMonitorArray::FindMonitor(
-    _In_ HMONITOR hMon
-    )
+debuggerking::cam_ddraw_monitor_info_t * debuggerking::monitor_array::find_monitor(_In_ HMONITOR monitor)
 {
-
-
-    for (DWORD i = 0; i < m_dwNumMonitors; i++)
+    for (DWORD i = 0; i < _nmonitors; i++)
     {
-        if (hMon == m_DDMon[i].hMon)
-        {
-            return &m_DDMon[i];
-        }
+        if (monitor == _dd_monitor[i].monitor)
+			return &_dd_monitor[i];
     }
-
     return NULL;
 }
 
-/*****************************Private*Routine******************************\
-* MatchGUID
-*
-*
-*
-* History:
-* Fri 04/25/2000 - GlennE - Created
-*
-\**************************************************************************/
-HRESULT CMonitorArray::MatchGUID(
-    UINT uDevID,
-    _Out_ DWORD* pdwMatchID
-    )
+HRESULT debuggerking::monitor_array::match_guid(UINT device_id, _Out_ DWORD * match_id)
 {
     HRESULT hr = S_OK;
-
-    *pdwMatchID = 0;
-
-    for (DWORD i = 0; i < m_dwNumMonitors; i++)
+	*match_id = 0;
+    for (DWORD i = 0; i < _nmonitors; i++)
     {
-
-        UINT uMonDevID = m_DDMon[i].uDevID;
-
-        if (uDevID == uMonDevID)
+        UINT monitor_device_id = _dd_monitor[i].device_id;
+		if (device_id == monitor_device_id)
         {
-
-            *pdwMatchID = i;
+            *match_id = i;
             hr = S_OK;
             return( hr );
         }
     }
-
     hr = S_FALSE;
     return( hr );
 }
 
-
-/*****************************Private*Routine******************************\
-* TerminateDisplaySystem
-*
-*
-*
-* History:
-* Mon 01/24/2000 - StEstrop - Created
-*
-\**************************************************************************/
-void CMonitorArray::TerminateDisplaySystem()
+void debuggerking::monitor_array::terminate_display_system(void)
 {
-
-
-    for (DWORD i = 0; i < m_dwNumMonitors; i++)
+    for (DWORD i = 0; i < _nmonitors; i++)
     {
-        TermDDrawMonitorInfo(&m_DDMon[i]);
+        term_ddraw_monitor_info(&_dd_monitor[i]);
     }
-    m_dwNumMonitors = 0;
+    _nmonitors = 0;
 }
 
-
-/******************************Public*Routine******************************\
-* Constructor and destructor
-*
-*
-*
-* History:
-* Fri 11/17/2001 - StEstrop - Created
-*
-\**************************************************************************/
-CMonitorArray::CMonitorArray()
-    : m_dwNumMonitors(0)
+debuggerking::monitor_array::monitor_array(void)
+    : _nmonitors(0)
 {
-
-
-    ZeroMemory(m_DDMon, sizeof(m_DDMon));
+    ZeroMemory(_dd_monitor, sizeof(_dd_monitor));
 }
 
-
-CMonitorArray::~CMonitorArray()
+debuggerking::monitor_array::~monitor_array(void)
 {
-
-    TerminateDisplaySystem();
+    terminate_display_system();
 }
 

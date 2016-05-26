@@ -152,6 +152,7 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	_paused = FALSE;
 	_parallel_recorder_address.SetWindowText(L"127.0.0.1");
 	_parallel_recorder_port_number.SetWindowText(L"15000");
 	_parallel_recorder_username.SetWindowTextW(L"root");
@@ -567,38 +568,48 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 	CString uuid;
 	_uuid.GetWindowText(uuid);
 
-	CString play_scale;
-	float scale = 1.0f;
-	_recording_play_scale.GetWindowText(play_scale);
-	scale = _ttof(play_scale);
-
-	CString str_year, str_month, str_day, str_hour, str_minute, str_second;
-	_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
-	_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
-	_recording_days.GetLBText(_recording_days.GetCurSel(), str_day);
-	_recording_hours.GetLBText(_recording_hours.GetCurSel(), str_hour);
-	_recording_minutes.GetLBText(_recording_minutes.GetCurSel(), str_minute);
-	_recording_seconds.GetLBText(_recording_seconds.GetCurSel(), str_second);
-
-	if (recorder_address.GetLength()>0 && 
-		wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day) && 
-		wcscmp(L"select", str_hour) && wcscmp(L"select", str_minute) && wcscmp(L"select", str_second))
+	if (!_paused)
 	{
-		int year = _ttoi(str_year);
-		int month = _ttoi(str_month);
-		int day = _ttoi(str_day);
-		int hour = _ttoi(str_hour);
-		int minute = _ttoi(str_minute);
-		int second = _ttoi(str_second);
+		CString play_scale;
+		float scale = 1.0f;
+		_recording_play_scale.GetWindowText(play_scale);
+		scale = _ttof(play_scale);
 
-		HWND hwnd = NULL;
-		hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-		PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
-		if (PRMC_index != PRMC_FAIL)
+		CString str_year, str_month, str_day, str_hour, str_minute, str_second;
+		_recording_years.GetLBText(_recording_years.GetCurSel(), str_year);
+		_recording_months.GetLBText(_recording_months.GetCurSel(), str_month);
+		_recording_days.GetLBText(_recording_days.GetCurSel(), str_day);
+		_recording_hours.GetLBText(_recording_hours.GetCurSel(), str_hour);
+		_recording_minutes.GetLBText(_recording_minutes.GetCurSel(), str_minute);
+		_recording_seconds.GetLBText(_recording_seconds.GetCurSel(), str_second);
+
+		if (recorder_address.GetLength() > 0 &&
+			wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day) &&
+			wcscmp(L"select", str_hour) && wcscmp(L"select", str_minute) && wcscmp(L"select", str_second))
 		{
-			//status = PRMC_StartExport((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, year, month, day, hour, minute, second);
-			status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
+			int year = _ttoi(str_year);
+			int month = _ttoi(str_month);
+			int day = _ttoi(str_day);
+			int hour = _ttoi(str_hour);
+			int minute = _ttoi(str_minute);
+			int second = _ttoi(str_second);
+
+			HWND hwnd = NULL;
+			hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
+			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
+			if (PRMC_index != PRMC_FAIL)
+			{
+				//status = PRMC_StartExport((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, year, month, day, hour, minute, second);
+				status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
+			}
 		}
+	}
+	else
+	{
+		if (PRMC_index != PRMC_FAIL)
+			status = PRMC_Resume((LPCWSTR)recorder_address, PRMC_index);
+		if (status == PRMC_SUCCESS)
+			_paused = FALSE;
 	}
 }
 
@@ -641,6 +652,8 @@ void CParallelRecordClientDlg::OnBnClickedButtonPausePlayback()
 	{
 		if (PRMC_index != PRMC_FAIL)
 			status = PRMC_Pause((LPCWSTR)recorder_address, PRMC_index);
+		if (status == PRMC_SUCCESS)
+			_paused = TRUE;
 	}
 }
 
@@ -656,37 +669,47 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStartPlayback()
 	CString uuid;
 	_uuid.GetWindowText(uuid);
 
-	CString play_scale;
-	float scale = 1.0f;
-	_recording_play_scale.GetWindowText(play_scale);
-	scale = _ttof(play_scale);
-
-	CString str_year, str_month, str_day, str_hour, str_minute, str_second;
-	_manual_recording_year.GetWindowTextW(str_year);
-	_manual_recording_month.GetWindowTextW(str_month);
-	_manual_recording_day.GetWindowTextW(str_day);
-	_manual_recording_hour.GetWindowTextW(str_hour);
-	_manual_recording_minute.GetWindowTextW(str_minute);
-	_manual_recording_second.GetWindowTextW(str_second);
-
-	if (recorder_address.GetLength()>0 &&
-		wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day) &&
-		wcscmp(L"select", str_hour) && wcscmp(L"select", str_minute) && wcscmp(L"select", str_second))
+	if (!_paused)
 	{
-		int year = _ttoi(str_year);
-		int month = _ttoi(str_month);
-		int day = _ttoi(str_day);
-		int hour = _ttoi(str_hour);
-		int minute = _ttoi(str_minute);
-		int second = _ttoi(str_second);
+		CString play_scale;
+		float scale = 1.0f;
+		_recording_play_scale.GetWindowText(play_scale);
+		scale = _ttof(play_scale);
 
-		HWND hwnd = NULL;
-		hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-		PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
-		if (PRMC_index != PRMC_FAIL)
+		CString str_year, str_month, str_day, str_hour, str_minute, str_second;
+		_manual_recording_year.GetWindowTextW(str_year);
+		_manual_recording_month.GetWindowTextW(str_month);
+		_manual_recording_day.GetWindowTextW(str_day);
+		_manual_recording_hour.GetWindowTextW(str_hour);
+		_manual_recording_minute.GetWindowTextW(str_minute);
+		_manual_recording_second.GetWindowTextW(str_second);
+
+		if (recorder_address.GetLength() > 0 &&
+			wcscmp(L"select", str_year) && wcscmp(L"select", str_month) && wcscmp(L"select", str_day) &&
+			wcscmp(L"select", str_hour) && wcscmp(L"select", str_minute) && wcscmp(L"select", str_second))
 		{
-			status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
+			int year = _ttoi(str_year);
+			int month = _ttoi(str_month);
+			int day = _ttoi(str_day);
+			int hour = _ttoi(str_hour);
+			int minute = _ttoi(str_minute);
+			int second = _ttoi(str_second);
+
+			HWND hwnd = NULL;
+			hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
+			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
+			if (PRMC_index != PRMC_FAIL)
+			{
+				status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
+			}
 		}
+	}
+	else
+	{
+		if (PRMC_index != PRMC_FAIL)
+			status = PRMC_Resume((LPCWSTR)recorder_address, PRMC_index);
+		if (status == PRMC_SUCCESS)
+			_paused = FALSE;
 	}
 }
 
@@ -728,6 +751,8 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualPausePlayback()
 	{
 		if (PRMC_index != PRMC_FAIL)
 			status = PRMC_Pause((LPCWSTR)recorder_address, PRMC_index);
+		if (status == PRMC_SUCCESS)
+			_paused = TRUE;
 	}
 }
 

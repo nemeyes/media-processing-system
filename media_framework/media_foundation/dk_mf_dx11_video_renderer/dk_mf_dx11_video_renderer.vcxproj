@@ -15,6 +15,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DX11VideoRenderer</RootNamespace>
     <TargetRuntime>native</TargetRuntime>
+    <ProjectName>dk_mf_d3d11_video_renderer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -55,12 +56,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\dk_common\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\dk_common\include;..\..\..\3rdparty\d3dx\include;..\..\..\3rdparty\assimp\win32\x86\include;..\..\..\library\video\dk_video_base\include;..\..\..\library\video\codec\cuda\dk_nvenc_6.0.1_encoder\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>DX11VideoRenderer.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>mf_d3d11_video_renderer.def</ModuleDefinitionFile>
       <AdditionalDependencies>winmm.lib;dcomp.lib;d3d11.lib;mfuuid.lib;mfplat.lib;evr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(SolutionDir)x86\debug\lib\$(ProjectName).lib</ImportLibrary>
     </Link>
@@ -84,38 +85,38 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>DX11VideoRenderer.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>mf_d3d11_video_renderer.def</ModuleDefinitionFile>
       <AdditionalDependencies>winmm.lib;dcomp.lib;d3d11.lib;mfuuid.lib;mfplat.lib;evr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Activate.cpp" />
-    <ClCompile Include="ClassFactory.cpp" />
+    <ClCompile Include="activate.cpp" />
+    <ClCompile Include="class_factory.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="DLLMain.cpp" />
-    <ClCompile Include="Marker.cpp" />
-    <ClCompile Include="MediaSink.cpp" />
-    <ClCompile Include="Presenter.cpp" />
-    <ClCompile Include="Scheduler.cpp" />
-    <ClCompile Include="StreamSink.cpp" />
+    <ClCompile Include="marker.cpp" />
+    <ClCompile Include="media_sink.cpp" />
+    <ClCompile Include="presenter.cpp" />
+    <ClCompile Include="scheduler.cpp" />
+    <ClCompile Include="stream_sink.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Activate.h" />
-    <ClInclude Include="ClassFactory.h" />
-    <ClInclude Include="Common.h" />
+    <ClInclude Include="activate.h" />
+    <ClInclude Include="class_factory.h" />
+    <ClInclude Include="common.h" />
     <ClInclude Include="display.h" />
-    <ClInclude Include="DX11VideoRenderer.h" />
+    <ClInclude Include="mf_d3d11_video_renderer.h" />
     <ClInclude Include="linklist.h" />
-    <ClInclude Include="Marker.h" />
-    <ClInclude Include="MediaSink.h" />
+    <ClInclude Include="marker.h" />
+    <ClInclude Include="media_sink.h" />
     <ClInclude Include="MFAttributesImpl.h" />
-    <ClInclude Include="Presenter.h" />
-    <ClInclude Include="Scheduler.h" />
-    <ClInclude Include="StreamSink.h" />
-    <ClInclude Include="StaticAsyncCallback.h" />
+    <ClInclude Include="presenter.h" />
+    <ClInclude Include="scheduler.h" />
+    <ClInclude Include="stream_sink.h" />
+    <ClInclude Include="static_async_callback.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DX11VideoRenderer.def" />
+    <None Include="mf_d3d11_video_renderer.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

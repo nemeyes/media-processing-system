@@ -1,16 +1,3 @@
-//-----------------------------------------------------------------------------
-// File: Linklist.h
-// Desc: Linked list class.
-//  Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-
-
-// Notes:
-// 
-// This class template implements a simple double-linked list. 
-// Objects are held as pointers. (Does not use STL's copy semantics.)
-// The Clear() method takes a functor object that releases the objects.
-
 #pragma once
 
 #include <new>

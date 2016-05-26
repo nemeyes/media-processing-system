@@ -6,9 +6,13 @@ debuggerking::rtsp_receiver::rtsp_receiver(void)
 	: _frame_count(0)
 	, _osd_x(-1)
 	, _osd_y(-1)
-{
-
-}
+	, _last_year(0)
+	, _last_month(0)
+	, _last_day(0)
+	, _last_hour(0)
+	, _last_minute(0)
+	, _last_second(0)
+{}
 
 debuggerking::rtsp_receiver::~rtsp_receiver(void)
 {
@@ -19,6 +23,17 @@ int32_t debuggerking::rtsp_receiver::set_osd_position(int32_t x, int32_t y)
 {
 	_osd_x = x;
 	_osd_y = y;
+	return rtsp_receiver::err_code_t::success;
+}
+
+int32_t debuggerking::rtsp_receiver::get_last_time(int32_t & year, int32_t & month, int32_t & day, int32_t & hour, int32_t & minute, int32_t & second)
+{
+	year = _last_year;
+	month = _last_month;
+	day = _last_day;
+	hour = _last_hour;
+	minute = _last_minute;
+	second = _last_second;
 	return rtsp_receiver::err_code_t::success;
 }
 
@@ -259,6 +274,12 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 
 			int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
 			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
+			_last_year = year;
+			_last_month = month;
+			_last_day = day;
+			_last_hour = hour;
+			_last_minute = minute;
+			_last_second = second;
 			wchar_t time[MAX_PATH] = { 0 };
 			_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
 

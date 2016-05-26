@@ -5,11 +5,13 @@
 #include <dxgi1_3.h>
 #include <d3d11.h>
 
+#if defined(WITH_360_RENDERING)
 #include <xnamath.h>
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dx11.lib")
 
 #include "AssimpLoader.h"
+#endif
 
 #include <dk_string_helper.h>
 
@@ -24,7 +26,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+#if defined(WITH_360_RENDERING)
 XMMATRIX gWVP;
 XMMATRIX gWorld;
 XMMATRIX gCamView;
@@ -87,7 +89,7 @@ UINT numElements = ARRAYSIZE(layout);
 
 std::vector<Vertex> vertices;
 std::vector<DWORD> indices;
-
+#endif
 
 //-------------------------------------------------------------------
 // CPresenter constructor.

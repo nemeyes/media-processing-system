@@ -1,21 +1,14 @@
 #include <initguid.h>
-#include "Common.h"
-#include "Activate.h"
-#include "ClassFactory.h"
-#include "MediaSink.h"
+#include "common.h"
+#include "activate.h"
+#include "class_factory.h"
+#include "media_sink.h"
 
-HMODULE g_hModule = NULL;
-volatile long DX11VideoRenderer::CBase::s_lObjectCount = 0;
-volatile long DX11VideoRenderer::CClassFactory::s_lLockCount = 0;
+HMODULE g_module = NULL;
+volatile long debuggerking::mf_base::_object_count = 0;
+volatile long debuggerking::class_factory::_lock_count = 0;
 
-// helper functions
-
-///////////////////////////////////////////////////////////////////////
-// Name: CreateObjectKeyName
-// Desc: Converts a CLSID into a string with the form "CLSID\{clsid}"
-///////////////////////////////////////////////////////////////////////
-
-HRESULT CreateObjectKeyName(const GUID& guid, _Out_writes_(cchMax) TCHAR* pszName, DWORD cchMax)
+HRESULT create_object_keyname(const GUID& guid, _Out_writes_(cchMax) TCHAR* pszName, DWORD cchMax)
 {
     pszName[0] = _T('\0');
 
@@ -30,16 +23,7 @@ HRESULT CreateObjectKeyName(const GUID& guid, _Out_writes_(cchMax) TCHAR* pszNam
     return hr;
 }
 
-///////////////////////////////////////////////////////////////////////
-// Name: SetKeyValue
-// Desc: Sets a string value (REG_SZ) for a registry key
-//
-// hKey:   Handle to the registry key.
-// sName:  Name of the value. Use NULL for the default value.
-// sValue: The string value.
-///////////////////////////////////////////////////////////////////////
-
-HRESULT SetKeyValue(HKEY hKey, const TCHAR* pszName, const TCHAR* pszValue)
+HRESULT set_key_value(HKEY hKey, const TCHAR* pszName, const TCHAR* pszValue)
 {
     size_t cch = 0;
     DWORD cbData = 0;
@@ -52,16 +36,7 @@ HRESULT SetKeyValue(HKEY hKey, const TCHAR* pszName, const TCHAR* pszValue)
     return hr;
 }
 
-///////////////////////////////////////////////////////////////////////
-// Name: RegisterObject
-// Desc: Creates the registry entries for a COM object.
-//
-// guid: The object's CLSID
-// sDescription: Description of the object
-// sThreadingMode: Threading model. e.g., "Both"
-///////////////////////////////////////////////////////////////////////
-
-HRESULT RegisterObject(GUID guid, const TCHAR* pszDescription, const TCHAR* pszThreadingModel)
+HRESULT register_object(GUID guid, const TCHAR* pszDescription, const TCHAR* pszThreadingModel)
 {
     HRESULT hr = S_OK;
     TCHAR pszTemp[MAX_PATH];
@@ -71,7 +46,7 @@ HRESULT RegisterObject(GUID guid, const TCHAR* pszDescription, const TCHAR* pszT
 
     do
     {
-        hr = CreateObjectKeyName(guid, pszTemp, MAX_PATH);
+        hr = create_object_keyname(guid, pszTemp, MAX_PATH);
         if (FAILED(hr))
         {
             break;
@@ -83,7 +58,7 @@ HRESULT RegisterObject(GUID guid, const TCHAR* pszDescription, const TCHAR* pszT
             break;
         }
 
-        hr = SetKeyValue(hKey, NULL, pszDescription);
+        hr = set_key_value(hKey, NULL, pszDescription);
         if (FAILED(hr))
         {
             break;
@@ -95,7 +70,7 @@ HRESULT RegisterObject(GUID guid, const TCHAR* pszDescription, const TCHAR* pszT
             break;
         }
 
-        dwRet = GetModuleFileName(g_hModule, pszTemp, MAX_PATH);
+		dwRet = GetModuleFileName(g_module, pszTemp, MAX_PATH);
         if (dwRet == 0)
         {
             hr = __HRESULT_FROM_WIN32(GetLastError());
@@ -107,13 +82,13 @@ HRESULT RegisterObject(GUID guid, const TCHAR* pszDescription, const TCHAR* pszT
             break;
         }
 
-        hr = SetKeyValue(hSubkey, NULL, pszTemp);
+		hr = set_key_value(hSubkey, NULL, pszTemp);
         if (FAILED(hr))
         {
             break;
         }
 
-        hr = SetKeyValue(hSubkey, L"ThreadingModel", pszThreadingModel);
+		hr = set_key_value(hSubkey, L"ThreadingModel", pszThreadingModel);
     }
     while (FALSE);
 
@@ -130,21 +105,14 @@ HRESULT RegisterObject(GUID guid, const TCHAR* pszDescription, const TCHAR* pszT
     return hr;
 }
 
-///////////////////////////////////////////////////////////////////////
-// Name: UnregisterObject
-// Desc: Deletes the registry entries for a COM object.
-//
-// guid: The object's CLSID
-///////////////////////////////////////////////////////////////////////
-
-HRESULT UnregisterObject(GUID guid)
+HRESULT unregister_object(GUID guid)
 {
     HRESULT hr = S_OK;
     TCHAR pszTemp[MAX_PATH];
 
     do
     {
-        hr = CreateObjectKeyName(guid, pszTemp, MAX_PATH);
+		hr = create_object_keyname(guid, pszTemp, MAX_PATH);
         if (FAILED(hr))
         {
             break;
@@ -159,50 +127,45 @@ HRESULT UnregisterObject(GUID guid)
 
 // DLL Exports
 
-STDAPI CreateDX11VideoRenderer(REFIID riid, void** ppvObject)
+STDAPI create_d3d11_video_renderer(REFIID riid, void ** ppvobj)
 {
-    return DX11VideoRenderer::CMediaSink::CreateInstance(riid, ppvObject);
+	return debuggerking::media_sink::CreateInstance(riid, ppvobj);
 }
 
-STDAPI CreateDX11VideoRendererActivate(HWND hwnd, IMFActivate** ppActivate)
+STDAPI create_d3d11_video_renderer_activate(HWND hwnd, IMFActivate ** ppact)
 {
-    return DX11VideoRenderer::CActivate::CreateInstance(hwnd, ppActivate);
+	return debuggerking::activate::CreateInstance(hwnd, ppact);
 }
 
 STDAPI DllCanUnloadNow(void)
 {
-    return (DX11VideoRenderer::CBase::GetObjectCount() == 0 && DX11VideoRenderer::CClassFactory::IsLocked() == FALSE) ? S_OK : S_FALSE;
+    return (debuggerking::mf_base::get_object_count() == 0 && debuggerking::class_factory::is_locked() == FALSE) ? S_OK : S_FALSE;
 }
 
-STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void** ppvObject)
+STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void ** ppvobj)
 {
-    if (clsid != CLSID_DX11VideoRenderer)
-    {
+	if (clsid != CLSID_D3D11VideoRenderer)
         return CLASS_E_CLASSNOTAVAILABLE;
-    }
 
-    DX11VideoRenderer::CClassFactory* pFactory = new DX11VideoRenderer::CClassFactory();
-    if (pFactory == NULL)
+	debuggerking::class_factory * factory = new debuggerking::class_factory();
+	
+	if (factory == NULL)
     {
         return E_OUTOFMEMORY;
     }
-
-    pFactory->AddRef();
-
-    HRESULT hr = pFactory->QueryInterface(riid, ppvObject);
-
-    SafeRelease(pFactory);
-
+	factory->AddRef();
+    HRESULT hr = factory->QueryInterface(riid, ppvobj);
+    safe_release(factory);
     return hr;
 }
 
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HANDLE module, DWORD  ul_reason_for_call, LPVOID reserved)
 {
     switch (ul_reason_for_call)
     {
         case DLL_PROCESS_ATTACH:
         {
-            g_hModule = static_cast<HMODULE>(hModule);
+            g_module = static_cast<HMODULE>(module);
             break;
         }
         default:
@@ -220,22 +183,22 @@ STDAPI DllRegisterServer(void)
 
     do
     {
-        hr = RegisterObject(CLSID_DX11VideoRenderer, L"DX11 Video Renderer", L"Both");
+		hr = register_object(CLSID_D3D11VideoRenderer, L"DebuggerKing D3D11 Video Renderer", L"Both");
         if (FAILED(hr))
         {
             break;
         }
 
-        hr = RegisterObject(CLSID_DX11VideoRendererActivate, L"DX11 Video Renderer Activate", L"Both");
+		hr = register_object(CLSID_D3D11VideoRendererActivate, L"DebuggerKing D3D11 Video Renderer Activate", L"Both");
         if (FAILED(hr))
         {
             break;
         }
 
         hr = MFTRegister(
-            CLSID_DX11VideoRenderer,    // CLSID
+			CLSID_D3D11VideoRenderer,    // CLSID
             MFT_CATEGORY_OTHER,         // Category
-            L"DX11 Video Renderer",     // Friendly name
+            L"DebuggerKing D3D11 Video Renderer",     // Friendly name
             0,                          // Reserved, must be zero.
             0,
             NULL,
@@ -251,11 +214,10 @@ STDAPI DllRegisterServer(void)
 
 STDAPI DllUnregisterServer(void)
 {
-    HRESULT hr = UnregisterObject(CLSID_DX11VideoRenderer);
-    HRESULT hrTemp = MFTUnregister(CLSID_DX11VideoRenderer);
+	HRESULT hr = unregister_object(CLSID_D3D11VideoRenderer);
+	HRESULT hrTemp = MFTUnregister(CLSID_D3D11VideoRenderer);
     if (SUCCEEDED(hr))
-    {
         hr = hrTemp;
-    }
+
     return hr;
 }

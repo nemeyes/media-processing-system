@@ -75,7 +75,7 @@ int PRMC_Connect(const wchar_t * url, int port_number, const wchar_t * username,
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -84,12 +84,12 @@ int PRMC_Connect(const wchar_t * url, int port_number, const wchar_t * username,
 	single_recorder_info->port_number = port_number;
 
 	char * ascii_username = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
 	if (ascii_username && strlen(ascii_username) > 0)
 		strncpy_s(single_recorder_info->username, ascii_username, sizeof(single_recorder_info->username));
 
 	char * ascii_password = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
 	if (ascii_password&& strlen(ascii_password) > 0)
 		strncpy_s(single_recorder_info->password, ascii_password, sizeof(single_recorder_info->password));
 
@@ -134,7 +134,7 @@ int PRMC_Disconnect(const wchar_t * url)
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -145,7 +145,7 @@ int PRMC_Disconnect(const wchar_t * url)
 		debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 		if (single_recorder_info)
 		{
-			dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+			debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 			std::map<int, debuggerking::single_media_source_t*>::iterator iter;
 			for (iter = single_recorder_info->media_sources.begin(); iter != single_recorder_info->media_sources.end(); iter++)
 			{
@@ -212,7 +212,7 @@ int PRMC_GetYears(const wchar_t * url, const wchar_t * uuid, int years[], int ca
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -221,7 +221,7 @@ int PRMC_GetYears(const wchar_t * url, const wchar_t * uuid, int years[], int ca
 	if (iter != g_parallel_recorders.end())
 	{
 		char * ascii_uuid = 0;
-		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
@@ -250,7 +250,7 @@ int PRMC_GetMonths(const wchar_t * url, const wchar_t * uuid, int year, int mont
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -259,7 +259,7 @@ int PRMC_GetMonths(const wchar_t * url, const wchar_t * uuid, int year, int mont
 	if (iter != g_parallel_recorders.end())
 	{
 		char * ascii_uuid = 0;
-		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
@@ -288,7 +288,7 @@ int PRMC_GetDays(const wchar_t * url, const wchar_t * uuid, int year, int month,
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -297,7 +297,7 @@ int PRMC_GetDays(const wchar_t * url, const wchar_t * uuid, int year, int month,
 	if (iter != g_parallel_recorders.end())
 	{
 		char * ascii_uuid = 0;
-		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
@@ -326,7 +326,7 @@ int PRMC_GetHours(const wchar_t * url, const wchar_t * uuid, int year, int month
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -335,7 +335,7 @@ int PRMC_GetHours(const wchar_t * url, const wchar_t * uuid, int year, int month
 	if (iter != g_parallel_recorders.end())
 	{
 		char * ascii_uuid = 0;
-		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
@@ -364,7 +364,7 @@ int PRMC_GetMinutes(const wchar_t * url, const wchar_t * uuid, int year, int mon
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -373,7 +373,7 @@ int PRMC_GetMinutes(const wchar_t * url, const wchar_t * uuid, int year, int mon
 	if (iter != g_parallel_recorders.end())
 	{
 		char * ascii_uuid = 0;
-		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
@@ -402,7 +402,7 @@ int PRMC_GetSeconds(const wchar_t * url, const wchar_t * uuid, int year, int mon
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
@@ -411,7 +411,7 @@ int PRMC_GetSeconds(const wchar_t * url, const wchar_t * uuid, int year, int mon
 	if (iter != g_parallel_recorders.end())
 	{
 		char * ascii_uuid = 0;
-		dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 		if (ascii_uuid && strlen(ascii_uuid) > 0)
 		{
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
@@ -441,10 +441,10 @@ int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd)
 	int media_source_index_per_recorder = -1;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -453,10 +453,10 @@ int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd)
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				char * ascii_uuid = 0;
-				dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+				debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 				if (ascii_uuid && strlen(ascii_uuid) > 0)
 				{
-					dk_auto_lock mutext(&single_recorder_info->media_source_lock);
+					debuggerking::auto_lock mutext(&single_recorder_info->media_source_lock);
 					debuggerking::single_media_source_t * single_media_source = new debuggerking::single_media_source_t();
 					strcpy_s(single_media_source->uuid, sizeof(single_media_source->uuid), ascii_uuid);
 					if (strlen(single_recorder_info->username) > 0)
@@ -497,10 +497,10 @@ int PRMC_Remove(const wchar_t * url, int index)
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -508,7 +508,7 @@ int PRMC_Remove(const wchar_t * url, int index)
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -569,10 +569,10 @@ int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int 
 		scale = 0.1f;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -580,7 +580,7 @@ int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int 
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -626,10 +626,10 @@ int PRMC_Stop(const wchar_t * url, int index)
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -637,7 +637,7 @@ int PRMC_Stop(const wchar_t * url, int index)
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -673,17 +673,19 @@ int PRMC_Stop(const wchar_t * url, int index)
 	return result;
 }
 
-int PRMC_Pause(const wchar_t * url, int index)
+
+int PRMC_Resume(const wchar_t * url, int index)
 {
 	int result = PRMC_FAIL;
 	if (!url || wcslen(url) < 1)
 		return result;
+	float scale = 1.0f;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -691,7 +693,64 @@ int PRMC_Pause(const wchar_t * url, int index)
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
+				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
+				if (iter != single_recorder_info->media_sources.end())
+				{
+					debuggerking::single_media_source_t * single_media_source = iter->second;
+					if (single_media_source)
+					{
+						if (!single_media_source->run)
+						{
+							if (single_media_source->type == RTSP_RECEIVER)
+							{
+								char rtsp_url[260] = { 0 };
+								_snprintf_s(rtsp_url, sizeof(rtsp_url), "rtsp://%s:%d/%s/%.4d%.2d%.2d%.2d%.2d%.2d", single_recorder_info->url, single_recorder_info->rtsp_server_port_number, single_media_source->uuid, single_media_source->last_year, single_media_source->last_month, single_media_source->last_day, single_media_source->last_hour, single_media_source->last_minute, single_media_source->last_second);
+
+								debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
+								receiver->play(rtsp_url, single_media_source->username, single_media_source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, scale, false, single_media_source->hwnd);
+							}
+							//else if (single_media_source->type == RTMP_RECEIVER)
+							//{
+							//	dk_rtmp_receiver * receiver = static_cast<dk_rtmp_receiver*>(single_media_source->receiver);
+							//	receiver->play(info->url, single_media_source->username, single_media_source->password, 2, single_media_source->hwnd);
+							//}
+							single_media_source->run = true;
+						}
+
+					}
+					result = PRMC_SUCCESS;
+				}
+			}
+		}
+	}
+
+	if (ascii_url)
+		free(ascii_url);
+	ascii_url = nullptr;
+
+	return result;
+}
+
+int PRMC_Pause(const wchar_t * url, int index)
+{
+	int result = PRMC_FAIL;
+	if (!url || wcslen(url) < 1)
+		return result;
+
+	char * ascii_url = 0;
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	if (ascii_url && strlen(ascii_url) > 0)
+	{
+		debuggerking::auto_lock mutext(&g_lock);
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
+		iter = g_parallel_recorders.find(ascii_url);
+		if (iter != g_parallel_recorders.end())
+		{
+			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -703,8 +762,10 @@ int PRMC_Pause(const wchar_t * url, int index)
 							if (single_media_source->type == RTSP_RECEIVER)
 							{
 								debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
-								receiver->pause();
+								receiver->get_last_time(single_media_source->last_year, single_media_source->last_month, single_media_source->last_day, single_media_source->last_hour, single_media_source->last_minute, single_media_source->last_second);
+								receiver->stop();
 							}
+							single_media_source->run = false;
 						}
 					}
 					result = PRMC_SUCCESS;
@@ -730,11 +791,11 @@ int PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * ex
 	int media_source_index_per_recorder = -1;
 
 	char * ascii_url = nullptr, *ascii_export_file_path = nullptr;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
-	dk_string_helper::convert_wide2multibyte((wchar_t*)export_file_path, &ascii_export_file_path);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)export_file_path, &ascii_export_file_path);
 	if (ascii_url && strlen(ascii_url) > 0 && ascii_export_file_path && strlen(ascii_export_file_path)>0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -743,10 +804,10 @@ int PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * ex
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				char * ascii_uuid = 0;
-				dk_string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
+				debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 				if (ascii_uuid && strlen(ascii_uuid) > 0)
 				{
-					dk_auto_lock mutext(&single_recorder_info->media_source_lock);
+					debuggerking::auto_lock mutext(&single_recorder_info->media_source_lock);
 					debuggerking::single_media_source_t * single_media_source = new debuggerking::single_media_source_t();
 					strcpy_s(single_media_source->uuid, sizeof(single_media_source->uuid), ascii_uuid);
 					if (strlen(single_recorder_info->username) > 0)
@@ -787,10 +848,10 @@ int PRMC_RemoveExport(const wchar_t * url, int index)
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -798,7 +859,7 @@ int PRMC_RemoveExport(const wchar_t * url, int index)
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -842,10 +903,10 @@ int PRMC_PlayExport(const wchar_t * url, int index, int begin_year, int begin_mo
 
 	float scale = 0.0f;
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -853,7 +914,7 @@ int PRMC_PlayExport(const wchar_t * url, int index, int begin_year, int begin_mo
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -894,10 +955,10 @@ int PRMC_StopExport(const wchar_t * url, int index)
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -905,7 +966,7 @@ int PRMC_StopExport(const wchar_t * url, int index)
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -943,10 +1004,10 @@ int PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y)
 		return result;
 
 	char * ascii_url = 0;
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_lock);
+		debuggerking::auto_lock mutext(&g_lock);
 		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
 		iter = g_parallel_recorders.find(ascii_url);
 		if (iter != g_parallel_recorders.end())
@@ -954,7 +1015,7 @@ int PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y)
 			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
-				dk_auto_lock mutex(&single_recorder_info->media_source_lock);
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
 				if (iter != single_recorder_info->media_sources.end())
 				{
@@ -996,15 +1057,15 @@ int PRMC_RTSP_Add(const wchar_t * url, int port_number, const wchar_t * username
 	char * ascii_username = 0;
 	char * ascii_password = 0;
 
-	dk_string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
 	if (username && wcslen(username)>0)
-		dk_string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
 	if (password && wcslen(password)>0)
-		dk_string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
 
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
-		dk_auto_lock mutext(&g_rtsp_source_lock);
+		debuggerking::auto_lock mutext(&g_rtsp_source_lock);
 		debuggerking::single_rtsp_source_t * source = new debuggerking::single_rtsp_source_t();
 		strcpy_s(source->url, sizeof(source->url), ascii_url);
 		if (ascii_username && strlen(ascii_username) > 0)
@@ -1037,7 +1098,7 @@ int PRMC_RTSP_Remove(int index)
 {
 	int result = PRMC_FAIL;
 
-	dk_auto_lock mutex(&g_rtsp_source_lock);
+	debuggerking::auto_lock mutex(&g_rtsp_source_lock);
 	std::map<int, debuggerking::single_rtsp_source_t*>::iterator iter = g_rtsp_sources.find(index);
 	if (iter != g_rtsp_sources.end())
 	{
@@ -1070,7 +1131,7 @@ int PRMC_RTSP_Play(int index, bool repeat)
 {
 	int result = PRMC_FAIL;
 
-	dk_auto_lock mutex(&g_rtsp_source_lock);
+	debuggerking::auto_lock mutex(&g_rtsp_source_lock);
 	std::map<int, debuggerking::single_rtsp_source_t*>::iterator iter = g_rtsp_sources.find(index);
 	if (iter != g_rtsp_sources.end())
 	{
@@ -1094,7 +1155,7 @@ int PRMC_RTSP_Stop(int index)
 {
 	int result = PRMC_FAIL;
 
-	dk_auto_lock mutex(&g_rtsp_source_lock);
+	debuggerking::auto_lock mutex(&g_rtsp_source_lock);
 	std::map<int, debuggerking::single_rtsp_source_t*>::iterator iter = g_rtsp_sources.find(index);
 	if (iter != g_rtsp_sources.end())
 	{

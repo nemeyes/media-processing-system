@@ -2,53 +2,52 @@
 #include <atlbase.h>
 #include <dk_gpu_handler.h>
 
-HRESULT DX11VideoRenderer::CActivate::CreateInstance(HWND hwnd, IMFActivate** ppActivate)
+HRESULT debuggerking::activate::CreateInstance(HWND hwnd, IMFActivate ** ppactivate)
 {
-	if (ppActivate == NULL)
+	if (ppactivate == NULL)
 	{
 		return E_POINTER;
 	}
 
-	CActivate* pActivate = new CActivate();
-	if (pActivate == NULL)
+	activate * act = new activate();
+	if (act == NULL)
 	{
 		return E_OUTOFMEMORY;
 	}
 
-	pActivate->AddRef();
+	act->AddRef();
 
 	HRESULT hr = S_OK;
 
 	do
 	{
-		hr = pActivate->Initialize();
+		hr = act->Initialize();
 		if (FAILED(hr))
 		{
 			break;
 		}
 
-		hr = pActivate->QueryInterface(IID_PPV_ARGS(ppActivate));
+		hr = act->QueryInterface(IID_PPV_ARGS(ppactivate));
 		if (FAILED(hr))
 		{
 			break;
 		}
 
-		pActivate->m_hwnd = hwnd;
+		act->_hwnd = hwnd;
 	} while (FALSE);
 
-	SafeRelease(pActivate);
-
+	safe_release(act);
 	return hr;
 }
 
 // IUnknown
-ULONG DX11VideoRenderer::CActivate::AddRef(void)
+ULONG debuggerking::activate::AddRef(void)
 {
-	return InterlockedIncrement(&m_lRefCount);
+	return InterlockedIncrement(&_ref_count);
 }
 
 // IUnknown
-HRESULT DX11VideoRenderer::CActivate::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
+HRESULT debuggerking::activate::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void ** ppv)
 {
 	if (!ppv)
 	{
@@ -88,9 +87,9 @@ HRESULT DX11VideoRenderer::CActivate::QueryInterface(REFIID iid, __RPC__deref_ou
 }
 
 // IUnknown
-ULONG DX11VideoRenderer::CActivate::Release(void)
+ULONG debuggerking::activate::Release(void)
 {
-	ULONG lRefCount = InterlockedDecrement(&m_lRefCount);
+	ULONG lRefCount = InterlockedDecrement(&_ref_count);
 	if (lRefCount == 0)
 	{
 		delete this;
@@ -99,23 +98,23 @@ ULONG DX11VideoRenderer::CActivate::Release(void)
 }
 
 // IMFActivate
-HRESULT DX11VideoRenderer::CActivate::ActivateObject(__RPC__in REFIID riid, __RPC__deref_out_opt void** ppvObject)
+HRESULT debuggerking::activate::ActivateObject(__RPC__in REFIID riid, __RPC__deref_out_opt void ** ppvobj)
 {
 	HRESULT hr = S_OK;
-	IMFGetService* pSinkGetService = NULL;
-	IMFVideoDisplayControl* pSinkVideoDisplayControl = NULL;
+	ATL::CComPtr<IMFGetService> sink_get_service;
+	ATL::CComPtr<IMFVideoDisplayControl> sink_video_Display_control;
 
 	do
 	{
-		if (m_pMediaSink == NULL)
+		if (_media_sink == NULL)
 		{
-			hr = CMediaSink::CreateInstance(IID_PPV_ARGS(&m_pMediaSink));
+			hr = media_sink::CreateInstance(IID_PPV_ARGS(&_media_sink));
 			if (FAILED(hr))
 			{
 				break;
 			}
 
-			ATL::CComQIPtr<IGPUHandler> gpu_selector(m_pMediaSink);
+			ATL::CComQIPtr<IGPUHandler> gpu_selector(_media_sink);
 			if (gpu_selector == NULL)
 				break;
 			hr = gpu_selector->SetGPUIndex(_gpu_index);
@@ -126,115 +125,110 @@ HRESULT DX11VideoRenderer::CActivate::ActivateObject(__RPC__in REFIID riid, __RP
 			if (FAILED(hr))
 				break;
 
-			hr = m_pMediaSink->QueryInterface(IID_PPV_ARGS(&pSinkGetService));
+			hr = _media_sink->QueryInterface(IID_PPV_ARGS(&sink_get_service));
 			if (FAILED(hr))
 			{
 				break;
 			}
 
-			hr = pSinkGetService->GetService(MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&pSinkVideoDisplayControl));
+			hr = sink_get_service->GetService(MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&sink_video_Display_control));
 			if (FAILED(hr))
 			{
 				break;
 			}
 
-			hr = pSinkVideoDisplayControl->SetVideoWindow(m_hwnd);
+			hr = sink_video_Display_control->SetVideoWindow(_hwnd);
 			if (FAILED(hr))
 			{
 				break;
 			}
 		}
 
-		hr = m_pMediaSink->QueryInterface(riid, ppvObject);
+		hr = _media_sink->QueryInterface(riid, ppvobj);
 		if (FAILED(hr))
 		{
 			break;
 		}
 	} while (FALSE);
-
-	SafeRelease(pSinkGetService);
-	SafeRelease(pSinkVideoDisplayControl);
-
 	return hr;
 }
 
 // IMFActivate
-HRESULT DX11VideoRenderer::CActivate::DetachObject(void)
+HRESULT debuggerking::activate::DetachObject(void)
 {
-	SafeRelease(m_pMediaSink);
-
+	safe_release(_media_sink);
 	return S_OK;
 }
 
 // IMFActivate
-HRESULT DX11VideoRenderer::CActivate::ShutdownObject(void)
+HRESULT debuggerking::activate::ShutdownObject(void)
 {
-	if (m_pMediaSink != NULL)
+	if (_media_sink != NULL)
 	{
-		m_pMediaSink->Shutdown();
-		SafeRelease(m_pMediaSink);
+		_media_sink->Shutdown();
+		safe_release(_media_sink);
 	}
-
 	return S_OK;
 }
 
 // IPersistStream
-HRESULT DX11VideoRenderer::CActivate::GetSizeMax(__RPC__out ULARGE_INTEGER* pcbSize)
+HRESULT debuggerking::activate::GetSizeMax(__RPC__out ULARGE_INTEGER* pcbSize)
 {
 	return E_NOTIMPL;
 }
 
 // IPersistStream
-HRESULT DX11VideoRenderer::CActivate::IsDirty(void)
+HRESULT debuggerking::activate::IsDirty(void)
 {
 	return E_NOTIMPL;
 }
 
 // IPersistStream
-HRESULT DX11VideoRenderer::CActivate::Load(__RPC__in_opt IStream* pStream)
+HRESULT debuggerking::activate::Load(__RPC__in_opt IStream * stream)
 {
 	return E_NOTIMPL;
 }
 
 // IPersistStream
-HRESULT DX11VideoRenderer::CActivate::Save(__RPC__in_opt IStream* pStream, BOOL bClearDirty)
+HRESULT debuggerking::activate::Save(__RPC__in_opt IStream * stream, BOOL bcleardirty)
 {
 	return E_NOTIMPL;
 }
 
 // IPersist
-HRESULT DX11VideoRenderer::CActivate::GetClassID(__RPC__out CLSID* pClassID)
+HRESULT debuggerking::activate::GetClassID(__RPC__out CLSID * clsid)
 {
-	if (pClassID == NULL)
+	if (clsid == NULL)
 	{
 		return E_POINTER;
 	}
-	*pClassID = CLSID_DX11VideoRendererActivate;
+	*clsid = CLSID_D3D11VideoRendererActivate;
 	return S_OK;
 }
 
-HRESULT DX11VideoRenderer::CActivate::SetGPUIndex(UINT index)
+
+// IGPUHandler
+HRESULT debuggerking::activate::SetGPUIndex(UINT index)
 {
 	_gpu_index = index;
 	return NOERROR;
 }
 
-STDMETHODIMP DX11VideoRenderer::CActivate::EnablePresent(BOOL enable)
+STDMETHODIMP debuggerking::activate::EnablePresent(BOOL enable)
 {
 	_enable_present = enable;
 	return NOERROR;
 }
 
 // ctor
-DX11VideoRenderer::CActivate::CActivate(void) :
-m_lRefCount(0),
-m_pMediaSink(NULL),
-m_hwnd(NULL)
-{
-}
+debuggerking::activate::activate(void)
+	: _ref_count(0)
+	, _media_sink(NULL)
+	, _hwnd(NULL)
+{}
 
 // dtor
-DX11VideoRenderer::CActivate::~CActivate(void)
+debuggerking::activate::~activate(void)
 {
-	SafeRelease(m_pMediaSink);
+	safe_release(_media_sink);
 }

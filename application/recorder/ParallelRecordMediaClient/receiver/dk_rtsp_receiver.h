@@ -19,6 +19,7 @@ namespace debuggerking
 		virtual ~rtsp_receiver(void);
 
 		int32_t set_osd_position(int32_t x, int32_t y);
+		int32_t get_last_time(int32_t & year, int32_t & month, int32_t & day, int32_t & hour, int32_t & minute, int32_t & second);
 
 		int32_t play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd);
 		int32_t stop(void);
@@ -33,6 +34,13 @@ namespace debuggerking
 
 		int32_t _osd_x;
 		int32_t _osd_y;
+
+		int32_t _last_year;
+		int32_t _last_month;
+		int32_t _last_day;
+		int32_t _last_hour;
+		int32_t _last_minute;
+		int32_t _last_second;
 	};
 };
 

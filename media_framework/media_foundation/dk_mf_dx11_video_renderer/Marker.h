@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Common.h"
-#include "Scheduler.h"
+#include "common.h"
+#include "scheduler.h"
 #include "display.h"
 
-namespace DX11VideoRenderer
+namespace debuggerking
 {
     // IMarker:
     // Custom interface for handling IMFStreamSink::PlaceMarker calls asynchronously.
@@ -25,38 +25,29 @@ namespace DX11VideoRenderer
     };
 
     // Holds marker information for IMFStreamSink::PlaceMarker
-
-    class CMarker : public IMarker, private CBase
+    class marker : public IMarker, private mf_base
     {
     public:
 
-        static HRESULT Create(
-            MFSTREAMSINK_MARKER_TYPE eMarkerType,
-            const PROPVARIANT* pvarMarkerValue,
-            const PROPVARIANT* pvarContextValue,
-            IMarker** ppMarker
-            );
+        static HRESULT Create(MFSTREAMSINK_MARKER_TYPE eMarkerType, const PROPVARIANT* pvarMarkerValue, const PROPVARIANT* pvarContextValue, IMarker** ppMarker);
 
         // IUnknown methods.
         STDMETHODIMP_(ULONG) AddRef(void);
         STDMETHODIMP_(ULONG) Release(void);
-        STDMETHODIMP QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv);
+        STDMETHODIMP QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void ** ppv);
 
-        STDMETHODIMP GetMarkerType(MFSTREAMSINK_MARKER_TYPE* pType);
-        STDMETHODIMP GetMarkerValue(PROPVARIANT* pvar);
-        STDMETHODIMP GetContext(PROPVARIANT* pvar);
+        STDMETHODIMP GetMarkerType(MFSTREAMSINK_MARKER_TYPE * pType);
+        STDMETHODIMP GetMarkerValue(PROPVARIANT * pvar);
+        STDMETHODIMP GetContext(PROPVARIANT * pvar);
 
     protected:
-
-        MFSTREAMSINK_MARKER_TYPE m_eMarkerType;
-        PROPVARIANT m_varMarkerValue;
-        PROPVARIANT m_varContextValue;
+        MFSTREAMSINK_MARKER_TYPE _marker_type;
+        PROPVARIANT _marker_value;
+		PROPVARIANT _marker_context_value;
 
     private:
-
-        CMarker(MFSTREAMSINK_MARKER_TYPE eMarkerType);
-        virtual ~CMarker(void);
-
-        long m_nRefCount;
+		marker(MFSTREAMSINK_MARKER_TYPE eMarkerType);
+		virtual ~marker(void);
+        long _ref_count;
     };
 }

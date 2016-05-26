@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Common.h"
+#include "common.h"
 #include "MFAttributesImpl.h"
-#include "MediaSink.h"
+#include "media_sink.h"
 
-namespace DX11VideoRenderer
+namespace debuggerking
 {
-	class CActivate : public CMFAttributesImpl<IMFActivate>, public IPersistStream, public IGPUHandler, private CBase
+	class activate : public CMFAttributesImpl<IMFActivate>, public IPersistStream, public IGPUHandler, private mf_base
 	{
 	public:
 
@@ -36,14 +36,14 @@ namespace DX11VideoRenderer
 		STDMETHODIMP EnablePresent(BOOL enable);
 
 	private:
+		activate(void);
+		~activate(void);
 
-		CActivate(void);
-		~CActivate(void);
-
-		long m_lRefCount;
+		long _ref_count;
 		UINT _gpu_index;
 		BOOL _enable_present;
-		IMFMediaSink* m_pMediaSink;
-		HWND m_hwnd;
+
+		IMFMediaSink * _media_sink;
+		HWND _hwnd;
 	};
 }

@@ -196,12 +196,15 @@ namespace DX11VideoRenderer
 		ID3D10Blob* PS_Buffer;
 		ID3D11InputLayout* vertLayout;
 
+
+#if defined(WITH_360_RENDERING)
 		//for Sphere mapping
 		ID3D11ShaderResourceView* m_pSphereSRV;
 		ID3D11SamplerState* m_pSphereTexSamplerState;
 		ID3D11Buffer* m_pCbPerObjectBuffer;
 		HRESULT InitD3DScene();
 		HRESULT DrawD3DScene();
+#endif
 
 
 

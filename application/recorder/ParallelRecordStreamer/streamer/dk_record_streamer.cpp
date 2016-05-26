@@ -208,7 +208,7 @@ bool debuggerking::record_streamer::stop(void)
 const char * debuggerking::record_streamer::retrieve_contents_path(void)
 {
 	char * module_path = nullptr;
-	dk_misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe", &module_path);
+	debuggerking::misc_helper::retrieve_absolute_module_path("ParallelRecordServer.exe", &module_path);
 	if (module_path && strlen(module_path)>0)
 	{
 		_snprintf_s(_contents_path, sizeof(_contents_path), "%s%s", module_path, "contents\\");
@@ -220,7 +220,7 @@ const char * debuggerking::record_streamer::retrieve_contents_path(void)
 const char * debuggerking::record_streamer::retrieve_config_path(void)
 {
 	char * module_path = nullptr;
-	dk_misc_helper::retrieve_absolute_module_path("ParallelRecordStreamer.exe", &module_path);
+	debuggerking::misc_helper::retrieve_absolute_module_path("ParallelRecordStreamer.exe", &module_path);
 	if (module_path && strlen(module_path)>0)
 	{
 		_snprintf_s(_config_path, sizeof(_config_path), "%s%s", module_path, "config\\");

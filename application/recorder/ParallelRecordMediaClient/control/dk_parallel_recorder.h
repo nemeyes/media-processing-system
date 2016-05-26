@@ -22,12 +22,24 @@ namespace debuggerking
 		void * receiver;
 		void * exportor;
 		char export_file_path[MAX_PATH];
+		int last_year;
+		int last_month;
+		int last_day;
+		int last_hour;
+		int last_minute;
+		int last_second;
 		_single_media_source_t(void)
 			: type(RTSP_RECEIVER)
 			, hwnd(NULL)
 			, run(false)
 			, receiver(NULL)
 			, exportor(NULL)
+			, last_year(0)
+			, last_month(0)
+			, last_day(0)
+			, last_hour(0)
+			, last_minute(0)
+			, last_second(0)
 		{
 			memset(uuid, 0x00, sizeof(uuid));
 			memset(username, 0x00, sizeof(username));
@@ -55,6 +67,13 @@ namespace debuggerking
 			run = clone.run;
 			receiver = clone.receiver;
 			exportor = clone.exportor;
+
+			last_year = clone.last_year;
+			last_month = clone.last_month;
+			last_day = clone.last_day;
+			last_hour = clone.last_hour;
+			last_minute = clone.last_minute;
+			last_second = clone.last_second;
 		}
 
 		_single_media_source_t & operator=(_single_media_source_t & clone)
@@ -77,6 +96,13 @@ namespace debuggerking
 			run = clone.run;
 			receiver = clone.receiver;
 			exportor = clone.exportor;
+
+			last_year = clone.last_year;
+			last_month = clone.last_month;
+			last_day = clone.last_day;
+			last_hour = clone.last_hour;
+			last_minute = clone.last_minute;
+			last_second = clone.last_second;
 			return (*this);
 		}
 	} single_media_source_t;

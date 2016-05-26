@@ -27,11 +27,11 @@ DEFINE_GUID(CLSID_VideoProcessorMFT, 0x88753b26, 0x5b24, 0x49bd, 0xb2, 0xe7, 0xc
 //      2) Not perform FRC
 //      3) Allow last frame regeneration (repaint)
 // This attribute should be set on the transform's attrbiute store prior to setting the input type.
-DEFINE_GUID(MF_XVP_PLAYBACK_MODE, 0x3c5d293f, 0xad67, 0x4e29, 0xaf, 0x12, 0xcf, 0x3e, 0x23, 0x8a, 0xcc, 0xe9);
+//DEFINE_GUID(MF_XVP_PLAYBACK_MODE, 0x3c5d293f, 0xad67, 0x4e29, 0xaf, 0x12, 0xcf, 0x3e, 0x23, 0x8a, 0xcc, 0xe9);
 
-namespace DX11VideoRenderer
+namespace debuggerking
 {
-    inline void SafeCloseHandle(HANDLE& h)
+    inline void safe_close_handle(HANDLE& h)
     {
         if (h != NULL)
         {
@@ -40,19 +40,19 @@ namespace DX11VideoRenderer
         }
     }
 
-    template <class T> inline void SafeDelete(T*& pT)
+    template <class T> inline void safe_delete(T*& pT)
     {
         delete pT;
         pT = NULL;
     }
 
-    template <class T> inline void SafeDeleteArray(T*& pT)
+    template <class T> inline void safe_delete_array(T*& pT)
     {
         delete[] pT;
         pT = NULL;
     }
 
-    template <class T> inline void SafeRelease(T*& pT)
+    template <class T> inline void safe_release(T*& pT)
     {
         if (pT != NULL)
         {
@@ -61,12 +61,12 @@ namespace DX11VideoRenderer
         }
     }
 
-    template <class T> inline double TicksToMilliseconds(const T& t)
+    template <class T> inline double ticks2milliseconds(const T& t)
     {
         return t / 10000.0;
     }
 
-    template <class T> inline T MillisecondsToTicks(const T& t)
+    template <class T> inline T milliseconds2ticks(const T& t)
     {
         return t * 10000;
     }
@@ -94,15 +94,15 @@ namespace DX11VideoRenderer
     }
 
     // Convert a fixed-point to a float.
-    inline float MFOffsetToFloat(const MFOffset& offset)
+    inline float offset2float(const MFOffset & offset)
     {
         return (float)offset.value + ((float)offset.value / 65536.0f);
     }
 
-    inline RECT MFVideoAreaToRect(const MFVideoArea area)
+    inline RECT video_area2rect(const MFVideoArea area)
     {
-        float left = MFOffsetToFloat(area.OffsetX);
-        float top = MFOffsetToFloat(area.OffsetY);
+		float left = offset2float(area.OffsetX);
+		float top = offset2float(area.OffsetY);
 
         RECT rc =
         {
@@ -115,7 +115,7 @@ namespace DX11VideoRenderer
         return rc;
     }
 
-    inline MFOffset MakeOffset(float v)
+    inline MFOffset make_offset(float v)
     {
         MFOffset offset;
         offset.value = short(v);
@@ -123,40 +123,40 @@ namespace DX11VideoRenderer
         return offset;
     }
 
-    inline MFVideoArea MakeArea(float x, float y, DWORD width, DWORD height)
+    inline MFVideoArea make_area(float x, float y, DWORD width, DWORD height)
     {
         MFVideoArea area;
-        area.OffsetX = MakeOffset(x);
-        area.OffsetY = MakeOffset(y);
+        area.OffsetX = make_offset(x);
+		area.OffsetY = make_offset(y);
         area.Area.cx = width;
         area.Area.cy = height;
         return area;
     }
 
-    class CBase
+    class mf_base
     {
     public:
 
-        static long GetObjectCount(void)
+        static long get_object_count(void)
         {
-            return s_lObjectCount;
+			return _object_count;
         }
 
     protected:
 
-        CBase(void)
+		mf_base(void)
         {
-            InterlockedIncrement(&s_lObjectCount);
+			InterlockedIncrement(&_object_count);
         }
 
-        ~CBase(void)
+		~mf_base(void)
         {
-            InterlockedDecrement(&s_lObjectCount);
+			InterlockedDecrement(&_object_count);
         }
 
     private:
 
-        static volatile long s_lObjectCount;
+        static volatile long _object_count;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -181,15 +181,15 @@ namespace DX11VideoRenderer
 
     // T: Type of the parent object
     template<class T>
-    class CAsyncCallback : public IMFAsyncCallback
+    class async_callback : public IMFAsyncCallback
     {
     public:
 
-        typedef HRESULT (T::*InvokeFn)(IMFAsyncResult* pAsyncResult);
+        typedef HRESULT (T::*InvokeFn)(IMFAsyncResult * result);
 
-        CAsyncCallback(T* pParent, InvokeFn fn) :
-            m_pParent(pParent),
-            m_pInvokeFn(fn)
+		async_callback(T* parent, InvokeFn fn) :
+            _parent(parent),
+            _invoke_fn(fn)
         {
         }
 
@@ -197,16 +197,16 @@ namespace DX11VideoRenderer
         STDMETHODIMP_(ULONG) AddRef(void)
         {
             // Delegate to parent class.
-            return m_pParent->AddRef();
+            return _parent->AddRef();
         }
 
         STDMETHODIMP_(ULONG) Release(void)
         {
             // Delegate to parent class.
-            return m_pParent->Release();
+            return _parent->Release();
         }
 
-        STDMETHODIMP QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
+        STDMETHODIMP QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void ** ppv)
         {
             if (!ppv)
             {
@@ -243,8 +243,8 @@ namespace DX11VideoRenderer
 
     private:
 
-        T* m_pParent;
-        InvokeFn m_pInvokeFn;
+        T* _parent;
+        InvokeFn _invoke_fn;
     };
 
     //-----------------------------------------------------------------------------
@@ -260,125 +260,121 @@ namespace DX11VideoRenderer
     //-----------------------------------------------------------------------------
 
     template <class T>
-    class ThreadSafeQueue
+    class thread_safe_queue
     {
     public:
-
-        ThreadSafeQueue(void)
+		thread_safe_queue(void)
         {
-            InitializeCriticalSection(&m_lock);
+            InitializeCriticalSection(&_lock);
         }
 
-        virtual ~ThreadSafeQueue(void)
+		virtual ~thread_safe_queue(void)
         {
-            DeleteCriticalSection(&m_lock);
+            DeleteCriticalSection(&_lock);
         }
 
-        HRESULT Queue(T* p)
+        HRESULT queue(T* p)
         {
-            EnterCriticalSection(&m_lock);
-            HRESULT hr = m_list.InsertBack(p);
-            LeaveCriticalSection(&m_lock);
+            EnterCriticalSection(&_lock);
+            HRESULT hr = _list.InsertBack(p);
+            LeaveCriticalSection(&_lock);
             return hr;
         }
 
-        HRESULT Dequeue(T** pp)
+        HRESULT dequeue(T** pp)
         {
-            EnterCriticalSection(&m_lock);
+            EnterCriticalSection(&_lock);
             HRESULT hr = S_OK;
-            if (m_list.IsEmpty())
+            if (_list.IsEmpty())
             {
                 *pp = NULL;
                 hr = S_FALSE;
             }
             else
             {
-                hr = m_list.RemoveFront(pp);
+                hr = _list.RemoveFront(pp);
             }
-            LeaveCriticalSection(&m_lock);
+            LeaveCriticalSection(&_lock);
             return hr;
         }
 
-        HRESULT PutBack(T* p)
+        HRESULT push_back(T* p)
         {
-            EnterCriticalSection(&m_lock);
-            HRESULT hr =  m_list.InsertFront(p);
-            LeaveCriticalSection(&m_lock);
+            EnterCriticalSection(&_lock);
+            HRESULT hr =  _list.InsertFront(p);
+            LeaveCriticalSection(&_lock);
             return hr;
         }
 
-        DWORD GetCount(void)
+        DWORD get_count(void)
         {
-            EnterCriticalSection(&m_lock);
-            DWORD nCount =  m_list.GetCount();
-            LeaveCriticalSection(&m_lock);
+            EnterCriticalSection(&_lock);
+            DWORD nCount =  _list.GetCount();
+            LeaveCriticalSection(&_lock);
             return nCount;
         }
 
-        void Clear(void)
+        void clear(void)
         {
-            EnterCriticalSection(&m_lock);
-            m_list.Clear();
-            LeaveCriticalSection(&m_lock);
+            EnterCriticalSection(&_lock);
+            _list.Clear();
+            LeaveCriticalSection(&_lock);
         }
 
     private:
-
-        CRITICAL_SECTION    m_lock;
-        ComPtrListEx<T>     m_list;
+        CRITICAL_SECTION    _lock;
+        ComPtrListEx<T>     _list;
     };
 
-    class CCritSec
+    class critical_secion
     {
     public:
 
-        CCritSec(void) :
-            m_cs()
+		critical_secion(void)
+			: _cs()
         {
-            InitializeCriticalSection(&m_cs);
+            InitializeCriticalSection(&_cs);
         }
 
-        ~CCritSec(void)
+		~critical_secion(void)
         {
-            DeleteCriticalSection(&m_cs);
+            DeleteCriticalSection(&_cs);
         }
 
-        _Acquires_lock_(this->m_cs)
-        void Lock(void)
+        _Acquires_lock_(this->_cs)
+        void lock(void)
         {
-            EnterCriticalSection(&m_cs);
+            EnterCriticalSection(&_cs);
         }
 
         _Releases_lock_(this->m_cs)
-        void Unlock(void)
+        void unlock(void)
         {
-            LeaveCriticalSection(&m_cs);
+            LeaveCriticalSection(&_cs);
         }
 
     private:
-
-        CRITICAL_SECTION m_cs;
+        CRITICAL_SECTION _cs;
     };
 
-    class CAutoLock
+    class autolock
     {
     public:
 
-        _Acquires_lock_(this->m_pLock->m_cs)
-        CAutoLock(CCritSec* pLock) :
-            m_pLock(pLock)
+		_Acquires_lock_(this->_lock->m_cs)
+		autolock(critical_secion * lock)
+			: _lock(lock)
         {
-            m_pLock->Lock();
+			_lock->lock();
         }
 
-        _Releases_lock_(this->m_pLock->m_cs)
-        ~CAutoLock(void)
+		_Releases_lock_(this->_lock->m_cs)
+			~autolock(void)
         {
-            m_pLock->Unlock();
+			_lock->unlock();
         }
 
     private:
-
-        CCritSec* m_pLock;
+		critical_secion * _lock;
     };
-}
+};

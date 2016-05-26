@@ -1,43 +1,35 @@
-#include "Marker.h"
+#include "marker.h"
 
 //////////////////////
 // CMarker class
 // Holds information from IMFStreamSink::PlaceMarker
 //
-
-DX11VideoRenderer::CMarker::CMarker(MFSTREAMSINK_MARKER_TYPE eMarkerType) :
-    m_nRefCount(1),
-    m_eMarkerType(eMarkerType)
+debuggerking::marker::marker(MFSTREAMSINK_MARKER_TYPE eMarkerType)
+	: _ref_count(1)
+	, _marker_type(eMarkerType)
 {
-    PropVariantInit(&m_varMarkerValue);
-    PropVariantInit(&m_varContextValue);
+	PropVariantInit(&_marker_value);
+	PropVariantInit(&_marker_context_value);
 }
 
-DX11VideoRenderer::CMarker::~CMarker(void)
+debuggerking::marker::~marker(void)
 {
-    assert(m_nRefCount == 0);
-
-    PropVariantClear(&m_varMarkerValue);
-    PropVariantClear(&m_varContextValue);
+    assert(_ref_count == 0);
+    PropVariantClear(&_marker_value);
+	PropVariantClear(&_marker_context_value);
 }
 
 /* static */
-HRESULT DX11VideoRenderer::CMarker::Create(
-    MFSTREAMSINK_MARKER_TYPE eMarkerType,
-    const PROPVARIANT* pvarMarkerValue,     // Can be NULL.
-    const PROPVARIANT* pvarContextValue,    // Can be NULL.
-    IMarker** ppMarker
-    )
+HRESULT debuggerking::marker::Create(MFSTREAMSINK_MARKER_TYPE marker_type, const PROPVARIANT * marker_value, const PROPVARIANT * marker_context_value, IMarker ** ppmarker)
 {
-    if (ppMarker == NULL)
+	if (ppmarker == NULL)
     {
         return E_POINTER;
     }
 
     HRESULT hr = S_OK;
-    CMarker* pMarker = new CMarker(eMarkerType);
-
-    if (pMarker == NULL)
+	debuggerking::marker * pmarker = new debuggerking::marker(marker_type);
+	if (pmarker == NULL)
     {
         hr = E_OUTOFMEMORY;
     }
@@ -45,50 +37,45 @@ HRESULT DX11VideoRenderer::CMarker::Create(
     // Copy the marker data.
     if (SUCCEEDED(hr))
     {
-        if (pvarMarkerValue)
+        if (marker_value)
+            hr = PropVariantCopy(&pmarker->_marker_value, marker_value);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+        if (marker_context_value)
         {
-            hr = PropVariantCopy(&pMarker->m_varMarkerValue, pvarMarkerValue);
+			hr = PropVariantCopy(&pmarker->_marker_context_value, marker_context_value);
         }
     }
 
     if (SUCCEEDED(hr))
     {
-        if (pvarContextValue)
-        {
-            hr = PropVariantCopy(&pMarker->m_varContextValue, pvarContextValue);
-        }
+        *ppmarker = pmarker;
+		(*ppmarker)->AddRef();
     }
 
-    if (SUCCEEDED(hr))
-    {
-        *ppMarker = pMarker;
-        (*ppMarker)->AddRef();
-    }
-
-    SafeRelease(pMarker);
-
+    safe_release(pmarker);
     return hr;
 }
 
 // IUnknown methods.
-
-ULONG DX11VideoRenderer::CMarker::AddRef(void)
+ULONG debuggerking::marker::AddRef(void)
 {
-    return InterlockedIncrement(&m_nRefCount);
+    return InterlockedIncrement(&_ref_count);
 }
 
-ULONG DX11VideoRenderer::CMarker::Release(void)
+ULONG debuggerking::marker::Release(void)
 {
-    ULONG uCount = InterlockedDecrement(&m_nRefCount);
-    if (uCount == 0)
-    {
+    ULONG count = InterlockedDecrement(&_ref_count);
+    if (count == 0)
         delete this;
-    }
-    // For thread safety, return a temporary variable.
-    return uCount;
+    
+	// For thread safety, return a temporary variable.
+    return count;
 }
 
-HRESULT DX11VideoRenderer::CMarker::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
+HRESULT debuggerking::marker::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void ** ppv)
 {
     if (!ppv)
     {
@@ -112,31 +99,29 @@ HRESULT DX11VideoRenderer::CMarker::QueryInterface(REFIID iid, __RPC__deref_out 
 }
 
 // IMarker methods
-HRESULT DX11VideoRenderer::CMarker::GetMarkerType(MFSTREAMSINK_MARKER_TYPE* pType)
+HRESULT debuggerking::marker::GetMarkerType(MFSTREAMSINK_MARKER_TYPE * type)
 {
-    if (pType == NULL)
-    {
+	if (type == NULL)
         return E_POINTER;
-    }
 
-    *pType = m_eMarkerType;
+    *type = _marker_type;
     return S_OK;
 }
 
-HRESULT DX11VideoRenderer::CMarker::GetMarkerValue(PROPVARIANT* pvar)
+HRESULT debuggerking::marker::GetMarkerValue(PROPVARIANT * pvar)
 {
     if (pvar == NULL)
     {
         return E_POINTER;
     }
-    return PropVariantCopy(pvar, &m_varMarkerValue);
+    return PropVariantCopy(pvar, &_marker_value);
 
 }
-HRESULT DX11VideoRenderer::CMarker::GetContext(PROPVARIANT* pvar)
+HRESULT debuggerking::marker::GetContext(PROPVARIANT * pvar)
 {
     if (pvar == NULL)
     {
         return E_POINTER;
     }
-    return PropVariantCopy(pvar, &m_varContextValue);
+    return PropVariantCopy(pvar, &_marker_context_value);
 }

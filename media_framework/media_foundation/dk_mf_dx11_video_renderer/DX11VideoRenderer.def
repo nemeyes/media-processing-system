@@ -1,9 +1,0 @@
-LIBRARY	"dk_mf_dx11_video_renderer.dll"
-EXPORTS
-    CreateDX11VideoRenderer
-    CreateDX11VideoRendererActivate
-    DllCanUnloadNow                 PRIVATE
-    DllGetClassObject               PRIVATE
-    DllMain                         PRIVATE
-    DllRegisterServer               PRIVATE
-    DllUnregisterServer             PRIVATE
