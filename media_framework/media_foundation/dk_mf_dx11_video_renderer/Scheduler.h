@@ -1,18 +1,17 @@
 #pragma once
 
-#include "Common.h"
+#include "common.h"
 
-namespace DX11VideoRenderer
+namespace debuggerking
 {
     //-----------------------------------------------------------------------------
     // SchedulerCallback
     //
     // Defines the callback method to present samples.
     //-----------------------------------------------------------------------------
-
-    struct SchedulerCallback
+    struct scheduler_callback
     {
-        virtual HRESULT PresentFrame(void) = 0;
+        virtual HRESULT present_frame(void) = 0;
     };
 
     //-----------------------------------------------------------------------------
@@ -33,57 +32,55 @@ namespace DX11VideoRenderer
     // for repaints).
     //-----------------------------------------------------------------------------
 
-    class CScheduler:
-        public IUnknown,
-        private CBase
+    class scheduler : public IUnknown, private mf_base
     {
     public:
 
-        CScheduler(CCritSec& critSec);
-        virtual ~CScheduler(void);
+		scheduler(critical_section & cs);
+		virtual ~scheduler(void);
 
         // IUnknown
         STDMETHODIMP_(ULONG) AddRef();
         STDMETHODIMP_(ULONG) Release();
         STDMETHODIMP QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv);
 
-        void SetCallback(SchedulerCallback* pCB)
+        void set_callback(scheduler_callback * pcb)
         {
-            m_pCB = pCB;
+            _cb = pcb;
         }
 
-        void SetFrameRate(const MFRatio& fps);
-        void SetClockRate(float fRate) { m_fRate = fRate; }
+        void set_frame_rate(const MFRatio & fps);
+		void set_clock_rate(float rate) { _rate = rate; }
 
-        const LONGLONG& LastSampleTime(void) const { return m_LastSampleTime; }
-        const LONGLONG& FrameDuration(void) const { return m_PerFrameInterval; }
+		const LONGLONG & last_sample_time(void) const { return _last_sample_time; }
+		const LONGLONG & frame_duration(void) const { return _per_frame_interval; }
 
-        HRESULT StartScheduler(IMFClock* pClock);
-        HRESULT StopScheduler(void);
+        HRESULT start_scheduler(IMFClock * clock);
+        HRESULT stop_scheduler(void);
 
-        HRESULT ScheduleSample(IMFSample* pSample, BOOL bPresentNow);
-        HRESULT ProcessSamplesInQueue(LONG* plNextSleep);
-        HRESULT ProcessSample(IMFSample* pSample, LONG* plNextSleep);
-        HRESULT Flush(void);
+        HRESULT schedule_sample(IMFSample * sample, BOOL present_now);
+        HRESULT process_samples_in_queue(LONG * next_sleep);
+		HRESULT process_sample(IMFSample * sample, LONG * next_sleep);
+        HRESULT flush(void);
 
-        DWORD GetCount(void){ return m_ScheduledSamples.GetCount(); }
+        DWORD get_count(void) { return _scheduled_samples.get_count(); }
 
     private:
 
-        HRESULT StartProcessSample();
-        HRESULT OnTimer(__RPC__in_opt IMFAsyncResult* pResult);
-        METHODASYNCCALLBACKEX(OnTimer, CScheduler, 0, MFASYNC_CALLBACK_QUEUE_MULTITHREADED);
+        HRESULT start_process_sample(void);
+        HRESULT timer_callback(__RPC__in_opt IMFAsyncResult * result);
+		METHODASYNCCALLBACKEX(timer_callback, scheduler, 0, MFASYNC_CALLBACK_QUEUE_MULTITHREADED);
 
-        long                        m_nRefCount;
-        CCritSec&                   m_critSec;          // critical section for thread safety
-        SchedulerCallback*          m_pCB;              // Weak reference; do not delete.
-        ThreadSafeQueue<IMFSample>  m_ScheduledSamples; // Samples waiting to be presented.
-        IMFClock*                   m_pClock;           // Presentation clock. Can be NULL.
-        float                       m_fRate;            // Playback rate.
-        HANDLE                      m_hWaitTimer;       // Wait Timer after which frame is presented.
-        MFTIME                      m_LastSampleTime;   // Most recent sample time.
-        MFTIME                      m_PerFrameInterval; // Duration of each frame.
-        LONGLONG                    m_PerFrame_1_4th;   // 1/4th of the frame duration.
-        MFWORKITEM_KEY              m_keyTimer;
+        long							_ref_count;
+        critical_section &				_cs;          // critical section for thread safety
+		scheduler_callback *			_cb;              // Weak reference; do not delete.
+        thread_safe_queue<IMFSample>	_scheduled_samples; // Samples waiting to be presented.
+        IMFClock*						_clock;           // Presentation clock. Can be NULL.
+        float							_rate;            // Playback rate.
+        HANDLE							_wait_timer;       // Wait Timer after which frame is presented.
+        MFTIME							_last_sample_time;   // Most recent sample time.
+        MFTIME							_per_frame_interval; // Duration of each frame.
+        LONGLONG						_per_frame_1_4th;   // 1/4th of the frame duration.
+        MFWORKITEM_KEY					_key_timer;
     };
 }

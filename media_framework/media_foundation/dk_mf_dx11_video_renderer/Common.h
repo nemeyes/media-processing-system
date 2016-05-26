@@ -14,9 +14,9 @@
 #include <dxgi1_2.h>
 #include <dcomp.h>
 #include <wmcodecdsp.h> // for MEDIASUBTYPE_V216
-#include "DX11VideoRenderer.h"
+#include "d3d11_video_renderer.h"
 #include "linklist.h"
-#include "staticasynccallback.h"
+#include "static_async_callback.h"
 
 DEFINE_GUID(CLSID_VideoProcessorMFT, 0x88753b26, 0x5b24, 0x49bd, 0xb2, 0xe7, 0xc, 0x44, 0x5c, 0x78, 0xc9, 0x82);
 
@@ -326,17 +326,17 @@ namespace debuggerking
         ComPtrListEx<T>     _list;
     };
 
-    class critical_secion
+	class critical_section
     {
     public:
 
-		critical_secion(void)
+		critical_section(void)
 			: _cs()
         {
             InitializeCriticalSection(&_cs);
         }
 
-		~critical_secion(void)
+		~critical_section(void)
         {
             DeleteCriticalSection(&_cs);
         }
@@ -362,7 +362,7 @@ namespace debuggerking
     public:
 
 		_Acquires_lock_(this->_lock->m_cs)
-		autolock(critical_secion * lock)
+			autolock(critical_section * lock)
 			: _lock(lock)
         {
 			_lock->lock();
@@ -375,6 +375,6 @@ namespace debuggerking
         }
 
     private:
-		critical_secion * _lock;
+		critical_section * _lock;
     };
 };

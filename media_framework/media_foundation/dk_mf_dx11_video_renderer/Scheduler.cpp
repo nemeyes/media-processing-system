@@ -1,71 +1,55 @@
 #include "Scheduler.h"
 
-//-----------------------------------------------------------------------------
-// Constructor
-//-----------------------------------------------------------------------------
+debuggerking::scheduler::scheduler(critical_section & cs)
+	: _ref_count(1)
+	, _cs(cs)
+	, _cb(NULL)
+	, _scheduled_samples()
+	, _clock(NULL)
+	, _rate(1.0f)
+	, _wait_timer(NULL)
+	, _last_sample_time(0)
+	, _per_frame_interval(0)
+	, _per_frame_1_4th(0)
+	, _key_timer(0)
+{}
 
-DX11VideoRenderer::CScheduler::CScheduler(CCritSec& critSec) :
-    m_nRefCount(1),
-    m_critSec(critSec),
-    m_pCB(NULL),
-    m_ScheduledSamples(), // default ctor
-    m_pClock(NULL),
-    m_fRate(1.0f),
-    m_hWaitTimer(NULL),
-    m_LastSampleTime(0),
-    m_PerFrameInterval(0),
-    m_PerFrame_1_4th(0),
-    m_keyTimer(0)
+debuggerking::scheduler::~scheduler(void)
 {
-}
-
-
-//-----------------------------------------------------------------------------
-// Destructor
-//-----------------------------------------------------------------------------
-
-DX11VideoRenderer::CScheduler::~CScheduler(void)
-{
-    if (m_hWaitTimer != NULL)
+	if (_wait_timer != NULL)
     {
-        CloseHandle(m_hWaitTimer);
-        m_hWaitTimer = NULL;
+		CloseHandle(_wait_timer);
+		_wait_timer = NULL;
     }
-
     // Discard samples.
-    m_ScheduledSamples.Clear();
-
-    SafeRelease(m_pClock);
+	_scheduled_samples.clear();
+    safe_release(_clock);
 }
 
 // IUnknown methods
-
-ULONG DX11VideoRenderer::CScheduler::AddRef()
+ULONG debuggerking::scheduler::AddRef()
 {
-    return InterlockedIncrement(&m_nRefCount);
+    return InterlockedIncrement(&_ref_count);
 }
 
-ULONG  DX11VideoRenderer::CScheduler::Release()
+ULONG  debuggerking::scheduler::Release()
 {
-    ULONG uCount = InterlockedDecrement(&m_nRefCount);
-    if (uCount == 0)
+    ULONG count = InterlockedDecrement(&_ref_count);
+	if (count == 0)
     {
         delete this;
     }
     // For thread safety, return a temporary variable.
-    return uCount;
+	return count;
 }
 
-HRESULT DX11VideoRenderer::CScheduler::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
+HRESULT debuggerking::scheduler::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void ** ppv)
 {
     if (!ppv)
-    {
         return E_POINTER;
-    }
-    if (iid == IID_IUnknown)
-    {
+    
+	if (iid == IID_IUnknown)
         *ppv = static_cast<IUnknown*>(this);
-    }
     else
     {
         *ppv = NULL;
@@ -79,21 +63,15 @@ HRESULT DX11VideoRenderer::CScheduler::QueryInterface(REFIID iid, __RPC__deref_o
 // SetFrameRate
 // Specifies the frame rate of the video, in frames per second.
 //-----------------------------------------------------------------------------
-
-void DX11VideoRenderer::CScheduler::SetFrameRate(const MFRatio& fps)
+void debuggerking::scheduler::set_frame_rate(const MFRatio & fps)
 {
     UINT64 AvgTimePerFrame = 0;
-
     // Convert to a duration.
     MFFrameRateToAverageTimePerFrame(fps.Numerator, fps.Denominator, &AvgTimePerFrame);
-
-    m_PerFrameInterval = (MFTIME)AvgTimePerFrame;
-
+    _per_frame_interval = (MFTIME)AvgTimePerFrame;
     // Calculate 1/4th of this value, because we use it frequently.
-    m_PerFrame_1_4th = m_PerFrameInterval / 4;
+	_per_frame_1_4th = _per_frame_interval / 4;
 }
-
-
 
 //-----------------------------------------------------------------------------
 // StartScheduler
@@ -101,57 +79,42 @@ void DX11VideoRenderer::CScheduler::SetFrameRate(const MFRatio& fps)
 //
 // IMFClock: Pointer to the DX11VideoRenderer's presentation clock. Can be NULL.
 //-----------------------------------------------------------------------------
-
-HRESULT DX11VideoRenderer::CScheduler::StartScheduler(IMFClock* pClock)
+HRESULT debuggerking::scheduler::start_scheduler(IMFClock * clock)
 {
     HRESULT hr = S_OK;
-
-    SafeRelease(m_pClock);
-    m_pClock = pClock;
-    if (m_pClock != NULL)
-    {
-        m_pClock->AddRef();
-    }
-
+	safe_release(_clock);
+	_clock = clock;
+	if (_clock != NULL)
+		_clock->AddRef();
     // Set a high the timer resolution (ie, short timer period).
     timeBeginPeriod(1);
 
     // create the waitable timer
-    m_hWaitTimer = CreateWaitableTimer(NULL, FALSE, NULL);
-    if (m_hWaitTimer == NULL)
-    {
+    _wait_timer = CreateWaitableTimer(NULL, FALSE, NULL);
+	if (_wait_timer == NULL)
         hr = HRESULT_FROM_WIN32(GetLastError());
-    }
-
     return hr;
 }
-
 
 //-----------------------------------------------------------------------------
 // StopScheduler
 //
 // Stops the scheduler's worker thread.
 //-----------------------------------------------------------------------------
-
-HRESULT DX11VideoRenderer::CScheduler::StopScheduler(void)
+HRESULT debuggerking::scheduler::stop_scheduler(void)
 {
-    if (m_hWaitTimer != NULL)
+	if (_wait_timer != NULL)
     {
-        CloseHandle(m_hWaitTimer);
-        m_hWaitTimer = NULL;
+		CloseHandle(_wait_timer);
+		_wait_timer = NULL;
     }
-
     // Discard samples.
-    m_ScheduledSamples.Clear();
-
+    _scheduled_samples.clear();
     // Restore the timer resolution.
     timeEndPeriod(1);
-
-    SafeRelease(m_pClock);
-
+    safe_release(_clock);
     return S_OK;
 }
-
 
 //-----------------------------------------------------------------------------
 // Flush
@@ -161,16 +124,14 @@ HRESULT DX11VideoRenderer::CScheduler::StopScheduler(void)
 // Note: This method is synchronous; ie., it waits for the flush operation to
 // complete on the worker thread.
 //-----------------------------------------------------------------------------
-
-HRESULT DX11VideoRenderer::CScheduler::Flush(void)
+HRESULT debuggerking::scheduler::flush(void)
 {
-    CAutoLock lock(&m_critSec);
-
+    autolock lock(&_cs);
     // Flushing: Clear the sample queue and set the event.
     m_ScheduledSamples.Clear();
 
     // Cancel timer callback
-    if (m_keyTimer != 0)
+    if (_key_timer != 0)
     {
         (void)MFCancelWorkItem(m_keyTimer);
         m_keyTimer = 0;
@@ -190,7 +151,7 @@ HRESULT DX11VideoRenderer::CScheduler::Flush(void)
 //              sample's time stamp is used to schedule the sample.
 //-----------------------------------------------------------------------------
 
-HRESULT DX11VideoRenderer::CScheduler::ScheduleSample(IMFSample* pSample, BOOL bPresentNow)
+HRESULT debuggerking::scheduler::ScheduleSample(IMFSample* pSample, BOOL bPresentNow)
 {
     if (m_pCB == NULL)
     {
@@ -228,7 +189,7 @@ HRESULT DX11VideoRenderer::CScheduler::ScheduleSample(IMFSample* pSample, BOOL b
 //              before it calls ProcessSamplesInQueue again.
 //-----------------------------------------------------------------------------
 
-HRESULT DX11VideoRenderer::CScheduler::ProcessSamplesInQueue(LONG* plNextSleep)
+HRESULT debuggerking::scheduler::ProcessSamplesInQueue(LONG* plNextSleep)
 {
     HRESULT hr = S_OK;
     LONG lWait = 0;
@@ -275,7 +236,7 @@ HRESULT DX11VideoRenderer::CScheduler::ProcessSamplesInQueue(LONG* plNextSleep)
 //-----------------------------------------------------------------------------
 
 
-HRESULT DX11VideoRenderer::CScheduler::ProcessSample(IMFSample* pSample, LONG* plNextSleep)
+HRESULT debuggerking::scheduler::ProcessSample(IMFSample* pSample, LONG* plNextSleep)
 {
     HRESULT hr = S_OK;
 
@@ -353,7 +314,7 @@ HRESULT DX11VideoRenderer::CScheduler::ProcessSample(IMFSample* pSample, LONG* p
 // Synopsis:   Main entrypoint for the frame processing
 //-----------------------------------------------------------------------------
 
-HRESULT DX11VideoRenderer::CScheduler::StartProcessSample()
+HRESULT debuggerking::scheduler::StartProcessSample()
 {
     HRESULT hr = S_OK;
 
@@ -400,11 +361,11 @@ HRESULT DX11VideoRenderer::CScheduler::StartProcessSample()
 //              check whether a frame should now be presented
 //
 //--------------------------------------------------------------------------
-HRESULT DX11VideoRenderer::CScheduler::OnTimer(__RPC__in_opt IMFAsyncResult *pResult)
+HRESULT debuggerking::scheduler::OnTimer(__RPC__in_opt IMFAsyncResult *pResult)
 {
     HRESULT hr = S_OK;
 
-    CAutoLock lock(&m_critSec);
+    autolock lock(&m_critSec);
 
     m_keyTimer = 0;
 
