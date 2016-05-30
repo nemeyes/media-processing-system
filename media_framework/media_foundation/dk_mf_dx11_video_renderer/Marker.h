@@ -29,7 +29,7 @@ namespace debuggerking
     {
     public:
 
-        static HRESULT Create(MFSTREAMSINK_MARKER_TYPE eMarkerType, const PROPVARIANT* pvarMarkerValue, const PROPVARIANT* pvarContextValue, IMarker** ppMarker);
+        static HRESULT create(MFSTREAMSINK_MARKER_TYPE eMarkerType, const PROPVARIANT* pvarMarkerValue, const PROPVARIANT* pvarContextValue, IMarker** ppMarker);
 
         // IUnknown methods.
         STDMETHODIMP_(ULONG) AddRef(void);

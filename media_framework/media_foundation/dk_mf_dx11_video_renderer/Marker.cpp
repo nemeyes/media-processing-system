@@ -20,7 +20,7 @@ debuggerking::marker::~marker(void)
 }
 
 /* static */
-HRESULT debuggerking::marker::Create(MFSTREAMSINK_MARKER_TYPE marker_type, const PROPVARIANT * marker_value, const PROPVARIANT * marker_context_value, IMarker ** ppmarker)
+HRESULT debuggerking::marker::create(MFSTREAMSINK_MARKER_TYPE marker_type, const PROPVARIANT * marker_value, const PROPVARIANT * marker_context_value, IMarker ** ppmarker)
 {
 	if (ppmarker == NULL)
     {

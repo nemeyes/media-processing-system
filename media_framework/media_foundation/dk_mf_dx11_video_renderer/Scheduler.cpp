@@ -128,13 +128,13 @@ HRESULT debuggerking::scheduler::flush(void)
 {
     autolock lock(&_cs);
     // Flushing: Clear the sample queue and set the event.
-    m_ScheduledSamples.Clear();
+    _scheduled_samples.clear();
 
     // Cancel timer callback
     if (_key_timer != 0)
     {
-        (void)MFCancelWorkItem(m_keyTimer);
-        m_keyTimer = 0;
+        (void)MFCancelWorkItem(_key_timer);
+        _key_timer = 0;
     }
 
     return S_OK;
@@ -150,30 +150,29 @@ HRESULT debuggerking::scheduler::flush(void)
 // bPresentNow: If TRUE, the sample is presented immediately. Otherwise, the
 //              sample's time stamp is used to schedule the sample.
 //-----------------------------------------------------------------------------
-
-HRESULT debuggerking::scheduler::ScheduleSample(IMFSample* pSample, BOOL bPresentNow)
+HRESULT debuggerking::scheduler::schedule_sample(IMFSample* pSample, BOOL bPresentNow)
 {
-    if (m_pCB == NULL)
+    if (_cb == NULL)
     {
         return MF_E_NOT_INITIALIZED;
     }
 
     HRESULT hr = S_OK;
 
-    if (bPresentNow || (m_pClock == NULL))
+    if (bPresentNow || (_clock == NULL))
     {
         // Present the sample immediately.
-        hr = m_pCB->PresentFrame();
+        hr = _cb->present_frame();
     }
     else
     {
         // Queue the sample and ask the scheduler thread to wake up.
-        hr = m_ScheduledSamples.Queue(pSample);
+        hr = _scheduled_samples.queue(pSample);
 
         if (SUCCEEDED(hr))
         {
             // process the frame asynchronously
-            hr = MFPutWorkItem(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, &m_xOnTimer, nullptr);
+            hr = MFPutWorkItem(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, &_xtimer_callback, nullptr);
         }
     }
 
@@ -188,27 +187,26 @@ HRESULT debuggerking::scheduler::ScheduleSample(IMFSample* pSample, BOOL bPresen
 // plNextSleep: Receives the length of time the scheduler thread should sleep
 //              before it calls ProcessSamplesInQueue again.
 //-----------------------------------------------------------------------------
-
-HRESULT debuggerking::scheduler::ProcessSamplesInQueue(LONG* plNextSleep)
+HRESULT debuggerking::scheduler::process_samples_in_queue(LONG * next_sleep)
 {
     HRESULT hr = S_OK;
-    LONG lWait = 0;
-    IMFSample* pSample = NULL;
+    LONG wait = 0;
+    IMFSample * psample = NULL;
 
     // Process samples until the queue is empty or until the wait time > 0.
 
     // Note: Dequeue returns S_FALSE when the queue is empty.
 
-    while (m_ScheduledSamples.Dequeue(&pSample) == S_OK)
+    while (_scheduled_samples.dequeue(&psample) == S_OK)
     {
         // Process the next sample in the queue. If the sample is not ready
         // for presentation. the value returned in lWait is > 0, which
         // means the scheduler should sleep for that amount of time.
 
-        hr = ProcessSample(pSample, &lWait);
-        SafeRelease(pSample);
+        hr = process_sample(psample, &wait);
+        safe_release(psample);
 
-        if (FAILED(hr) || lWait > 0)
+        if (FAILED(hr) || wait > 0)
         {
             break;
         }
@@ -217,12 +215,12 @@ HRESULT debuggerking::scheduler::ProcessSamplesInQueue(LONG* plNextSleep)
     // If the wait time is zero, it means we stopped because the queue is
     // empty (or an error occurred). Set the wait time to infinite; this will
     // make the scheduler thread sleep until it gets another thread message.
-    if (lWait == 0)
+    if (wait == 0)
     {
-        lWait = INFINITE;
+        wait = INFINITE;
     }
 
-    *plNextSleep = lWait;
+    *next_sleep = wait;
     return hr;
 }
 
@@ -234,9 +232,7 @@ HRESULT debuggerking::scheduler::ProcessSamplesInQueue(LONG* plNextSleep)
 //
 // plNextSleep: Receives the length of time the scheduler thread should sleep.
 //-----------------------------------------------------------------------------
-
-
-HRESULT debuggerking::scheduler::ProcessSample(IMFSample* pSample, LONG* plNextSleep)
+HRESULT debuggerking::scheduler::process_sample(IMFSample * psample, LONG * next_sleep)
 {
     HRESULT hr = S_OK;
 
@@ -245,20 +241,20 @@ HRESULT debuggerking::scheduler::ProcessSample(IMFSample* pSample, LONG* plNextS
     MFTIME   hnsSystemTime = 0;
     LONGLONG hnsDelta = 0;
 
-    BOOL bPresentNow = TRUE;
+    BOOL present_now = TRUE;
     LONG lNextSleep = 0;
 
-    if (m_pClock)
+    if (_clock)
     {
         // Get the sample's time stamp. It is valid for a sample to
         // have no time stamp.
-        hr = pSample->GetSampleTime(&hnsPresentationTime);
+		hr = psample->GetSampleTime(&hnsPresentationTime);
 
         // Get the clock time. (But if the sample does not have a time stamp,
         // we don't need the clock time.)
         if (SUCCEEDED(hr))
         {
-            hr = m_pClock->GetCorrelatedTime(0, &hnsTimeNow, &hnsSystemTime);
+            hr = _clock->GetCorrelatedTime(0, &hnsTimeNow, &hnsSystemTime);
         }
 
         if (SUCCEEDED(hr))
@@ -266,45 +262,44 @@ HRESULT debuggerking::scheduler::ProcessSample(IMFSample* pSample, LONG* plNextS
             // Calculate the time until the sample's presentation time.
             // A negative value means the sample is late.
             hnsDelta = hnsPresentationTime - hnsTimeNow;
-            if (m_fRate < 0)
+            if (_rate < 0)
             {
                 // For reverse playback, the clock runs backward. Therefore, the
                 // delta is reversed.
                 hnsDelta = - hnsDelta;
             }
 
-            if (hnsDelta < - m_PerFrame_1_4th)
+            if (hnsDelta < - _per_frame_1_4th)
             {
                 // This sample is late.
-                bPresentNow = TRUE;
+				present_now = TRUE;
             }
-            else if (hnsDelta > (3 * m_PerFrame_1_4th))
+			else if (hnsDelta >(3 * _per_frame_1_4th))
             {
                 // This sample is still too early. Go to sleep.
-                lNextSleep = static_cast<LONG>(TicksToMilliseconds(hnsDelta - (3 * m_PerFrame_1_4th)));
+				lNextSleep = static_cast<LONG>(ticks2milliseconds(hnsDelta - (3 * _per_frame_1_4th)));
 
                 // Adjust the sleep time for the clock rate. (The presentation clock runs
                 // at m_fRate, but sleeping uses the system clock.)
-                lNextSleep = static_cast<LONG>(lNextSleep / fabsf(m_fRate));
+                lNextSleep = static_cast<LONG>(lNextSleep / fabsf(_rate));
 
                 // Don't present yet.
-                bPresentNow = FALSE;
+				present_now = FALSE;
             }
         }
     }
 
-    if (bPresentNow)
+	if (present_now)
     {
-        hr = m_pCB->PresentFrame();
+        hr = _cb->present_frame();
     }
     else
     {
         // The sample is not ready yet. Return it to the queue.
-        hr = m_ScheduledSamples.PutBack(pSample);
+        hr = _scheduled_samples.push_back(psample);
     }
 
-    *plNextSleep = lNextSleep;
-
+    *next_sleep = lNextSleep;
     return hr;
 }
 
@@ -313,16 +308,15 @@ HRESULT debuggerking::scheduler::ProcessSample(IMFSample* pSample, LONG* plNextS
 //
 // Synopsis:   Main entrypoint for the frame processing
 //-----------------------------------------------------------------------------
-
-HRESULT debuggerking::scheduler::StartProcessSample()
+HRESULT debuggerking::scheduler::start_process_sample(void)
 {
     HRESULT hr = S_OK;
 
     LONG    lWait = INFINITE;
     BOOL    bExitThread = FALSE;
-    IMFAsyncResult *pAsyncResult = NULL;
+    IMFAsyncResult *pasync_result = NULL;
 
-    hr = ProcessSamplesInQueue(&lWait);
+    hr = process_samples_in_queue(&lWait);
 
     if(SUCCEEDED(hr))
     {
@@ -330,8 +324,8 @@ HRESULT debuggerking::scheduler::StartProcessSample()
         {
             // not time to process the frame yet, wait until the right time
             LARGE_INTEGER llDueTime;
-            llDueTime.QuadPart = -1 * MillisecondsToTicks(lWait);
-            if (SetWaitableTimer(m_hWaitTimer, &llDueTime, 0, NULL, NULL, FALSE) == 0)
+            llDueTime.QuadPart = -1 * milliseconds2ticks(lWait);
+            if (SetWaitableTimer(_wait_timer, &llDueTime, 0, NULL, NULL, FALSE) == 0)
             {
                 hr = HRESULT_FROM_WIN32(GetLastError());
             }
@@ -339,17 +333,15 @@ HRESULT debuggerking::scheduler::StartProcessSample()
             if(SUCCEEDED(hr))
             {
                 // queue a waititem to wait for timer completion
-                hr = MFCreateAsyncResult(nullptr, &m_xOnTimer, nullptr, &pAsyncResult);
+				hr = MFCreateAsyncResult(nullptr, &_xtimer_callback, nullptr, &pasync_result);
                 if(SUCCEEDED(hr))
                 {
-                    hr = MFPutWaitingWorkItem(m_hWaitTimer, 0, pAsyncResult, &m_keyTimer);
+					hr = MFPutWaitingWorkItem(_wait_timer, 0, pasync_result, &_key_timer);
                 }
             }
         }
     }
-
-    SafeRelease(pAsyncResult);
-
+	safe_release(pasync_result);
     return hr;
 }
 
@@ -361,17 +353,13 @@ HRESULT debuggerking::scheduler::StartProcessSample()
 //              check whether a frame should now be presented
 //
 //--------------------------------------------------------------------------
-HRESULT debuggerking::scheduler::OnTimer(__RPC__in_opt IMFAsyncResult *pResult)
+HRESULT debuggerking::scheduler::timer_callback(__RPC__in_opt IMFAsyncResult * presult)
 {
     HRESULT hr = S_OK;
-
-    autolock lock(&m_critSec);
-
-    m_keyTimer = 0;
-
+    autolock lock(&_cs);
+    _key_timer = 0;
     // if we have a pending frame, process it
     // it's possible that we don't have a frame at this point if the pending frame was cancelled
-    hr = StartProcessSample();
-
+    hr = start_process_sample();
     return hr;
 }
