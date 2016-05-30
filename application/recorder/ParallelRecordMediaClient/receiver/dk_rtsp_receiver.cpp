@@ -143,9 +143,11 @@ void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, siz
 #if defined(WITH_BITMAP_RENDERER)
 		bitmap_renderer * video_renderer = static_cast<bitmap_renderer*>(_video_renderer);
 		bitmap_renderer::configuration_t * video_renderer_config = static_cast<bitmap_renderer::configuration_t*>(_video_renderer_config);
+		video_renderer_config->stretch = true;
 #else
 		directdraw_renderer * video_renderer = static_cast<directdraw_renderer*>(_video_renderer);
 		directdraw_renderer::configuration_t * video_renderer_config = static_cast<directdraw_renderer::configuration_t*>(_video_renderer_config);
+		video_renderer_config->stretch = true;
 #endif
 		video_renderer->enable_osd_text(true);
 		video_renderer->set_osd_text(L"");
