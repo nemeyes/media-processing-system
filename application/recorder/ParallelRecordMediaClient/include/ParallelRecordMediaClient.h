@@ -12,6 +12,9 @@
 #define PRMC_FAIL		-1
 #define PRMC_SUCCESS	0
 
+typedef void(__stdcall *PRMC_PlayTimeCallback)(int index, int year, int month, int day, int hour, int minute, int second);
+
+
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Initialize(HWND hwnd);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Release(void);
 
@@ -25,13 +28,14 @@ extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_GetHours(const wchar_
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_GetMinutes(const wchar_t * url, const wchar_t * uuid, int year, int month, int day, int hour, int minutes[], int capacity, int & size);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_GetSeconds(const wchar_t * url, const wchar_t * uuid, int year, int month, int day, int hour, int minute, int seconds[], int capacity, int & size);
 
-extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd);
+extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd, PRMC_PlayTimeCallback cb = NULL);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Remove(const wchar_t * url, int index);
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int hour, int minute, int second, float scale, bool repeat);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Stop(const wchar_t * url, int index);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Resume(const wchar_t * url, int index);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Pause(const wchar_t * url, int index);
+extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_EnableOSD(const wchar_t * url, int index, bool enable);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y);
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * export_file_path);

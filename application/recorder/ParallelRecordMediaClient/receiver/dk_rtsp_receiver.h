@@ -12,12 +12,19 @@
 
 namespace debuggerking
 {
+	class rtsp_async_callback
+	{
+	public:
+		virtual void invoke(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second) = 0;
+	};
+
 	class rtsp_receiver : public base_receiver, public rtsp_client
 	{
 	public:
-		rtsp_receiver(void);
+		rtsp_receiver(rtsp_async_callback * cb = nullptr);
 		virtual ~rtsp_receiver(void);
 
+		int32_t enable_osd(bool enable);
 		int32_t set_osd_position(int32_t x, int32_t y);
 		int32_t get_last_time(int32_t & year, int32_t & month, int32_t & day, int32_t & hour, int32_t & minute, int32_t & second);
 
@@ -30,8 +37,10 @@ namespace debuggerking
 		void on_recv_audio(int32_t smt, const uint8_t * data, size_t data_size, long long timestamp);
 
 	private:
+		rtsp_async_callback * _cb;
 		int64_t _frame_count;
 
+		bool _osd_enable;
 		int32_t _osd_x;
 		int32_t _osd_y;
 

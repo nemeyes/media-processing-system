@@ -88,12 +88,14 @@ void debuggerking::vod_rtsp_server::process(void)
 	_rtsp_server = vod_rtsp_core::createNew(*env, rtspServerPortNum, auth);
 	if (_rtsp_server == NULL)
 		return;
-
+	log4cplus_logger::instance()->make_info_log("parallel.record.streamer", "start recorder streamer");
 	//rtspServer->setUpTunnelingOverHTTP(80);
 
 	env->taskScheduler().doEventLoop((char*)&_bstop); // does not return	
 
 	Medium::close(_rtsp_server);
+
+	log4cplus_logger::instance()->make_info_log("parallel.record.streamer", "stop recorder streamer");
 	if (auth)
 	{
 		delete auth;

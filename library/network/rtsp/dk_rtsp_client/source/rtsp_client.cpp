@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <dk_log4cplus_logger.h>
 
 //MediaSubsessionIterator * rtsp_client::_iter;
 
@@ -509,8 +510,10 @@ void debuggerking::rtsp_core::check_inter_packet_gaps(void * param)
 
     if( total_packets_received==self->_total_packets_received )
     {
+		//log4cplus_logger::
         self->_inter_packet_gap_check_timer_task = 0;
         self->session_after_playing(self);
+		log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "received packet number is zero for %d minutes. retry connection to the camera[%s]", self->_inter_packet_gap_max_time, self->_front->_url);
     }
     else
     {

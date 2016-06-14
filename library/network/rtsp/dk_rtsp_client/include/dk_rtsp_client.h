@@ -8,6 +8,7 @@ namespace debuggerking
 	class rtsp_core;
 	class EXP_CLASS rtsp_client : public rtsp_base
 	{
+		friend class rtsp_core;
 		friend class buffer_sink;
 	public:
 		rtsp_client(void);

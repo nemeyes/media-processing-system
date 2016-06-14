@@ -9,6 +9,24 @@
 #include "dk_parallel_recorder.h"
 
 
+class rtsp_async_callback_impl : public debuggerking::rtsp_async_callback
+{
+public:
+	rtsp_async_callback_impl(int index, PRMC_PlayTimeCallback cb)
+		: _index(index)
+		, _cb(cb)
+	{}
+
+	virtual void invoke(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second)
+	{
+		(*_cb)(_index, year, month, day, hour, minute, second);
+	}
+
+private:
+	int _index;
+	PRMC_PlayTimeCallback _cb;
+};
+
 CRITICAL_SECTION g_lock;
 std::map<std::string, debuggerking::parallel_recorder_t*> g_parallel_recorders;
 
@@ -159,11 +177,13 @@ int PRMC_Disconnect(const wchar_t * url)
 							debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
 							receiver->stop();
 						}
+#if defined(WITH_RTMP_RECEIVER)
 						else if (single_media_source->type == RTMP_RECEIVER)
 						{
 							debuggerking::rtmp_receiver * receiver = static_cast<debuggerking::rtmp_receiver*>(single_media_source->receiver);
 							receiver->stop();
 						}
+#endif
 						single_media_source->run = false;
 					}
 					if (single_media_source->type == RTSP_RECEIVER)
@@ -172,13 +192,22 @@ int PRMC_Disconnect(const wchar_t * url)
 						delete receiver;
 						receiver = nullptr;
 					}
+#if defined(WITH_RTMP_RECEIVER)
 					else if (single_media_source->type == RTMP_RECEIVER)
 					{
 						debuggerking::rtmp_receiver * receiver = static_cast<debuggerking::rtmp_receiver*>(single_media_source->receiver);
 						delete receiver;
 						receiver = nullptr;
 					}
+#endif
 					single_media_source->receiver = nullptr;
+					if (single_media_source->time_callback)
+					{
+						rtsp_async_callback_impl * cb = static_cast<rtsp_async_callback_impl*>(single_media_source->time_callback);
+						delete cb;
+						cb = nullptr;
+						single_media_source->time_callback = nullptr;
+					}
 					delete single_media_source;
 					single_media_source = nullptr;
 				}
@@ -433,7 +462,7 @@ int PRMC_GetSeconds(const wchar_t * url, const wchar_t * uuid, int year, int mon
 	return result;
 }
 
-int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd)
+int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd, PRMC_PlayTimeCallback cb)
 {
 	if (!url || wcslen(url) < 1)
 		return PRMC_FAIL;
@@ -456,6 +485,8 @@ int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd)
 				debuggerking::string_helper::convert_wide2multibyte((wchar_t*)uuid, &ascii_uuid);
 				if (ascii_uuid && strlen(ascii_uuid) > 0)
 				{
+					media_source_index_per_recorder = single_recorder_info->media_source_index_generator;
+
 					debuggerking::auto_lock mutext(&single_recorder_info->media_source_lock);
 					debuggerking::single_media_source_t * single_media_source = new debuggerking::single_media_source_t();
 					strcpy_s(single_media_source->uuid, sizeof(single_media_source->uuid), ascii_uuid);
@@ -466,13 +497,22 @@ int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd)
 					single_media_source->hwnd = hwnd;
 					single_media_source->run = false;
 					single_media_source->type = RTSP_RECEIVER;
-					if (single_media_source->type == RTSP_RECEIVER)
+					if (cb)
+					{
+						rtsp_async_callback_impl * async_callback = new rtsp_async_callback_impl(media_source_index_per_recorder, cb);
+						single_media_source->time_callback = async_callback;
+						single_media_source->receiver = new debuggerking::rtsp_receiver(async_callback);
+					}
+					else
+					{
 						single_media_source->receiver = new debuggerking::rtsp_receiver();
-					else if (single_media_source->type == RTMP_RECEIVER)
-						single_media_source->receiver = new debuggerking::rtmp_receiver();
+					}
 
-					single_recorder_info->media_sources.insert(std::make_pair(single_recorder_info->media_source_index_generator, single_media_source));
-					media_source_index_per_recorder = single_recorder_info->media_source_index_generator;
+#if defined(WITH_RTMP_RECEIVER)
+					single_media_source->receiver = new debuggerking::rtmp_receiver();
+#endif
+
+					single_recorder_info->media_sources.insert(std::make_pair(media_source_index_per_recorder, single_media_source));
 					single_recorder_info->media_source_index_generator++;
 				}
 
@@ -522,11 +562,13 @@ int PRMC_Remove(const wchar_t * url, int index)
 								debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
 								receiver->stop();
 							}
+#if defined(WITH_RTMP_RECEIVER)
 							else if (single_media_source->type == RTMP_RECEIVER)
 							{
 								debuggerking::rtmp_receiver * receiver = static_cast<debuggerking::rtmp_receiver*>(single_media_source->receiver);
 								receiver->stop();
 							}
+#endif
 							single_media_source->run = false;
 						}
 
@@ -536,13 +578,22 @@ int PRMC_Remove(const wchar_t * url, int index)
 							delete receiver;
 							receiver = nullptr;
 						}
+#if defined(WITH_RTMP_RECEIVER)
 						else if (single_media_source->type == RTMP_RECEIVER)
 						{
 							debuggerking::rtmp_receiver * receiver = static_cast<debuggerking::rtmp_receiver*>(single_media_source->receiver);
 							delete receiver;
 							receiver = nullptr;
 						}
+#endif
 						single_media_source->receiver = nullptr;
+						if (single_media_source->time_callback)
+						{
+							rtsp_async_callback_impl * cb = static_cast<rtsp_async_callback_impl*>(single_media_source->time_callback);
+							delete cb;
+							cb = nullptr;
+							single_media_source->time_callback = nullptr;
+						}
 						delete single_media_source;
 						single_media_source = nullptr;
 					}
@@ -651,11 +702,13 @@ int PRMC_Stop(const wchar_t * url, int index)
 								debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
 								receiver->stop();
 							}
+#if defined(WITH_RTMP_RECEIVER)
 							else if (single_media_source->type == RTMP_RECEIVER)
 							{
 								debuggerking::rtmp_receiver * receiver = static_cast<debuggerking::rtmp_receiver*>(single_media_source->receiver);
 								receiver->stop();
 							}
+#endif
 							single_media_source->run = false;
 						}
 
@@ -983,6 +1036,50 @@ int PRMC_StopExport(const wchar_t * url, int index)
 							single_media_source->run = false;
 						}
 
+					}
+					result = PRMC_SUCCESS;
+				}
+			}
+		}
+	}
+
+	if (ascii_url)
+		free(ascii_url);
+	ascii_url = nullptr;
+
+	return result;
+}
+
+int PRMC_EnableOSD(const wchar_t * url, int index, bool enable)
+{
+	int result = PRMC_FAIL;
+	if (!url || wcslen(url) < 1)
+		return result;
+
+	char * ascii_url = 0;
+	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)url, &ascii_url);
+	if (ascii_url && strlen(ascii_url) > 0)
+	{
+		debuggerking::auto_lock mutext(&g_lock);
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
+		iter = g_parallel_recorders.find(ascii_url);
+		if (iter != g_parallel_recorders.end())
+		{
+			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
+			{
+				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
+				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
+				if (iter != single_recorder_info->media_sources.end())
+				{
+					debuggerking::single_media_source_t * single_media_source = iter->second;
+					if (single_media_source)
+					{
+						if (single_media_source->type == RTSP_RECEIVER)
+						{
+							debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
+							receiver->enable_osd(enable);
+						}
 					}
 					result = PRMC_SUCCESS;
 				}

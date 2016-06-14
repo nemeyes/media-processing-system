@@ -1,5 +1,7 @@
 #include "dk_rtmp_receiver.h"
 
+#if defined(WITH_RTMP_RECEIVER)
+
 debuggerking::rtmp_receiver::rtmp_receiver(void)
 	: _frame_count(0)
 {
@@ -395,3 +397,5 @@ void debuggerking::rtmp_receiver::on_recv_audio(int32_t smt, const uint8_t * dat
 		}
 	}
 }
+
+#endif

@@ -2,8 +2,10 @@
 #include <dk_recorder_module.h>
 #include <dk_string_helper.h>
 
-debuggerking::rtsp_receiver::rtsp_receiver(void)
-	: _frame_count(0)
+debuggerking::rtsp_receiver::rtsp_receiver(rtsp_async_callback * cb)
+	: _cb(cb)
+	, _frame_count(0)
+	, _osd_enable(false)
 	, _osd_x(-1)
 	, _osd_y(-1)
 	, _last_year(0)
@@ -17,6 +19,12 @@ debuggerking::rtsp_receiver::rtsp_receiver(void)
 debuggerking::rtsp_receiver::~rtsp_receiver(void)
 {
 		
+}
+
+int32_t debuggerking::rtsp_receiver::enable_osd(bool enable)
+{
+	_osd_enable = enable;
+	return rtsp_receiver::err_code_t::success;
 }
 
 int32_t debuggerking::rtsp_receiver::set_osd_position(int32_t x, int32_t y)
@@ -149,15 +157,6 @@ void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, siz
 		directdraw_renderer::configuration_t * video_renderer_config = static_cast<directdraw_renderer::configuration_t*>(_video_renderer_config);
 		video_renderer_config->stretch = true;
 #endif
-		video_renderer->enable_osd_text(true);
-		video_renderer->set_osd_text(L"");
-		video_renderer->set_osd_text_color(0xFF, 0xFF, 0xFF);
-		if (_osd_x==-1 || _osd_y==-1)
-			video_renderer->set_osd_text_position(10, 10);
-		else
-			video_renderer->set_osd_text_position(_osd_x, _osd_y);
-
-
 		do
 		{
 			if (parse_sps((BYTE*)(sps), spssize, &video_decoder_config->iwidth, &video_decoder_config->iheight, &video_decoder_config->sarwidth, &video_decoder_config->sarheight) > 0)
@@ -285,11 +284,24 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 			wchar_t time[MAX_PATH] = { 0 };
 			_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
 
-			if (_osd_x == -1 || _osd_y == -1)
-				video_renderer->set_osd_text_position(10, 10);
+			if (_osd_enable)
+			{
+				video_renderer->enable_osd_text(true);
+				video_renderer->set_osd_text_color(0xFF, 0xFF, 0xFF);
+				if (_osd_x == -1 || _osd_y == -1)
+					video_renderer->set_osd_text_position(10, 10);
+				else
+					video_renderer->set_osd_text_position(_osd_x, _osd_y);
+				video_renderer->set_osd_text(time);
+			}
 			else
-				video_renderer->set_osd_text_position(_osd_x, _osd_y);
-			video_renderer->set_osd_text(time);
+			{
+				video_renderer->set_osd_text(L"");
+				video_renderer->enable_osd_text(false);
+			}
+
+			if (_cb!=nullptr)
+				_cb->invoke(year, month, day, hour, minute, second);
 		}
 		else
 		{

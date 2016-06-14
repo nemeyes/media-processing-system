@@ -45,7 +45,10 @@ END_MESSAGE_MAP()
 
 // CParallelRecordClientDlg dialog
 
-
+void __stdcall PlayTimeCallback(int index, int year, int month, int day, int hour, int minute, int second)
+{
+	TRACE(L"index[%d], %.4d-%.2d-%.2d %.2d::%.2d::%.2d\n", index, year, month, day, hour, minute, second);
+}
 
 CParallelRecordClientDlg::CParallelRecordClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CParallelRecordClientDlg::IDD, pParent)
@@ -92,6 +95,7 @@ void CParallelRecordClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT11, _exp_end_hour);
 	DDX_Control(pDX, IDC_EDIT12, _exp_end_minute);
 	DDX_Control(pDX, IDC_EDIT13, _exp_end_second);
+	DDX_Control(pDX, IDC_COMBO_OSD_ENABLE, _osd_enable);
 }
 
 BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
@@ -112,6 +116,7 @@ BEGIN_MESSAGE_MAP(CParallelRecordClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_MANUAL_STOP_PLAYBACK, &CParallelRecordClientDlg::OnBnClickedButtonManualStopPlayback)
 	ON_BN_CLICKED(IDC_BUTTON_RTSP_PLAY, &CParallelRecordClientDlg::OnBnClickedButtonRtspPlay)
 	ON_BN_CLICKED(IDC_BUTTON_RTSP_STOP, &CParallelRecordClientDlg::OnBnClickedButtonRtspStop)
+	ON_BN_CLICKED(IDC_BUTTON_OSD_ENABLE, &CParallelRecordClientDlg::OnBnClickedButtonOsdEnable)
 	ON_BN_CLICKED(IDC_BUTTON_SET_OSD_POSITION, &CParallelRecordClientDlg::OnBnClickedButtonSetOsdPosition)
 	ON_BN_CLICKED(IDC_BUTTON_START_EXPORT, &CParallelRecordClientDlg::OnBnClickedButtonStartExport)
 	ON_BN_CLICKED(IDC_BUTTON_STOP_EXPORT, &CParallelRecordClientDlg::OnBnClickedButtonStopExport)
@@ -163,6 +168,7 @@ BOOL CParallelRecordClientDlg::OnInitDialog()
 	_uuid.SetWindowTextW(L"CH1");
 	_recording_play_scale.SetWindowTextW(L"1");
 
+	_osd_enable.SetCurSel(0);
 	_osd_x.SetWindowTextW(L"20");
 	_osd_y.SetWindowTextW(L"20");
 
@@ -596,7 +602,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 
 			HWND hwnd = NULL;
 			hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
+			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, PlayTimeCallback);
 			if (PRMC_index != PRMC_FAIL)
 			{
 				//status = PRMC_StartExport((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, year, month, day, hour, minute, second);
@@ -697,7 +703,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStartPlayback()
 
 			HWND hwnd = NULL;
 			hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
+			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, PlayTimeCallback);
 			if (PRMC_index != PRMC_FAIL)
 			{
 				status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
@@ -835,6 +841,21 @@ void CParallelRecordClientDlg::OnBnClickedButtonStopExport()
 			status = PRMC_RemoveExport((LPCWSTR)recorder_address, PRMC_index);
 	}
 	PRMC_index = -1;
+}
+
+void CParallelRecordClientDlg::OnBnClickedButtonOsdEnable()
+{
+	// TODO: Add your control notification handler code here
+	CString recorder_address;
+	_parallel_recorder_address.GetWindowText(recorder_address);
+	int index = _osd_enable.GetCurSel();
+
+	int status = PRMC_FAIL;
+	if (recorder_address.GetLength()>0)
+	{
+		if (PRMC_index != PRMC_FAIL)
+			status = PRMC_EnableOSD((LPCWSTR)recorder_address, PRMC_index, index==0?true:false);
+	}
 }
 
 

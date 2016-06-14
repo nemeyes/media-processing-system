@@ -374,7 +374,7 @@ HRESULT debuggerking::presenter::is_media_type_supported(IMFMediaType * pmedia_t
 
 		if (_use_xvp)
 		{
-			hr = m_pXVP->SetInputType(0, pMediaType, MFT_SET_TYPE_TEST_ONLY);
+			hr = _xvp->SetInputType(0, pmedia_type, MFT_SET_TYPE_TEST_ONLY);
 			if (FAILED(hr))
 			{
 				break;
@@ -393,7 +393,7 @@ HRESULT debuggerking::presenter::is_media_type_supported(IMFMediaType * pmedia_t
 //
 //--------------------------------------------------------------------------
 
-HRESULT debuggerking::presenter::PresentFrame(void)
+HRESULT debuggerking::presenter::present_frame(void)
 {
 	HRESULT hr = S_OK;
 
@@ -407,7 +407,7 @@ HRESULT debuggerking::presenter::PresentFrame(void)
 			break;
 		}
 
-		if (NULL == m_pSwapChain1)
+		if (NULL == _swap_chain1)
 		{
 			break;
 		}
@@ -420,7 +420,7 @@ HRESULT debuggerking::presenter::PresentFrame(void)
 			break;
 		}
 
-		hr = m_pSwapChain1->Present(0, 0);
+		hr = _swap_chain1->Present(0, 0);
 		if (FAILED(hr))
 		{
 			break;
@@ -437,7 +437,7 @@ HRESULT debuggerking::presenter::PresentFrame(void)
 // Description: Present one media sample.
 //-------------------------------------------------------------------
 
-HRESULT debuggerking::presenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, BOOL* pbProcessAgain, IMFSample** ppOutputSample)
+HRESULT debuggerking::presenter::process_frame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, BOOL* pbProcessAgain, IMFSample** ppOutputSample)
 {
 	HRESULT hr = S_OK;
 	BYTE* pData = NULL;

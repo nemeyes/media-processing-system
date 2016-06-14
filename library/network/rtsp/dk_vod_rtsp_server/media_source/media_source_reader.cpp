@@ -108,6 +108,7 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 
 			char time[260] = { 0 };
 #if defined(WITH_RECORDER_MODULE)
+			log4cplus_logger::instance()->make_info_log("parallel.record.streamer", "create rtsp session for stream[%s]", _stream_name);
 			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
 			bool result = _record_module.seek(single_media_source_path, elapsed_seek_time_millsec);
 			if (!result)
@@ -162,6 +163,7 @@ bool debuggerking::media_source_reader::close(void)
 		::CloseHandle(_video_thread);
 		_video_thread = INVALID_HANDLE_VALUE;
 	}
+	log4cplus_logger::instance()->make_info_log("parallel.record.streamer", "destroy rtsp session for stream[%s]", _stream_name);
 #endif
 #endif
 	return true;

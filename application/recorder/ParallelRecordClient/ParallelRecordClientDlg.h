@@ -53,6 +53,7 @@ protected:
 	
 	CEdit _recording_play_scale;
 
+	CComboBox _osd_enable;
 	CEdit _osd_x;
 	CEdit _osd_y;
 	CEdit _exp_uuid;
@@ -98,6 +99,7 @@ public:
 	afx_msg void OnBnClickedButtonManualStopPlayback();
 	afx_msg void OnBnClickedButtonRtspPlay();
 	afx_msg void OnBnClickedButtonRtspStop();
+	afx_msg void OnBnClickedButtonOsdEnable();
 	afx_msg void OnBnClickedButtonSetOsdPosition();
 	afx_msg void OnBnClickedButtonStartExport();
 	afx_msg void OnBnClickedButtonStopExport();

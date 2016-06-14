@@ -171,6 +171,7 @@ bool debuggerking::module_core::seek4w(const char * single_recorder_file_path, l
 
 		_snprintf_s(filepath, MAX_PATH, "%s\\%lld.dat", _single_recorder_file_path, timestamp);
 		_record_file = ::CreateFileA(filepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "create new recorded file[%s]", filepath);
 	}
 
 	if (_record_file == NULL || _record_file == INVALID_HANDLE_VALUE)

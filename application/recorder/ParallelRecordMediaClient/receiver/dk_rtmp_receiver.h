@@ -1,6 +1,8 @@
 #ifndef _DK_RTMP_RECEIVER_H_
 #define _DK_RTMP_RECEIVER_H_
 
+#if defined(WITH_RTMP_RECEIVER)
+
 #include <dk_base_receiver.h>
 #include <dk_rtmp_client.h>
 #include <dk_ff_video_decoder.h>
@@ -31,19 +33,5 @@ namespace debuggerking
 	};
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif
 #endif
