@@ -45,9 +45,19 @@ END_MESSAGE_MAP()
 
 // CParallelRecordClientDlg dialog
 
-void __stdcall PlayTimeCallback(int index, int year, int month, int day, int hour, int minute, int second)
+void __stdcall uusei_callback(int index, int year, int month, int day, int hour, int minute, int second)
 {
 	TRACE(L"index[%d], %.4d-%.2d-%.2d %.2d::%.2d::%.2d\n", index, year, month, day, hour, minute, second);
+}
+
+void __stdcall exp_begin_callback(int index)
+{
+	TRACE(L"index[%d] exp begin\n", index);
+}
+
+void __stdcall exp_end_callback(int index)
+{
+	TRACE(L"index[%d] exp end\n", index);
 }
 
 CParallelRecordClientDlg::CParallelRecordClientDlg(CWnd* pParent /*=NULL*/)
@@ -602,7 +612,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 
 			HWND hwnd = NULL;
 			hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, PlayTimeCallback);
+			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, uusei_callback);
 			if (PRMC_index != PRMC_FAIL)
 			{
 				//status = PRMC_StartExport((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, year, month, day, hour, minute, second);
@@ -703,7 +713,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonManualStartPlayback()
 
 			HWND hwnd = NULL;
 			hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, PlayTimeCallback);
+			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, uusei_callback);
 			if (PRMC_index != PRMC_FAIL)
 			{
 				status = PRMC_Play((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, scale, false);
@@ -814,7 +824,7 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartExport()
 		{
 			WCHAR destionation_file_path[MAX_PATH] = { 0 };
 			_snwprintf_s(destionation_file_path, sizeof(destionation_file_path) / sizeof(wchar_t), L"%s%s", (LPCWSTR)str_folder, L"test.ts");
-			PRMC_index = PRMC_AddExport((LPCWSTR)recorder_address, (LPCWSTR)uuid, (LPCWSTR)destionation_file_path);
+			PRMC_index = PRMC_AddExport((LPCWSTR)recorder_address, (LPCWSTR)uuid, (LPCWSTR)destionation_file_path, exp_begin_callback, exp_end_callback);
 			if (PRMC_index != PRMC_FAIL)
 			{
 				status = PRMC_PlayExport((LPCWSTR)recorder_address, PRMC_index,

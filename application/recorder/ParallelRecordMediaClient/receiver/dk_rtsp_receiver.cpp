@@ -2,7 +2,7 @@
 #include <dk_recorder_module.h>
 #include <dk_string_helper.h>
 
-debuggerking::rtsp_receiver::rtsp_receiver(rtsp_async_callback * cb)
+debuggerking::rtsp_receiver::rtsp_receiver(rtsp_user_unregistered_sei__callback * cb)
 	: _cb(cb)
 	, _frame_count(0)
 	, _osd_enable(false)
@@ -48,7 +48,7 @@ int32_t debuggerking::rtsp_receiver::get_last_time(int32_t & year, int32_t & mon
 int32_t debuggerking::rtsp_receiver::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd)
 {
 	_hwnd = hwnd;
-	return rtsp_client::play(url, username, password, transport_option, recv_option, 3, scale, repeat);
+	return rtsp_client::play(url, username, password, transport_option, recv_option, 60, scale, repeat);
 }
 
 int32_t debuggerking::rtsp_receiver::stop(void)
@@ -275,12 +275,6 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 
 			int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
 			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
-			_last_year = year;
-			_last_month = month;
-			_last_day = day;
-			_last_hour = hour;
-			_last_minute = minute;
-			_last_second = second;
 			wchar_t time[MAX_PATH] = { 0 };
 			_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
 
@@ -300,8 +294,15 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 				video_renderer->enable_osd_text(false);
 			}
 
-			if (_cb!=nullptr)
+			if (_cb != nullptr)
 				_cb->invoke(year, month, day, hour, minute, second);
+
+			_last_year = year;
+			_last_month = month;
+			_last_day = day;
+			_last_hour = hour;
+			_last_minute = minute;
+			_last_second = second;
 		}
 		else
 		{

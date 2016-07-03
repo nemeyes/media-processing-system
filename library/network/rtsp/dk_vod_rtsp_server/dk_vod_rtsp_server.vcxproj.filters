@@ -48,9 +48,6 @@
     <ClInclude Include="media_source\media_source_reader.h">
       <Filter>media_source</Filter>
     </ClInclude>
-    <ClInclude Include="media_source\record_module_seeker.h">
-      <Filter>media_source</Filter>
-    </ClInclude>
     <ClInclude Include="media_source\live_media_source_entity.h">
       <Filter>media_source</Filter>
     </ClInclude>
@@ -81,9 +78,6 @@
       <Filter>ffmpeg_base</Filter>
     </ClCompile>
     <ClCompile Include="media_source\media_source_reader.cpp">
-      <Filter>media_source</Filter>
-    </ClCompile>
-    <ClCompile Include="media_source\record_module_seeker.cpp">
       <Filter>media_source</Filter>
     </ClCompile>
     <ClCompile Include="media_source\live_media_source_entity.cpp">

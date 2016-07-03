@@ -13,6 +13,8 @@
 #define PRMC_SUCCESS	0
 
 typedef void(__stdcall *PRMC_PlayTimeCallback)(int index, int year, int month, int day, int hour, int minute, int second);
+typedef void(__stdcall *PRMC_ExportBeginCallback)(int index);
+typedef void(__stdcall *PRMC_ExportEndCallback)(int index);
 
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Initialize(HWND hwnd);
@@ -38,7 +40,7 @@ extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_Pause(const wchar_t *
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_EnableOSD(const wchar_t * url, int index, bool enable);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y);
 
-extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * export_file_path);
+extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * export_file_path, PRMC_ExportBeginCallback scb = NULL, PRMC_ExportEndCallback ecb = NULL);
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_RemoveExport(const wchar_t * url, int index);
 
 extern "C" int EXP_PARALLEL_RECORD_MEDIA_CLIENT_CLASS PRMC_PlayExport(const wchar_t * url, int index, 

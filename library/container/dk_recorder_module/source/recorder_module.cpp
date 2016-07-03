@@ -476,8 +476,8 @@ void debuggerking::module_core::read(uint8_t * data, size_t & data_size, long lo
 			uint8_t nalu_type;
 			read(_record_file, nalu_type, data, data_size, interval, timestamp);
 
-			if (data_size>0)
-				log4cplus_logger::make_debug_log("parallel.record.streamer", "nalu type : [%s], nalu size : [%d]", nalu_type == 0 ? "sps" : (nalu_type == 1 ? "pps" : (nalu_type == 2 ? "idr" : "vcl")), (int)data_size);
+			//if (data_size>0)
+			//	log4cplus_logger::make_debug_log("parallel.record.streamer", "nalu type : [%s], nalu size : [%d]", nalu_type == 0 ? "sps" : (nalu_type == 1 ? "pps" : (nalu_type == 2 ? "idr" : "vcl")), (int)data_size);
 			//strncpy_s(_last_accessed_file, _record_module->get_filename(), sizeof(_last_accessed_file));
 		}
 		else

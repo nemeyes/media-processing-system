@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <recorder>
-	<backup_server enable="true" delete_after_backup="true">
+	<backup_server enable="false" delete_after_backup="true">
 		<url>10.203.141.103</url>
 		<!--url>127.0.0.1</url//-->
 		<port_number>21</port_number>
@@ -8,7 +8,7 @@
 		<password>pass</password>
 	</backup_server>
 	<media_sources name="groupname" chunk_size="64">
-		<media_source uuid="CH1">
+		<media_source uuid="CH1" recv_timeout="1">
 			<url>rtsp://1.217.25.234:5054/8/stream1</url>
 			<username></username>
 			<password></password>

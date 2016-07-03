@@ -7,10 +7,17 @@
 
 namespace debuggerking
 {
+	class rtsp_exportor_status_callback
+	{
+	public:
+		virtual void start(void) = 0;
+		virtual void stop(void) = 0;
+	};
+
 	class rtsp_exportor : public base_receiver, public rtsp_client
 	{
 	public:
-		rtsp_exportor(void);
+		rtsp_exportor(rtsp_exportor_status_callback * cb = nullptr);
 		virtual ~rtsp_exportor(void);
 
 		int32_t play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, bool repeat, char * export_file_path, int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second);
@@ -26,6 +33,7 @@ namespace debuggerking
 		void process(void);
 
 	private:
+		rtsp_exportor_status_callback * _cb;
 		char _url[MAX_PATH];
 		char _username[MAX_PATH];
 		char _password[MAX_PATH];

@@ -2,7 +2,7 @@
 #include <dk_recorder_module.h>
 #include <dk_string_helper.h>
 
-debuggerking::rtsp_exportor::rtsp_exportor(void)
+debuggerking::rtsp_exportor::rtsp_exportor(rtsp_exportor_status_callback * cb)
 	: _transport_option(debuggerking::rtsp_exportor::rtp_over_tcp)
 	, _recv_option(debuggerking::rtsp_exportor::recv_option_t::video)
 	, _repeat(false)
@@ -21,6 +21,7 @@ debuggerking::rtsp_exportor::rtsp_exportor(void)
 	, _rcvd_second(0)
 	, _thread(INVALID_HANDLE_VALUE)
 	, _run(false)
+	, _cb(cb)
 {
 	memset(_url, 0x00, sizeof(_url));
 	memset(_username, 0x00, sizeof(_username));
@@ -240,6 +241,8 @@ void debuggerking::rtsp_exportor::process(void)
 	status = rtsp_client::play(_url, _username, _password, _transport_option, _recv_option, 3, 0.f, _repeat);
 	if (status == rtsp_exportor::err_code_t::success)
 	{
+		if (_cb)
+			_cb->start();
 		_run = true;
 		while (_run)
 		{
@@ -254,6 +257,8 @@ void debuggerking::rtsp_exportor::process(void)
 			::Sleep(100);
 		}
 		status = rtsp_client::stop();
+		if (_cb)
+			_cb->stop();
 	}
 	_run = false;
 }

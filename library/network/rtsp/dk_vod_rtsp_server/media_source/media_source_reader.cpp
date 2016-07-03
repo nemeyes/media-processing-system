@@ -5,7 +5,6 @@
 #include <dk_time_helper.h>
 #include <dk_auto_lock.h>
 #include "media_source_reader.h"
-#include <dk_record_module.h>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <dk_log4cplus_logger.h>
 
@@ -16,7 +15,6 @@
 #if defined(WITH_RECORD_SERVER)
 debuggerking::media_source_reader::media_source_reader(void)
 	: _scale(1.f)
-#if defined(WITH_RECORDER_MODULE)
 	, _record_module(0)
 #if defined(WITH_BUFFERING_MODE)
 	, _video_thread(INVALID_HANDLE_VALUE)
@@ -25,9 +23,7 @@ debuggerking::media_source_reader::media_source_reader(void)
 	, _video_buffer(nullptr)
 	, _video_buffer_size(0)
 #endif
-#endif
 {
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	_video_buffer_size = VIDEO_BUFFER_SIZE;
 	_video_buffer = static_cast<uint8_t*>(malloc(_video_buffer_size));
@@ -37,14 +33,12 @@ debuggerking::media_source_reader::media_source_reader(void)
 	_video_root = static_cast<video_buffer_t*>(malloc(sizeof(video_buffer_t)));
 	init_video(_video_root);
 #endif
-#endif
 }
 
 debuggerking::media_source_reader::~media_source_reader(void)
 {
 	close();
 
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	video_buffer_t * vbuffer = _video_root->next;
 	while (vbuffer)
@@ -62,7 +56,6 @@ debuggerking::media_source_reader::~media_source_reader(void)
 		free(_video_buffer);
 	_video_buffer = nullptr;
 	_video_buffer_size = 0;
-#endif
 #endif
 }
 
@@ -107,20 +100,12 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 			long long elapsed_seek_time_millsec = elapsed_seek_time.total_milliseconds();
 
 			char time[260] = { 0 };
-#if defined(WITH_RECORDER_MODULE)
+
 			log4cplus_logger::instance()->make_info_log("parallel.record.streamer", "create rtsp session for stream[%s]", _stream_name);
 			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
 			bool result = _record_module.seek(single_media_source_path, elapsed_seek_time_millsec);
 			if (!result)
 				return false;
-#else
-			get_time_from_elapsed_msec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
-			//dk_log4cplus_logger::instance().make_system_debug_log("parallel.record.streamer", time);
-
-			bool result = _record_module_seeker.seek(single_media_source_path, elapsed_seek_time_millsec);
-			if (!result)
-				return false;
-#endif
 		}
 		else
 		{ 
@@ -143,18 +128,15 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 	vsmt = _vsmt;
 	asmt = _asmt;
 
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	unsigned thrd_addr = 0;
 	_video_thread = (HANDLE)::_beginthreadex(NULL, 0, &media_source_reader::video_process_callback, this, 0, &thrd_addr);
-#endif
 #endif
 	return true;
 }
 
 bool debuggerking::media_source_reader::close(void)
 {
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	if (_video_run && _video_thread && _video_thread != INVALID_HANDLE_VALUE)
 	{
@@ -164,7 +146,6 @@ bool debuggerking::media_source_reader::close(void)
 		_video_thread = INVALID_HANDLE_VALUE;
 	}
 	log4cplus_logger::instance()->make_info_log("parallel.record.streamer", "destroy rtsp session for stream[%s]", _stream_name);
-#endif
 #endif
 	return true;
 }
@@ -178,7 +159,6 @@ bool debuggerking::media_source_reader::read(int32_t mt, uint8_t * data, size_t 
 	{
 		if (_vsmt == media_source_reader::video_submedia_type_t::h264)
 		{
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 			uint8_t nalu_type = recorder_module::nalu_type_t::none;
 			int32_t status = pop_video(data, data_size, nalu_type, interval, timestamp);
@@ -186,9 +166,6 @@ bool debuggerking::media_source_reader::read(int32_t mt, uint8_t * data, size_t 
 				return false;
 #else
 			_record_module.read(data, data_size, interval, timestamp);
-#endif
-#else
-			_record_module_seeker.read(data, data_size, interval);
 #endif
 		}
 	}
@@ -201,23 +178,14 @@ bool debuggerking::media_source_reader::read(int32_t mt, uint8_t * data, size_t 
 
 const uint8_t * debuggerking::media_source_reader::get_sps(size_t & sps_size)
 {
-#if defined(WITH_RECORDER_MODULE)
 	return _record_module.get_sps(sps_size);
-#else
-	return _record_module_seeker.get_sps(sps_size);
-#endif
 }
 
 const uint8_t * debuggerking::media_source_reader::get_pps(size_t & pps_size)
 {
-#if defined(WITH_RECORDER_MODULE)
 	return _record_module.get_pps(pps_size);
-#else
-	return _record_module_seeker.get_pps(pps_size);
-#endif
 }
 
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 int32_t debuggerking::media_source_reader::push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long interval, long long timestamp)
 {
@@ -368,20 +336,7 @@ void debuggerking::media_source_reader::video_process(void)
 	}
 }
 #endif
-#endif
 
-#if !defined(WITH_RECORDER_MODULE)
-void media_source_reader::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
-{
-	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
-	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-	boost::posix_time::ptime current_time = epoch + elapsed;
-
-	std::string tmp_time = boost::posix_time::to_simple_string(current_time);
-	//strncpy_s(time_string, time_string_size, tmp_time.c_str(), (size_t)time_string_size);
-	strcpy_s(time_string, time_string_size, tmp_time.c_str());
-}
-#endif
 #else
 
 #define VIDEO_BUFFER_SIZE 1024 * 1024 * 6

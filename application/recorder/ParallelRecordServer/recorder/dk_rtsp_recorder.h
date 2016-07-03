@@ -4,11 +4,7 @@
 #include "dk_bit_vector.h"
 #include <dk_rtsp_client.h>
 
-#if defined(WITH_RECORDER_MODULE)
  #include "dk_recorder_module.h"
-#else
- #include "dk_record_module.h"
-#endif
 
 #if defined(WITH_RELAY_LIVE)
  #define WITH_SERVER_PUBLISH
@@ -63,11 +59,7 @@ namespace debuggerking
 		uint8_t _pps[200];
 		size_t _pps_size;
 	
-#if defined(WITH_RECORDER_MODULE)
 		recorder_module * _file_recorder;
-#else
-		dk_record_module * _file_recorder;
-#endif
 
 #if defined(WITH_RELAY_LIVE)
 		ic::dk_shared_memory_server * _sm_server;

@@ -107,26 +107,42 @@ int32_t debuggerking::bitmap_core::render(bitmap_renderer::entity_t * decoded)
 
 		if (value == bitmap_renderer::err_code_t::success)
 		{
-			::SetStretchBltMode(dc, COLORONCOLOR);
-			::StretchDIBits(dc, display_x, display_y, display_width, display_height, 0, 0, _config->width, _config->height, decoded->data, _bitmap_info, DIB_RGB_COLORS, SRCCOPY);
-			::SetBkMode(dc, TRANSPARENT);
+			if (dc)
+			{
+				::SetStretchBltMode(dc, COLORONCOLOR);
+				::StretchDIBits(dc, display_x, display_y, display_width, display_height, 0, 0, _config->width, _config->height, decoded->data, _bitmap_info, DIB_RGB_COLORS, SRCCOPY);
+				::SetBkMode(dc, TRANSPARENT);
 
-			DWORD colorref = 0;
-			::SetTextColor(dc, colorref);
-			font = ::CreateFont(_osd_text_font_size * 2, _osd_text_font_size, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, L"Times New Roman");
-			::SelectObject(dc, font);
-			::TextOut(dc, _osd_text_position_x+1, _osd_text_position_y+1, _osd, wcslen(_osd));
 
-			colorref |= (_osd_text_color_red) << 16;
-			colorref |= (_osd_text_color_blue) << 8;
-			colorref |= (_osd_text_color_green);
-			::SetTextColor(dc, colorref);
-			font = ::CreateFont(_osd_text_font_size * 2, _osd_text_font_size, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, L"Times New Roman");
-			::SelectObject(dc, font);
-			::TextOut(dc, _osd_text_position_x, _osd_text_position_y, _osd, wcslen(_osd));
+				if (_enable_osd_text)
+				{
+					DWORD colorref = 0;
+					::SetTextColor(dc, colorref);
+					font = ::CreateFont(_osd_text_font_size * 2, _osd_text_font_size, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, L"Times New Roman");
+					if (font)
+					{
+						::SelectObject(dc, font);
+						::TextOut(dc, _osd_text_position_x + 1, _osd_text_position_y + 1, _osd, wcslen(_osd));
+						::DeleteObject(font);
+
+						colorref |= (_osd_text_color_red) << 16;
+						colorref |= (_osd_text_color_blue) << 8;
+						colorref |= (_osd_text_color_green);
+						::SetTextColor(dc, colorref);
+						font = ::CreateFont(_osd_text_font_size * 2, _osd_text_font_size, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, L"Times New Roman");
+						if (font)
+						{
+							::SelectObject(dc, font);
+							::TextOut(dc, _osd_text_position_x, _osd_text_position_y, _osd, wcslen(_osd));
+							::DeleteObject(font);
+						}
+					}
+				}
+			}
 		}
-		::DeleteObject(font);
-		::ReleaseDC(_config->hwnd, dc);
+		
+		if (dc && _config->hwnd)
+			::ReleaseDC(_config->hwnd, dc);
 
 	}
 	return value;

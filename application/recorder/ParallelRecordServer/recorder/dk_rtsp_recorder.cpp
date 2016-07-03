@@ -61,7 +61,6 @@ void debuggerking::rtsp_recorder::on_begin_video(int32_t smt, uint8_t * vps, siz
 {
 	if (smt == rtsp_client::video_submedia_type_t::h264)
 	{
-#if defined(WITH_RECORDER_MODULE)
 		char single_recorder_file_path[MAX_PATH] = { 0 };
 		_snprintf_s(single_recorder_file_path, sizeof(single_recorder_file_path), "%s%s\\", _storage, _uuid);
 
@@ -72,39 +71,6 @@ void debuggerking::rtsp_recorder::on_begin_video(int32_t smt, uint8_t * vps, siz
 		_file_recorder->write(sps, sps_size, timestamp);
 		_file_recorder->write(pps, pps_size, timestamp);
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
-#else
-		timestamp = get_elapsed_msec_from_epoch();
-
-		size_t saved_sps_size = 0;
-		uint8_t * saved_sps = get_sps(saved_sps_size);
-		if (saved_sps_size < 1 || !saved_sps)
-			set_sps((uint8_t*)sps, sps_size);
-		else
-		{
-			if (memcmp(saved_sps, sps, saved_sps_size))
-				set_sps((uint8_t*)sps, sps_size);
-		}
-
-		size_t saved_pps_size = 0;
-		uint8_t * saved_pps = get_sps(saved_pps_size);
-		if (saved_pps_size < 1 || !saved_pps)
-			set_pps((uint8_t*)pps, pps_size);
-		else
-		{
-			if (memcmp(saved_pps, pps, saved_pps_size))
-				set_pps((uint8_t*)pps, pps_size);
-		}
-
-		if (!_file_recorder)
-			_file_recorder = new dk_record_module(_storage, _uuid, timestamp);
-
-
-		_file_recorder->write(sps, sps_size, timestamp);
-		_file_recorder->write(pps, pps_size, timestamp);
-		_file_recorder->write((uint8_t*)data, data_size, timestamp);
-#endif
-
-
 #if defined(WITH_RELAY_LIVE)
 		if(_sm_server->wait_available())
 			_sm_server->write(sps, sps_size);
@@ -120,62 +86,7 @@ void debuggerking::rtsp_recorder::on_recv_video(int32_t smt, const uint8_t * dat
 {
 	if (smt == rtsp_client::video_submedia_type_t::h264)
 	{
-#if defined(WITH_RECORDER_MODULE)
 		_file_recorder->write((uint8_t*)data, data_size, timestamp);
-#else
-		timestamp = get_elapsed_msec_from_epoch();
-
-		if (((data[4] & 0x1F) == 0x07)) //sps
-		{
-			size_t saved_sps_size = 0;
-			uint8_t * saved_sps = get_sps(saved_sps_size);
-			if (saved_sps_size < 1 || !saved_sps)
-				set_sps((uint8_t*)data, data_size);
-			else
-			{
-				if (memcmp(saved_sps, data, saved_sps_size))
-					set_sps((uint8_t*)data, data_size);
-			}
-		}
-		if (((data[4] & 0x1F) == 0x08)) //pps
-		{
-			size_t saved_pps_size = 0;
-			uint8_t * saved_pps = get_sps(saved_pps_size);
-			if (saved_pps_size < 1 || !saved_pps)
-				set_pps((uint8_t*)data, data_size);
-			else
-			{
-				if (memcmp(saved_pps, data, saved_pps_size))
-					set_pps((uint8_t*)data, data_size);
-			}
-		}
-
-		long long saved_chunk_size_bytes = _file_recorder->get_file_size();
-		if ((saved_chunk_size_bytes >= _chunk_size_bytes) && ((data[4] & 0x1F) == 0x05))
-		{
-			if (_file_recorder)
-			{
-				delete _file_recorder;
-				_file_recorder = nullptr;
-			}
-		}
-
-		if (!_file_recorder)
-		{
-			_file_recorder = new dk_record_module(_storage, _uuid, timestamp);
-			size_t saved_sps_size = 0;
-			uint8_t * saved_sps = get_sps(saved_sps_size);
-			if (saved_sps_size > 0 && saved_sps)
-				_file_recorder->write(saved_sps, saved_sps_size, timestamp);
-
-			size_t saved_pps_size = 0;
-			uint8_t * saved_pps = get_pps(saved_pps_size);
-			if (saved_pps_size > 0 && saved_pps)
-				_file_recorder->write(saved_pps, saved_pps_size, timestamp);
-		}
-
-		_file_recorder->write((uint8_t*)data, data_size, timestamp);
-#endif
 #if defined(WITH_RELAY_LIVE)
 		if (_sm_server->wait_available())
 			_sm_server->write((void*)data, data_size);

@@ -3,21 +3,16 @@
 
 #include <dk_basic_type.h>
 #if defined(WITH_RECORD_SERVER)
-#if defined(WITH_RECORDER_MODULE)
- #include <dk_recorder_module.h>
-#else
- #include "record_module_seeker.h"
-#endif
-
+#include <dk_recorder_module.h>
+#if defined(WITH_BUFFERING_MODE)
 #include <dk_circular_buffer.h>
+#endif
 
 namespace debuggerking
 {
 	class media_source_reader : public foundation
 	{
 	public:
-
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 		typedef struct _video_buffer_t
 		{
@@ -28,7 +23,6 @@ namespace debuggerking
 			_video_buffer_t * prev;
 			_video_buffer_t * next;
 		} video_buffer_t;
-#endif
 #endif
 
 		media_source_reader(void);
@@ -44,24 +38,19 @@ namespace debuggerking
 		const uint8_t * get_sps(size_t & size);
 		const uint8_t * get_pps(size_t & size);
 
-#if defined(WITH_RECORDER_MODULE)
 #if defined(WITH_BUFFERING_MODE)
 	private:
 		int32_t push_video(uint8_t * bs, size_t size, uint8_t nalu_type, long long interval, long long timestamp);
 		int32_t pop_video(uint8_t * bs, size_t & size, uint8_t & nalu_type, long long & interval, long long & timestamp);
 		int32_t init_video(video_buffer_t * buffer);
 #endif
-#endif
 
-#if defined(WITH_RECORDER_MODULE)
 		unsigned static __stdcall video_process_callback(void * param);
 		void video_process(void);
-#else
-		void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
-#endif
+
 	private:
 		char _stream_name[250];
-#if defined(WITH_RECORDER_MODULE)
+
 		recorder_module _record_module;
 #if defined(WITH_BUFFERING_MODE)
 		CRITICAL_SECTION _video_mutex;
@@ -74,9 +63,7 @@ namespace debuggerking
 		uint8_t * _video_buffer;
 		size_t _video_buffer_size;
 #endif
-#else
-		record_module_seeker _record_module_seeker;
-#endif
+
 		float _scale;
 		int32_t _vsmt;
 		int32_t _asmt;

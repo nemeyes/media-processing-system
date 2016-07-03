@@ -5,8 +5,7 @@
 #include <map>
 
 #define RTSP_RECEIVER	0
-#define RTMP_RECEIVER	1
-#define RTSP_EXPORTOR	3
+#define RTSP_EXPORTOR	1
 
 namespace debuggerking
 { 
@@ -28,7 +27,8 @@ namespace debuggerking
 		int last_hour;
 		int last_minute;
 		int last_second;
-		void * time_callback;
+		void * user_unregistered_sei_callback;
+		void * exportor_status_callback;
 		_single_media_source_t(void)
 			: type(RTSP_RECEIVER)
 			, hwnd(NULL)
@@ -41,7 +41,8 @@ namespace debuggerking
 			, last_hour(0)
 			, last_minute(0)
 			, last_second(0)
-			, time_callback(NULL)
+			, user_unregistered_sei_callback(NULL)
+			, exportor_status_callback(NULL)
 		{
 			memset(uuid, 0x00, sizeof(uuid));
 			memset(username, 0x00, sizeof(username));
@@ -76,7 +77,8 @@ namespace debuggerking
 			last_hour = clone.last_hour;
 			last_minute = clone.last_minute;
 			last_second = clone.last_second;
-			time_callback = clone.time_callback;
+			user_unregistered_sei_callback = clone.user_unregistered_sei_callback;
+			exportor_status_callback = clone.exportor_status_callback;
 		}
 
 		_single_media_source_t & operator=(_single_media_source_t & clone)
@@ -106,7 +108,8 @@ namespace debuggerking
 			last_hour = clone.last_hour;
 			last_minute = clone.last_minute;
 			last_second = clone.last_second;
-			time_callback = clone.time_callback;
+			user_unregistered_sei_callback = clone.user_unregistered_sei_callback;
+			exportor_status_callback = clone.exportor_status_callback;
 			return (*this);
 		}
 	} single_media_source_t;

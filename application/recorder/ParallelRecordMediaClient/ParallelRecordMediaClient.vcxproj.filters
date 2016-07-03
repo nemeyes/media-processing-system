@@ -54,6 +54,9 @@
     <ClInclude Include="receiver\dk_rtsp_exportor.h">
       <Filter>receiver</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\ParallelRecordMediaClient.cpp">
@@ -77,5 +80,10 @@
     <ClCompile Include="receiver\dk_rtsp_exportor.cpp">
       <Filter>receiver</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ParallelRecordMediaClient.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
