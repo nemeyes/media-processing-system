@@ -612,7 +612,8 @@ void CParallelRecordClientDlg::OnBnClickedButtonStartPlayback()
 
 			HWND hwnd = NULL;
 			hwnd = ::GetDlgItem(GetSafeHwnd(), IDC_STATIC_VIDEO1);
-			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, uusei_callback);
+			//PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd, uusei_callback);
+			PRMC_index = PRMC_Add((LPCWSTR)recorder_address, (LPCWSTR)uuid, hwnd);
 			if (PRMC_index != PRMC_FAIL)
 			{
 				//status = PRMC_StartExport((LPCWSTR)recorder_address, PRMC_index, year, month, day, hour, minute, second, year, month, day, hour, minute, second);

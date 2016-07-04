@@ -589,25 +589,3 @@ void debuggerking::rtsp_recorder::clear_pps(void)
 	memset(_pps, 0x00, sizeof(_pps));
 	_pps_size = 0;
 }
-
-#if !defined(WITH_RECORDER_MODULE)
-long long debuggerking::rtsp_recorder::get_elapsed_msec_from_epoch(void)
-{
-	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-	boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::local_time();
-	boost::posix_time::time_duration elapsed = current_time - epoch;
-	long long elapsed_millsec = elapsed.total_milliseconds();
-	return elapsed_millsec;
-}
-
-void debuggerking::rtsp_recorder::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size)
-{
-	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
-	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-	boost::posix_time::ptime current_time = epoch + elapsed;
-
-	std::string tmp_time = boost::posix_time::to_simple_string(current_time);
-	//strncpy_s(time_string, time_string_size, tmp_time.c_str(), (size_t)time_string_size);
-	strcpy_s(time_string, time_string_size, tmp_time.c_str());
-}
-#endif

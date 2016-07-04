@@ -117,27 +117,70 @@ long long debuggerking::recorder_module::get_file_size(HANDLE file)
 	return estimated_filesize;
 }
 
-long long debuggerking::recorder_module::get_elapsed_msec_from_epoch(void)
+long long debuggerking::recorder_module::get_elapsed_microsec_from_epoch(void)
 {
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 	boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::local_time();
 	boost::posix_time::time_duration elapsed = current_time - epoch;
-	long long elapsed_millsec = elapsed.total_milliseconds();
-	return elapsed_millsec;
+	long long elapsed_microsec = elapsed.total_microseconds();
+	return elapsed_microsec;
 }
 
-long long debuggerking::recorder_module::get_elapsed_msec_from_epoch(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second)
+long long debuggerking::recorder_module::get_elapsed_microsec_from_epoch(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second, int32_t millsec)
+{
+	char str_time[MAX_PATH] = { 0 };
+	_snprintf_s(str_time, sizeof(str_time), "%.4d-%.2d-%.2d %.2d::%.2d::%.2d.%.3d", year, month, day, hour, minute, second, millsec);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = boost::posix_time::time_from_string(str_time);
+	boost::posix_time::time_duration elapsed = current_time - epoch;
+	long long elapsed_microsec = elapsed.total_microseconds();
+	return elapsed_microsec;
+}
+
+void debuggerking::recorder_module::get_time_from_elapsed_microsec_from_epoch(long long elapsed_time, char * time_string, int32_t time_string_size)
+{
+	boost::posix_time::time_duration elapsed = boost::posix_time::microsec(elapsed_time);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = epoch + elapsed;
+
+	std::string tmp_time = boost::posix_time::to_simple_string(current_time);
+	strcpy_s(time_string, time_string_size, tmp_time.c_str());
+}
+
+void debuggerking::recorder_module::get_time_from_elapsed_microsec_from_epoch(long long elapsed_time, int32_t & year, int32_t & month, int32_t & day, int32_t & hour, int32_t & minute, int32_t & second)
+{
+	boost::posix_time::time_duration elapsed = boost::posix_time::microsec(elapsed_time);
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = epoch + elapsed;
+	year = current_time.date().year();
+	month = current_time.date().month();
+	day = current_time.date().day();
+	hour = current_time.time_of_day().hours();
+	minute = current_time.time_of_day().minutes();
+	second = current_time.time_of_day().seconds();
+}
+
+long long debuggerking::recorder_module::get_elapsed_millisec_from_epoch(void)
+{
+	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+	boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::local_time();
+	boost::posix_time::time_duration elapsed = current_time - epoch;
+	long long elapsed_millisec = elapsed.total_milliseconds();
+	return elapsed_millisec;
+}
+
+long long debuggerking::recorder_module::get_elapsed_millisec_from_epoch(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second)
 {
 	char str_time[MAX_PATH] = { 0 };
 	_snprintf_s(str_time, sizeof(str_time), "%.4d-%.2d-%.2d %.2d::%.2d::%.2d.000", year, month, day, hour, minute, second);
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 	boost::posix_time::ptime current_time = boost::posix_time::time_from_string(str_time);
 	boost::posix_time::time_duration elapsed = current_time - epoch;
-	long long elapsed_millsec = elapsed.total_milliseconds();
-	return elapsed_millsec;
+	long long elapsed_millisec = elapsed.total_milliseconds();
+	return elapsed_millisec;
 }
 
-void debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int32_t time_string_size)
+void debuggerking::recorder_module::get_time_from_elapsed_millisec_from_epoch(long long elapsed_time, char * time_string, int32_t time_string_size)
 {
 	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
@@ -147,7 +190,7 @@ void debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(long l
 	strcpy_s(time_string, time_string_size, tmp_time.c_str());
 }
 
-void debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(long long elapsed_time, int32_t & year, int32_t & month, int32_t & day, int32_t & hour, int32_t & minute, int32_t & second)
+void debuggerking::recorder_module::get_time_from_elapsed_millisec_from_epoch(long long elapsed_time, int32_t & year, int32_t & month, int32_t & day, int32_t & hour, int32_t & minute, int32_t & second)
 {
 	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");

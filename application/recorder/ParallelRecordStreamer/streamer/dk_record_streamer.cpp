@@ -277,7 +277,11 @@ void debuggerking::record_streamer::get_years(const char * uuid, int years[], in
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#endif
 					iter = std::find(year_vector.begin(), year_vector.end(), year);
 					if (iter == year_vector.end())
 					{
@@ -331,8 +335,11 @@ void debuggerking::record_streamer::get_months(const char * uuid, int year, int 
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month, day, hour, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month, day, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month, day, hour, minute, second);
+#endif
 					if (year == year1)
 					{
 						iter = std::find(month_vector.begin(), month_vector.end(), month);
@@ -390,8 +397,11 @@ void debuggerking::record_streamer::get_days(const char * uuid, int year, int mo
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day, hour, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day, hour, minute, second);
+#endif
 					if (year == year1 && month == month1)
 					{
 						iter = std::find(day_vector.begin(), day_vector.end(), day);
@@ -448,8 +458,11 @@ void debuggerking::record_streamer::get_hours(const char * uuid, int year, int m
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day1, hour, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day1, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day1, hour, minute, second);
+#endif
 					if (year == year1 && month == month1 && day==day1)
 					{
 						iter = std::find(hour_vector.begin(), hour_vector.end(), hour);
@@ -506,8 +519,11 @@ void debuggerking::record_streamer::get_minutes(const char * uuid, int year, int
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day1, hour1, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day1, hour1, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day1, hour1, minute, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1)
 					{
 						gathered_timestamp_iter = std::find(gathered_timestamp.begin(), gathered_timestamp.end(), timestamp);
@@ -588,7 +604,11 @@ void debuggerking::record_streamer::get_minutes(const char * uuid, int year, int
 
 				if (nalu_type == 0) //sps
 				{
-					recorder_module::get_time_from_elapsed_msec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute, second);
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1)
 					{
 						iter = std::find(minute_vector.begin(), minute_vector.end(), minute);
@@ -646,8 +666,11 @@ void debuggerking::record_streamer::get_seconds(const char * uuid, int year, int
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day1, hour1, minute1, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day1, hour1, minute1, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day1, hour1, minute1, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1)
 					{
 						gathered_timestamp_iter = std::find(gathered_timestamp.begin(), gathered_timestamp.end(), timestamp);
@@ -728,7 +751,11 @@ void debuggerking::record_streamer::get_seconds(const char * uuid, int year, int
 
 				if (nalu_type == 0) //sps
 				{
-					recorder_module::get_time_from_elapsed_msec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute1, second);
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute1, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute1, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1 && minute == minute1)
 					{
 						iter = std::find(second_vector.begin(), second_vector.end(), second);

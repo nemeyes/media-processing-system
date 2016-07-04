@@ -47,6 +47,7 @@ namespace debuggerking
 		int32_t _hour;
 		int32_t _minute;
 		int32_t _second;
+		int32_t _millisec;
 
 		int32_t _rcvd_year;
 		int32_t _rcvd_month;
@@ -54,6 +55,7 @@ namespace debuggerking
 		int32_t _rcvd_hour;
 		int32_t _rcvd_minute;
 		int32_t _rcvd_second;
+		int32_t _rcvd_millisec;
 
 		ff_tsmuxer::configuration_t * _tsmuxer_config;
 		ff_tsmuxer * _tsmuxer;

@@ -13,12 +13,14 @@ debuggerking::rtsp_exportor::rtsp_exportor(rtsp_exportor_status_callback * cb)
 	, _hour(0)
 	, _minute(0)
 	, _second(0)
+	, _millisec(0)
 	, _rcvd_year(0)
 	, _rcvd_month(0)
 	, _rcvd_day(0)
 	, _rcvd_hour(0)
 	, _rcvd_minute(0)
 	, _rcvd_second(0)
+	, _rcvd_millisec(0)
 	, _thread(INVALID_HANDLE_VALUE)
 	, _run(false)
 	, _cb(cb)
@@ -189,7 +191,11 @@ void debuggerking::rtsp_exportor::on_recv_video(int32_t smt, const uint8_t * dat
 				long long timestamp = 0;
 				memcpy(&timestamp, &sei[19], sizeof(timestamp));
 
-				debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, _rcvd_year, _rcvd_month, _rcvd_day, _rcvd_hour, _rcvd_minute, _rcvd_second);
+#if defined(WITH_MILLISECOND)
+				debuggerking::recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, _rcvd_year, _rcvd_month, _rcvd_day, _rcvd_hour, _rcvd_minute, _rcvd_second);
+#else
+				debuggerking::recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, _rcvd_year, _rcvd_month, _rcvd_day, _rcvd_hour, _rcvd_minute, _rcvd_second);
+#endif
 				_rcvd_timestamp = true;
 			}
 			else if ((data[4] & 0x1F) == 0x05)
@@ -248,9 +254,13 @@ void debuggerking::rtsp_exportor::process(void)
 		{
 			if (_rcvd_timestamp)
 			{
-				long long destination_timestamp = debuggerking::recorder_module::get_elapsed_msec_from_epoch(_year, _month, _day, _hour, _minute, _second);
-				long long current_timestamp = debuggerking::recorder_module::get_elapsed_msec_from_epoch(_rcvd_year, _rcvd_month, _rcvd_day, _rcvd_hour, _rcvd_minute, _rcvd_second);
-
+#if defined(WITH_MILLISECOND)
+				long long destination_timestamp = debuggerking::recorder_module::get_elapsed_millisec_from_epoch(_year, _month, _day, _hour, _minute, _second);
+				long long current_timestamp = debuggerking::recorder_module::get_elapsed_millisec_from_epoch(_rcvd_year, _rcvd_month, _rcvd_day, _rcvd_hour, _rcvd_minute, _rcvd_second);
+#else
+				long long destination_timestamp = debuggerking::recorder_module::get_elapsed_microsec_from_epoch(_year, _month, _day, _hour, _minute, _second, _millisec);
+				long long current_timestamp = debuggerking::recorder_module::get_elapsed_microsec_from_epoch(_rcvd_year, _rcvd_month, _rcvd_day, _rcvd_hour, _rcvd_minute, _rcvd_second, _rcvd_millisec);
+#endif
 				if (destination_timestamp <= current_timestamp)
 					break;
 			}

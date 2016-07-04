@@ -166,8 +166,13 @@ bool debuggerking::module_core::seek4w(const char * single_recorder_file_path, l
 		if (::GetFileAttributesA(_single_recorder_file_path) == INVALID_FILE_ATTRIBUTES)
 			::CreateDirectoryA(_single_recorder_file_path, NULL);
 
+#if defined(WITH_MILLISECOND)
 		if (timestamp == 0)
-			timestamp = recorder_module::get_elapsed_msec_from_epoch();
+			timestamp = recorder_module::get_elapsed_millisec_from_epoch();
+#else
+		if (timestamp == 0)
+			timestamp = recorder_module::get_elapsed_microsec_from_epoch();
+#endif
 
 		_snprintf_s(filepath, MAX_PATH, "%s\\%lld.dat", _single_recorder_file_path, timestamp);
 		_record_file = ::CreateFileA(filepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -221,19 +226,34 @@ bool debuggerking::module_core::seek4r(const char * single_recorder_file_path, l
 			char time_string[100] = { 0 };
 			int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
 			boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-
-			recorder_module::get_time_from_elapsed_msec_from_epoch(start_time, year, month, day, hour, minute, second);
+#if defined(WITH_MILLISECOND)
+			recorder_module::get_time_from_elapsed_millisec_from_epoch(start_time, year, month, day, hour, minute, second);
+#else
+			recorder_module::get_time_from_elapsed_microsec_from_epoch(start_time, year, month, day, hour, minute, second);
+#endif
 			_snprintf_s(time_string, sizeof(time_string), "%.4d-%.2d-%.2d %.2d:%.2d:%.2d.000", year, month, day, hour, minute, second);
 			boost::posix_time::ptime start_ptime = boost::posix_time::time_from_string(time_string);
 			boost::posix_time::time_duration elapsed_start_time = start_ptime - epoch;
+#if defined(WITH_MILLISECOND)
 			start_time = elapsed_start_time.total_milliseconds();
+#else
+			start_time = elapsed_start_time.total_microseconds();
+#endif
 
 			memset(time_string, 0x00, sizeof(time_string));
-			recorder_module::get_time_from_elapsed_msec_from_epoch(end_time, year, month, day, hour, minute, second);
+#if defined(WITH_MILLISECOND)
+			recorder_module::get_time_from_elapsed_millisec_from_epoch(end_time, year, month, day, hour, minute, second);
+#else
+			recorder_module::get_time_from_elapsed_microsec_from_epoch(end_time, year, month, day, hour, minute, second);
+#endif
 			_snprintf_s(time_string, sizeof(time_string), "%.4d-%.2d-%.2d %.2d:%.2d:%.2d.000", year, month, day, hour, minute, second);
 			boost::posix_time::ptime end_ptime = boost::posix_time::time_from_string(time_string);
 			boost::posix_time::time_duration elapsed_end_time = end_ptime - epoch;
+#if defined(WITH_MILLISECOND)
 			end_time = elapsed_end_time.total_milliseconds();
+#else
+			end_time = elapsed_end_time.total_microseconds();
+#endif
 
 			recorder_module_seek_info_t seek_info;
 			seek_info.start_time = start_time;
@@ -359,8 +379,14 @@ void debuggerking::module_core::write(uint8_t * nalu, size_t nalu_size, long lon
 {
 	if (_record_file == NULL || _record_file == INVALID_HANDLE_VALUE)
 		return;
+
+#if defined(WITH_MILLISECOND)
 	if (timestamp == 0)
-		timestamp = recorder_module::get_elapsed_msec_from_epoch();
+		timestamp = recorder_module::get_elapsed_millisec_from_epoch();
+#else
+	if (timestamp == 0)
+		timestamp = recorder_module::get_elapsed_microsec_from_epoch();
+#endif
 
 	long long file_size = recorder_module::get_file_size(_record_file);
 	if (file_size == 0)
@@ -574,7 +600,11 @@ void debuggerking::module_core::get_years(const char * content_path, const char 
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#endif
 					iter = std::find(year_vector.begin(), year_vector.end(), year);
 					if (iter == year_vector.end())
 					{
@@ -624,8 +654,11 @@ void debuggerking::module_core::get_months(const char * content_path, const char
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month, day, hour, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month, day, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month, day, hour, minute, second);
+#endif
 					if (year == year1)
 					{
 						iter = std::find(month_vector.begin(), month_vector.end(), month);
@@ -679,8 +712,11 @@ void debuggerking::module_core::get_days(const char * content_path, const char *
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day, hour, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day, hour, minute, second);
+#endif
 					if (year == year1 && month == month1)
 					{
 						iter = std::find(day_vector.begin(), day_vector.end(), day);
@@ -733,8 +769,11 @@ void debuggerking::module_core::get_hours(const char * content_path, const char 
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day1, hour, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day1, hour, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day1, hour, minute, second);
+#endif
 					if (year == year1 && month == month1 && day == day1)
 					{
 						iter = std::find(hour_vector.begin(), hour_vector.end(), hour);
@@ -787,8 +826,11 @@ void debuggerking::module_core::get_minutes(const char * content_path, const cha
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day1, hour1, minute, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day1, hour1, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day1, hour1, minute, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1)
 					{
 						gathered_timestamp_iter = std::find(gathered_timestamp.begin(), gathered_timestamp.end(), timestamp);
@@ -869,7 +911,11 @@ void debuggerking::module_core::get_minutes(const char * content_path, const cha
 
 				if (nalu_type == 0) //sps
 				{
-					recorder_module::get_time_from_elapsed_msec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute, second);
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1)
 					{
 						iter = std::find(minute_vector.begin(), minute_vector.end(), minute);
@@ -923,8 +969,11 @@ void debuggerking::module_core::get_seconds(const char * content_path, const cha
 					_strset_s(dot, strlen(dot) + 1, 0x00);
 
 					long long timestamp = atoll(recorded_filename);
-					recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year1, month1, day1, hour1, minute1, second);
-
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year1, month1, day1, hour1, minute1, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year1, month1, day1, hour1, minute1, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1)
 					{
 						gathered_timestamp_iter = std::find(gathered_timestamp.begin(), gathered_timestamp.end(), timestamp);
@@ -1005,7 +1054,11 @@ void debuggerking::module_core::get_seconds(const char * content_path, const cha
 
 				if (nalu_type == 0) //sps
 				{
-					recorder_module::get_time_from_elapsed_msec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute1, second);
+#if defined(WITH_MILLISECOND)
+					recorder_module::get_time_from_elapsed_millisec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute1, second);
+#else
+					recorder_module::get_time_from_elapsed_microsec_from_epoch(nalu_timestamp, year1, month1, day1, hour1, minute1, second);
+#endif
 					if (year == year1 && month == month1 && day == day1 && hour == hour1 && minute == minute1)
 					{
 						iter = std::find(second_vector.begin(), second_vector.end(), second);
@@ -1247,8 +1300,13 @@ HANDLE debuggerking::module_core::open_recorder_file(const char * storage, const
 		if (::GetFileAttributesA(folder) == INVALID_FILE_ATTRIBUTES)
 			::CreateDirectoryA(folder, NULL);
 
+#if defined(WITH_MILLISECOND)
 		if (timestamp == 0)
-			timestamp = recorder_module::get_elapsed_msec_from_epoch();
+			timestamp = recorder_module::get_elapsed_millisec_from_epoch();
+#else
+		if (timestamp == 0)
+			timestamp = recorder_module::get_elapsed_microsec_from_epoch();
+#endif
 
 		_snprintf_s(filepath, MAX_PATH, "%s%s\\%lld.dat", storage, uuid, timestamp);
 		f = ::CreateFileA(filepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -1328,8 +1386,14 @@ bool debuggerking::module_core::write(HANDLE f, uint8_t * nalu, size_t nalu_size
 {
 	if (f == NULL || f == INVALID_HANDLE_VALUE)
 		return false;
+
+#if defined(WITH_MILLISECOND)
 	if (timestamp == 0)
-		timestamp = recorder_module::get_elapsed_msec_from_epoch();
+		timestamp = recorder_module::get_elapsed_millisec_from_epoch();
+#else
+	if (timestamp == 0)
+		timestamp = recorder_module::get_elapsed_microsec_from_epoch();
+#endif
 
 	long long file_size = recorder_module::get_file_size(f);
 	if (file_size == 0)

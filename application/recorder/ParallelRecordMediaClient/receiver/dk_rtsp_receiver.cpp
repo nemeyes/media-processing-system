@@ -259,7 +259,27 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 		decoded.data = _video_buffer;
 		decoded.data_capacity = VIDEO_BUFFER_SIZE;
 
-		if ((data[4] & 0x1F) == 0x06)
+		//sei[27] = { 0x06, 0x05, 0x08, 0xbc, 0x97, 0xb8, 0x4d, 0x96, 0x9f, 0x48, 0xb9, 0xbc, 0xe4, 0x7c, 0x1c, 0x1a, 0x39, 0x2f, 0x37, 00, 00, 00, 00, 00, 00, 00, 00 };
+		//sei[27] = { , , , , , , , , , , , , , , , , 00, 00, 00, 00, 00, 00, 00, 00 };
+		if (((data[4] & 0x1F) == 0x06) && 
+			(data[5] == 0x05) && 
+			(data[6] == 0x08) &&
+			(data[7] == 0xbc) &&
+			(data[8] == 0x97) &&
+			(data[9] == 0xb8) &&
+			(data[10] == 0x4d) &&
+			(data[11] == 0x96) &&
+			(data[12] == 0x9f) &&
+			(data[13] == 0x48) &&
+			(data[14] == 0xb9) &&
+			(data[15] == 0xbc) &&
+			(data[16] == 0xe4) &&
+			(data[17] == 0x7c) &&
+			(data[18] == 0x1c) &&
+			(data[19] == 0x1a) &&
+			(data[20] == 0x39) &&
+			(data[21] == 0x2f) &&
+			(data[22] == 0x37))
 		{
 			/*sei[19] = (timestamp & 0xFF00000000000000) >> 56;
 			sei[20] = (timestamp & 0x00FF000000000000) >> 48;
@@ -274,7 +294,11 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 			memcpy(&timestamp, &sei[19], sizeof(timestamp));
 
 			int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#if defined(WITH_MILLISECOND)
+			debuggerking::recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#else
+			debuggerking::recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year, month, day, hour, minute, second);
+#endif
 			wchar_t time[MAX_PATH] = { 0 };
 			_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
 

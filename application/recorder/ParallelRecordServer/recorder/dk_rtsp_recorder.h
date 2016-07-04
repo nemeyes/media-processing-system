@@ -45,12 +45,6 @@ namespace debuggerking
 		void clear_pps(void);
 
 	private:
-#if !defined(WITH_RECORDER_MODULE)
-		static long long get_elapsed_msec_from_epoch(void);
-		static void get_time_from_elapsed_msec_from_epoch(long long elapsed_time, char * time_string, int time_string_size);
-#endif
-
-	private:
 		char _storage[260];
 		char _uuid[260];
 
