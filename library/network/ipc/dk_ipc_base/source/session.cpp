@@ -22,11 +22,6 @@ ic::session::session(abstract_ipc_client * processor, SOCKET fd)
 	, _associated(false)
 	, _hb_retry_count(3)
 {
-
-#if defined(WITH_WORKING_AS_SERVER)
-	_timer_queue = ::CreateTimerQueue();
-#endif
-
 	memset(_send_buffer, 0x00, MAX_SEND_BUFFER_SIZE);
 	memset(_recv_buffer, 0x00, MAX_RECV_BUFFER_SIZE);
 	_recv_context = allocate_io_context();
@@ -50,14 +45,17 @@ ic::session::session(abstract_ipc_client * processor, SOCKET fd)
 
 ic::session::~session(void)
 {
-	::CloseHandle(_send_lock);
-	::CloseHandle(_recv_lock);
+	if (_send_lock != NULL && _send_lock!=INVALID_HANDLE_VALUE)
+	{
+		::CloseHandle(_send_lock);
+		_send_lock = INVALID_HANDLE_VALUE;
+	}
+	if (_recv_lock != NULL && _recv_lock != INVALID_HANDLE_VALUE)
+	{
+		::CloseHandle(_recv_lock);
+		_recv_lock = INVALID_HANDLE_VALUE;
+	}
 	shutdown_fd();
-
-#if defined(WITH_WORKING_AS_SERVER)
-	::DeleteTimerQueue(_timer_queue);
-	_timer_queue = INVALID_HANDLE_VALUE;
-#endif
 }
 
 bool ic::session::shutdown_fd(void)
@@ -66,6 +64,13 @@ bool ic::session::shutdown_fd(void)
 	if (_fd == INVALID_SOCKET) /* Already clsoed */
 		return false;
 
+#if 1
+	shutdown(_fd, SD_BOTH);
+	clear_send_queue();
+	clear_recv_queue();
+	_fd = INVALID_SOCKET;
+	return true;
+#else
 	LINGER linger;
 	linger.l_onoff = 1;
 	linger.l_linger = 0;
@@ -86,6 +91,8 @@ bool ic::session::shutdown_fd(void)
 		_fd = INVALID_SOCKET;
 		return false;
 	}
+#endif
+
 #else
 	int fd = _fd;
 	if (fd <= 0) /* Already clsoed */
@@ -117,7 +124,6 @@ void ic::session::push_send_packet(const char * dst, const char * src, int32_t c
 {
 	if (_send_queue.size()>size_t(_max_send_queue_size))
 	{
-		//ipc_elog("maximum send buffer size[%d] is exceeded[%zd].\n", _max_send_queue_size, _send_queue.size());
 		if (post_send)
 			_processor->data_request(shared_from_this());
 		return;
@@ -127,52 +133,72 @@ void ic::session::push_send_packet(const char * dst, const char * src, int32_t c
 	int32_t pkt_header_size = sizeof(ic::packet_header_t);
 	int32_t pkt_payload_size = _mtu - pkt_header_size;
 	int32_t pkt_size = _mtu;
-	int32_t pkt_count = length / (_mtu - pkt_header_size);
-	int32_t last_pkt_size = length % (_mtu - pkt_header_size);
+
+	int32_t pkt_count = 0;
+	int32_t last_pkt_size = 0;
+
+	if (length > 0)
+	{
+		pkt_count = length / (_mtu - pkt_header_size);
+		last_pkt_size = length % (_mtu - pkt_header_size);
+	}
+	else
+	{
+		pkt_count = 1;
+		last_pkt_size = 0;
+	}
+
 	if (last_pkt_size>0)
 		pkt_count++;
 	if (pkt_count<1)
 		return;
 
-	int pkt_seed = rand();
-	for (int i = 0; i<pkt_count; i++)
-	{
-		ic::packet_queue_t * queue_pkt = static_cast<ic::packet_queue_t*>(malloc(sizeof(ic::packet_queue_t)));
-		memset(queue_pkt, 0x00, sizeof(ic::packet_queue_t));
 
-		if (i == (pkt_count - 1))//last packet			
+	{
+		scoped_lock lock(_send_lock);
+		int pkt_seed = rand();
+		for (int i = 0; i < pkt_count; i++)
 		{
-			pkt_payload_size = last_pkt_size;
-			strncpy_s(queue_pkt->header.dst, dst, sizeof(queue_pkt->header.dst));
-			strncpy_s(queue_pkt->header.src, src, sizeof(queue_pkt->header.src));
-			queue_pkt->header.seed = pkt_seed;
-			queue_pkt->header.seq = i;
-			queue_pkt->header.flag = FLAG_PKT_END;
-			queue_pkt->header.command = cmd;
-			queue_pkt->header.length = pkt_payload_size;
-			queue_pkt->msg = static_cast<char*>(malloc(queue_pkt->header.length));
-			memcpy(queue_pkt->msg, pkt_payload, queue_pkt->header.length);
-		}
-		else
-		{
-			strncpy_s(queue_pkt->header.dst, dst, sizeof(queue_pkt->header.dst));
-			strncpy_s(queue_pkt->header.src, src, sizeof(queue_pkt->header.src));
-			queue_pkt->header.seed = pkt_seed;
-			queue_pkt->header.seq = i;
-			if (i == 0)
-				queue_pkt->header.flag = FLAG_PKT_BEGIN;
+			ic::packet_queue_t * queue_pkt = static_cast<ic::packet_queue_t*>(malloc(sizeof(ic::packet_queue_t)));
+			memset(queue_pkt, 0x00, sizeof(ic::packet_queue_t));
+
+			if (i == (pkt_count - 1))//last packet			
+			{
+				pkt_payload_size = last_pkt_size;
+				strncpy_s(queue_pkt->header.dst, dst, sizeof(queue_pkt->header.dst));
+				strncpy_s(queue_pkt->header.src, src, sizeof(queue_pkt->header.src));
+				queue_pkt->header.seed = pkt_seed;
+				queue_pkt->header.seq = i;
+				queue_pkt->header.flag = FLAG_PKT_END;
+				queue_pkt->header.command = cmd;
+				queue_pkt->header.length = pkt_payload_size;
+				if (queue_pkt->header.length > 0)
+				{
+					queue_pkt->msg = static_cast<char*>(malloc(queue_pkt->header.length));
+					memcpy(queue_pkt->msg, pkt_payload, queue_pkt->header.length);
+				}
+			}
 			else
-				queue_pkt->header.flag = FLAG_PKT_PLAY;
-			queue_pkt->header.command = cmd;
-			queue_pkt->header.length = pkt_payload_size;
-			queue_pkt->msg = static_cast<char*>(malloc(queue_pkt->header.length));
-			memcpy(queue_pkt->msg, pkt_payload, queue_pkt->header.length);
-			pkt_payload += pkt_payload_size;
-		}
-		if (queue_pkt && queue_pkt->header.length>0)
-		{
-			scoped_lock lock(_send_lock);
-			_send_queue.push_back(queue_pkt);
+			{
+				strncpy_s(queue_pkt->header.dst, dst, sizeof(queue_pkt->header.dst));
+				strncpy_s(queue_pkt->header.src, src, sizeof(queue_pkt->header.src));
+				queue_pkt->header.seed = pkt_seed;
+				queue_pkt->header.seq = i;
+				if (i == 0)
+					queue_pkt->header.flag = FLAG_PKT_BEGIN;
+				else
+					queue_pkt->header.flag = FLAG_PKT_PLAY;
+				queue_pkt->header.command = cmd;
+				queue_pkt->header.length = pkt_payload_size;
+
+				queue_pkt->msg = static_cast<char*>(malloc(queue_pkt->header.length));
+				memcpy(queue_pkt->msg, pkt_payload, queue_pkt->header.length);
+				pkt_payload += pkt_payload_size;
+			}
+			if (queue_pkt)
+			{
+				_send_queue.push_back(queue_pkt);
+			}
 		}
 	}
 	if (post_send)
@@ -218,7 +244,8 @@ void ic::session::front_send_packet(char * msg, int32_t & length)
 		{
 			int32_t packet_header_size = sizeof(ic::packet_header_t);
 			memcpy(msg, &(queue_pkt->header), packet_header_size);
-			memcpy(msg + packet_header_size, queue_pkt->msg, queue_pkt->header.length);
+			if (queue_pkt->header.length>0)
+				memcpy(msg + packet_header_size, queue_pkt->msg, queue_pkt->header.length);
 			length = packet_header_size + queue_pkt->header.length;
 		}
 	}
@@ -261,9 +288,8 @@ void ic::session::push_recv_packet(const char * msg, int32_t length)
 		if (header.length>(_recv_buffer_index - pkt_header_size))
 			return;
 
-		if (header.length < 1)
+		if (header.length < 0)
 			return;
-
 
 		bool exist = false;
 		ic::packet_queue_t * prev_queue_pkt = 0;
@@ -320,19 +346,21 @@ void ic::session::push_recv_packet(const char * msg, int32_t length)
 		{
 			queue_pkt = static_cast<ic::packet_queue_t*>(malloc(sizeof(ic::packet_queue_t)));
 			memset(queue_pkt, 0x00, sizeof(ic::packet_queue_t));
+			memcpy(queue_pkt->header.dst, header.dst, sizeof(queue_pkt->header.dst));
+			memcpy(queue_pkt->header.src, header.src, sizeof(queue_pkt->header.src));
 			queue_pkt->header.seed = header.seed;
 			queue_pkt->header.seq = header.seq;
 			queue_pkt->header.flag = header.flag;
 			queue_pkt->header.command = header.command;
 			queue_pkt->header.length = header.length;
-			if (queue_pkt->header.length>0)
+			if (queue_pkt->header.length > 0)
 			{
 				queue_pkt->msg = static_cast<char*>(malloc(queue_pkt->header.length));
 				memmove(queue_pkt->msg, _recv_buffer + pkt_header_size, header.length);
-
-				_recv_buffer_index = _recv_buffer_index - (pkt_header_size + header.length);
-				memmove(_recv_buffer, _recv_buffer + (pkt_header_size + header.length), _recv_buffer_index);
 			}
+
+			_recv_buffer_index = _recv_buffer_index - (pkt_header_size + header.length);
+			memmove(_recv_buffer, _recv_buffer + (pkt_header_size + header.length), _recv_buffer_index);
 
 			if (queue_pkt->header.flag & FLAG_PKT_END)
 			{

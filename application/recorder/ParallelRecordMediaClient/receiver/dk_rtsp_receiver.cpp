@@ -14,11 +14,34 @@ debuggerking::rtsp_receiver::rtsp_receiver(rtsp_user_unregistered_sei__callback 
 	, _last_hour(0)
 	, _last_minute(0)
 	, _last_second(0)
-{}
+#if defined(WITH_TIMED_DISCONNECT)
+	, _thread(INVALID_HANDLE_VALUE)
+	, _run(false)
+	, _disconnect_thread(INVALID_HANDLE_VALUE)
+	, _disconnect_run(false)
+#endif
+{
+#if defined(WITH_TIMED_DISCONNECT)
+	unsigned int thread_id = 0;
+	_disconnect_thread = (HANDLE)_beginthreadex(NULL, 0, debuggerking::rtsp_receiver::disconnect_process_cb, this, 0, &thread_id);
+	for (int32_t i = 0; !_disconnect_run || i < 50; i++)
+		::Sleep(10);
+#endif
+}
 
 debuggerking::rtsp_receiver::~rtsp_receiver(void)
 {
-		
+#if defined(WITH_TIMED_DISCONNECT)
+	_disconnect_run = false;
+	if (_disconnect_thread != INVALID_HANDLE_VALUE)
+	{
+		if (::WaitForSingleObject(_disconnect_thread, INFINITE) == WAIT_OBJECT_0)
+		{
+			::CloseHandle(_disconnect_thread);
+		}
+		_disconnect_thread = INVALID_HANDLE_VALUE;
+	}
+#endif
 }
 
 int32_t debuggerking::rtsp_receiver::enable_osd(bool enable)
@@ -45,12 +68,60 @@ int32_t debuggerking::rtsp_receiver::get_last_time(int32_t & year, int32_t & mon
 	return rtsp_receiver::err_code_t::success;
 }
 
+#if defined(WITH_TIMED_DISCONNECT)
+int32_t debuggerking::rtsp_receiver::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, int32_t second, HWND hwnd)
+{
+	if (!url || strlen(url) < 1)
+		return rtsp_receiver::err_code_t::fail;
+
+	strncpy_s(_url, url, sizeof(_url));
+	if (username && strlen(username)>0)
+		strncpy_s(_username, username, sizeof(_username));
+	if (password && strlen(password)>0)
+		strncpy_s(_password, password, sizeof(_password));
+
+	_transport_option = transport_option;
+	_recv_option = recv_option;
+	_scale = scale;
+	_repeat = repeat;
+	_second = second;
+	_hwnd = hwnd;
+
+	unsigned int thrdaddr = 0;
+	_thread = (HANDLE)::_beginthreadex(NULL, 0, debuggerking::rtsp_receiver::process_callback, this, 0, &thrdaddr);
+	return rtsp_receiver::err_code_t::success;
+}
+#else
 int32_t debuggerking::rtsp_receiver::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, float scale, bool repeat, HWND hwnd)
 {
 	_hwnd = hwnd;
 	return rtsp_client::play(url, username, password, transport_option, recv_option, 60, scale, repeat);
 }
+#endif
 
+#if defined(WITH_TIMED_DISCONNECT)
+int32_t debuggerking::rtsp_receiver::stop(void)
+{
+	if (_thread && _thread != INVALID_HANDLE_VALUE)
+	{
+		_run = false;
+		::WaitForSingleObject(_thread, INFINITE);
+		::CloseHandle(_thread);
+		_thread = INVALID_HANDLE_VALUE;
+	}
+
+	memset(_url, 0x00, sizeof(_url));
+	memset(_username, 0x00, sizeof(_username));
+	memset(_password, 0x00, sizeof(_password));
+
+	_transport_option = debuggerking::rtsp_receiver::rtp_over_tcp;
+	_recv_option = debuggerking::rtsp_receiver::recv_option_t::video;
+	_repeat = false;
+	_second = 0;
+
+	return rtsp_receiver::err_code_t::success;
+}
+#else
 int32_t debuggerking::rtsp_receiver::stop(void)
 {
 	int32_t status = rtsp_client::stop();
@@ -105,6 +176,7 @@ int32_t debuggerking::rtsp_receiver::stop(void)
 
 	return status;
 }
+#endif
 
 void debuggerking::rtsp_receiver::on_begin_video(int32_t smt, uint8_t * vps, size_t vpssize, uint8_t * sps, size_t spssize, uint8_t * pps, size_t ppssize, const uint8_t * data, size_t data_size, long long timestamp)
 {
@@ -299,11 +371,11 @@ void debuggerking::rtsp_receiver::on_recv_video(int32_t smt, const uint8_t * dat
 #else
 			debuggerking::recorder_module::get_time_from_elapsed_microsec_from_epoch(timestamp, year, month, day, hour, minute, second);
 #endif
-			wchar_t time[MAX_PATH] = { 0 };
-			_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
-
 			if (_osd_enable)
 			{
+				wchar_t time[MAX_PATH] = { 0 };
+				_snwprintf_s(time, sizeof(time) / sizeof(wchar_t), L"%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, month, day, hour, minute, second);
+
 				video_renderer->enable_osd_text(true);
 				video_renderer->set_osd_text_color(0xFF, 0xFF, 0xFF);
 				if (_osd_x == -1 || _osd_y == -1)
@@ -508,4 +580,61 @@ void debuggerking::rtsp_receiver::on_recv_audio(int32_t smt, const uint8_t * dat
 			_audio_renderer->render(&render);
 		}
 	}
+}
+
+unsigned __stdcall debuggerking::rtsp_receiver::process_callback(void * param)
+{
+	rtsp_receiver * self = static_cast<rtsp_receiver*>(param);
+	self->process();
+	return 0;
+}
+
+void debuggerking::rtsp_receiver::process(void)
+{
+	int status = rtsp_receiver::err_code_t::fail;
+	status = rtsp_client::play(_url, _username, _password, _transport_option, _recv_option, 3, _scale, _repeat);
+	if (status == rtsp_receiver::err_code_t::success)
+	{
+		_run = true;
+		long long last_timestamp = 0;
+		size_t timestamp_unchange_count = 0;
+
+		if (_second == 0)
+		{
+			while (_run)
+				::Sleep(1000);
+		}
+		else
+		{
+			for (int32_t index = 0; index < _second && _run; index++)
+				::Sleep(1000);
+		}
+
+		//status = rtsp_client::stop();
+		_do_disconnect = true;
+	}
+	_run = false;
+}
+
+
+unsigned debuggerking::rtsp_receiver::disconnect_process_cb(void * param)
+{
+	debuggerking::rtsp_receiver * self = static_cast<debuggerking::rtsp_receiver*>(param);
+	self->disconnect_process();
+	return 0;
+}
+
+void debuggerking::rtsp_receiver::disconnect_process(void)
+{
+	_disconnect_run = true;
+	while (_disconnect_run)
+	{
+		if (_do_disconnect)
+		{
+			rtsp_client::stop();
+			_do_disconnect = false;
+		}
+		::Sleep(10);
+	}
+	rtsp_client::stop();
 }

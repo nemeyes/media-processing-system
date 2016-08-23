@@ -22,9 +22,7 @@ ic::abstract_ipc_server::abstract_ipc_server(dk_ipc_server * front, const char *
 	::SetEvent(_session_lock);
 
 	add_command(new assoc_req_cmd(this));
-#if defined(WITH_LEAVE_CMD)
-	add_command(new leave_req_cmd(this));
-#endif
+	add_command(new leave_ind_cmd(this));
 #if defined(WITH_KEEPALIVE)
 	add_command(new keepalive_req_cmd(this));
 	add_command(new keepalive_res_cmd(this));
@@ -48,9 +46,7 @@ ic::abstract_ipc_server::abstract_ipc_server(dk_ipc_server * front)
 	::SetEvent(_session_lock);
 
 	add_command(new assoc_req_cmd(this));
-#if defined(WITH_LEAVE_CMD)
-	add_command(new leave_req_cmd(this));
-#endif
+	add_command(new leave_ind_cmd(this));
 #if defined(WITH_KEEPALIVE)
 	add_command(new keepalive_req_cmd(this));
 	add_command(new keepalive_res_cmd(this));
@@ -107,6 +103,11 @@ bool ic::abstract_ipc_server::stop(void)
 
 void ic::abstract_ipc_server::data_indication_callback(const char * dst, const char * src, int32_t command_id, const char * msg, size_t length, std::shared_ptr<ic::session> session)
 {
+	if (!strncmp(src, SERVER_UUID, strlen(SERVER_UUID)) || !strncmp(src, uuid(), strlen(uuid()))) //src의 주소가 SERVER_UUID이거나 서버자체의 할당된 UUID 일경우, 잘못된 src이므로 패킷을 버린다.
+		return;
+
+
+
 	std::map<int32_t, abstract_command*>::iterator iter = _commands.find(command_id);
 	if (iter != _commands.end())
 	{
@@ -114,6 +115,21 @@ void ic::abstract_ipc_server::data_indication_callback(const char * dst, const c
 		{
 			abstract_command * command = (*iter).second;
 			command->execute(dst, src, command_id, msg, length, session);
+		}
+	}
+	else
+	{
+		std::shared_ptr<ic::session> session = nullptr;
+		{
+			std::map<std::string, std::shared_ptr<ic::session>>::iterator iter;
+			scoped_lock mutex(_session_lock);
+			iter = _sessions.find(dst);
+			if (iter != _sessions.end())
+				session = iter->second;
+		}
+		if (session)
+		{
+			session->push_send_packet(dst, src, command_id, (char*)msg, length);
 		}
 	}
 }
@@ -192,7 +208,7 @@ bool ic::abstract_ipc_server::unregister_client(const char * uuid)
 	std::map<std::string, std::shared_ptr<ic::session>>::iterator iter = _sessions.find(uuid);
 	if (iter != _sessions.end())
 	{
-		_server->close(iter->second);
+		//_server->close(iter->second);
 		_sessions.erase(iter);
 		return true;
 	}
@@ -311,10 +327,7 @@ void ic::abstract_ipc_server::process(void)
 		std::shared_ptr<ic::session> session = (*iter).second;
 		if (session)
 		{
-			CMD_LEAVE_PAYLOAD_T payload;
-			memset(&payload, 0x00, sizeof(CMD_LEAVE_PAYLOAD_T));
-			payload.code = CMD_ERR_CODE_SUCCESS;
-			session->push_send_packet(session->uuid(), _uuid, CMD_LEAVE_INDICATION, reinterpret_cast<char*>(&payload), sizeof(CMD_LEAVE_PAYLOAD_T));
+			session->push_send_packet(session->uuid(), _uuid, CMD_LEAVE_INDICATION, nullptr, 0);
 		}
 	}
 	_server->stop();

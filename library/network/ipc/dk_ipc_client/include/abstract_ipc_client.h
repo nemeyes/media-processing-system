@@ -15,11 +15,12 @@ namespace ic
 		friend class iocp_client;
 	public:
 		abstract_ipc_client(dk_ipc_client * front);
-		abstract_ipc_client(const char * uuid, dk_ipc_client * front);
+		abstract_ipc_client(dk_ipc_client * front, const char * uuid);
 		virtual ~abstract_ipc_client(void);
 
 		bool connect(const char * address, int32_t port_number, bool retry_connection = true);
-		bool disconnect(bool retry_connection = false);
+		bool disconnect(void);
+		bool clear(void);
 
 		const char * uuid(void);
 		void uuid(const char * uuid);
@@ -41,6 +42,9 @@ namespace ic
 		static unsigned __stdcall process_cb(void * param);
 		void process(void);
 
+		static unsigned __stdcall disconnect_process_cb(void * param);
+		void disconnect_process(void);
+
 	private:
 		dk_ipc_client * _front;
 		char _uuid[64];
@@ -58,6 +62,9 @@ namespace ic
 		bool _retry_connection;
 		bool _connected;
 
+		HANDLE _disconnect_thread;
+		bool _disconnect_run;
+		bool _do_disconnect;
 	};
 };
 

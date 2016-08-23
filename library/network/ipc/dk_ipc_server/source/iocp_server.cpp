@@ -122,7 +122,7 @@ bool ic::iocp_server::send_completion_callback(std::shared_ptr<ic::session> sess
 bool ic::iocp_server::other_completion_callback(std::shared_ptr<ic::session> session, int32_t nbytes)
 {
 	// 현재 여기로 오면 Recv , Send 이외의 이상한 동작을 가리킴 소켓 끊어버리자.
-	close(session);
+	//close(session);
 	return true;
 }
 
@@ -142,7 +142,7 @@ bool ic::iocp_server::post_recv(std::shared_ptr<ic::session> session)
 			int err_code = WSAGetLastError();
 			if (err_code != WSA_IO_PENDING)
 			{
-				close(session);
+				//close(session);
 				status = false;
 			}
 		}
@@ -170,7 +170,7 @@ bool ic::iocp_server::post_send(std::shared_ptr<ic::session> session)
 				int32_t err_code = WSAGetLastError();
 				if (err_code != WSA_IO_PENDING)
 				{
-					close(session);
+					//close(session);
 					status = false;
 				}
 			}

@@ -99,11 +99,15 @@
     <ClInclude Include="..\..\..\..\dk_ffmpeg_base\include\dk_ffmpeg_initializer.h" />
     <ClInclude Include="include\dk_ff_tsmuxer.h" />
     <ClInclude Include="include\ffmpeg_tsmuxer.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\dk_ffmpeg_base\source\dk_ffmpeg_initializer.cpp" />
     <ClCompile Include="source\dk_ff_tsmuxer.cpp" />
     <ClCompile Include="source\ffmpeg_tsmuxer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dk_ff_tsmuxer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

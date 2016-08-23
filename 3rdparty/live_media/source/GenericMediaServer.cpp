@@ -22,10 +22,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "GenericMediaServer.hh"
 #include <GroupsockHelper.hh>
 
-#if defined(DEBUG)
-#include <dk_log4cplus_logger.h>
-#endif
-
 ////////// GenericMediaServer implementation //////////
 
 void GenericMediaServer::addServerMediaSession(ServerMediaSession* serverMediaSession) {
@@ -283,9 +279,10 @@ GenericMediaServer::ClientSession::~ClientSession() {
 
 void GenericMediaServer::ClientSession::noteLiveness() {
 #ifdef DEBUG
-  char const* streamName = (fOurServerMediaSession == NULL) ? "???" : fOurServerMediaSession->streamName();
-  debuggerking::log4cplus_logger::make_debug_log("live555", "Client session (id \"%08X\", stream name \"%s\"): Liveness indication", fOurSessionId, streamName);
-  //fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\"): Liveness indication\n", fOurSessionId, streamName);
+  char const* streamName
+    = (fOurServerMediaSession == NULL) ? "???" : fOurServerMediaSession->streamName();
+  fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\"): Liveness indication\n",
+	  fOurSessionId, streamName);
 #endif
   if (fOurServer.fReclamationSeconds > 0) {
     envir().taskScheduler().rescheduleDelayedTask(fLivenessCheckTask,

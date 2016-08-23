@@ -33,9 +33,6 @@
     <ClInclude Include="receiver\dk_bit_vector.h">
       <Filter>receiver</Filter>
     </ClInclude>
-    <ClInclude Include="receiver\dk_rtmp_receiver.h">
-      <Filter>receiver</Filter>
-    </ClInclude>
     <ClInclude Include="receiver\dk_rtsp_receiver.h">
       <Filter>receiver</Filter>
     </ClInclude>
@@ -66,9 +63,6 @@
       <Filter>receiver</Filter>
     </ClCompile>
     <ClCompile Include="receiver\dk_bit_vector.cpp">
-      <Filter>receiver</Filter>
-    </ClCompile>
-    <ClCompile Include="receiver\dk_rtmp_receiver.cpp">
       <Filter>receiver</Filter>
     </ClCompile>
     <ClCompile Include="receiver\dk_rtsp_receiver.cpp">

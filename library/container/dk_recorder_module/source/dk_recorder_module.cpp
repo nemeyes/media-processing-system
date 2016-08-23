@@ -151,13 +151,17 @@ void debuggerking::recorder_module::get_time_from_elapsed_microsec_from_epoch(lo
 {
 	boost::posix_time::time_duration elapsed = boost::posix_time::microsec(elapsed_time);
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-	boost::posix_time::ptime current_time = epoch + elapsed;
-	year = current_time.date().year();
-	month = current_time.date().month();
-	day = current_time.date().day();
-	hour = current_time.time_of_day().hours();
-	minute = current_time.time_of_day().minutes();
-	second = current_time.time_of_day().seconds();
+	long long current_elasped_time = get_elapsed_microsec_from_epoch();
+	if (elapsed_time > 0 && elapsed_time <= current_elasped_time)
+	{
+		boost::posix_time::ptime current_time = epoch + elapsed;
+		year = current_time.date().year();
+		month = current_time.date().month();
+		day = current_time.date().day();
+		hour = current_time.time_of_day().hours();
+		minute = current_time.time_of_day().minutes();
+		second = current_time.time_of_day().seconds();
+	}
 }
 
 long long debuggerking::recorder_module::get_elapsed_millisec_from_epoch(void)
@@ -194,13 +198,18 @@ void debuggerking::recorder_module::get_time_from_elapsed_millisec_from_epoch(lo
 {
 	boost::posix_time::time_duration elapsed = boost::posix_time::millisec(elapsed_time);
 	boost::posix_time::ptime epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-	boost::posix_time::ptime current_time = epoch + elapsed;
-	year = current_time.date().year();
-	month = current_time.date().month();
-	day = current_time.date().day();
-	hour = current_time.time_of_day().hours();
-	minute = current_time.time_of_day().minutes();
-	second = current_time.time_of_day().seconds();
+
+	long long current_elasped_time = get_elapsed_millisec_from_epoch();
+	if (elapsed_time > 0 && elapsed_time <= current_elasped_time)
+	{
+		boost::posix_time::ptime current_time = epoch + elapsed;
+		year = current_time.date().year();
+		month = current_time.date().month();
+		day = current_time.date().day();
+		hour = current_time.time_of_day().hours();
+		minute = current_time.time_of_day().minutes();
+		second = current_time.time_of_day().seconds();
+	}
 }
 
 

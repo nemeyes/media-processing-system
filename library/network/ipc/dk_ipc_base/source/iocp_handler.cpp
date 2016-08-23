@@ -109,25 +109,25 @@ void ic::iocp_handler::create_thread_pool(void)
 
 void ic::iocp_handler::close_thread_pool(void)
 {
-	//#pragma omp parallel
+	#pragma omp parallel
 	{
 		for (int32_t i = 0; i < _number_of_threads; i++)
 		{
-			//#pragma omp single nowait 
+			#pragma omp single nowait 
 			if (!post_completion_status(KILL_THREAD))
 				i--;
 		}
 	}
 
-	//#pragma omp parallel
+	#pragma omp parallel
 	std::vector<HANDLE>::iterator iter;
 	for (iter = _threads.begin(); iter != _threads.end(); iter++)
 	{
-		//#pragma omp single nowait 
+		#pragma omp single nowait 
 		HANDLE thread = (*iter);
 		if (thread != INVALID_HANDLE_VALUE)
 		{
-			::WaitForSingleObjectEx(thread, INFINITE, FALSE);
+			::WaitForSingleObject(thread, INFINITE);
 			::CloseHandle(thread);
 		}
 	}

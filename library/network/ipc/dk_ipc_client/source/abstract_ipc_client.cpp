@@ -12,58 +12,76 @@ ic::abstract_ipc_client::abstract_ipc_client(dk_ipc_client * front)
 	, _connected(false)
 	, _run(false)
 {
-	memset(_uuid, 0x00, sizeof(_uuid));
+	memcpy(_uuid, UNDEFINED_UUID, sizeof(_uuid));
 	memset(_address, 0x00, sizeof(_address));
 
 	_client = new iocp_client(this);
 	_client->initialize();
 
+	unsigned int thread_id = 0;
+	_disconnect_thread = (HANDLE)_beginthreadex(NULL, 0, ic::abstract_ipc_client::disconnect_process_cb, this, 0, &thread_id);
+	for (int32_t i = 0; !_disconnect_run || i < 50; i++)
+		::Sleep(10);
+
 	add_command(new assoc_res_cmd(this));
 	add_command(new leave_ind_cmd(this));
-#if defined(WITH_LEAVE_CMD)
-	add_command(new leave_res_cmd(this));
-#endif
 #if defined(WITH_KEEPALIVE)
 	add_command(new keepalive_req_cmd(this));
 	add_command(new keepalive_res_cmd(this));
 #endif
 }
 
-ic::abstract_ipc_client::abstract_ipc_client(const char * uuid, dk_ipc_client * front)
+ic::abstract_ipc_client::abstract_ipc_client(dk_ipc_client * front, const char * uuid)
 	: _front(front)
 	, _port_number(15000)
 	, _retry_connection(true)
 	, _connected(false)
 	, _run(false)
 {
-	memset(_uuid, 0x00, sizeof(_uuid));
+	memcpy(_uuid, UNDEFINED_UUID, sizeof(_uuid));
 	memset(_address, 0x00, sizeof(_address));
 
 	if (uuid && strlen(uuid)>0)
 		strncpy_s(_uuid, uuid, sizeof(_uuid));
 
+
 	_client = new iocp_client(this);
 	_client->initialize();
 
+	unsigned int thread_id = 0;
+	_disconnect_thread = (HANDLE)_beginthreadex(NULL, 0, ic::abstract_ipc_client::disconnect_process_cb, this, 0, &thread_id);
+	for (int32_t i = 0; !_disconnect_run || i < 500; i++)
+		::Sleep(1);
+
 	add_command(new assoc_res_cmd(this));
 	add_command(new leave_ind_cmd(this));
-#if defined(WITH_LEAVE_CMD)
-	add_command(new leave_res_cmd(this));
-#endif
+#if defined(WITH_KEEPALIVE)
 	add_command(new keepalive_req_cmd(this));
 	add_command(new keepalive_res_cmd(this));
+#endif
 }
 
 ic::abstract_ipc_client::~abstract_ipc_client(void)
 {
 	disconnect();
+
+	_disconnect_run = false;
+	if (_disconnect_thread != INVALID_HANDLE_VALUE)
+	{
+		if (::WaitForSingleObject(_disconnect_thread, INFINITE) == WAIT_OBJECT_0)
+		{
+			::CloseHandle(_disconnect_thread);
+		}
+		_disconnect_thread = INVALID_HANDLE_VALUE;
+	}
+
 	if (_client)
 	{
-		_client->disconnect();
+		//_client->disconnect();
 		_client->release();
 		delete _client;
+		_client = nullptr;
 	}
-	_client = nullptr;
 
 	clear_command_list();
 }
@@ -79,27 +97,31 @@ bool ic::abstract_ipc_client::connect(const char * address, int32_t port_number,
 	unsigned int thread_id = 0;
 	_thread = (HANDLE)_beginthreadex(NULL, 0, ic::abstract_ipc_client::process_cb, this, 0, &thread_id);
 	if (_thread == NULL || _thread == INVALID_HANDLE_VALUE)
-	{
 		return false;
+	for (int32_t i = 0; !_run || i < 50; i++)
+		::Sleep(10);
+
+	return true;
+}
+
+bool ic::abstract_ipc_client::disconnect(void)
+{
+	_run = false;
+	_retry_connection = false;
+	if (_thread != INVALID_HANDLE_VALUE)
+	{
+		if (::WaitForSingleObject(_thread, INFINITE) == WAIT_OBJECT_0)
+		{
+			::CloseHandle(_thread);
+		}
+		_thread = INVALID_HANDLE_VALUE;
 	}
 	return true;
 }
 
-bool ic::abstract_ipc_client::disconnect(bool retry_connection)
+bool ic::abstract_ipc_client::clear(void)
 {
-	_retry_connection = retry_connection;
-	_run = false;
-	if (!_retry_connection)
-	{
-		if (_thread != INVALID_HANDLE_VALUE)
-		{
-			if (::WaitForSingleObject(_thread, INFINITE) == WAIT_OBJECT_0)
-			{
-				::CloseHandle(_thread);
-			}
-			_thread = INVALID_HANDLE_VALUE;
-		}
-	}
+	_do_disconnect = true;
 	return true;
 }
 
@@ -202,14 +224,17 @@ void ic::abstract_ipc_client::process(void)
 	{
 		_session = _client->connect(_address, _port_number);
 		_run = true;
-		while (_run && _session)
+		DWORD msleep = 500;
+		long long elapsed_millisec = 0;
+		while (_run)
 		{
-			if (!_session->assoc_flag())
+			if (_session)
 			{
-				CMD_ASSOC_PAYLOAD_T payload;
-				_session->push_send_packet(SERVER_UUID, _uuid, CMD_ASSOC_REQUEST, reinterpret_cast<char*>(&payload), sizeof(CMD_ASSOC_PAYLOAD_T));
-
-			}
+				if (!_session->assoc_flag() && (elapsed_millisec % 3000) == 0)
+				{
+					_session->push_send_packet(SERVER_UUID, _uuid, CMD_ASSOC_REQUEST, nullptr, 0);
+					::Sleep(3000);
+				}
 #if defined(WITH_KEEPALIVE)
 			_session->update_hb_end_time();
 			if (_session->check_hb())
@@ -221,19 +246,55 @@ void ic::abstract_ipc_client::process(void)
 				_session->update_hb_start_time();
 			}
 #endif
-			::Sleep(500);
+			}
+			else
+			{
+				break;
+			}
+			::Sleep(msleep);
+			elapsed_millisec += msleep;
 		}
 
-		_client->disconnect();
+		if (_session && _session->assoc_flag())
+			_session->push_send_packet(SERVER_UUID, _uuid, CMD_LEAVE_INDICATION, nullptr, 0);
 
-		if (_session)
-		{
-			_session->shutdown_fd();
-			leave_completion_callback(_session);
-			_session = std::shared_ptr<ic::session>();
-		}
+		_do_disconnect = true;
 
 		::Sleep(500);
+
 	} while (_retry_connection);
 }
 
+unsigned ic::abstract_ipc_client::disconnect_process_cb(void * param)
+{
+	ic::abstract_ipc_client * self = static_cast<ic::abstract_ipc_client*>(param);
+	self->disconnect_process();
+	return 0;
+}
+
+void ic::abstract_ipc_client::disconnect_process(void)
+{
+	_disconnect_run = true;
+	while (_disconnect_run)
+	{
+		if (_client && _do_disconnect)
+		{
+			if (_session)
+			{
+				_session->shutdown_fd();
+			}
+			_client->disconnect();
+			_do_disconnect = false;
+		}
+		::Sleep(10);
+	}
+
+	if (_client)
+	{
+		if (_session)
+		{
+			_session->shutdown_fd();
+		}
+		_client->disconnect();
+	}
+}

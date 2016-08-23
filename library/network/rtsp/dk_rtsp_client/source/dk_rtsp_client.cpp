@@ -9,8 +9,6 @@
 #include <cstring>
 #include "rtsp_client.h"
 #include <dk_log4cplus_logger.h>
-
-#include <dk_log4cplus_logger.h>
 #pragma comment(lib,"dk_log4cplus_logger_1.2.0.lib")
 
 debuggerking::rtsp_client::rtsp_client(void)
@@ -76,7 +74,14 @@ int32_t debuggerking::rtsp_client::stop(void)
 		}
 	}
 #if defined(WIN32)
-	::WaitForSingleObject( _worker, INFINITE );
+	if (_worker != NULL && _worker!=INVALID_HANDLE_VALUE)
+	{
+		if(::WaitForSingleObject(_worker, INFINITE)==WAIT_OBJECT_0)
+		{
+			::CloseHandle(_worker);
+			_worker = INVALID_HANDLE_VALUE;
+		}
+	}
 #else
 	pthread_join(_worker, 0);
 #endif
@@ -130,20 +135,20 @@ void debuggerking::rtsp_client::process(void)
 {
 	do
 	{
-		log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "connecting to the camera[%s]", _url);
+		log4cplus_logger::make_info_log("parallel.record.recorder", "connecting to the camera[%s]", _url);
 		TaskScheduler * sched = BasicTaskScheduler::createNew();
 		UsageEnvironment * env = BasicUsageEnvironment::createNew(*sched);
 		if (strlen(_username) > 0 && strlen(_password) > 0)
 			_live = rtsp_core::createNew(this, *env, _url, _username, _password, _transport_option, _recv_option, _recv_timeout, _scale, 0, &_kill);
 		else
 			_live = rtsp_core::createNew(this, *env, _url, 0, 0, _transport_option, _recv_option, _recv_timeout, _scale, 0, &_kill);
-		log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "connected to the camera[%s]", _url);
+		log4cplus_logger::make_info_log("parallel.record.recorder", "connected to the camera[%s]", _url);
 
 		_kill = false;
 		rtsp_core::continue_after_client_creation(_live);
 		env->taskScheduler().doEventLoop((char*)&_kill);
 
-		log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "disconnected from the camera[%s]", _url);
+		log4cplus_logger::make_info_log("parallel.record.recorder", "disconnected from the camera[%s]", _url);
 
 		if (env)
 		{

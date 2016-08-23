@@ -86,7 +86,6 @@ namespace ic
 		HANDLE _recv_lock;
 
 #if defined(WITH_WORKING_AS_SERVER)
-		HANDLE _timer_queue;
 		abstract_ipc_server * _processor;
 #else
 		abstract_ipc_client * _processor;

@@ -102,7 +102,7 @@ bool debuggerking::media_source_reader::open(const char * stream_name, long long
 			char time[260] = { 0 };
 
 			log4cplus_logger::instance()->make_info_log("parallel.record.streamer", "create rtsp session for stream[%s]", _stream_name);
-			debuggerking::recorder_module::get_time_from_elapsed_msec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
+			debuggerking::recorder_module::get_time_from_elapsed_millisec_from_epoch(elapsed_seek_time_millsec, time, sizeof(time));
 			bool result = _record_module.seek(single_media_source_path, elapsed_seek_time_millsec);
 			if (!result)
 				return false;
@@ -317,7 +317,7 @@ void debuggerking::media_source_reader::video_process(void)
 				uint8_t sei[27] = { 0x06, 0x05, 0x08, 0xbc, 0x97, 0xb8, 0x4d, 0x96, 0x9f, 0x48, 0xb9, 0xbc, 0xe4, 0x7c, 0x1c, 0x1a, 0x39, 0x2f, 0x37, 00, 00, 00, 00, 00, 00, 00, 00 };
 				memcpy(&sei[19], &timestamp, sizeof(timestamp));
 				int32_t year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-				recorder_module::get_time_from_elapsed_msec_from_epoch(timestamp, year, month, day, hour, minute, second);
+				recorder_module::get_time_from_elapsed_millisec_from_epoch(timestamp, year, month, day, hour, minute, second);
 				//sei[19] = (timestamp & 0xFF00000000000000) >> 56;
 				//sei[20] = (timestamp & 0x00FF000000000000) >> 48;
 				//sei[21] = (timestamp & 0x0000FF0000000000) >> 40;

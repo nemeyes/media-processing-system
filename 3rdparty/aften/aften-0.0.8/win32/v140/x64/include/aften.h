@@ -36,10 +36,15 @@ extern "C" {
 #include "aften-types.h"
 
 #if defined(_WIN32) && !defined(_XBOX)
- #if defined(AFTEN_BUILD_LIBRARY)
-  #define AFTEN_API __declspec(dllexport)
+
+ #if defined(WITH_AFENC_STATIC_LIB)
+  #define AFTEN_API
  #else
-  #define AFTEN_API __declspec(dllimport)
+  #if defined(AFTEN_BUILD_LIBRARY)
+   #define AFTEN_API __declspec(dllexport)
+  #else
+   #define AFTEN_API __declspec(dllimport)
+  #endif
  #endif
 #else
  #if defined(AFTEN_BUILD_LIBRARY) && defined(HAVE_GCC_VISIBILITY)

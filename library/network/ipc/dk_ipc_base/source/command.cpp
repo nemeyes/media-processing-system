@@ -63,54 +63,65 @@ ic::assoc_req_cmd::~assoc_req_cmd(void)
 
 void ic::assoc_req_cmd::execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 {
-	CMD_ASSOC_PAYLOAD_T payload;
-	memset(&payload, 0x00, sizeof(CMD_ASSOC_PAYLOAD_T));
-	memcpy(&payload, msg, sizeof(CMD_ASSOC_PAYLOAD_T));
+	if (session->assoc_flag())	//이미 Assoc이 되어 있으면 처리를 하지 않는다.
+		return;
+
+	CMD_ASSOC_RES_T res;
+	memset(&res, 0x00, sizeof(CMD_ASSOC_RES_T));
 
 	bool code = false;
-	const char * prev_uuid = _processor->check_regstered_client(session);
-	if (prev_uuid)
+	if (!strncmp(src, UNDEFINED_UUID, strlen(UNDEFINED_UUID))) //UUID값이 정의되지 않은 UUID일경우 새로 생성.
 	{
-		strcpy_s(payload.uuid, prev_uuid);
-		session->uuid(payload.uuid);
-		session->assoc_flag(true);
-		payload.code = CMD_ERR_CODE_SUCCESS;
-	}
-	else
-	{
-		UUID uuid;
-		::ZeroMemory(&uuid, sizeof(UUID));
-		::UuidCreate(&uuid);
-
+		UUID gen_uuid;
+		::ZeroMemory(&gen_uuid, sizeof(UUID));
+		::UuidCreate(&gen_uuid);
 
 		char * new_uuid = nullptr;
-		::UuidToStringA(&uuid, (RPC_CSTR*)&new_uuid);
+		::UuidToStringA(&gen_uuid, (RPC_CSTR*)&new_uuid);
 
+		std::string ret_uuid = (char *)new_uuid;
+		std::transform(ret_uuid.begin(), ret_uuid.end(), ret_uuid.begin(), toupper);
+
+		memcpy(new_uuid, ret_uuid.c_str(), ret_uuid.length());
 		if (new_uuid)
 		{
 			code = _processor->register_client(new_uuid, session);
 			if (code)
 			{
-				strcpy_s(payload.uuid, new_uuid);
-				session->uuid(payload.uuid);
+				strcpy_s(res.uuid, new_uuid);
+				session->uuid(res.uuid);
 				session->assoc_flag(true);
-				payload.code = CMD_ERR_CODE_SUCCESS;
+				res.code = CMD_ERR_CODE_SUCCESS;
 			}
 			else
-			{
-				payload.code = CMD_ERR_CODE_FAIL;
-			}
+				res.code = CMD_ERR_CODE_FAIL;
 
 			::RpcStringFreeA((RPC_CSTR*)&new_uuid);
 		}
 		else
-		{
-			payload.code = CMD_ERR_CODE_FAIL;
-		}
+			res.code = CMD_ERR_CODE_FAIL;
 	}
-	session->push_send_packet(session->uuid(), uuid(), CMD_ASSOC_RESPONSE, reinterpret_cast<char*>(&payload), sizeof(CMD_ASSOC_PAYLOAD_T));
+	else //UUID값이 정의된 경우
+	{
+		if (strlen(src)>0)
+		{
+			code = _processor->register_client(src, session);
+			if (code)
+			{
+				strcpy_s(res.uuid, src);
+				session->uuid(res.uuid);
+				session->assoc_flag(true);
+				res.code = CMD_ERR_CODE_SUCCESS;
+			}
+			else
+				res.code = CMD_ERR_CODE_FAIL;
+		}
+		else
+			res.code = CMD_ERR_CODE_FAIL;
+	}
+	session->push_send_packet(session->uuid(), uuid(), CMD_ASSOC_RESPONSE, reinterpret_cast<char*>(&res), sizeof(CMD_ASSOC_RES_T));
 	if (code)
-		_processor->assoc_completion_callback(payload.uuid, session);
+		_processor->assoc_completion_callback(res.uuid, session);
 }
 #else
 ic::assoc_res_cmd::assoc_res_cmd(abstract_ipc_client * processor)
@@ -122,9 +133,9 @@ ic::assoc_res_cmd::~assoc_res_cmd(void)
 
 void ic::assoc_res_cmd::execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 {
-	CMD_ASSOC_PAYLOAD_T payload;
-	memset(&payload, 0x00, sizeof(CMD_ASSOC_PAYLOAD_T));
-	memcpy(&payload, msg, sizeof(CMD_ASSOC_PAYLOAD_T));
+	CMD_ASSOC_RES_T payload;
+	memset(&payload, 0x00, sizeof(CMD_ASSOC_RES_T));
+	memcpy(&payload, msg, sizeof(CMD_ASSOC_RES_T));
 
 	if (payload.code == CMD_ERR_CODE_SUCCESS)
 	{
@@ -137,65 +148,27 @@ void ic::assoc_res_cmd::execute(const char * dst, const char * src, int32_t comm
 #endif
 
 #if defined(WITH_WORKING_AS_SERVER)
-#if defined(WITH_LEAVE_CMD)
-ic::leave_req_cmd::leave_req_cmd(abstract_ipc_server * processor)
-	: abstract_command(processor, CMD_LEAVE_REQUEST)
+ic::leave_ind_cmd::leave_ind_cmd(abstract_ipc_server * processor)
+	: abstract_command(processor, CMD_LEAVE_INDICATION)
 {}
-
-ic::leave_req_cmd::~leave_req_cmd(void)
-{}
-
-void ic::leave_req_cmd::execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
-{
-	CMD_LEAVE_PAYLOAD_T payload;
-	memset(&payload, 0x00, sizeof(CMD_LEAVE_PAYLOAD_T));
-	memcpy(&payload, msg, sizeof(CMD_LEAVE_PAYLOAD_T));
-
-	bool code = _processor->unregister_client(src);
-	payload.code = code ? CMD_ERR_CODE_SUCCESS : CMD_ERR_CODE_FAIL;
-
-	session->push_send_packet(session->uuid(), uuid(), CMD_LEAVE_RESPONSE, reinterpret_cast<char*>(&payload), sizeof(CMD_LEAVE_PAYLOAD_T));
-	if (code)
-		_processor->leave_completion_callback(src, session);
-}
-#endif
 #else
 ic::leave_ind_cmd::leave_ind_cmd(abstract_ipc_client * processor)
 	: abstract_command(processor, CMD_LEAVE_INDICATION)
 {}
+#endif
 
 ic::leave_ind_cmd::~leave_ind_cmd(void)
 {}
 
 void ic::leave_ind_cmd::execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 {
-	CMD_LEAVE_PAYLOAD_T payload;
-	memset(&payload, 0x00, sizeof(CMD_LEAVE_PAYLOAD_T));
-	memcpy(&payload, msg, sizeof(CMD_LEAVE_PAYLOAD_T));
+#if defined(WITH_WORKING_AS_SERVER)
 
-	session->shutdown_fd();
-	_processor->disconnect(true);
-}
-
-#if defined(WITH_LEAVE_CMD)
-ic::leave_res_cmd::leave_res_cmd(abstract_ipc_client * processor)
-	: abstract_command(processor, CMD_LEAVE_RESPONSE)
-{}
-
-ic::leave_res_cmd::~leave_res_cmd(void)
-{}
-
-void ic::leave_res_cmd::execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
-{
-	CMD_LEAVE_PAYLOAD_T payload;
-	memset(&payload, 0x00, sizeof(CMD_LEAVE_PAYLOAD_T));
-	memcpy(&payload, msg, sizeof(CMD_LEAVE_PAYLOAD_T));
-
-	session->shutdown_fd();
-	_processor->disconnect(true);
-}
+#else
+	_processor->leave_completion_callback(session);
+	_processor->clear();
 #endif
-#endif
+}
 
 #if defined(WITH_WORKING_AS_SERVER)
 ic::keepalive_req_cmd::keepalive_req_cmd(abstract_ipc_server * processor)
@@ -210,11 +183,7 @@ ic::keepalive_req_cmd::~keepalive_req_cmd(void)
 
 void ic::keepalive_req_cmd::execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session)
 {
-	CMD_KEEPALIVE_PAYLOAD_T payload;
-	memset(&payload, 0x00, sizeof(CMD_KEEPALIVE_PAYLOAD_T));
-	memcpy(&payload, msg, sizeof(CMD_KEEPALIVE_PAYLOAD_T));
-	payload.code = CMD_ERR_CODE_SUCCESS;
-	session->push_send_packet(SERVER_UUID, uuid(), CMD_KEEPALIVE_RESPONSE, reinterpret_cast<char*>(&payload), sizeof(CMD_KEEPALIVE_PAYLOAD_T));
+	session->push_send_packet(SERVER_UUID, uuid(), CMD_KEEPALIVE_RESPONSE, nullptr, 0);
 }
 
 #if defined(WITH_WORKING_AS_SERVER)

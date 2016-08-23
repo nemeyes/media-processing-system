@@ -32,6 +32,9 @@ namespace debuggerking
 		static unsigned __stdcall process_callback(void * param);
 		void process(void);
 
+		static unsigned __stdcall disconnect_process_cb(void * param);
+		void disconnect_process(void);
+
 	private:
 		rtsp_exportor_status_callback * _cb;
 		char _url[MAX_PATH];
@@ -65,6 +68,10 @@ namespace debuggerking
 
 		HANDLE _thread;
 		bool _run;
+
+		HANDLE _disconnect_thread;
+		bool _disconnect_run;
+		bool _do_disconnect;
 
 	};
 };

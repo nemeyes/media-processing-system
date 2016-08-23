@@ -3,7 +3,6 @@
 #include "dk_parallel_recorder_controller.h"
 #include "dk_parallel_recorder.h"
 #include "commands_client.h"
-#include <dk_log4cplus_logger.h>
 
 debuggerking::parallel_recorder_controller::parallel_recorder_controller(parallel_recorder_t * parallel_recorder)
 	: _parallel_recorder(parallel_recorder)
@@ -24,7 +23,8 @@ debuggerking::parallel_recorder_controller::parallel_recorder_controller(paralle
 
 debuggerking::parallel_recorder_controller::~parallel_recorder_controller(void)
 {
-
+	for (int32_t index = 0; (index < 100) && _parallel_recorder->connected; index++)
+		::Sleep(30);
 }
 
 /*
@@ -328,7 +328,7 @@ void debuggerking::parallel_recorder_controller::assoc_completion_callback(void)
 		ic::CMD_GET_RTSP_SERVER_PORT_REQ_T req;
 		data_request(SERVER_UUID, CMD_GET_RTSP_SERVER_PORT_REQUEST, (char*)&req, sizeof(req));
 
-		log4cplus_logger::make_info_log("parallel.record.client", "connection completed");
+		//log4cplus_logger::make_info_log("parallel.record.client", "connection completed");
 		_parallel_recorder->connected = true;
 	}
 }
@@ -337,7 +337,7 @@ void debuggerking::parallel_recorder_controller::leave_completion_callback(void)
 {
 	if (_parallel_recorder && _parallel_recorder->connected)
 	{
-		log4cplus_logger::make_info_log("parallel.record.client", "disconnection completed");
+		//log4cplus_logger::make_info_log("parallel.record.client", "disconnection completed");
 
 		_parallel_recorder->connected = false;
 		_parallel_recorder->rtsp_port_number_received = false;
@@ -351,6 +351,6 @@ void debuggerking::parallel_recorder_controller::get_rtsp_server_port_number_cal
 		_parallel_recorder->rtsp_server_port_number = port_number;
 		_parallel_recorder->rtsp_port_number_received = true;
 
-		log4cplus_logger::make_info_log("parallel.record.client", "port number[%d] callback received", _parallel_recorder->rtsp_server_port_number);
+		//log4cplus_logger::make_info_log("parallel.record.client", "port number[%d] callback received", _parallel_recorder->rtsp_server_port_number);
 	}
 }

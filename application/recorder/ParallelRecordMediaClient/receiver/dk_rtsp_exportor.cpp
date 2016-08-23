@@ -24,16 +24,31 @@ debuggerking::rtsp_exportor::rtsp_exportor(rtsp_exportor_status_callback * cb)
 	, _thread(INVALID_HANDLE_VALUE)
 	, _run(false)
 	, _cb(cb)
+	, _disconnect_thread(INVALID_HANDLE_VALUE)
+	, _disconnect_run(false)
 {
 	memset(_url, 0x00, sizeof(_url));
 	memset(_username, 0x00, sizeof(_username));
 	memset(_password, 0x00, sizeof(_password));
 	memset(_ts_file_path, 0x00, sizeof(_ts_file_path));
+
+	unsigned int thread_id = 0;
+	_disconnect_thread = (HANDLE)_beginthreadex(NULL, 0, debuggerking::rtsp_exportor::disconnect_process_cb, this, 0, &thread_id);
+	for (int32_t i = 0; !_disconnect_run || i < 50; i++)
+		::Sleep(10);
 }
 
 debuggerking::rtsp_exportor::~rtsp_exportor(void)
 {
-
+	_disconnect_run = false;
+	if (_disconnect_thread != INVALID_HANDLE_VALUE)
+	{
+		if (::WaitForSingleObject(_disconnect_thread, INFINITE) == WAIT_OBJECT_0)
+		{
+			::CloseHandle(_disconnect_thread);
+		}
+		_disconnect_thread = INVALID_HANDLE_VALUE;
+	}
 }
 
 int32_t debuggerking::rtsp_exportor::play(const char * url, const char * username, const char * password, int32_t transport_option, int32_t recv_option, bool repeat, char * export_file_path, int32_t year, int32_t month, int32_t day, int32_t hour, int32_t minute, int32_t second)
@@ -244,12 +259,14 @@ unsigned __stdcall debuggerking::rtsp_exportor::process_callback(void * param)
 void debuggerking::rtsp_exportor::process(void)
 {
 	int status = rtsp_exportor::err_code_t::fail;
-	status = rtsp_client::play(_url, _username, _password, _transport_option, _recv_option, 3, 0.f, _repeat);
+	status = rtsp_client::play(_url, _username, _password, _transport_option, _recv_option, 3, 8.f, _repeat);
 	if (status == rtsp_exportor::err_code_t::success)
 	{
 		if (_cb)
 			_cb->start();
 		_run = true;
+		long long last_timestamp = 0;
+		size_t timestamp_unchange_count = 0;
 		while (_run)
 		{
 			if (_rcvd_timestamp)
@@ -263,12 +280,65 @@ void debuggerking::rtsp_exportor::process(void)
 #endif
 				if (destination_timestamp <= current_timestamp)
 					break;
+				else
+					if (timestamp_unchange_count > 30)
+						break;
+
+				if (last_timestamp != current_timestamp)
+				{
+					last_timestamp = current_timestamp;
+					timestamp_unchange_count = 0;
+				}
+				else
+					timestamp_unchange_count++;
 			}
 			::Sleep(100);
 		}
-		status = rtsp_client::stop();
+		//status = rtsp_client::stop();
+
+		{ //tsmuxer 파일 관련 점유 해제
+			if (_tsmuxer)
+			{
+				_tsmuxer->release();
+				delete _tsmuxer;
+				_tsmuxer = nullptr;
+			}
+
+			if (_tsmuxer_config)
+			{
+				delete _tsmuxer_config;
+				_tsmuxer_config = nullptr;
+			}
+			_rcvd_timestamp = false;
+		}
+
+		_do_disconnect = true;
+
 		if (_cb)
 			_cb->stop();
 	}
 	_run = false;
+}
+
+
+unsigned debuggerking::rtsp_exportor::disconnect_process_cb(void * param)
+{
+	debuggerking::rtsp_exportor * self = static_cast<debuggerking::rtsp_exportor*>(param);
+	self->disconnect_process();
+	return 0;
+}
+
+void debuggerking::rtsp_exportor::disconnect_process(void)
+{
+	_disconnect_run = true;
+	while (_disconnect_run)
+	{
+		if (_do_disconnect)
+		{
+			rtsp_client::stop();
+			_do_disconnect = false;
+		}
+		::Sleep(10);
+	}
+	rtsp_client::stop();
 }

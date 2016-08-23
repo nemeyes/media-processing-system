@@ -4,7 +4,11 @@
 
 #pragma once
 
+#if !defined(WITH_DISABLE_PRMC)
 #include <ParallelRecordMediaClient.h>
+#pragma comment(lib, "ParallelRecordMediaClient.lib")
+#endif
+
 #include "afxwin.h"
 
 // CParallelRecordClientDlg dialog
@@ -52,6 +56,7 @@ protected:
 	CEdit _manual_recording_second;
 	
 	CEdit _recording_play_scale;
+	CEdit _recording_play_duration;
 
 	CComboBox _osd_enable;
 	CEdit _osd_x;
@@ -90,6 +95,7 @@ public:
 	afx_msg void OnBnClickedButtonGetRecordingYears();
 	afx_msg void OnBnClickedButtonStartPlayback();
 	afx_msg void OnBnClickedButtonStopPlayback();
+	afx_msg void OnBnClickedButtonPausePlayback();
 	afx_msg void OnCbnSelchangeComboRecordingYears();
 	afx_msg void OnCbnSelchangeComboRecordingMonths();
 	afx_msg void OnCbnSelchangeComboRecordingDays();
@@ -97,12 +103,9 @@ public:
 	afx_msg void OnCbnSelchangeComboMinutes();
 	afx_msg void OnBnClickedButtonManualStartPlayback();
 	afx_msg void OnBnClickedButtonManualStopPlayback();
+	afx_msg void OnBnClickedButtonManualPausePlayback();
 	afx_msg void OnBnClickedButtonRtspPlay();
 	afx_msg void OnBnClickedButtonRtspStop();
-	afx_msg void OnBnClickedButtonOsdEnable();
-	afx_msg void OnBnClickedButtonSetOsdPosition();
 	afx_msg void OnBnClickedButtonStartExport();
 	afx_msg void OnBnClickedButtonStopExport();
-	afx_msg void OnBnClickedButtonPausePlayback();
-	afx_msg void OnBnClickedButtonManualPausePlayback();
 };

@@ -81,8 +81,8 @@ bool debuggerking::recorder_service::start_recording(void)
 	if (::GetFileAttributesA(config_path.c_str()) == INVALID_FILE_ATTRIBUTES)
 		return false;
 
-	std::string log_config_filepath = config_path + "log.properties";
-	log4cplus_logger::instance()->create(log_config_filepath.c_str());
+	std::string log_config_filepath = "config\\log.properties";
+	log4cplus_logger::create(log_config_filepath.c_str());
 
 	std::string config_filepath = config_path + "record_server.xml";
 	if (::GetFileAttributesA(config_filepath.c_str()) == INVALID_FILE_ATTRIBUTES)
@@ -189,10 +189,10 @@ bool debuggerking::recorder_service::start_recording(void)
 		media_source_elem = media_source_elem->NextSiblingElement();
 	}
 
-	log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "start recorder server.");
+	log4cplus_logger::make_info_log("parallel.record.recorder", "start recorder server.");
 	if (_backup_enable)
 	{
-		log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "start backup process.");
+		log4cplus_logger::make_info_log("parallel.record.recorder", "start backup process.");
 		return start_backup_service();
 	}
 	else
@@ -203,7 +203,7 @@ bool debuggerking::recorder_service::stop_recording(void)
 {
 	if (_backup_enable)
 	{
-		log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "stop backup process.");
+		log4cplus_logger::make_info_log("parallel.record.recorder", "stop backup process.");
 		stop_backup_service();
 	}
 	_backup_port_number = 21;
@@ -219,9 +219,9 @@ bool debuggerking::recorder_service::stop_recording(void)
 		(iter)->recorder = nullptr;
 	}
 	_receivers.clear();
-	log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "stop recorder server.");
+	log4cplus_logger::make_info_log("parallel.record.recorder", "stop recorder server.");
 
-	log4cplus_logger::instance()->destroy();
+	log4cplus_logger::destroy();
 	return true;
 }
 
@@ -375,14 +375,14 @@ void debuggerking::recorder_service::file_search_and_upload(const char * path)
 								backup_curl = curl_easy_init();
 								if (backup_curl)
 								{
-									log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "try to upload backup file[%s].", recored_file_path);
+									log4cplus_logger::make_info_log("parallel.record.recorder", "try to upload backup file[%s].", recored_file_path);
 									result = backup_upload_single_file(backup_curl, backup_ftp_server, 0, 0, recored_file_path, 0, 3);
 									if (result)
-										log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "uploading backup file[%s] is success.", recored_file_path);
+										log4cplus_logger::make_info_log("parallel.record.recorder", "uploading backup file[%s] is success.", recored_file_path);
 
 									if (result && _backup_delete_after_backup)
 									{
-										log4cplus_logger::instance()->make_info_log("parallel.record.recorder", "delete recorded file[%s] after uploading.", recored_file_path);
+										log4cplus_logger::make_info_log("parallel.record.recorder", "delete recorded file[%s] after uploading.", recored_file_path);
 										::DeleteFileA(recored_file_path);
 									}
 									curl_easy_cleanup(backup_curl);

@@ -26,10 +26,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <unix.h>
 #endif
 
-#if defined(DEBUG)
-#include <dk_log4cplus_logger.h>
-#endif
-
 ////////// BasicTaskScheduler //////////
 
 BasicTaskScheduler* BasicTaskScheduler::createNew(unsigned maxSchedulerGranularity) {
@@ -111,10 +107,6 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
 	// Unexpected error - treat this as fatal:
 #if !defined(_WIN32_WCE)
 	perror("BasicTaskScheduler::SingleStep(): select() fails");
-#if defined(DEBUG)
-	debuggerking::log4cplus_logger::make_debug_log("live555", "BasicTaskScheduler::SingleStep(): select() fails");
-#endif
-
 	// Because this failure is often "Bad file descriptor" - which is caused by an invalid socket number (i.e., a socket number
 	// that had already been closed) being used in "select()" - we print out the sockets that were being used in "select()",
 	// to assist in debugging:

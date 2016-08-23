@@ -5,6 +5,7 @@
 #include "abstract_ipc_client.h"
 #include "iocp_client.h"
 
+
 ic::iocp_client::iocp_client(ic::abstract_ipc_client * processor)
 	: _processor(processor)
 {
@@ -16,19 +17,17 @@ ic::iocp_client::~iocp_client(void)
 	if (_iocp)
 		delete _iocp;
 	_iocp = nullptr;
+
 }
 
 bool ic::iocp_client::initialize(void)
 {
-	WSADATA wsd;
-	if (WSAStartup(MAKEWORD(2, 2), &wsd) != 0)
-		return false;
 	return true;
 }
 
 void ic::iocp_client::release(void)
 {
-	WSACleanup();
+
 }
 
 std::shared_ptr<ic::session> ic::iocp_client::connect(const char * address, int32_t port_number, bool retry_connection)
@@ -37,7 +36,7 @@ std::shared_ptr<ic::session> ic::iocp_client::connect(const char * address, int3
 	SOCKET socket = INVALID_SOCKET;
 
 	int32_t err_code;
-	if (!_iocp->create(1, &err_code))
+	if (!_iocp->create(2, &err_code))
 		return std::shared_ptr<ic::session>();
 	_iocp->create_thread_pool();
 
@@ -237,8 +236,11 @@ void ic::iocp_client::execute(void)
 		}
 		catch (TCHAR*)
 		{
-			session->shutdown_fd();
-			_processor->disconnect(true);
+			//session->shutdown_fd();
+			//_processor->disconnect(true);
+			//_processor->clear();
 		}
 	}
+
+	int a = 2;
 }

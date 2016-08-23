@@ -22,10 +22,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamParser.hh"
 #include "BitVector.hh"
 
-#if defined(DEBUG)
-#include <dk_log4cplus_logger.h>
-#endif
-
 ////////// H264or5VideoStreamParser definition //////////
 
 class H264or5VideoStreamParser: public MPEGVideoStreamParser {
@@ -878,8 +874,7 @@ void H264or5VideoStreamParser::analyze_sei_data(u_int8_t nal_unit_type) {
 	payloadType == 133 ? "scalable_nesting" :
 	payloadType == 134 ? "region_refresh_info" : "reserved_sei_message";
     }
-	debuggerking::log4cplus_logger::make_debug_log("live555", "\tpayloadType %d (\"%s\"); payloadSize %d", payloadType, description, payloadSize);
-    //fprintf(stderr, "\tpayloadType %d (\"%s\"); payloadSize %d\n", payloadType, description, payloadSize);
+    fprintf(stderr, "\tpayloadType %d (\"%s\"); payloadSize %d\n", payloadType, description, payloadSize);
 #endif
 
     analyze_sei_payload(payloadType, payloadSize, &sei[j]);
@@ -930,8 +925,7 @@ void H264or5VideoStreamParser
 	  usingSource()->fFrameRate = fParsedFrameRate
 	    = fParsedFrameRate*(prevDeltaTfiDivisor/DeltaTfiDivisor);
 #ifdef DEBUG
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "Changed frame rate to %f fps", usingSource()->fFrameRate);
-	  //fprintf(stderr, "Changed frame rate to %f fps\n", usingSource()->fFrameRate);
+	  fprintf(stderr, "Changed frame rate to %f fps\n", usingSource()->fFrameRate);
 #endif
       }
     }
@@ -991,12 +985,12 @@ unsigned H264or5VideoStreamParser::parse() {
       if (fHNumber == 264) {
 	u_int8_t nal_ref_idc = (fFirstByteOfNALUnit&0x60)>>5;
 	u_int8_t nal_unit_type = fFirstByteOfNALUnit&0x1F;
-	debuggerking::log4cplus_logger::make_debug_log("live555", "Parsed trailing %d-byte NAL-unit (nal_ref_idc: %d, nal_unit_type: %d (\"%s\"))", trailingNALUnitSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
-	//fprintf(stderr, "Parsed trailing %d-byte NAL-unit (nal_ref_idc: %d, nal_unit_type: %d (\"%s\"))\n", trailingNALUnitSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
+	fprintf(stderr, "Parsed trailing %d-byte NAL-unit (nal_ref_idc: %d, nal_unit_type: %d (\"%s\"))\n",
+		trailingNALUnitSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
       } else { // 265
 	u_int8_t nal_unit_type = (fFirstByteOfNALUnit&0x7E)>>1;
-	debuggerking::log4cplus_logger::make_debug_log("live555", "Parsed trailing %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))", trailingNALUnitSize, nal_unit_type, nal_unit_type_description_h265[nal_unit_type]);
-	//fprintf(stderr, "Parsed trailing %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))\n", trailingNALUnitSize, nal_unit_type, nal_unit_type_description_h265[nal_unit_type]);
+	fprintf(stderr, "Parsed trailing %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))\n",
+		trailingNALUnitSize, nal_unit_type, nal_unit_type_description_h265[nal_unit_type]);
       }
 #endif
 
@@ -1037,14 +1031,14 @@ unsigned H264or5VideoStreamParser::parse() {
       nal_unit_type = fFirstByteOfNALUnit&0x1F;
 #ifdef DEBUG
       u_int8_t nal_ref_idc = (fFirstByteOfNALUnit&0x60)>>5;
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "Parsed %d-byte NAL-unit (nal_ref_idc: %d, nal_unit_type: %d (\"%s\"))", curFrameSize() - fOutputStartCodeSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
-      //fprintf(stderr, "Parsed %d-byte NAL-unit (nal_ref_idc: %d, nal_unit_type: %d (\"%s\"))\n", curFrameSize()-fOutputStartCodeSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
+      fprintf(stderr, "Parsed %d-byte NAL-unit (nal_ref_idc: %d, nal_unit_type: %d (\"%s\"))\n",
+	      curFrameSize()-fOutputStartCodeSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
 #endif
     } else { // 265
       nal_unit_type = (fFirstByteOfNALUnit&0x7E)>>1;
 #ifdef DEBUG
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "Parsed %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))", curFrameSize() - fOutputStartCodeSize, nal_unit_type, nal_unit_type_description_h265[nal_unit_type]);
-      //fprintf(stderr, "Parsed %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))\n", curFrameSize()-fOutputStartCodeSize, nal_unit_type, nal_unit_type_description_h265[nal_unit_type]);
+      fprintf(stderr, "Parsed %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))\n",
+	      curFrameSize()-fOutputStartCodeSize, nal_unit_type, nal_unit_type_description_h265[nal_unit_type]);
 #endif
     }
 
@@ -1062,13 +1056,11 @@ unsigned H264or5VideoStreamParser::parse() {
 	  usingSource()->fFrameRate = fParsedFrameRate
 	    = time_scale/(DeltaTfiDivisor*num_units_in_tick);
 #ifdef DEBUG
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "Set frame rate to %f fps", usingSource()->fFrameRate);
-	  //fprintf(stderr, "Set frame rate to %f fps\n", usingSource()->fFrameRate);
+	  fprintf(stderr, "Set frame rate to %f fps\n", usingSource()->fFrameRate);
 #endif
 	} else {
 #ifdef DEBUG
-	debuggerking::log4cplus_logger::make_debug_log("live555", "\tThis \"Video Parameter Set\" NAL unit contained no frame rate information, so we use a default frame rate of %f fps", usingSource()->fFrameRate);
-	  //fprintf(stderr, "\tThis \"Video Parameter Set\" NAL unit contained no frame rate information, so we use a default frame rate of %f fps\n", usingSource()->fFrameRate);
+	  fprintf(stderr, "\tThis \"Video Parameter Set\" NAL unit contained no frame rate information, so we use a default frame rate of %f fps\n", usingSource()->fFrameRate);
 #endif
 	}
       }
@@ -1085,13 +1077,11 @@ unsigned H264or5VideoStreamParser::parse() {
 	  usingSource()->fFrameRate = fParsedFrameRate
 	    = time_scale/(DeltaTfiDivisor*num_units_in_tick);
 #ifdef DEBUG
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "Set frame rate to %f fps", usingSource()->fFrameRate);
-	  //fprintf(stderr, "Set frame rate to %f fps\n", usingSource()->fFrameRate);
+	  fprintf(stderr, "Set frame rate to %f fps\n", usingSource()->fFrameRate);
 #endif
 	} else {
 #ifdef DEBUG
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "\tThis \"Sequence Parameter Set\" NAL unit contained no frame rate information, so we use a default frame rate of %f fps", usingSource()->fFrameRate);
-	  //fprintf(stderr, "\tThis \"Sequence Parameter Set\" NAL unit contained no frame rate information, so we use a default frame rate of %f fps\n", usingSource()->fFrameRate);
+	  fprintf(stderr, "\tThis \"Sequence Parameter Set\" NAL unit contained no frame rate information, so we use a default frame rate of %f fps\n", usingSource()->fFrameRate);
 #endif
 	}
       }
@@ -1107,8 +1097,7 @@ unsigned H264or5VideoStreamParser::parse() {
 #ifdef DEBUG
     unsigned long secs = (unsigned long)usingSource()->fPresentationTime.tv_sec;
     unsigned uSecs = (unsigned)usingSource()->fPresentationTime.tv_usec;
-	debuggerking::log4cplus_logger::make_debug_log("live555", "\tPresentation time: %lu.%06u", secs, uSecs);
-    //fprintf(stderr, "\tPresentation time: %lu.%06u\n", secs, uSecs);
+    fprintf(stderr, "\tPresentation time: %lu.%06u\n", secs, uSecs);
 #endif
 
     // Now, check whether this NAL unit ends an 'access unit'.
@@ -1147,8 +1136,7 @@ unsigned H264or5VideoStreamParser::parse() {
 	
     if (thisNALUnitEndsAccessUnit) {
 #ifdef DEBUG
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "*****This NAL unit ends the current access unit*****");
-      //fprintf(stderr, "*****This NAL unit ends the current access unit*****\n");
+      fprintf(stderr, "*****This NAL unit ends the current access unit*****\n");
 #endif
       usingSource()->fPictureEndMarker = True;
       ++usingSource()->fPictureCount;
@@ -1166,8 +1154,7 @@ unsigned H264or5VideoStreamParser::parse() {
     return curFrameSize();
   } catch (int /*e*/) {
 #ifdef DEBUG
-	  debuggerking::log4cplus_logger::make_debug_log("live555", "H264or5VideoStreamParser::parse() EXCEPTION (This is normal behavior - *not* an error)");
-    //fprintf(stderr, "H264or5VideoStreamParser::parse() EXCEPTION (This is normal behavior - *not* an error)\n");
+    fprintf(stderr, "H264or5VideoStreamParser::parse() EXCEPTION (This is normal behavior - *not* an error)\n");
 #endif
     return 0;  // the parsing got interrupted
   }

@@ -200,6 +200,10 @@
     <ClInclude Include="include\h265_buffer_sink.h" />
     <ClInclude Include="include\rtsp_client.h" />
     <ClInclude Include="include\dk_rtsp_client.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dk_rtsp_client.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

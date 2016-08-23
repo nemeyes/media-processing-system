@@ -22,10 +22,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "InputFile.hh"
 #include <GroupsockHelper.hh>
 
-#if defined(DEBUG)
-#include <dk_log4cplus_logger.h>
-#endif
-
 ////////// ADTSAudioFileSource //////////
 
 static unsigned const samplingFrequencyTable[16] = {
@@ -79,19 +75,12 @@ ADTSAudioFileSource::createNew(UsageEnvironment& env, char const* fileName) {
     SeekFile64(fid, SEEK_SET,0);
 #endif
 #ifdef DEBUG
-	debuggerking::log4cplus_logger::make_debug_log("live555", "Read first frame: profile %d, "
-		"sampling_frequency_index %d => samplingFrequency %d, "
-		"channel_configuration %d",
-		profile,
-		sampling_frequency_index, samplingFrequencyTable[sampling_frequency_index],
-		channel_configuration);
-    
-	/*fprintf(stderr, "Read first frame: profile %d, "
+    fprintf(stderr, "Read first frame: profile %d, "
 	    "sampling_frequency_index %d => samplingFrequency %d, "
 	    "channel_configuration %d\n",
 	    profile,
 	    sampling_frequency_index, samplingFrequencyTable[sampling_frequency_index],
-	    channel_configuration);*/
+	    channel_configuration);
 #endif
     return new ADTSAudioFileSource(env, fid, profile,
 				   sampling_frequency_index, channel_configuration);
@@ -141,10 +130,8 @@ void ADTSAudioFileSource::doGetNextFrame() {
     = ((headers[3]&0x03)<<11) | (headers[4]<<3) | ((headers[5]&0xE0)>>5);
 #ifdef DEBUG
   u_int16_t syncword = (headers[0]<<4) | (headers[1]>>4);
-  debuggerking::log4cplus_logger::make_debug_log("live555", "Read frame: syncword 0x%x, protection_absent %d, frame_length %d", syncword, protection_absent, frame_length);
-  //fprintf(stderr, "Read frame: syncword 0x%x, protection_absent %d, frame_length %d\n", syncword, protection_absent, frame_length);
-  //if (syncword != 0xFFF) fprintf(stderr, "WARNING: Bad syncword!\n");
-  if (syncword != 0xFFF) debuggerking::log4cplus_logger::make_debug_log("live555", "WARNING: Bad syncword!");
+  fprintf(stderr, "Read frame: syncword 0x%x, protection_absent %d, frame_length %d\n", syncword, protection_absent, frame_length);
+  if (syncword != 0xFFF) fprintf(stderr, "WARNING: Bad syncword!\n");
 #endif
   unsigned numBytesToRead
     = frame_length > sizeof headers ? frame_length - sizeof headers : 0;

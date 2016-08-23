@@ -19,6 +19,8 @@ namespace debuggerking
 		HWND hwnd;
 		bool run;
 		void * receiver;
+		int duration;
+		float scale;
 		void * exportor;
 		char export_file_path[MAX_PATH];
 		int last_year;
@@ -34,6 +36,8 @@ namespace debuggerking
 			, hwnd(NULL)
 			, run(false)
 			, receiver(NULL)
+			, duration(0)
+			, scale(0.0)
 			, exportor(NULL)
 			, last_year(0)
 			, last_month(0)
@@ -69,6 +73,8 @@ namespace debuggerking
 			hwnd = clone.hwnd;
 			run = clone.run;
 			receiver = clone.receiver;
+			duration = clone.duration;
+			scale = clone.scale;
 			exportor = clone.exportor;
 
 			last_year = clone.last_year;
@@ -100,6 +106,8 @@ namespace debuggerking
 			hwnd = clone.hwnd;
 			run = clone.run;
 			receiver = clone.receiver;
+			duration = clone.duration;
+			scale = clone.scale;
 			exportor = clone.exportor;
 
 			last_year = clone.last_year;

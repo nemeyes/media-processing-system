@@ -27,10 +27,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <string.h>
 #include <stdio.h>
 
-#if defined(DEBUG)
-#include <dk_log4cplus_logger.h>
-#endif
-
 // When there are this many entries per bucket, on average, rebuild
 // the table to increase the number of buckets
 #define REBUILD_MULTIPLIER 3
@@ -202,12 +198,8 @@ void BasicHashTable::deleteEntry(unsigned index, TableEntry* entry) {
 
   if (!foundIt) { // shouldn't happen
 #ifdef DEBUG
-	//debuggerking::log4cplus_logger::make_debug_log("live555", "BasicHashTable[%p]::deleteEntry(%d,%p): internal error - not found (first entry %p", this, index, entry, fBuckets[index]);
     fprintf(stderr, "BasicHashTable[%p]::deleteEntry(%d,%p): internal error - not found (first entry %p", this, index, entry, fBuckets[index]);
-    if (fBuckets[index] != NULL) 
-	{
-		fprintf(stderr, ", next entry %p", fBuckets[index]->fNext);
-	}
+    if (fBuckets[index] != NULL) fprintf(stderr, ", next entry %p", fBuckets[index]->fNext);
     fprintf(stderr, ")\n");
 #endif
   }

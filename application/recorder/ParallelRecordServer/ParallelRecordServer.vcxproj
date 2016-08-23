@@ -56,7 +56,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;WITH_MILLISECOND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_rtsp_client\include;..\..\..\library\network\ipc\dk_shared_memory\include;..\..\..\library\container\dk_recorder_module\include;..\..\..\library\logger\dk_log4cplus_logger_1.2.0\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -86,7 +86,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;WITH_MILLISECOND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>..\..\..\3rdparty\boost\boost_1_60_0\win32\v120\include;..\..\..\3rdparty\tinyxml\tinyxml_2_6_2\win32\v120\x86\include;..\..\..\3rdparty\curl\curl-7.48.0\win32\v120\x86\include;..\..\..\dk_common\include;..\..\..\library\network\rtsp\dk_rtsp_base\include;..\..\..\library\network\rtsp\dk_rtsp_client\include;..\..\..\library\container\dk_recorder_module\include;..\..\..\library\logger\dk_log4cplus_logger_1.2.0\include;recorder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

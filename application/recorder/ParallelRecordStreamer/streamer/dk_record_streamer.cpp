@@ -136,24 +136,24 @@ bool debuggerking::record_streamer::start(void)
 #endif
 
 	TiXmlElement * media_sources_elem = root_elem->FirstChildElement("media_sources");
-	if (!media_sources_elem)
-		return false;
-
-	TiXmlElement * media_source_elem = media_sources_elem->FirstChildElement("media_source");
-	while (media_source_elem)
+	if (media_sources_elem)
 	{
-		TiXmlElement * url_elem = media_source_elem->FirstChildElement("url");
-		TiXmlElement * username_elem = media_source_elem->FirstChildElement("username");
-		TiXmlElement * password_elem = media_source_elem->FirstChildElement("password");
+		TiXmlElement * media_source_elem = media_sources_elem->FirstChildElement("media_source");
+		while (media_source_elem)
+		{
+			TiXmlElement * url_elem = media_source_elem->FirstChildElement("url");
+			TiXmlElement * username_elem = media_source_elem->FirstChildElement("username");
+			TiXmlElement * password_elem = media_source_elem->FirstChildElement("password");
 
-		const char * uuid = media_source_elem->Attribute("uuid");
-		uuid = ::CharUpperA((char*)uuid);
-		const char * url = url_elem->GetText();
-		const char * username = username_elem->GetText();
-		const char * password = password_elem->GetText();
+			const char * uuid = media_source_elem->Attribute("uuid");
+			uuid = ::CharUpperA((char*)uuid);
+			const char * url = url_elem->GetText();
+			const char * username = username_elem->GetText();
+			const char * password = password_elem->GetText();
 
 
-		media_source_elem = media_source_elem->NextSiblingElement();
+			media_source_elem = media_source_elem->NextSiblingElement();
+		}
 	}
 
 	ic::dk_ipc_server::start(nullptr, control_port_number);

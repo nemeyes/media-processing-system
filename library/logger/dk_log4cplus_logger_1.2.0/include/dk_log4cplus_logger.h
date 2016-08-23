@@ -14,10 +14,17 @@
 #endif
 #include <string>
 
+#if !defined(WITH_DISABLE)
+
+
+#if defined(WITH_CONFIGURE_AND_WATCH_THREAD)
 namespace log4cplus
 {
 	class ConfigureAndWatchThread;
 }
+#endif
+
+#endif
 
 namespace debuggerking
 {
@@ -26,7 +33,7 @@ namespace debuggerking
 	public:
 		static void create(const char * configuration_path);
 		static void destroy(void);
-		static log4cplus_logger * instance(void);
+		//static log4cplus_logger * instance(void);
 
 		static void make_fatal_log(const char * secion, const char * fmt, ...);
 		static void make_error_log(const char * secion, const char * fmt, ...);
@@ -61,7 +68,11 @@ namespace debuggerking
 		static log4cplus_logger * _instance;
 
 	private:
+#if !defined(WITH_DISABLE)
+#if defined(WITH_CONFIGURE_AND_WATCH_THREAD)
 		log4cplus::ConfigureAndWatchThread * _configure_thread;
+#endif
+#endif
 	};
 };
 

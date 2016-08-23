@@ -14,6 +14,7 @@
 
 #define SERVER_UUID		"00000000-0000-0000-0000-000000000000"
 #define BROADCAST_UUID	"FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
+#define UNDEFINED_UUID	"FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
 
 #define COMMAND_SIZE sizeof(int)
 
@@ -23,10 +24,8 @@
 #define CMD_ASSOC_REQUEST			10
 #define CMD_ASSOC_RESPONSE			11
 #define CMD_LEAVE_INDICATION		12
-#if defined(WITH_LEAVE_CMD)
 #define CMD_LEAVE_REQUEST			13
 #define CMD_LEAVE_RESPONSE			14
-#endif
 #define CMD_KEEPALIVE_REQUEST		15
 #define CMD_KEEPALIVE_RESPONSE		16
 
@@ -38,18 +37,10 @@ namespace ic
 		int32_t	code;
 	} CMD_PAYLOAD_T;
 
-	typedef struct _CMD_ASSOC_PAYLOAD_T : public _CMD_PAYLOAD_T
+	typedef struct _CMD_ASSOC_RES_T : public _CMD_PAYLOAD_T
 	{
 		char uuid[64];
-	} CMD_ASSOC_PAYLOAD_T;
-
-	typedef struct _CMD_LEAVE_PAYLOAD_T : public _CMD_PAYLOAD_T
-	{
-	} CMD_LEAVE_PAYLOAD_T;
-
-	typedef struct _CMD_KEEPALIVE_PAYLOAD_T : public _CMD_PAYLOAD_T
-	{
-	} CMD_KEEPALIVE_PAYLOAD_T;
+	} CMD_ASSOC_RES_T;
 
 #if defined(WITH_WORKING_AS_SERVER)
 	class abstract_ipc_server;
@@ -103,35 +94,18 @@ namespace ic
 	};
 #endif
 
-#if defined(WITH_WORKING_AS_SERVER)
-#if defined(WITH_LEAVE_CMD)
-	class leave_req_cmd : public abstract_command
-	{
-	public:
-		leave_req_cmd(abstract_ipc_server * processor);
-		virtual ~leave_req_cmd(void);
-		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session);
-	};
-#endif
-#else
+
 	class leave_ind_cmd : public abstract_command
 	{
 	public:
+#if defined(WITH_WORKING_AS_SERVER)
+		leave_ind_cmd(abstract_ipc_server * processor);
+#else
 		leave_ind_cmd(abstract_ipc_client * processor);
+#endif
 		virtual ~leave_ind_cmd(void);
 		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session);
 	};
-
-#if defined(WITH_LEAVE_CMD)
-	class leave_res_cmd : public abstract_command
-	{
-	public:
-		leave_res_cmd(abstract_ipc_client * processor);
-		virtual ~leave_res_cmd(void);
-		void execute(const char * dst, const char * src, int32_t command_id, const char * msg, int32_t length, std::shared_ptr<ic::session> session);
-	};
-#endif
-#endif
 
 	class keepalive_req_cmd : public abstract_command
 	{

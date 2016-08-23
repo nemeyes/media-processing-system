@@ -1,10 +1,8 @@
 #include "dk_parallel_recorder_controller.h"
-#include "dk_rtmp_receiver.h"
 #include "dk_rtsp_receiver.h"
 #include "dk_rtsp_exportor.h"
 #include <dk_auto_lock.h>
 #include <dk_string_helper.h>
-#include <dk_log4cplus_logger.h>
 #include "ParallelRecordMediaClient.h"
 #include "dk_parallel_recorder.h"
 
@@ -54,53 +52,27 @@ private:
 	PRMC_ExportEndCallback _ecb;
 };
 
-CRITICAL_SECTION g_lock;
-std::map<std::string, debuggerking::parallel_recorder_t*> g_parallel_recorders;
+static CRITICAL_SECTION g_lock;
+static std::map<std::string, debuggerking::parallel_recorder_t*> g_parallel_recorders;
 
-
-int g_rtsp_source_index_generator;
-CRITICAL_SECTION g_rtsp_source_lock;
-std::map<int, debuggerking::single_rtsp_source_t*> g_rtsp_sources;
-
-HWND g_fullscreen_dlg = NULL;
-
-BOOL CALLBACK fullwnd_proc(HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-	switch (msg)
-	{
-	case WM_INITDIALOG:
-		//SetWindowPos(dlg, HWND_TOP, 100, 100, 0, 0, SWP_NOSIZE);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wparam))
-		{
-		case IDOK:
-		case IDCANCEL:
-			EndDialog(dlg, 0);
-			return TRUE;
-		}
-		return FALSE;
-	case WM_CLOSE:
-		PostQuitMessage(0);
-		return TRUE;
-	}
-	return FALSE;
-}
-
+static int	g_rtsp_source_index_generator;
+static CRITICAL_SECTION g_rtsp_source_lock;
+static std::map<int, debuggerking::single_rtsp_source_t*> g_rtsp_sources;
 
 int PRMC_Initialize(HWND hwnd)
 {
-	debuggerking::log4cplus_logger::create("config\\log.properties");
+	WSADATA wsd;
+	WSAStartup(MAKEWORD(2, 2), &wsd);
+	//debuggerking::log4cplus_logger::create("config\\log.properties");
 
 	::InitializeCriticalSection(&g_lock);
-	::InitializeCriticalSection(&g_rtsp_source_lock);
-	g_rtsp_source_index_generator = 0;
+	g_parallel_recorders.clear();
 
-	//g_fullscreen_dlg = CreateDialog(GetModuleHandle(L"dk_media_player_framework.dll"), MAKEINTRESOURCE(IDD_DIALOG_FULLSCREEN), hwnd, fullwnd_proc);
-	//if (g_fullscreen_dlg)
-	//{
-	//	ShowWindow(g_fullscreen_dlg, SW_SHOW);
-	//}
+	g_rtsp_source_index_generator = 0;
+	::InitializeCriticalSection(&g_rtsp_source_lock);
+	g_rtsp_sources.clear();
+
+
 
 	return PRMC_SUCCESS;
 }
@@ -127,22 +99,31 @@ int PRMC_Release(void)
 							debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
 							receiver->stop();
 						}
+
+						if (single_media_source->type == RTSP_EXPORTOR)
+						{
+							debuggerking::rtsp_exportor * exportor = static_cast<debuggerking::rtsp_exportor*>(single_media_source->exportor);
+							exportor->stop();
+						}
 						single_media_source->run = false;
 					}
+
 					if (single_media_source->type == RTSP_RECEIVER)
 					{
 						debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
 						delete receiver;
 						receiver = nullptr;
+						single_media_source->receiver = nullptr;
 					}
-					single_media_source->receiver = nullptr;
-					if (single_media_source->user_unregistered_sei_callback)
+
+					if (single_media_source->type == RTSP_EXPORTOR)
 					{
-						rtsp_user_unregistered_sei_callback_impl * uusei_callback = static_cast<rtsp_user_unregistered_sei_callback_impl*>(single_media_source->user_unregistered_sei_callback);
-						delete uusei_callback;
-						uusei_callback = nullptr;
-						single_media_source->user_unregistered_sei_callback = nullptr;
+						debuggerking::rtsp_exportor * exportor = static_cast<debuggerking::rtsp_exportor*>(single_media_source->exportor);
+						delete exportor;
+						exportor = nullptr;
+						single_media_source->exportor = nullptr;
 					}
+
 					delete single_media_source;
 					single_media_source = nullptr;
 				}
@@ -151,19 +132,26 @@ int PRMC_Release(void)
 			if (single_recorder_info->connected && single_recorder_info->controller)
 			{
 				single_recorder_info->controller->disconnect();
-				single_recorder_info->connected = false;
+				//single_recorder_info->connected = false;
 			}
 			delete single_recorder_info->controller;
 			single_recorder_info->controller = nullptr;
-			delete single_recorder_info;
+
 		}
-		single_recorder_info = nullptr;
-		g_parallel_recorders.erase(iter);
+
+		if (single_recorder_info)
+		{
+			delete single_recorder_info;
+			single_recorder_info = nullptr;
+		}
 	}
+	g_parallel_recorders.clear();
 
 	::DeleteCriticalSection(&g_rtsp_source_lock);
 	::DeleteCriticalSection(&g_lock);
-	debuggerking::log4cplus_logger::destroy();
+	//debuggerking::log4cplus_logger::destroy();
+
+	WSACleanup();
 	return PRMC_SUCCESS;
 }
 
@@ -182,15 +170,27 @@ int PRMC_Connect(const wchar_t * url, int port_number, const wchar_t * username,
 	strncpy_s(single_recorder_info->url, ascii_url, sizeof(single_recorder_info->url));
 	single_recorder_info->port_number = port_number;
 
-	char * ascii_username = 0;
-	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
-	if (ascii_username && strlen(ascii_username) > 0)
-		strncpy_s(single_recorder_info->username, ascii_username, sizeof(single_recorder_info->username));
+	if (username && wcslen(username)>0)
+	{
+		char * ascii_username = 0;
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)username, &ascii_username);
+		if (ascii_username && strlen(ascii_username) > 0)
+			strncpy_s(single_recorder_info->username, ascii_username, sizeof(single_recorder_info->username));
+		if (ascii_username)
+			free(ascii_username);
+		ascii_username = 0;
+	}
 
-	char * ascii_password = 0;
-	debuggerking::string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
-	if (ascii_password&& strlen(ascii_password) > 0)
-		strncpy_s(single_recorder_info->password, ascii_password, sizeof(single_recorder_info->password));
+	if (password && wcslen(password) > 0)
+	{
+		char * ascii_password = 0;
+		debuggerking::string_helper::convert_wide2multibyte((wchar_t*)password, &ascii_password);
+		if (ascii_password&& strlen(ascii_password) > 0)
+			strncpy_s(single_recorder_info->password, ascii_password, sizeof(single_recorder_info->password));
+		if (ascii_password)
+			free(ascii_password);
+		ascii_password = 0;
+	}
 
 	single_recorder_info->controller = new debuggerking::parallel_recorder_controller(single_recorder_info);
 	bool sock_connected = single_recorder_info->controller->connect(single_recorder_info->url, single_recorder_info->port_number);
@@ -213,15 +213,10 @@ int PRMC_Connect(const wchar_t * url, int port_number, const wchar_t * username,
 		result = PRMC_SUCCESS;
 	}
 
+
 	if (ascii_url)
 		free(ascii_url);
-	if (ascii_username)
-		free(ascii_username);
-	if (ascii_password)
-		free(ascii_password);
 	ascii_url = 0;
-	ascii_username = 0;
-	ascii_password = 0;
 
 	return result;
 }
@@ -237,18 +232,19 @@ int PRMC_Disconnect(const wchar_t * url)
 	if (!ascii_url || strlen(ascii_url) < 1)
 		return result;
 
-	std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-	iter = g_parallel_recorders.find(ascii_url);
-	if (iter != g_parallel_recorders.end())
+	std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+	std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter;
+
+	pr_iter = g_parallel_recorders.find(ascii_url);
+	if (pr_iter != g_parallel_recorders.end())
 	{
-		debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+		debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 		if (single_recorder_info)
 		{
-			debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-			std::map<int, debuggerking::single_media_source_t*>::iterator iter;
-			for (iter = single_recorder_info->media_sources.begin(); iter != single_recorder_info->media_sources.end(); iter++)
+			debuggerking::auto_lock mutex(&(single_recorder_info->media_source_lock));
+			for (smc_iter = single_recorder_info->media_sources.begin(); smc_iter != single_recorder_info->media_sources.end(); smc_iter++)
 			{
-				debuggerking::single_media_source_t * single_media_source = iter->second;
+				debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 				if (single_media_source)
 				{
 					if (single_media_source->run)
@@ -257,16 +253,33 @@ int PRMC_Disconnect(const wchar_t * url)
 						{
 							debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
 							receiver->stop();
+						} 
+
+						if (single_media_source->type == RTSP_EXPORTOR)
+						{
+							debuggerking::rtsp_exportor * exportor = static_cast<debuggerking::rtsp_exportor*>(single_media_source->exportor);
+							exportor->stop();
 						}
 						single_media_source->run = false;
 					}
+
 					if (single_media_source->type == RTSP_RECEIVER)
 					{
 						debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
 						delete receiver;
 						receiver = nullptr;
+						single_media_source->receiver = nullptr;
 					}
-					single_media_source->receiver = nullptr;
+
+					if (single_media_source->type == RTSP_EXPORTOR)
+					{
+						debuggerking::rtsp_exportor * exportor = static_cast<debuggerking::rtsp_exportor*>(single_media_source->exportor);
+						delete exportor;
+						exportor = nullptr;
+						single_media_source->exportor = nullptr;
+					}
+
+					
 					if (single_media_source->user_unregistered_sei_callback)
 					{
 						rtsp_user_unregistered_sei_callback_impl * uusei_callback = static_cast<rtsp_user_unregistered_sei_callback_impl*>(single_media_source->user_unregistered_sei_callback);
@@ -274,6 +287,14 @@ int PRMC_Disconnect(const wchar_t * url)
 						uusei_callback = nullptr;
 						single_media_source->user_unregistered_sei_callback = nullptr;
 					}
+					if (single_media_source->exportor_status_callback)
+					{
+						rtsp_exportor_status_callback_impl * exp_callback = static_cast<rtsp_exportor_status_callback_impl*>(single_media_source->exportor_status_callback);
+						delete exp_callback;
+						exp_callback = nullptr;
+						single_media_source->exportor_status_callback = nullptr;
+					}
+
 					delete single_media_source;
 					single_media_source = nullptr;
 				}
@@ -283,13 +304,19 @@ int PRMC_Disconnect(const wchar_t * url)
 			{
 				single_recorder_info->controller->disconnect();
 				single_recorder_info->connected = false;
+				single_recorder_info->rtsp_port_number_received = false;
+
+				delete single_recorder_info->controller;
+				single_recorder_info->controller = nullptr;
 			}
-			delete single_recorder_info->controller;
-			single_recorder_info->controller = nullptr;
-			delete single_recorder_info;
 		}
-		single_recorder_info = nullptr;
-		g_parallel_recorders.erase(iter);
+
+		if (single_recorder_info)
+		{
+			delete single_recorder_info;
+			single_recorder_info = nullptr;
+		}
+		g_parallel_recorders.erase(pr_iter);
 		result = PRMC_SUCCESS;
 	}
 
@@ -540,11 +567,11 @@ int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd, PRMC_PlayTime
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				char * ascii_uuid = 0;
@@ -553,7 +580,7 @@ int PRMC_Add(const wchar_t * url, const wchar_t * uuid, HWND hwnd, PRMC_PlayTime
 				{
 					media_source_index_per_recorder = single_recorder_info->media_source_index_generator;
 
-					debuggerking::auto_lock mutext(&single_recorder_info->media_source_lock);
+					debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 					debuggerking::single_media_source_t * single_media_source = new debuggerking::single_media_source_t();
 					strcpy_s(single_media_source->uuid, sizeof(single_media_source->uuid), ascii_uuid);
 					if (strlen(single_recorder_info->username) > 0)
@@ -602,18 +629,18 @@ int PRMC_Remove(const wchar_t * url, int index)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (single_media_source->run)
@@ -643,7 +670,7 @@ int PRMC_Remove(const wchar_t * url, int index)
 						delete single_media_source;
 						single_media_source = nullptr;
 					}
-					single_recorder_info->media_sources.erase(iter);
+					single_recorder_info->media_sources.erase(smc_iter);
 					result = PRMC_SUCCESS;
 				}
 			}
@@ -657,7 +684,7 @@ int PRMC_Remove(const wchar_t * url, int index)
 	return result;
 }
 
-int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int hour, int minute, int second, float scale, bool repeat)
+int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int hour, int minute, int second, float scale, int duration, bool repeat)
 {
 	int result = PRMC_FAIL;
 	if (!url || wcslen(url) < 1)
@@ -670,18 +697,18 @@ int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int 
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (!single_media_source->run)
@@ -689,10 +716,11 @@ int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int 
 							if (single_media_source->type == RTSP_RECEIVER)
 							{
 								char rtsp_url[260] = { 0 };
+								single_media_source->duration = duration;
+								single_media_source->scale = scale;
 								_snprintf_s(rtsp_url, sizeof(rtsp_url), "rtsp://%s:%d/%s/%.4d%.2d%.2d%.2d%.2d%.2d", single_recorder_info->url, single_recorder_info->rtsp_server_port_number, single_media_source->uuid, year, month, day, hour, minute, second);
-
 								debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
-								receiver->play(rtsp_url, single_media_source->username, single_media_source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, scale, repeat, single_media_source->hwnd);
+								receiver->play(rtsp_url, single_media_source->username, single_media_source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, single_media_source->scale, repeat, single_media_source->duration, single_media_source->hwnd);
 							}
 							//else if (single_media_source->type == RTMP_RECEIVER)
 							//{
@@ -727,18 +755,18 @@ int PRMC_Stop(const wchar_t * url, int index)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (single_media_source->run)
@@ -778,18 +806,18 @@ int PRMC_Resume(const wchar_t * url, int index)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (!single_media_source->run)
@@ -800,7 +828,7 @@ int PRMC_Resume(const wchar_t * url, int index)
 								_snprintf_s(rtsp_url, sizeof(rtsp_url), "rtsp://%s:%d/%s/%.4d%.2d%.2d%.2d%.2d%.2d", single_recorder_info->url, single_recorder_info->rtsp_server_port_number, single_media_source->uuid, single_media_source->last_year, single_media_source->last_month, single_media_source->last_day, single_media_source->last_hour, single_media_source->last_minute, single_media_source->last_second);
 
 								debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
-								receiver->play(rtsp_url, single_media_source->username, single_media_source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, scale, false, single_media_source->hwnd);
+								receiver->play(rtsp_url, single_media_source->username, single_media_source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, single_media_source->scale, false, single_media_source->duration, single_media_source->hwnd);
 							}
 							//else if (single_media_source->type == RTMP_RECEIVER)
 							//{
@@ -835,18 +863,18 @@ int PRMC_Pause(const wchar_t * url, int index)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (single_media_source->run)
@@ -888,11 +916,11 @@ int PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * ex
 	if (ascii_url && strlen(ascii_url) > 0 && ascii_export_file_path && strlen(ascii_export_file_path)>0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				char * ascii_uuid = 0;
@@ -901,7 +929,7 @@ int PRMC_AddExport(const wchar_t * url, const wchar_t * uuid, const wchar_t * ex
 				{
 					media_source_index_per_recorder = single_recorder_info->media_source_index_generator;
 
-					debuggerking::auto_lock mutext(&single_recorder_info->media_source_lock);
+					debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
 					debuggerking::single_media_source_t * single_media_source = new debuggerking::single_media_source_t();
 					strcpy_s(single_media_source->uuid, sizeof(single_media_source->uuid), ascii_uuid);
 					if (strlen(single_recorder_info->username) > 0)
@@ -956,18 +984,18 @@ int PRMC_RemoveExport(const wchar_t * url, int index)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (single_media_source->run)
@@ -992,7 +1020,7 @@ int PRMC_RemoveExport(const wchar_t * url, int index)
 						delete single_media_source;
 						single_media_source = nullptr;
 					}
-					single_recorder_info->media_sources.erase(iter);
+					single_recorder_info->media_sources.erase(smc_iter);
 					result = PRMC_SUCCESS;
 				}
 			}
@@ -1018,18 +1046,18 @@ int PRMC_PlayExport(const wchar_t * url, int index, int begin_year, int begin_mo
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (!single_media_source->run)
@@ -1070,18 +1098,18 @@ int PRMC_StopExport(const wchar_t * url, int index)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (single_media_source->run)
@@ -1119,18 +1147,18 @@ int PRMC_EnableOSD(const wchar_t * url, int index, bool enable)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (single_media_source->type == RTSP_RECEIVER)
@@ -1163,18 +1191,18 @@ int PRMC_SetOSDPosition(const wchar_t * url, int index, int x, int y)
 	if (ascii_url && strlen(ascii_url) > 0)
 	{
 		debuggerking::auto_lock mutext(&g_lock);
-		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator iter;
-		iter = g_parallel_recorders.find(ascii_url);
-		if (iter != g_parallel_recorders.end())
+		std::map<std::string, debuggerking::parallel_recorder_t*>::iterator pr_iter;
+		pr_iter = g_parallel_recorders.find(ascii_url);
+		if (pr_iter != g_parallel_recorders.end())
 		{
-			debuggerking::parallel_recorder_t * single_recorder_info = iter->second;
+			debuggerking::parallel_recorder_t * single_recorder_info = pr_iter->second;
 			if (single_recorder_info && single_recorder_info->connected && single_recorder_info->controller)
 			{
 				debuggerking::auto_lock mutex(&single_recorder_info->media_source_lock);
-				std::map<int, debuggerking::single_media_source_t*>::iterator iter = single_recorder_info->media_sources.find(index);
-				if (iter != single_recorder_info->media_sources.end())
+				std::map<int, debuggerking::single_media_source_t*>::iterator smc_iter = single_recorder_info->media_sources.find(index);
+				if (smc_iter != single_recorder_info->media_sources.end())
 				{
-					debuggerking::single_media_source_t * single_media_source = iter->second;
+					debuggerking::single_media_source_t * single_media_source = smc_iter->second;
 					if (single_media_source)
 					{
 						if (single_media_source->type == RTSP_RECEIVER)
@@ -1296,7 +1324,7 @@ int PRMC_RTSP_Play(int index, bool repeat)
 			if (!source->run)
 			{
 				debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(source->receiver);
-				receiver->play(source->url, source->username, source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, 1.f, repeat, source->hwnd);
+				receiver->play(source->url, source->username, source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, 1.f, repeat, 0, source->hwnd);
 				source->run = true;
 			}
 

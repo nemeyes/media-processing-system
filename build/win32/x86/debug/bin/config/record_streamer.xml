@@ -2,34 +2,12 @@
 <streamer>
 	<control_server>
 		<port_number>15000</port_number>
-		<username></username>
-		<password></password>
+		<username>root</username>
+		<password>pass</password>
 	</control_server>
 	<rtsp_server>
 		<port_number>1554</port_number>
-		<username></username>
-		<password></password>
+		<username>root</username>
+		<password>pass</password>
 	</rtsp_server>
-	<media_sources>
-		<media_source uuid="CH1">
-			<url>rtsp://now.iptime.org/1/stream1</url>
-			<username></username>
-			<password></password>
-		</media_source>
-		<media_source uuid="CH2">
-			<url>rtsp://now.iptime.org/2/stream1</url>
-			<username></username>
-			<password></password>
-		</media_source>
-		<media_source uuid="CH3">
-			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=1</url>
-			<username></username>
-			<password></password>
-		</media_source>
-		<media_source uuid="CH4">
-			<url>rtsp://root:pass@basetec.iptime.org:554/axis-media/media.amp?camera=2</url>
-			<username></username>
-			<password></password>
-		</media_source>
-	</media_sources>
 </streamer>

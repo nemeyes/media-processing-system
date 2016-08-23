@@ -24,10 +24,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 //#include <string.h>
 //#include "GroupsockHelper.hh"
 
-#if defined(DEBUG)
-#include <dk_log4cplus_logger.h>
-#endif
-
 
 H263plusVideoStreamParser::H263plusVideoStreamParser(
                               H263plusVideoStreamFramer* usingSource,
@@ -117,8 +113,7 @@ unsigned H263plusVideoStreamParser::parse(u_int64_t & currentDuration)
          // Parse the returned frame header (if any)
          if (!ParseShortHeader(fTo, &fNextInfo)) {
 #ifdef DEBUG
-			 debuggerking::log4cplus_logger::make_debug_log("live555", "H263plusVideoStreamParser: Fatal error");
-	   //fprintf(stderr,"H263plusVideoStreamParser: Fatal error\n");
+	   fprintf(stderr,"H263plusVideoStreamParser: Fatal error\n");
 #endif
 	 }
 
@@ -139,8 +134,7 @@ unsigned H263plusVideoStreamParser::parse(u_int64_t & currentDuration)
       }
    } catch (int /*e*/) {
 #ifdef DEBUG
-	   debuggerking::log4cplus_logger::make_debug_log("live555", "H263plusVideoStreamParser::parse() EXCEPTION (This is normal behavior - *not* an error)");
-      //fprintf(stderr, "H263plusVideoStreamParser::parse() EXCEPTION (This is normal behavior - *not* an error)\n");
+      fprintf(stderr, "H263plusVideoStreamParser::parse() EXCEPTION (This is normal behavior - *not* an error)\n");
 #endif
       frameSize=0;
    }
@@ -203,11 +197,8 @@ int H263plusVideoStreamParser::parseH263Frame( )
             ((row = fStates[(unsigned char)row][*(bufferIndex++)]) != -1)); // Start code was not found
 
    if (row != -1) {
-#if defined(DEBUG)
-	   debuggerking::log4cplus_logger::make_debug_log("live555", "%s: Buffer too small (%u)", "h263reader:", bufferEnd - fTo + ADDITIONAL_BYTES_NEEDED);
-#else
-      fprintf(stderr, "%s: Buffer too small (%u)\n", "h263reader:", bufferEnd - fTo + ADDITIONAL_BYTES_NEEDED);
-#endif
+      fprintf(stderr, "%s: Buffer too small (%u)\n",
+         "h263reader:", bufferEnd - fTo + ADDITIONAL_BYTES_NEEDED);
       return 0;
    }
 
