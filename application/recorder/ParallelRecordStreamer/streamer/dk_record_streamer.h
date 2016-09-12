@@ -6,7 +6,7 @@
 
 namespace debuggerking
 {
-	class vod_rtsp_server;
+	class recorder_rtsp_server;
 	class record_streamer : public ic::dk_ipc_server
 	{
 	public:
@@ -42,7 +42,7 @@ namespace debuggerking
 		bool _run;
 	#if defined(WITH_RTSP_SERVER)
 		int32_t _rtsp_server_port_number;
-		vod_rtsp_server * _rtsp_server;
+		recorder_rtsp_server * _rtsp_server;
 	#endif
 	};
 };

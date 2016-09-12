@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // A class for generating MPEG-2 Transport Stream from one or more input
 // Elementary Stream data sources
 // Implementation
@@ -83,7 +83,7 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame() {
   if ((fOutgoingPacketCounter%10) == 0) {
     // To avoid excessive recursion (and stack overflow) caused by excessively large input frames,
     // occasionally return to the event loop to do this:
-    envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);
+    nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);
   } else {
     afterGetting(this);
   }

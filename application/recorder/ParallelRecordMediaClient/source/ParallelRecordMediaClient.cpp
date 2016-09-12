@@ -720,7 +720,7 @@ int PRMC_Play(const wchar_t * url, int index, int year, int month, int day, int 
 								single_media_source->scale = scale;
 								_snprintf_s(rtsp_url, sizeof(rtsp_url), "rtsp://%s:%d/%s/%.4d%.2d%.2d%.2d%.2d%.2d", single_recorder_info->url, single_recorder_info->rtsp_server_port_number, single_media_source->uuid, year, month, day, hour, minute, second);
 								debuggerking::rtsp_receiver * receiver = static_cast<debuggerking::rtsp_receiver*>(single_media_source->receiver);
-								receiver->play(rtsp_url, single_media_source->username, single_media_source->password, 1, debuggerking::rtsp_receiver::recv_option_t::video, single_media_source->scale, repeat, single_media_source->duration, single_media_source->hwnd);
+								receiver->play(rtsp_url, single_media_source->username, single_media_source->password,	1, debuggerking::rtsp_receiver::recv_option_t::video, single_media_source->scale, repeat, single_media_source->duration, single_media_source->hwnd);
 							}
 							//else if (single_media_source->type == RTMP_RECEIVER)
 							//{

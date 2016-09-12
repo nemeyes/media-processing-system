@@ -7,7 +7,7 @@
 #include <dk_recorder_module.h>
 
 #if defined(WITH_RTSP_SERVER)
-#include <dk_vod_rtsp_server.h>
+#include <dk_recorder_rtsp_server.h>
 #endif
 
 #include "commands_server.h"
@@ -39,7 +39,7 @@ debuggerking::record_streamer::record_streamer(void)
 	add_command(new ic::get_seconds_req_cmd(this));
 
 #if defined(WITH_RTSP_SERVER)
-	_rtsp_server = new vod_rtsp_server();
+	_rtsp_server = new recorder_rtsp_server();
 #endif
 	log4cplus_logger::create("config\\log.properties");
 	memset(_config_path, 0x00, sizeof(_config_path));

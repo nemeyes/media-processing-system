@@ -73,6 +73,13 @@ int32_t debuggerking::rtsp_client::stop(void)
 			_kill = true;
 		}
 	}
+	else
+	{
+		if (_live)
+		{
+			_live->close();
+		}
+	}
 #if defined(WIN32)
 	if (_worker != NULL && _worker!=INVALID_HANDLE_VALUE)
 	{

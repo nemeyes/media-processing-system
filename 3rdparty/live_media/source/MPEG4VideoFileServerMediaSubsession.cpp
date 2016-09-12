@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand, from a MPEG-4 video file.
 // Implementation
@@ -62,8 +62,9 @@ static void checkForAuxSDPLine(void* clientData) {
 }
 
 void MPEG4VideoFileServerMediaSubsession::checkForAuxSDPLine1() {
-  char const* dasl;
+  nextTask() = NULL;
 
+  char const* dasl;
   if (fAuxSDPLine != NULL) {
     // Signal the event loop that we're done:
     setDoneFlag();

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // Network Interfaces
 // Implementation
 
@@ -91,7 +91,7 @@ Socket::Socket(UsageEnvironment& env, Port port)
 }
 
 void Socket::reset() {
-  closeSocket(fSocketNum);
+  if (fSocketNum >= 0) closeSocket(fSocketNum);
   fSocketNum = -1;
 }
 

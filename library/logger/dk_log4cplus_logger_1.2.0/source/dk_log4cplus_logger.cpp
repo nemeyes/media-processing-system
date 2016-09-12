@@ -93,11 +93,6 @@ void debuggerking::log4cplus_logger::destroy(void)
 		delete tmp_instance;
 	}
 }
-//
-//debuggerking::log4cplus_logger * debuggerking::log4cplus_logger::instance(void)
-//{
-//	return _instance;
-//}
 
 debuggerking::log4cplus_logger::log4cplus_logger(const char * configuration_path)
 {
@@ -157,7 +152,31 @@ void debuggerking::log4cplus_logger::make_fatal_log(const char * secion, const c
 {
 	if (_instance)
 	{
-#if !defined(WITH_DISABLE)
+#if defined(WITH_DISABLE)
+		char log[max_message_size] = { "FATAL :" };
+		int index = strlen(log);
+		char * rlog = &log[index];
+
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(rlog, sizeof(log) - index, sizeof(log) - index, fmt, args);
+		va_end(args);
+
+		index = strlen(log);
+		if (index > (sizeof(log) - 1))
+		{
+			log[max_message_size - 1] = 0;
+			log[max_message_size - 2] = '\n';
+			log[max_message_size - 3] = '\r';
+		}
+		else
+		{
+			log[index] = '\r';
+			log[index + 1] = '\n';
+			log[index + 2] = 0;
+		}
+		::OutputDebugStringA(log);
+#else
 		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
@@ -172,7 +191,31 @@ void debuggerking::log4cplus_logger::make_error_log(const char * secion, const c
 {
 	if (_instance)
 	{
-#if !defined(WITH_DISABLE)
+#if defined(WITH_DISABLE)
+		char log[max_message_size] = { "ERROR :" };
+		int index = strlen(log);
+		char * rlog = &log[index];
+
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(rlog, sizeof(log) - index, sizeof(log) - index, fmt, args);
+		va_end(args);
+
+		index = strlen(log);
+		if (index > (sizeof(log) - 1))
+		{
+			log[max_message_size - 1] = 0;
+			log[max_message_size - 2] = '\n';
+			log[max_message_size - 3] = '\r';
+		}
+		else
+		{
+			log[index] = '\r';
+			log[index + 1] = '\n';
+			log[index + 2] = 0;
+		}
+		::OutputDebugStringA(log);
+#else
 		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
@@ -187,7 +230,31 @@ void debuggerking::log4cplus_logger::make_warn_log(const char * secion, const ch
 {
 	if (_instance)
 	{
-#if !defined(WITH_DISABLE)
+#if defined(WITH_DISABLE)
+		char log[max_message_size] = { "WARN :" };
+		int index = strlen(log);
+		char * rlog = &log[index];
+
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(rlog, sizeof(log) - index, sizeof(log) - index, fmt, args);
+		va_end(args);
+
+		index = strlen(log);
+		if (index > (sizeof(log) - 1))
+		{
+			log[max_message_size - 1] = 0;
+			log[max_message_size - 2] = '\n';
+			log[max_message_size - 3] = '\r';
+		}
+		else
+		{
+			log[index] = '\r';
+			log[index + 1] = '\n';
+			log[index + 2] = 0;
+		}
+		::OutputDebugStringA(log);
+#else
 		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
@@ -202,7 +269,31 @@ void debuggerking::log4cplus_logger::make_info_log(const char * secion, const ch
 {
 	if (_instance)
 	{
-#if !defined(WITH_DISABLE)
+#if defined(WITH_DISABLE)
+		char log[max_message_size] = { "INFO :" };
+		int index = strlen(log);
+		char * rlog = &log[index];
+
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(rlog, sizeof(log) - index, sizeof(log) - index, fmt, args);
+		va_end(args);
+
+		index = strlen(log);
+		if (index > (sizeof(log) - 1))
+		{
+			log[max_message_size - 1] = 0;
+			log[max_message_size - 2] = '\n';
+			log[max_message_size - 3] = '\r';
+		}
+		else
+		{
+			log[index] = '\r';
+			log[index + 1] = '\n';
+			log[index + 2] = 0;
+		}
+		::OutputDebugStringA(log);
+#else
 		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
@@ -217,7 +308,31 @@ void debuggerking::log4cplus_logger::make_debug_log(const char * secion, const c
 {
 	if (_instance)
 	{
-#if !defined(WITH_DISABLE)
+#if defined(WITH_DISABLE)
+		char log[max_message_size] = { "DEBUG :" };
+		int index = strlen(log);
+		char * rlog = &log[index];
+
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(rlog, sizeof(log) - index, sizeof(log) - index, fmt, args);
+		va_end(args);
+
+		index = strlen(log);
+		if (index > (sizeof(log) - 1))
+		{
+			log[max_message_size - 1] = 0;
+			log[max_message_size - 2] = '\n';
+			log[max_message_size - 3] = '\r';
+		}
+		else
+		{
+			log[index] = '\r';
+			log[index + 1] = '\n';
+			log[index + 2] = 0;
+		}
+		::OutputDebugStringA(log);
+#else
 		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);
@@ -232,7 +347,31 @@ void debuggerking::log4cplus_logger::make_trace_log(const char * secion, const c
 {
 	if (_instance)
 	{
-#if !defined(WITH_DISABLE)
+#if defined(WITH_DISABLE)
+		char log[max_message_size] = { "TRACE :" };
+		int index = strlen(log);
+		char * rlog = &log[index];
+
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf_s(rlog, sizeof(log) - index, sizeof(log) - index, fmt, args);
+		va_end(args);
+
+		index = strlen(log);
+		if (index > (sizeof(log) - 1))
+		{
+			log[max_message_size - 1] = 0;
+			log[max_message_size - 2] = '\n';
+			log[max_message_size - 3] = '\r';
+		}
+		else
+		{
+			log[index] = '\r';
+			log[index + 1] = '\n';
+			log[index + 2] = 0;
+		}
+		::OutputDebugStringA(log);
+#else
 		char log[4096] = { 0 };
 		va_list args;
 		va_start(args, fmt);

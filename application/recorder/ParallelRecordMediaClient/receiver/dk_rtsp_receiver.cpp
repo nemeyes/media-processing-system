@@ -592,7 +592,7 @@ unsigned __stdcall debuggerking::rtsp_receiver::process_callback(void * param)
 void debuggerking::rtsp_receiver::process(void)
 {
 	int status = rtsp_receiver::err_code_t::fail;
-	status = rtsp_client::play(_url, _username, _password, _transport_option, _recv_option, 3, _scale, _repeat);
+	status = rtsp_client::play(_url, _username, _password, _transport_option, _recv_option, 0, _scale, _repeat);
 	if (status == rtsp_receiver::err_code_t::success)
 	{
 		_run = true;
@@ -626,6 +626,7 @@ unsigned debuggerking::rtsp_receiver::disconnect_process_cb(void * param)
 
 void debuggerking::rtsp_receiver::disconnect_process(void)
 {
+	bool do_disconnect_called = false;
 	_disconnect_run = true;
 	while (_disconnect_run)
 	{
@@ -633,8 +634,10 @@ void debuggerking::rtsp_receiver::disconnect_process(void)
 		{
 			rtsp_client::stop();
 			_do_disconnect = false;
+			do_disconnect_called = true;
 		}
 		::Sleep(10);
 	}
-	rtsp_client::stop();
+	if (!do_disconnect_called)
+		rtsp_client::stop();
 }

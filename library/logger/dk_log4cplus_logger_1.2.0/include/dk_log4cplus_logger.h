@@ -31,6 +31,7 @@ namespace debuggerking
 	class EXP_LOG4CPLUS_LOGGER_DLL log4cplus_logger : public foundation
 	{
 	public:
+		static const int max_message_size = 1000;
 		static void create(const char * configuration_path);
 		static void destroy(void);
 		//static log4cplus_logger * instance(void);
